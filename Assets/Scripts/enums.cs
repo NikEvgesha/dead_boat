@@ -6,3 +6,10 @@ public enum ItemType
     Treasure,
     Trash
 }
+
+
+public enum CurrencyType
+{
+    Coins,
+    Gems
+}

@@ -38,7 +38,7 @@ public class PlayerMovement : MonoBehaviour
     }
 
 
-    void FixedUpdate()
+    void Update()
     {
         _isGrounded = _controller.isGrounded;
         Move();
@@ -50,7 +50,6 @@ public class PlayerMovement : MonoBehaviour
         Vector3 movement = _input.Movement;
         Vector3 moveDirection = transform.TransformDirection(movement);
         moveDirection.y = 0f;
-        //moveDirection = moveDirection.normalized;
 
         Vector3 horizontalMovement = moveDirection * _moveSpeed;
 
@@ -69,30 +68,6 @@ public class PlayerMovement : MonoBehaviour
         }
         Vector3 finalMovement = horizontalMovement + new Vector3(0f, _velocity.y, 0f);
         _controller.Move(finalMovement * Time.deltaTime);
-
-
-        /*        Vector3 movement = _input.Movement;
-                Vector3 moveDirection = transform.TransformDirection(movement);
-                moveDirection.y = 0f;
-                moveDirection = moveDirection.normalized;
-
-                _isGrounded = Physics.Raycast(transform.position, Vector3.down, 0.1f, _groundMask);
-
-                Vector3 targetVelocity = moveDirection * _moveSpeed;
-                Vector3 currentHorizontalVelocity = new Vector3(_rb.velocity.x, 0f, _rb.velocity.z);
-
-                Vector3 velocityChange = Vector3.Lerp(currentHorizontalVelocity, targetVelocity, _groundDamping * Time.fixedDeltaTime);
-                _rb.velocity = new Vector3(velocityChange.x, _rb.velocity.y, velocityChange.z);
-
-                if (_isGrounded && _input.JumpTriggered)
-                {
-                    _rb.AddForce(Vector3.up * _jumpPower, ForceMode.Impulse);
-                }
-
-                if (!_isGrounded)
-                {
-                    _rb.AddForce(Vector3.down * _gravity * _fallSpeedMultiplier, ForceMode.Acceleration);
-                }*/
     }
 
 
@@ -107,12 +82,5 @@ public class PlayerMovement : MonoBehaviour
         transform.rotation = Quaternion.Euler(0f, _currentYRotation, 0f);
         _camera.transform.localRotation = Quaternion.Euler(_currentXRotation, 0f, 0f);
     }
-
-/*    private void OnGravityChanged(bool inGravitySource)
-    {
-        _onPlatform = inGravitySource;
-        _rb.useGravity = inGravitySource;
-        _controlUI.SwitchPlatformControls(_onPlatform);
-    }*/
 
 }

@@ -97,6 +97,7 @@ GameObject:
   - component: {fileID: 3151695363676958425}
   - component: {fileID: 8542118718614108297}
   - component: {fileID: 7037199807800963552}
+  - component: {fileID: 5841671705070704806}
   m_Layer: 8
   m_Name: ItemPrefab
   m_TagString: Untagged
@@ -136,8 +137,6 @@ MonoBehaviour:
   _visualObj: {fileID: 2196804631176896271}
   _lerpSpeed: 10
   _maxSpeed: 20
-  _stopDistance: 0.2
-  _maxDistance: 1.5
   damping: 0.1
   _inGravitySource: 1
 --- !u!114 &740702198861743792
@@ -245,3 +244,16 @@ MonoBehaviour:
     - {x: 0.57735026, y: 0.57735026, z: -0.57735026}
     - {x: 0.57735026, y: 0.57735026, z: 0.57735026}
     - {x: 0.57735026, y: -0.57735026, z: 0.57735026}
+--- !u!114 &5841671705070704806
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2989349558610666464}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e5bf97e157eca49459fe844d733d9c88, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _cost: 10
