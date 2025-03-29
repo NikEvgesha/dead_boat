@@ -4,7 +4,7 @@ public class DriverSeatTrigger : MonoBehaviour
 {
     [Header("Ќастройки входа в режим вождени€")]
     [Tooltip("—сылка на TrainController, отвечающий за управление поездом")]
-    public TrainController trainController;
+    public BoardController trainController;
 
     [Tooltip("Transform сидень€ водител€, куда будет телепортироватьс€ игрок")]
     public Transform driverSeatTransform;
@@ -27,6 +27,7 @@ public class DriverSeatTrigger : MonoBehaviour
 
     private void Start()
     {
+        playerCharacter = FindAnyObjectByType<PlayerMovement>().gameObject;
         // ѕолучаем ссылку на компонент PlayerInput у игрока
         playerInput = playerCharacter.GetComponent<PlayerInput>();
         if (playerInput != null && playerCharacter == null) 
@@ -85,7 +86,7 @@ public class DriverSeatTrigger : MonoBehaviour
             playerInput.SitTrain(false);
         }
         // ќтв€зываем игрока от сидень€
-        playerCharacter.transform.SetParent(null);
+        playerCharacter.transform.SetParent(trainController.transform);
         // ѕеремещаем игрока в безопасную позицию р€дом с креслом (сдвиг вправо на 2 единицы, можно изменить)
         //playerCharacter.transform.position = driverSeatTransform.position + driverSeatTransform.right * 2f;
         //playerCharacter.transform.rotation = originalPlayerRotation;

@@ -3,7 +3,7 @@ using UnityEngine;
 public class FuelDeposit : MonoBehaviour
 {
     [Tooltip("—сылка на TrainController, куда будет добавл€тьс€ топливо")]
-    public TrainController trainController;
+    public BoardController trainController;
 
     private void OnTriggerEnter(Collider other)
     {

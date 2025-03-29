@@ -12,11 +12,11 @@ public class RailPoolManager : MonoBehaviour
     public int railsForward = 10; // число сегментов впереди поезда (для ориентира)
 
     private List<GameObject> railPool = new List<GameObject>();
-    private TrainController trainController;
+    private BoardController trainController;
 
     void Start()
     {
-        trainController = GetComponent<TrainController>();
+        trainController = GetComponent<BoardController>();
         if (trainController == null)
         {
             Debug.LogError("Компонент TrainController не найден на поезде!");
