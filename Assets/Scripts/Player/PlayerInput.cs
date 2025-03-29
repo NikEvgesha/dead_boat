@@ -2,8 +2,6 @@ using UnityEngine;
 
 public class PlayerInput : MonoBehaviour
 {
-    [SerializeField] private bool _useTouchControls = false;
-
 /*    public bool UseTouchControl { get { return _useTouchControls; } private set { } }
     public bool IsCursorVisible { get; private set; }*/
     public bool SpaceUp { get; private set; }
@@ -76,7 +74,7 @@ public class PlayerInput : MonoBehaviour
 
     private void CheckControls()
     {
-        if (_useTouchControls)
+        if (ControlManager.Instance.UseTouchControl)
         {
             SpaceUp = _touchControls.upButton.IsHolded;
             SpaceDown = _touchControls.downButton.IsHolded;
@@ -108,7 +106,7 @@ public class PlayerInput : MonoBehaviour
             return;
         }
 
-        if (_useTouchControls)
+        if (ControlManager.Instance.UseTouchControl)
         {
             Movement = new Vector3(_touchControls.moveJoystick.Horizontal(), 0f, _touchControls.moveJoystick.Vertical());
         } else
@@ -120,7 +118,7 @@ public class PlayerInput : MonoBehaviour
 
     public void UpdateRotation()
     {
-        if (_useTouchControls)
+        if (ControlManager.Instance.UseTouchControl)
         {
             Rotation = _touchControls.cameraTouchController.GetRotationInput();
         }
@@ -130,14 +128,6 @@ public class PlayerInput : MonoBehaviour
         }
     }
 
-
-/*    public void ShowCursor(bool visible)
-    {
-        Debug.Log("Set cursor visibility to: " + visible);
-        IsCursorVisible = visible;
-        Cursor.visible = visible;
-        Cursor.lockState = visible ? CursorLockMode.None : CursorLockMode.Locked;
-    }*/
     public void SitTrain(bool inTrain)
     {
         _inTrain = inTrain;
