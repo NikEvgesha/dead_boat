@@ -45,7 +45,7 @@ GameObject:
   - component: {fileID: 3546595970496766325}
   - component: {fileID: 1254663557387219740}
   - component: {fileID: 8379307067694749318}
-  - component: {fileID: 7999061555740166124}
+  - component: {fileID: 5427724728882229740}
   m_Layer: 7
   m_Name: Player
   m_TagString: Untagged
@@ -83,16 +83,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _camera: {fileID: 7898971971557895287}
-  _moveSpeed: 10
+  _moveSpeed: 4
   _rotationSpeed: 200
-  _maxSpeed: 10
-  _damping: 0.985
   _jumpPower: 10
   _gravity: 9.8
-  _fallSpeedMultiplier: 2
-  _spaceSpeedMultiplier: 2
-  _verticalSpaceSpeed: 10
-  _groundDamping: 10
   _groundMask:
     serializedVersion: 2
     m_Bits: 64
@@ -112,7 +106,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 508f9b20e0d07af459572f6160c7a543, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _useTouchControls: 1
 --- !u!136 &3546595970496766325
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -166,33 +159,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c696ea820cc9007478eeffa4dbfa38e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!54 &7999061555740166124
-Rigidbody:
+--- !u!143 &5427724728882229740
+CharacterController:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3724417479886405352}
-  serializedVersion: 4
-  m_Mass: 1
-  m_Drag: 2.5
-  m_AngularDrag: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 112
-  m_CollisionDetection: 1
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Height: 1.8
+  m_Radius: 0.4
+  m_SlopeLimit: 45
+  m_StepOffset: 0.3
+  m_SkinWidth: 0.08
+  m_MinMoveDistance: 0.001
+  m_Center: {x: 0, y: 0.9, z: 0}
 --- !u!1 &4517758769131730985
 GameObject:
   m_ObjectHideFlags: 0
@@ -237,7 +229,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ada55d443319e974e9bd93eb3323fe53, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _capacity: 25
+  _capacityTotal: 25
   _available: 10
   _quickSlotsCapacity: 5
   _dropOutPoint: {fileID: 3763508239936990894}

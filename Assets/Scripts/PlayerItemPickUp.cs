@@ -83,6 +83,7 @@ public class PlayerItemPickUp : MonoBehaviour
         {
             _grabbedItem = _raycastHitItem;
             _grabbedItem.PickUp(_itemJoint);
+            _controlUI.OnItemPickUp(true);
         }
     }
 
@@ -100,6 +101,7 @@ public class PlayerItemPickUp : MonoBehaviour
     {
         _grabbedItem.Drop();
         _grabbedItem = null;
+        _controlUI.OnItemPickUp(false);
     }
 
 }

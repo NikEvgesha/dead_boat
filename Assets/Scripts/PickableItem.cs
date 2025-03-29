@@ -1,3 +1,5 @@
+using System.Drawing;
+using TMPro;
 using UnityEngine;
 
 public class PickableItem : MonoBehaviour
@@ -5,6 +7,11 @@ public class PickableItem : MonoBehaviour
     //[SerializeField] private float _lerpSpeed = 15;
     [SerializeField] private ItemData _itemData;
     [SerializeField] private GameObject _visualObj;
+
+    [SerializeField] private float _lerpSpeed = 10f;
+    [SerializeField] private float _maxSpeed = 10f;
+
+    public float damping = 0.1f;
     public bool Grabbed { get; private set; }
 
     private Outline _outline;
@@ -12,6 +19,9 @@ public class PickableItem : MonoBehaviour
     private BoxCollider _collider;
     private Transform _itemPoint;
     public bool _inGravitySource;
+
+
+    private Vector3 _velocity;
 
     
 
@@ -32,56 +42,42 @@ public class PickableItem : MonoBehaviour
 
     public void PickUp(Transform point)
     {
-        
+        //transform.SetParent(point);
         Grabbed = true;
         _itemPoint = point;
         _rb.useGravity = false;
         _rb.freezeRotation = true;
+        //_rb.isKinematic = true;
     }
 
     public void Drop()
     {
+        //transform.SetParent(null);
         Grabbed = false;
         _itemPoint = null;
         _rb.freezeRotation = false;
-        if (_inGravitySource)
-        {
-            _rb.useGravity = true;
-        } else
-        {
-            //_rb.velocity = Vector3.zero;
-        }
-        
-        
+        //_rb.isKinematic = false;
+        _rb.useGravity = true;
     }
-
-    [SerializeField] private float _lerpSpeed = 5f;      // Speed factor for movement
-    [SerializeField] private float _maxSpeed = 10f;      // Cap on maximum speed
-    [SerializeField] private float _dampingFactor = 10f; // Controls smoothness
-    [SerializeField] private float _stopDistance = 0.1f;
 
     private void FixedUpdate()
     {
         if (_itemPoint != null)
         {
-            Vector3 targetPosition = _itemPoint.position;
-            Vector3 currentPosition = transform.position;
-            Vector3 direction = (targetPosition - currentPosition).normalized;
-            float distance = Vector3.Distance(currentPosition, targetPosition);
+            Vector3 targetVelocity = _rb.velocity;
+            Vector3 predictedPosition = _itemPoint.position + targetVelocity * Time.deltaTime;
 
-            // Smoothly adjust velocity based on distance
-            float speed = Mathf.Clamp(distance * _lerpSpeed, 0f, _maxSpeed);
-            Vector3 targetVelocity = direction * speed;
+            float distance = Vector3.Distance(transform.position, predictedPosition);
 
-            // Apply velocity with damping to prevent overshooting
-            _rb.velocity = Vector3.Lerp(_rb.velocity, targetVelocity, Time.fixedDeltaTime * _dampingFactor);
-
-            // Optional: Stop movement if very close to target to prevent micro-twitching
-            if (distance < _stopDistance)
-            {
-                _rb.velocity = Vector3.zero;
-            }
+            transform.position = Vector3.SmoothDamp(
+                transform.position,
+                predictedPosition,
+                ref _velocity,
+                damping,
+                _lerpSpeed
+            );
         }
+
     }
 
 
@@ -114,14 +110,5 @@ public class PickableItem : MonoBehaviour
         transform.position = dropOutPoint.position;
     }
 
-
-    /*    public void SetVisibility(bool visible)
-        {
-            _visualObj.SetActive(visible);
-            _rb.isKinematic = !visible;
-            _rb.detectCollisions = visible;
-            _collider.enabled = visible;
-            _gravityChecker.enabled = visible;
-        }*/
 
 }

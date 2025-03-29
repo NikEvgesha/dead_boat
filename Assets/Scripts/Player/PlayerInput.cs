@@ -2,11 +2,6 @@ using UnityEngine;
 
 public class PlayerInput : MonoBehaviour
 {
-/*    public bool UseTouchControl { get { return _useTouchControls; } private set { } }
-    public bool IsCursorVisible { get; private set; }*/
-    public bool SpaceUp { get; private set; }
-    public bool SpaceDown { get; private set; }
-
     public Vector3 Movement { get; private set; }
     public Vector2 Rotation { get; private set; }
 
@@ -50,15 +45,6 @@ public class PlayerInput : MonoBehaviour
     private bool _interaction;
     private bool _pickUp;
     private bool _inTrain;
-    private void Awake()
-    {
-/*        if (!_useTouchControls)
-        {
-            IsCursorVisible = false;
-            Cursor.visible = false;
-            Cursor.lockState = CursorLockMode.Locked;
-        }*/
-    }
 
     private void Start()
     {
@@ -76,17 +62,13 @@ public class PlayerInput : MonoBehaviour
     {
         if (ControlManager.Instance.UseTouchControl)
         {
-            SpaceUp = _touchControls.upButton.IsHolded;
-            SpaceDown = _touchControls.downButton.IsHolded;
             _jump = _touchControls.jumpButton.IsTriggered;
             _pickUp = _touchControls.pickUpButton.IsTriggered;
             _interaction = _touchControls.putToInventoryButton.IsTriggered;
         }
         else
         {
-            SpaceUp = Input.GetKey(KeyCode.Space);
-            SpaceDown = Input.GetKey(KeyCode.LeftControl);
-            _jump = SpaceUp;
+            _jump = Input.GetKeyDown(KeyCode.Space);
             _pickUp = Input.GetMouseButtonDown(0);
             _interaction = Input.GetKeyDown(KeyCode.E);
         }

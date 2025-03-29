@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using static UnityEditor.Progress;
 
 public class Inventory : MonoBehaviour
 {
-    [SerializeField] private int _capacity = 25;
+    [SerializeField] private int _capacityTotal = 25;
     [SerializeField] private int _available = 25;
     [SerializeField] private int _quickSlotsCapacity = 5;
     [SerializeField] private Transform _dropOutPoint;
@@ -33,8 +32,8 @@ public class Inventory : MonoBehaviour
     private void Start()
     {
         _items = new();
-        InventoryUI.Instance.SpawnSlots(_capacity, _quickSlotsCapacity);
-        InventoryUI.Instance.UpdateCapacity(_items.Count, _capacity);
+        InventoryUI.Instance.SpawnSlots(_capacityTotal - _quickSlotsCapacity, _quickSlotsCapacity);
+        InventoryUI.Instance.UpdateCapacity(_items.Count, _capacityTotal);
     }
 
 
@@ -51,7 +50,7 @@ public class Inventory : MonoBehaviour
         item.transform.SetParent(transform);
 
         InventoryUI.Instance.AddItem(item);
-        InventoryUI.Instance.UpdateCapacity(_items.Count, _capacity);
+        InventoryUI.Instance.UpdateCapacity(_items.Count, _capacityTotal);
         return true;
     }
 
@@ -60,7 +59,7 @@ public class Inventory : MonoBehaviour
     {
         item.DropOutFromInventory(_dropOutPoint);
         _items.Remove(item);
-        InventoryUI.Instance.UpdateCapacity(_items.Count, _capacity);
+        InventoryUI.Instance.UpdateCapacity(_items.Count, _capacityTotal);
         //ItemDropOut?.Invoke(item);
     }
 

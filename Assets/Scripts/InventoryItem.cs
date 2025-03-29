@@ -36,6 +36,7 @@ public class InventoryItem : MonoBehaviour, IDragHandler, IBeginDragHandler, IEn
         _image.raycastTarget = false;
         _newParent = transform.parent;
         transform.SetParent(InventoryUI.Instance.gameObject.transform, true);
+        InventoryUI.Instance.OnItemDrag(true);
     }
 
     public void OnDrag(PointerEventData eventData)
@@ -53,7 +54,7 @@ public class InventoryItem : MonoBehaviour, IDragHandler, IBeginDragHandler, IEn
         {
             UpdateParent();
         }
-            
+        InventoryUI.Instance.OnItemDrag(false);
     }
 
     public void UpdateParent()

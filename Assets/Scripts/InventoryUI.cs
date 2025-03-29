@@ -9,6 +9,7 @@ public class InventoryUI : MonoBehaviour
     [SerializeField] private DynamicGridSpawner _qickPanelGrid;
     [SerializeField] private InventorySlot _slotPrefab; // ItemSlot
     [SerializeField] private Text _capacityText;
+    [SerializeField] private GameObject _dropOutPanel;
 
     private static InventoryUI _instance;
     public static InventoryUI Instance { get { return _instance; } }
@@ -57,6 +58,12 @@ public class InventoryUI : MonoBehaviour
             InventorySlot slot = _qickPanelGrid.SpawnObject<InventorySlot>(_slotPrefab.gameObject);
             _quickSlots.Add(slot);
         }
+    }
+
+
+    public void OnItemDrag(bool dragging)
+    {
+        _dropOutPanel.SetActive(dragging);
     }
 
 

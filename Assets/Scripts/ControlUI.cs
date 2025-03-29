@@ -4,8 +4,6 @@ using UnityEngine;
 [Serializable]
 public struct TouchControls
 {
-    public OnScreenButton upButton;
-    public OnScreenButton downButton;
     public OnScreenButton jumpButton;
     public OnScreenButton pickUpButton;
     public OnScreenButton putToInventoryButton;
@@ -31,12 +29,10 @@ public class ControlUI : MonoBehaviour
     }
     
 
-    public void SwitchPlatformControls(bool onPlatform)
+/*    public void SwitchPlatformControls(bool onPlatform)
     {
-        _touchControls.upButton.gameObject.SetActive(!onPlatform);
-        _touchControls.downButton.gameObject.SetActive(!onPlatform);
         _touchControls.jumpButton.gameObject.SetActive(onPlatform);
-    }
+    }*/
 
     public TouchControls GetTouchControls()
     {
@@ -48,6 +44,11 @@ public class ControlUI : MonoBehaviour
     {
         _touchControls.pickUpButton.gameObject.SetActive(visible);
         _touchControls.putToInventoryButton.gameObject.SetActive(visible);
+    }
+
+    public void OnItemPickUp(bool picked)
+    {
+        _touchControls.putToInventoryButton.gameObject.SetActive(!picked);
     }
 
 }
