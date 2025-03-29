@@ -1,0 +1,105 @@
+using UnityEngine;
+
+[RequireComponent(typeof(PlayerInput))]
+public class PlayerItemPickUp : MonoBehaviour
+{
+    [SerializeField] private Transform _itemJoint;
+    [SerializeField] private Transform _cameraObj;
+    [SerializeField] private float _pickUpDistance = 2f;
+    [SerializeField] private LayerMask _layerMask;
+
+    private PlayerInput _input;
+    private PickableItem _raycastHitItem;
+    private PickableItem _grabbedItem;
+    private ControlUI _controlUI;
+
+    bool _hitted = false;
+
+    private void Start()
+    {
+        _input = GetComponent<PlayerInput>();
+        _controlUI = FindAnyObjectByType<ControlUI>();
+    }
+
+
+    private void Update()
+    {
+        if (!_grabbedItem)
+        {
+            CheckRaycast();
+        }
+        
+
+        if (_input.PickUp)
+        {
+            if (_grabbedItem != null)
+            {
+                DropItem();
+            } else
+            {
+                TryPickupObject();
+            } 
+        }
+
+        if (_input.Interaction)
+        {
+            TryPutToInventory();
+        }
+        
+    }
+
+
+    private void CheckRaycast()
+    {
+        bool hitted = false;
+        if (Physics.Raycast(_cameraObj.position, _cameraObj.forward, out RaycastHit hit, _pickUpDistance, _layerMask))
+        {
+            if (hit.transform.TryGetComponent(out PickableItem item))
+            {
+                _raycastHitItem = item;
+                item.OnFocus(true);
+                hitted = true;
+            } 
+        } 
+        if (!hitted)
+        {
+            if (_raycastHitItem != null)
+            {
+                _raycastHitItem.OnFocus(false);
+            }
+            _raycastHitItem = null;
+        }
+        if (_hitted != hitted)
+        {
+            _controlUI.ShowPickUpButton(hitted);
+            _hitted = hitted;
+        }
+            
+    }
+
+    private void TryPickupObject()
+    {
+        if (_raycastHitItem != null)
+        {
+            _grabbedItem = _raycastHitItem;
+            _grabbedItem.PickUp(_itemJoint);
+        }
+    }
+
+
+    private void TryPutToInventory()
+    {
+        if (_grabbedItem == null && _raycastHitItem != null)
+        {
+            _raycastHitItem.PutToInventory();
+        }
+    }
+
+
+    private void DropItem()
+    {
+        _grabbedItem.Drop();
+        _grabbedItem = null;
+    }
+
+}
