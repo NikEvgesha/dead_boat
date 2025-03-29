@@ -58,6 +58,7 @@ public class PickableItem : MonoBehaviour
         _rb.freezeRotation = false;
         //_rb.isKinematic = false;
         _rb.useGravity = true;
+        _rb.velocity = _velocity;
     }
 
     private void FixedUpdate()
@@ -68,6 +69,7 @@ public class PickableItem : MonoBehaviour
             Vector3 predictedPosition = _itemPoint.position + targetVelocity * Time.deltaTime;
 
             float distance = Vector3.Distance(transform.position, predictedPosition);
+            
 
             transform.position = Vector3.SmoothDamp(
                 transform.position,
