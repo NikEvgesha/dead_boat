@@ -1,4 +1,5 @@
 using UnityEngine;
+using static UnityEditor.Experimental.GraphView.GraphView;
 
 public class DayTime : MonoBehaviour
 {
@@ -16,9 +17,18 @@ public class DayTime : MonoBehaviour
     private int _hour;
     private int _minute;
 
+    private void Awake()
+    {
+        if (_sun == null)
+        {
+            _sun = GameObject.FindGameObjectWithTag("Sun").GetComponent<Light>();
+        }
+    }
+
     private void OnValidate()
     {
-        ProgressTime();
+        if (_sun)
+            ProgressTime();
     }
 
     private void Update()
