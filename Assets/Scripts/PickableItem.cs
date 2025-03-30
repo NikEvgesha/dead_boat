@@ -1,7 +1,5 @@
-using System.Drawing;
-using TMPro;
 using UnityEngine;
-using UnityEngine.ProBuilder.Shapes;
+
 
 public class PickableItem : MonoBehaviour
 {
@@ -14,6 +12,11 @@ public class PickableItem : MonoBehaviour
     [SerializeField] private float _damping = 0.1f;
     [SerializeField] private float _stopDistance = 0.05f;
     [SerializeField] private float _maxDistance = 8f;
+
+    [SerializeField] private float _drag = 10f;
+    [SerializeField] private float _dragOrigin = 1f;
+    [SerializeField] private float _dropVelocityMultiplier = 2f;
+
     public bool Grabbed { get; private set; }
 
     private Outline _outline;
@@ -52,8 +55,8 @@ public class PickableItem : MonoBehaviour
 
         //_rb.isKinematic = true;
 
-        _rb.drag = 10f;
-        _rb.angularDrag = 10f;
+        _rb.drag = _drag;
+        _rb.angularDrag = _drag;
     }
 
     public void Drop()
@@ -63,11 +66,11 @@ public class PickableItem : MonoBehaviour
         _itemPoint = null;
         _rb.freezeRotation = false;
         _rb.useGravity = true;
-        _rb.velocity = _velocity;
+        _rb.velocity = _velocity * _dropVelocityMultiplier;
 
         //_rb.isKinematic = false;
 
-        _rb.drag = 2f; // Reset drag
+        _rb.drag = _dragOrigin; // Reset drag
         _rb.angularDrag = 0.5f; // Default angular drag
     }
 

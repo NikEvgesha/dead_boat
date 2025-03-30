@@ -37,7 +37,7 @@ public class ControlManager : MonoBehaviour
             Destroy(gameObject);
         }
 
-        if (SystemInfo.deviceType != DeviceType.Desktop)
+        if (Application.isMobilePlatform)
         {
             _useTouchControls = true;
         }
