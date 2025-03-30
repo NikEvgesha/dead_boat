@@ -36,10 +36,16 @@ public class ControlManager : MonoBehaviour
         {
             Destroy(gameObject);
         }
+
+        if (SystemInfo.deviceType != DeviceType.Desktop)
+        {
+            _useTouchControls = true;
+        }
     }
 
     private void Start()
     {
+
         if (!_useTouchControls)
         {
             CursorActive = false;  

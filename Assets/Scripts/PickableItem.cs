@@ -1,6 +1,7 @@
 using System.Drawing;
 using TMPro;
 using UnityEngine;
+using UnityEngine.ProBuilder.Shapes;
 
 public class PickableItem : MonoBehaviour
 {
@@ -110,6 +111,7 @@ public class PickableItem : MonoBehaviour
         gameObject.SetActive(true);
         transform.SetParent(null); // TODO:  Objects Parent
         transform.position = dropOutPoint.position;
+        //_rb.velocity = dropOutPoint.transform.forward;
     }
 
 
