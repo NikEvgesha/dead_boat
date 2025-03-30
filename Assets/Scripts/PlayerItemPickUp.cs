@@ -24,6 +24,12 @@ public class PlayerItemPickUp : MonoBehaviour
 
     private void Update()
     {
+        if (_grabbedItem && !_grabbedItem.Grabbed)
+        {
+            DropItem();
+            return;
+        }
+
         if (!_grabbedItem)
         {
             CheckRaycast();

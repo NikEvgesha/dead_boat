@@ -11,6 +11,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float _rotationSpeed = 100f;
     [SerializeField] private float _jumpPower = 5;
     [SerializeField] private float _gravity = 9.8f;
+    [SerializeField] private float _fallSpeed = 2f;
     [SerializeField] private LayerMask _groundMask;
 
     [SerializeField] private float _YRotationLimitMax = 80f;
@@ -72,7 +73,7 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
-            _velocity.y -= _gravity * Time.deltaTime;
+            _velocity.y -= _gravity * Time.deltaTime * _fallSpeed;
         }
         Vector3 finalMovement = horizontalMovement + new Vector3(0f, _velocity.y, 0f);
         _controller.Move(finalMovement * Time.deltaTime);

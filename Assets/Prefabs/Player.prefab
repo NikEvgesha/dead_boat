@@ -49,7 +49,7 @@ GameObject:
   - component: {fileID: 8472981600828213878}
   m_Layer: 7
   m_Name: Player
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -84,11 +84,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _camera: {fileID: 7898971971557895287}
-  _moveSpeed: 4
+  _moveSpeed: 5
   _sprintMultiplier: 2
   _rotationSpeed: 200
-  _jumpPower: 4
+  _jumpPower: 10
   _gravity: 9.8
+  _fallSpeed: 2.5
   _groundMask:
     serializedVersion: 2
     m_Bits: 64
