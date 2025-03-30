@@ -24,4 +24,12 @@ public class GameManager : MonoBehaviour
             Destroy(gameObject);
         }
     }
+
+    private void Start()
+    {
+        if (_player == null)
+        {
+            _player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerStatsManager>();
+        }
+    }
 }
