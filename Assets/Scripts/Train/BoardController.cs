@@ -1,3 +1,5 @@
+using System;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class BoardController : MonoBehaviour
@@ -5,6 +7,11 @@ public class BoardController : MonoBehaviour
     [Header("Настройки поезда")]
     [Tooltip("Текущее количество топлива")]
     public float currentFuel = 100f;
+
+    [Tooltip("Максимальное количество топлива")]
+    [SerializeField]
+    private float _maxFuel = 1000f;
+
     [Tooltip("Коэффициент расхода топлива – расход топлива пропорционален текущей скорости")]
     public float fuelConsumptionRate = 0.1f;
     [Tooltip("Ускорение поезда (м/с)")]
@@ -35,6 +42,10 @@ public class BoardController : MonoBehaviour
 
     // Общая пройденная дистанция (в метрах)
     public float TotalDistanceTraveled = 0f;
+
+    public Action<float> SwitchDistance;
+    public Action<float> SwitchSpeed;
+    public Action<float,float> SwitchFuel;
 
     private void Awake()
     {
@@ -70,6 +81,7 @@ public class BoardController : MonoBehaviour
 
     private void FixedUpdate()
     {
+        float speed = currentSpeed;
         // Если таймер игнорирования ввода активен, обнуляем ввод
         if (ignoreInputTime > 0)
         {
@@ -103,11 +115,17 @@ public class BoardController : MonoBehaviour
             // Если водитель не за рулём, поезд всё равно замедляется естественным образом
             currentSpeed = Mathf.MoveTowards(currentSpeed, 0, coastDeceleration * Time.fixedDeltaTime);
         }
-
         // Перемещаем поезд по локальной оси X (transform.right)
         transform.position += transform.forward * currentSpeed * Time.fixedDeltaTime;
         // Обновляем пройденное расстояние
         TotalDistanceTraveled += currentSpeed * Time.fixedDeltaTime;
+
+        if (speed != currentSpeed)
+            SwitchSpeed?.Invoke(currentSpeed);
+        if (currentSpeed > 0)
+            SwitchDistance?.Invoke(TotalDistanceTraveled);
+
+
     }
 
     // Метод для расхода топлива
@@ -116,12 +134,19 @@ public class BoardController : MonoBehaviour
         currentFuel -= amount;
         if (currentFuel < 0)
             currentFuel = 0;
+
+        SwitchFuel?.Invoke(currentFuel, _maxFuel);
     }
 
     // Метод для добавления топлива
     public void AddFuel(float amount)
     {
         currentFuel += amount;
+        if (currentFuel > _maxFuel)
+        {
+            currentFuel = _maxFuel;
+        }
+        SwitchFuel?.Invoke(currentFuel, _maxFuel);
     }
 
     // Внешний метод для установки режима водителя
