@@ -7,6 +7,10 @@ public class PlayerInput : MonoBehaviour
 
     private TouchControls _touchControls;
 
+    public bool Sprint { get {
+            return _sprint;
+        } private set { } }
+
     public bool JumpTriggered
     {
         get
@@ -42,6 +46,7 @@ public class PlayerInput : MonoBehaviour
     }
 
     private bool _jump;
+    private bool _sprint;
     private bool _interaction;
     private bool _pickUp;
     private bool _inTrain;
@@ -65,12 +70,14 @@ public class PlayerInput : MonoBehaviour
             _jump = _touchControls.jumpButton.IsTriggered;
             _pickUp = _touchControls.pickUpButton.IsTriggered;
             _interaction = _touchControls.putToInventoryButton.IsTriggered;
+            _sprint = _touchControls.sprintButton.IsHolded;
         }
         else
         {
             _jump = Input.GetKeyDown(KeyCode.Space);
             _pickUp = Input.GetMouseButtonDown(0);
             _interaction = Input.GetKeyDown(KeyCode.E);
+            _sprint = Input.GetKey(KeyCode.LeftShift);
         }
 
         if (Input.GetKeyDown(KeyCode.Tab))

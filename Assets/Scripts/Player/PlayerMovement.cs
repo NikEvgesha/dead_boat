@@ -7,6 +7,7 @@ public class PlayerMovement : MonoBehaviour
 {
     [SerializeField] private GameObject _camera;
     [SerializeField] private float _moveSpeed = 5f;
+    [SerializeField] private float _sprintMultiplier = 2f;
     [SerializeField] private float _rotationSpeed = 100f;
     [SerializeField] private float _jumpPower = 5;
     [SerializeField] private float _gravity = 9.8f;
@@ -19,7 +20,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private bool _isGrounded;
 
     private PlayerInput _input;
-
+    private PlayerStatsManager _playerStats;
     private CharacterController _controller;
     private Rigidbody _rb;
 
@@ -30,6 +31,7 @@ public class PlayerMovement : MonoBehaviour
 
     void Start()
     {
+        _playerStats = GetComponent<PlayerStatsManager>();
         _controller = GetComponent<CharacterController>();
         _rb = GetComponent<Rigidbody>();
         _input = GetComponent<PlayerInput>();
@@ -53,6 +55,11 @@ public class PlayerMovement : MonoBehaviour
 
         Vector3 horizontalMovement = moveDirection * _moveSpeed;
 
+        if (_input.Sprint && _playerStats.Stamina > 0)
+        {
+            horizontalMovement *= _sprintMultiplier;
+        }
+
         if (_controller.isGrounded)
         {
             _velocity.y = -0.5f;
@@ -61,6 +68,7 @@ public class PlayerMovement : MonoBehaviour
             {
                 _velocity.y = _jumpPower;
             }
+
         }
         else
         {

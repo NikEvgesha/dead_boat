@@ -1,18 +1,27 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+    private static GameManager _instance;
+    public static GameManager Instance { get { return _instance; } private set { } }
 
-    // Update is called once per frame
-    void Update()
+
+    [SerializeField] private PlayerStatsManager _player;
+
+    public PlayerStatsManager Player { get { return _player; } }
+
+
+
+    private void Awake()
     {
-        
+        if (_instance == null)
+        {
+            _instance = this;
+            //DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
     }
 }

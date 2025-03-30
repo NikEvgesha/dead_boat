@@ -13,3 +13,9 @@ public enum CurrencyType
     Coins,
     Gems
 }
+
+public enum PlayerStat
+{
+    Health,
+    Stamina
+}

@@ -46,6 +46,7 @@ GameObject:
   - component: {fileID: 1254663557387219740}
   - component: {fileID: 8379307067694749318}
   - component: {fileID: 5427724728882229740}
+  - component: {fileID: 8472981600828213878}
   m_Layer: 7
   m_Name: Player
   m_TagString: Untagged
@@ -84,6 +85,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _camera: {fileID: 7898971971557895287}
   _moveSpeed: 4
+  _sprintMultiplier: 2
   _rotationSpeed: 200
   _jumpPower: 4
   _gravity: 9.8
@@ -185,6 +187,21 @@ CharacterController:
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 0.9, z: 0}
+--- !u!114 &8472981600828213878
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3724417479886405352}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25deed9c744687c4eb19a4d03fa9fb1d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _maxStamina: 100
+  _maxHealth: 100
+  _staminaConsumptionRate: 20
 --- !u!1 &4517758769131730985
 GameObject:
   m_ObjectHideFlags: 0

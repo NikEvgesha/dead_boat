@@ -5,6 +5,7 @@ using UnityEngine;
 public struct TouchControls
 {
     public OnScreenButton jumpButton;
+    public OnScreenButton sprintButton;
     public OnScreenButton pickUpButton;
     public OnScreenButton putToInventoryButton;
     public OnScreenJoystick moveJoystick;
