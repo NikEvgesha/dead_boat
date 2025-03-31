@@ -64,6 +64,7 @@ public class LocationSpawner : MonoBehaviour
             {
                 GameObject spawnedObj = Instantiate(chosenPrefab, spawnPosition, Quaternion.identity);
                 spawnedLocations.Add(spawnedObj);
+                spawnedObj.transform.SetParent(this.gameObject.transform);
             }
             else
             {

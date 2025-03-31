@@ -27,6 +27,17 @@ public class CitySpawner : MonoBehaviour
     private int spawnCount = 0;
     private List<GameObject> spawnedCities = new List<GameObject>();
 
+    private void Awake()
+    {
+        InitBoardController();
+    }
+    private void InitBoardController()
+    {
+        if (boardController == null)
+            boardController = FindAnyObjectByType<BoardController>();
+        if (boardController == null)
+            Debug.LogError("boardController не найден");
+    }
     void Start()
     {
         // Первый город спавнится при достижении базового расстояния
@@ -62,5 +73,6 @@ public class CitySpawner : MonoBehaviour
         Vector3 spawnPosition = new Vector3(0f, 0f, nextSpawnDistance);
         GameObject city = Instantiate(cityPrefab, spawnPosition, Quaternion.identity);
         spawnedCities.Add(city);
+        city.transform.SetParent(this.gameObject.transform);
     }
 }

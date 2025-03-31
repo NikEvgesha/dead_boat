@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &7156733642187064184
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1935720493873262786}
+  - component: {fileID: 7558403968983525434}
+  m_Layer: 0
+  m_Name: DecorationSpawner
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1935720493873262786
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7156733642187064184}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7558403968983525434
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7156733642187064184}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 30adaddbd7c78934999c2bd7fb175c55, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  boardController: {fileID: 0}
+  player: {fileID: 0}
+  decorationCollection: {fileID: 11400000, guid: d2eadb0bc7653fd45828720ab4397777, type: 2}
+  spawnInterval: 50
+  spawnAreaOffset: {x: -250, y: 500}
+  spawnAreaSize: {x: 500, y: 500}
+  avoidAreaOffset: {x: -10, y: 499}
+  avoidAreaSize: {x: 20, y: 502}
+  removalDistance: 500
+  _useGizmos: 1

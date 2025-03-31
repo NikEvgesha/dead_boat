@@ -15,6 +15,18 @@ public class LendController : MonoBehaviour
     // Индекс куска земли, который следующим будет перемещён
     private int currentSegmentIndex = 0;
 
+    private void Awake()
+    {
+        InitBoardController();
+    }
+    private void InitBoardController()
+    {
+        if (player == null)
+            player = FindAnyObjectByType<BoardController>().transform;
+        if (player == null)
+            Debug.LogError("boardController не найден");
+    }
+
     void Update()
     {
         // Если игрок пересек конец текущего сегмента земли,
