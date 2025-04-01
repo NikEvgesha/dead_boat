@@ -57,7 +57,12 @@ public class BoardController : MonoBehaviour
             rb.isKinematic = true;
         }
     }
-
+    private void Start()
+    {
+        SwitchDistance?.Invoke(TotalDistanceTraveled);
+        SwitchSpeed?.Invoke(currentSpeed);
+        SwitchFuel?.Invoke(currentFuel, _maxFuel);
+    }
     private void Update()
     {
         // Обновляем ввод только если водитель за рулём

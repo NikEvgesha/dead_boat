@@ -23,6 +23,10 @@ public class CitySpawner : MonoBehaviour
     [Tooltip("√ород будет удалЄн, если окажетс€ позади поезда на это рассто€ние (в метрах)")]
     public float removalDistance = 500f;
 
+    [Tooltip(" оличество городов")]
+    [SerializeField]
+    private int _citys = 9;
+
     private float nextSpawnDistance;
     private int spawnCount = 0;
     private List<GameObject> spawnedCities = new List<GameObject>();
@@ -31,6 +35,7 @@ public class CitySpawner : MonoBehaviour
     {
         InitBoardController();
     }
+
     private void InitBoardController()
     {
         if (boardController == null)
@@ -38,16 +43,23 @@ public class CitySpawner : MonoBehaviour
         if (boardController == null)
             Debug.LogError("boardController не найден");
     }
+
     void Start()
     {
-        // ѕервый город спавнитс€ при достижении базового рассто€ни€
+        // —павним стартовый город сразу в (0, 0, 0)
+        SpawnCityAt(new Vector3(0f, 0f, 0f));
+        spawnCount = 1;  // стартовый город учтен
+
+        // ”станавливаем порог спавна дл€ следующего города
         nextSpawnDistance = baseSpawnDistance;
     }
 
     void Update()
     {
-        // ≈сли поезд приблизилс€ к точке спавна на spawnBuffer метров, создаЄм город
-        if (boardController.TotalDistanceTraveled + spawnBuffer >= nextSpawnDistance)
+        // —павним новый город, если:
+        // 1. ќбщее число городов меньше _citys (включа€ стартовый)
+        // 2. ѕоезд приблизилс€ к точке спавна на spawnBuffer метров
+        if (spawnCount < _citys && boardController.TotalDistanceTraveled + spawnBuffer >= nextSpawnDistance)
         {
             SpawnCity();
             spawnCount++;
@@ -68,11 +80,15 @@ public class CitySpawner : MonoBehaviour
 
     void SpawnCity()
     {
-        // ¬ данном примере город по€вл€етс€ вдоль оси Z,
-        // а координаты X и Y зафиксированы (их можно настроить по требовани€м игры)
+        // √ород по€вл€етс€ вдоль оси Z с фиксированными координатами X и Y.
         Vector3 spawnPosition = new Vector3(0f, 0f, nextSpawnDistance);
+        SpawnCityAt(spawnPosition);
+    }
+
+    void SpawnCityAt(Vector3 spawnPosition)
+    {
         GameObject city = Instantiate(cityPrefab, spawnPosition, Quaternion.identity);
         spawnedCities.Add(city);
-        city.transform.SetParent(this.gameObject.transform);
+        city.transform.SetParent(transform);
     }
 }
