@@ -1,7 +1,10 @@
+using System;
+using System.Collections;
 using UnityEngine;
 
 public class DayTime : MonoBehaviour
 {
+    public static DayTime instanse;
 
     [SerializeField, Range(0, 24)] private float _timeOfDay;
     [SerializeField] private float _orbitSpeed;
@@ -17,8 +20,17 @@ public class DayTime : MonoBehaviour
     private int _hour;
     private int _minute;
 
+    public Action<int, int> GetTime;
+
     private void Awake()
     {
+        if (instanse != null)
+        {
+            Destroy(this);
+            return;
+        }
+        instanse = this;
+
         if (_sun == null)
         {
             _sun = GameObject.FindGameObjectWithTag("Sun").GetComponent<Light>();
@@ -39,7 +51,7 @@ public class DayTime : MonoBehaviour
 
     private void ProgressTime()
     {
-
+        int oldMinute = _minute;
         float currentTime = _timeOfDay / 24;
         float sunRotation = Mathf.Lerp(-90, 270, currentTime);
 
@@ -52,5 +64,11 @@ public class DayTime : MonoBehaviour
         _sun.intensity = _sunCurve.Evaluate(currentTime) * _intensityMultiplier;
 
         _timeOfDay %= 24;
+        if (oldMinute != _minute)
+            SetNewTime();
+    }
+    private void SetNewTime()
+    {
+        GetTime?.Invoke(_hour, _minute);
     }
 }

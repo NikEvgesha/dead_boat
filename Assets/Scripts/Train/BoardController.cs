@@ -1,5 +1,5 @@
 using System;
-using Unity.VisualScripting;
+using System.Collections;
 using UnityEngine;
 
 public class BoardController : MonoBehaviour
@@ -59,11 +59,21 @@ public class BoardController : MonoBehaviour
     }
     private void Start()
     {
-        SwitchDistance?.Invoke(TotalDistanceTraveled);
+        StartCoroutine(UpdateUiDistance());
         SwitchSpeed?.Invoke(currentSpeed);
         SwitchFuel?.Invoke(currentFuel, _maxFuel);
     }
-    private void Update()
+    IEnumerator UpdateUiDistance()
+    {   
+        while (this.enabled)
+        {
+            SwitchDistance?.Invoke(TotalDistanceTraveled);
+            yield return new WaitForSeconds(1);
+        }
+        yield return null;
+    }
+    
+        private void Update()
     {
         // Обновляем ввод только если водитель за рулём
         if (playerOnSeat)
@@ -88,11 +98,11 @@ public class BoardController : MonoBehaviour
     {
         float speed = currentSpeed;
         // Если таймер игнорирования ввода активен, обнуляем ввод
-        if (ignoreInputTime > 0)
+       /* if (ignoreInputTime > 0)
         {
             ignoreInputTime -= Time.fixedDeltaTime;
             inputValue = 0;
-        }
+        }*/
 
         if (playerOnSeat)
         {
@@ -101,7 +111,7 @@ public class BoardController : MonoBehaviour
                 // Ускорение: увеличиваем скорость
                 currentSpeed += acceleration * inputValue * Time.fixedDeltaTime;
                 currentSpeed = Mathf.Clamp(currentSpeed, 0, maxSpeed);
-                float consumption = fuelConsumptionRate * currentSpeed * Time.fixedDeltaTime;
+                float consumption = fuelConsumptionRate * Time.fixedDeltaTime;
                 ConsumeFuel(consumption);
             }
             else if (inputValue < 0)
@@ -127,8 +137,8 @@ public class BoardController : MonoBehaviour
 
         if (speed != currentSpeed)
             SwitchSpeed?.Invoke(currentSpeed);
-        if (currentSpeed > 0)
-            SwitchDistance?.Invoke(TotalDistanceTraveled);
+        //if (currentSpeed > 0)
+            //SwitchDistance?.Invoke(TotalDistanceTraveled);
 
 
     }
