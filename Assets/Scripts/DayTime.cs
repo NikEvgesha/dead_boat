@@ -1,5 +1,4 @@
 using UnityEngine;
-using static UnityEditor.Experimental.GraphView.GraphView;
 
 public class DayTime : MonoBehaviour
 {
@@ -9,6 +8,7 @@ public class DayTime : MonoBehaviour
     [SerializeField] private float _axisOffset;
     [SerializeField] private Gradient _nightLight;
     [SerializeField] private AnimationCurve _sunCurve;
+    [SerializeField] private float _intensityMultiplier;
 
     [Header("Objects")]
     [SerializeField] private Light _sun;
@@ -49,7 +49,7 @@ public class DayTime : MonoBehaviour
         _minute = Mathf.FloorToInt((_timeOfDay / (24f / 1440f) % 60));
 
         RenderSettings.ambientLight = _nightLight.Evaluate(currentTime);
-        _sun.intensity = _sunCurve.Evaluate(currentTime);
+        _sun.intensity = _sunCurve.Evaluate(currentTime) * _intensityMultiplier;
 
         _timeOfDay %= 24;
     }

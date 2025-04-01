@@ -37,6 +37,11 @@ public class LocalizationData : ScriptableObject
         return entry.Translations[langIndex];
     }
 
+    public string GetTranslation(string key, string language, string tag)
+    {
+        return GetTranslation(GetTranslation(tag, language) + key, language);
+    }
+
 
     public void SetData(List<string[]> rawData)
     {

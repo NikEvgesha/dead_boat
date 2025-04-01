@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 
@@ -23,12 +24,15 @@ public class PickableItem : MonoBehaviour
     private Rigidbody _rb;
     private BoxCollider _collider;
     private Transform _itemPoint;
+    private InfoUI _infoUI;
     public bool _inGravitySource;
 
 
     private Vector3 _velocity;
 
-    
+    private List<ItemTag> _tags;
+
+
 
     public ItemData Data { get { return _itemData; } }
 
@@ -37,12 +41,17 @@ public class PickableItem : MonoBehaviour
         _outline = GetComponent<Outline>();
         _collider = GetComponent<BoxCollider>();
         _rb = GetComponent<Rigidbody>();
+        _infoUI = GetComponent<InfoUI>();
+        CheckTags();
+        _infoUI.SetInfoText(Data.Name, _tags);
     }
+
 
 
     public void OnFocus(bool focus)
     {
         _outline.enabled = focus;
+        _infoUI.ShowInfo(focus);
     }
 
     public void PickUp(Transform point)
@@ -57,6 +66,7 @@ public class PickableItem : MonoBehaviour
 
         _rb.drag = _drag;
         _rb.angularDrag = _drag;
+        OnFocus(false);
     }
 
     public void Drop()
@@ -72,6 +82,24 @@ public class PickableItem : MonoBehaviour
 
         _rb.drag = _dragOrigin; // Reset drag
         _rb.angularDrag = 0.5f; // Default angular drag
+    }
+
+
+    public void PutToInventory()
+    {
+        if (Inventory.Instance.AddItem(this))
+        {
+            //SetVisibility(false);
+            gameObject.SetActive(false);
+        }
+    }
+
+    public void DropOutFromInventory(Transform dropOutPoint)
+    {
+        gameObject.SetActive(true);
+        transform.SetParent(null); // TODO:  Objects Parent
+        transform.position = dropOutPoint.position;
+        //_rb.velocity = dropOutPoint.transform.forward;
     }
 
     private void FixedUpdate()
@@ -145,21 +173,23 @@ public class PickableItem : MonoBehaviour
     }*/
 
 
-    public void PutToInventory()
-    {
-        if (Inventory.Instance.AddItem(this))
-        {
-            //SetVisibility(false);
-            gameObject.SetActive(false);
-        }
-    }
 
-    public void DropOutFromInventory(Transform dropOutPoint)
+    private void CheckTags()
     {
-        gameObject.SetActive(true);
-        transform.SetParent(null); // TODO:  Objects Parent
-        transform.position = dropOutPoint.position;
-        //_rb.velocity = dropOutPoint.transform.forward;
+        _tags = new();
+
+        if (gameObject.GetComponent<FuelItem>() != null)
+        {
+            _tags.Add(ItemTag.Fuel);
+        }
+
+        if (gameObject.TryGetComponent<SellableItem>(out SellableItem sellableItem))
+        {
+            if (sellableItem.Cost < 10)
+                _tags.Add(ItemTag.Trash);
+            else
+                _tags.Add(ItemTag.Valuable);
+        }
     }
 
 

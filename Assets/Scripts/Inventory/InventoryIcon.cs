@@ -1,11 +1,23 @@
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
 
-public class InventoryItem : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragHandler
+public class InventoryIcon : MonoBehaviour
 {
-    private ItemData _itemData;
+    private PickableItem _item;
+    private InventorySlot _parent;
+    public InventorySlot ParentSlot {
+        get { return _parent; }
+        set { _parent = value; }
+
+    }
+    public PickableItem Item {
+        get { return _item; }
+        set { _item = value; }
+
+    }
+
+
+
+/*    private ItemData _itemData;
     private Image _image;
     private Transform _newParent;
     private Transform _currentParent;
@@ -36,7 +48,7 @@ public class InventoryItem : MonoBehaviour, IDragHandler, IBeginDragHandler, IEn
         _image.raycastTarget = false;
         _newParent = transform.parent;
         transform.SetParent(InventoryUI.Instance.gameObject.transform, true);
-        InventoryUI.Instance.OnItemDrag(true);
+        //InventoryUI.Instance.OnItemDrag(true);
     }
 
     public void OnDrag(PointerEventData eventData)
@@ -54,7 +66,7 @@ public class InventoryItem : MonoBehaviour, IDragHandler, IBeginDragHandler, IEn
         {
             UpdateParent();
         }
-        InventoryUI.Instance.OnItemDrag(false);
+        //InventoryUI.Instance.OnItemDrag(false);
     }
 
     public void UpdateParent()
@@ -67,5 +79,5 @@ public class InventoryItem : MonoBehaviour, IDragHandler, IBeginDragHandler, IEn
     {
         Inventory.Instance.DropOutItem(_item);
         Destroy(gameObject);
-    }
+    }*/
 }

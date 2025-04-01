@@ -19,3 +19,21 @@ public enum PlayerStat
     Health,
     Stamina
 }
+
+
+public enum ItemTag
+{
+    Fuel,
+    Trash,
+    Valuable,
+    Weapon,
+    Medicine,
+    Dead
+}
+
+public enum LocalizationKeyType
+{
+    Settings,
+    Item,
+    Tag
+}
