@@ -70,6 +70,11 @@ public class CitySpawner : MonoBehaviour
         // Удаляем города, которые находятся позади поезда более, чем на removalDistance
         for (int i = spawnedCities.Count - 1; i >= 0; i--)
         {
+            if (spawnedCities[i] == null)
+            {
+                spawnedCities.RemoveAt(i);
+                continue;
+            }
             if (spawnedCities[i].transform.position.z < boardController.TotalDistanceTraveled - removalDistance)
             {
                 Destroy(spawnedCities[i]);

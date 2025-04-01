@@ -645,7 +645,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 5586
+  m_VersionIndex: 5619
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -1031,7 +1031,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 3456
+  m_VersionIndex: 3489
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -1178,6 +1178,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4290551272871840195}
+  - component: {fileID: 2793204920641031152}
   m_Layer: 0
   m_Name: Castle
   m_TagString: Untagged
@@ -1193,7 +1194,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4330852741907719252}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -2.3405776, y: -33.878895, z: 68.65115}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -1208,6 +1209,27 @@ Transform:
   - {fileID: 1836397535789639741}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2793204920641031152
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4330852741907719252}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4c2e347da3dea384b810450b7fcb44ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  halfExtents: {x: 60, y: 1, z: 60}
+  checkLayer:
+    serializedVersion: 2
+    m_Bits: 512
+  forbiddenTags:
+  - Decoration
+  - Location
+  _startClearTime: 1
+  _checkCount: 5
 --- !u!1 &5107650045227352438
 GameObject:
   m_ObjectHideFlags: 0
@@ -1853,7 +1875,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 5595
+  m_VersionIndex: 5628
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -2206,7 +2228,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 3459
+  m_VersionIndex: 3492
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -2381,7 +2403,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6296791041188165112, guid: 05f604e66fae63d4599472105a704c63, type: 3}
       propertyPath: m_VersionIndex
-      value: 4004
+      value: 4037
       objectReference: {fileID: 0}
     - target: {fileID: 6296791041188165112, guid: 05f604e66fae63d4599472105a704c63, type: 3}
       propertyPath: m_Positions.Array.data[0].x
@@ -4403,7 +4425,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7464334703897546927, guid: 17a1ca09335258f469401c69da786c0e, type: 3}
       propertyPath: m_VersionIndex
-      value: 4004
+      value: 4037
       objectReference: {fileID: 0}
     - target: {fileID: 7464334703897546927, guid: 17a1ca09335258f469401c69da786c0e, type: 3}
       propertyPath: m_Positions.Array.data[0].x
@@ -6401,7 +6423,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5551470719887267981, guid: a0ea19dd1e1e4ab4f8efd8c7b560d2e7, type: 3}
       propertyPath: m_VersionIndex
-      value: 4010
+      value: 4037
       objectReference: {fileID: 0}
     - target: {fileID: 8596813719866615049, guid: a0ea19dd1e1e4ab4f8efd8c7b560d2e7, type: 3}
       propertyPath: m_LocalPosition.x
@@ -6503,7 +6525,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1577310192922280822, guid: d447b966aac02a1498363c4b5e88fb74, type: 3}
       propertyPath: m_VersionIndex
-      value: 4019
+      value: 4037
       objectReference: {fileID: 0}
     - target: {fileID: 8792769348026869068, guid: d447b966aac02a1498363c4b5e88fb74, type: 3}
       propertyPath: m_Name
@@ -6529,7 +6551,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1805006251082178555, guid: 98cccce53a96346489a3bbcafad65d7d, type: 3}
       propertyPath: m_VersionIndex
-      value: 4004
+      value: 4037
       objectReference: {fileID: 0}
     - target: {fileID: 1805006251082178555, guid: 98cccce53a96346489a3bbcafad65d7d, type: 3}
       propertyPath: m_Positions.Array.data[0].x
@@ -8631,7 +8653,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8570615394438436982, guid: 102d8ec87edd77d4c91ec28b067401d1, type: 3}
       propertyPath: m_VersionIndex
-      value: 4004
+      value: 4037
       objectReference: {fileID: 0}
     - target: {fileID: 8570615394438436982, guid: 102d8ec87edd77d4c91ec28b067401d1, type: 3}
       propertyPath: m_Positions.Array.data[0].x

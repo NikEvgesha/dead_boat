@@ -78,6 +78,11 @@ public class DecorationSpawner : MonoBehaviour
         // Удаляем декорации, которые находятся позади игрока более чем на removalDistance
         for (int i = spawnedDecorations.Count - 1; i >= 0; i--)
         {
+            if (spawnedDecorations[i] == null)
+            {
+                spawnedDecorations.RemoveAt(i);
+                continue;
+            }
             if (spawnedDecorations[i].transform.position.z < boardController.TotalDistanceTraveled - removalDistance)
             {
                 Destroy(spawnedDecorations[i]);

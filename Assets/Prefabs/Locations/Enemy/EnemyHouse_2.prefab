@@ -1,5 +1,59 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &4558054668162341378
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3976008118154953375}
+  - component: {fileID: 5241868802262085516}
+  m_Layer: 9
+  m_Name: PointCenter
+  m_TagString: Location
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3976008118154953375
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4558054668162341378}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 53.7, y: 0, z: 67.5}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1062646629294479544}
+  m_Father: {fileID: 2253816316984831303}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &5241868802262085516
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4558054668162341378}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 27.5, y: 11.16, z: 27.58}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &5172536895180215199
 GameObject:
   m_ObjectHideFlags: 0
@@ -9,7 +63,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2253816316984831303}
-  m_Layer: 0
+  - component: {fileID: 5050894790141159643}
+  m_Layer: 9
   m_Name: EnemyHouse_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -29,20 +84,43 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1062646629294479544}
+  - {fileID: 3976008118154953375}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5050894790141159643
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5172536895180215199}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4c2e347da3dea384b810450b7fcb44ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  halfExtents: {x: 15, y: 1, z: 15}
+  checkLayer:
+    serializedVersion: 2
+    m_Bits: 512
+  forbiddenTags:
+  - Decoration
+  _startClearTime: 1
+  _checkCount: 5
+  _centerPoint: {fileID: 3976008118154953375}
+  _StartPoint: {fileID: 0}
+  _EndPoint: {fileID: 0}
 --- !u!1001 &2211662531917247071
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 2253816316984831303}
+    m_TransformParent: {fileID: 3976008118154953375}
     m_Modifications:
     - target: {fileID: 1156897478057585383, guid: 7d2552771411642438687192463b34e8, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 54
+      value: 0.29999924
       objectReference: {fileID: 0}
     - target: {fileID: 1156897478057585383, guid: 7d2552771411642438687192463b34e8, type: 3}
       propertyPath: m_LocalPosition.y
@@ -50,7 +128,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1156897478057585383, guid: 7d2552771411642438687192463b34e8, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 68.6
+      value: 1.0999985
       objectReference: {fileID: 0}
     - target: {fileID: 1156897478057585383, guid: 7d2552771411642438687192463b34e8, type: 3}
       propertyPath: m_LocalRotation.w
@@ -84,9 +162,13 @@ PrefabInstance:
       propertyPath: m_Name
       value: EnemyHouse
       objectReference: {fileID: 0}
+    - target: {fileID: 4952897445791554163, guid: 7d2552771411642438687192463b34e8, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
     - target: {fileID: 5799596627982552537, guid: 7d2552771411642438687192463b34e8, type: 3}
       propertyPath: m_VersionIndex
-      value: 4028
+      value: 4037
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
