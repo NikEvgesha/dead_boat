@@ -52,6 +52,7 @@ public class DayTime : MonoBehaviour
     private void ProgressTime()
     {
         int oldMinute = _minute;
+        int oldHour = _hour;
         float currentTime = _timeOfDay / 24;
         float sunRotation = Mathf.Lerp(-90, 270, currentTime);
 
@@ -64,7 +65,7 @@ public class DayTime : MonoBehaviour
         _sun.intensity = _sunCurve.Evaluate(currentTime) * _intensityMultiplier;
 
         _timeOfDay %= 24;
-        if (oldMinute != _minute)
+        if (oldHour != _hour)
             SetNewTime();
     }
     private void SetNewTime()

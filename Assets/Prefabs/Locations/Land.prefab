@@ -13,9 +13,10 @@ GameObject:
   - component: {fileID: 4549031322497970480}
   - component: {fileID: 4906976649035707527}
   - component: {fileID: 2468693665450094278}
+  - component: {fileID: 111546825834295481}
   m_Layer: 0
   m_Name: Water
-  m_TagString: Untagged
+  m_TagString: Water
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -185,6 +186,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2611535769867970105}
   m_Mesh: {fileID: 0}
+--- !u!65 &111546825834295481
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2611535769867970105}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 7, y: 0, z: 500}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &3423858955735557046
 GameObject:
   m_ObjectHideFlags: 0
@@ -982,10 +1004,8 @@ MonoBehaviour:
   m_VersionIndex: 6037
   m_IsSelectable: 1
   m_SelectedFaces: 
-  m_SelectedEdges:
-  - a: 51
-    b: 49
-  m_SelectedVertices: 3300000031000000
+  m_SelectedEdges: []
+  m_SelectedVertices: 
 --- !u!114 &1023497087587067615
 MonoBehaviour:
   m_ObjectHideFlags: 0

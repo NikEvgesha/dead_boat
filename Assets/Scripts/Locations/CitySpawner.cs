@@ -54,7 +54,7 @@ public class CitySpawner : MonoBehaviour
             _citys++;
         }
         // Спавним стартовый город сразу в (0, 0, 0)
-        SpawnCityAt(new Vector3(0f, 0f, 0f));
+        //SpawnCityAt(new Vector3(0f, 0f, 0f));
         spawnCount = 1;  // стартовый город учтен
 
         // Устанавливаем порог спавна для следующего города

@@ -13,6 +13,8 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float _gravity = 9.8f;
     [SerializeField] private float _fallSpeed = 2f;
     [SerializeField] private LayerMask _groundMask;
+    [SerializeField] private float _waterForce= 4f;
+    [SerializeField] private float _waterHeightCof = 0.2f;
 
     [SerializeField] private float _YRotationLimitMax = 80f;
     [SerializeField] private float _YRotationLimitMin = -80f;
@@ -30,6 +32,8 @@ public class PlayerMovement : MonoBehaviour
     private float _currentYRotation = 0f;
     private ControlUI _controlUI;
 
+    
+
     void Start()
     {
         _playerStats = GetComponent<PlayerStatsManager>();
@@ -38,6 +42,30 @@ public class PlayerMovement : MonoBehaviour
         _input = GetComponent<PlayerInput>();
         _controlUI = FindAnyObjectByType<ControlUI>();
         _controlUI.UseMobileSetup(ControlManager.Instance.UseTouchControl);
+    }
+    private void OnTriggerStay(Collider other)
+    {
+        if (other.CompareTag("Water"))
+        {
+            // Определяем уровень воды по верхней границе триггера
+            float waterSurfaceY = other.bounds.max.y;
+
+            // Предположим, что центр игрока + половина высоты контроллера - это точка, где располагается верхняя часть торса
+            float playerUpperY = transform.position.y + _controller.height * _waterHeightCof; // можно настроить коэффициент под нужный уровень
+
+            // Если верхняя часть торса находится ниже уровня воды, применяем силу для подъёма
+            if (playerUpperY < waterSurfaceY)
+            {
+
+                if (_input.JumpTriggered)
+                {
+                    _velocity.y = _jumpPower;
+                    return;
+                }
+                // Пример: добавляем силу вверх, можно настроить множитель для нужного эффекта
+                _velocity.y = _waterForce;
+            }
+        }
     }
 
 
