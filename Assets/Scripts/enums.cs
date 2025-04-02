@@ -1,5 +1,6 @@
 public enum ItemType
 {
+    Any,
     Weapon,
     Heal,
     Fuel,
@@ -36,4 +37,12 @@ public enum LocalizationKeyType
     Settings,
     Item,
     Tag
+}
+
+public enum ItemSize
+{
+    Any,
+    Small,
+    Medium,
+    Large
 }
