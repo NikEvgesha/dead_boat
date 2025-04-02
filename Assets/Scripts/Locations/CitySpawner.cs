@@ -46,6 +46,13 @@ public class CitySpawner : MonoBehaviour
 
     void Start()
     {
+        float playDistance = GameManager.Instance.PlayDistance;
+        _citys = 0;
+        while (playDistance> baseSpawnDistance)
+        {
+            playDistance = playDistance - baseSpawnDistance + (additionalDistanceIncrement * _citys);
+            _citys++;
+        }
         // Спавним стартовый город сразу в (0, 0, 0)
         SpawnCityAt(new Vector3(0f, 0f, 0f));
         spawnCount = 1;  // стартовый город учтен

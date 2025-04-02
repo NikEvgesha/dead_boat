@@ -16,9 +16,9 @@ public class PlayerInput : MonoBehaviour
         get
         {
             return _jump;
-            var tmp = _jump;
+            /*var tmp = _jump;
             _jump = false;
-            return tmp;
+            return tmp;*/
         }
         private set { }
     }

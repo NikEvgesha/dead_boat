@@ -39,10 +39,13 @@ public class DecorationSpawner : MonoBehaviour
     [Tooltip("Расстояние, которое симулируется как уже проеханное (назад от текущей позиции), для начального спавна")]
     public float simulateTravelDistance = 500f;
 
+    private float _stopSpawnDistance = 100000f;
+
     private List<GameObject> spawnedDecorations = new List<GameObject>();
 
     void Start()
     {
+        _stopSpawnDistance = GameManager.Instance.PlayDistance - (2*spawnAreaOffset.y + spawnAreaSize.y);
         // Запускаем корутину для симуляции начального спавна
         StartCoroutine(SimulateInitialSpawns());
     }
@@ -69,7 +72,7 @@ public class DecorationSpawner : MonoBehaviour
     void Update()
     {
         // Если фактическое пройденное расстояние достигло порога спавна, создаем декорацию
-        if (boardController.TotalDistanceTraveled >= nextSpawnDistance)
+        if (boardController.TotalDistanceTraveled >= nextSpawnDistance && nextSpawnDistance < _stopSpawnDistance)
         {
             SpawnDecoration(nextSpawnDistance);
             nextSpawnDistance += spawnInterval;
@@ -122,6 +125,7 @@ public class DecorationSpawner : MonoBehaviour
             Vector3 spawnPosition = new Vector3(spawnPoint2D.x, 0f, spawnPoint2D.y);
             GameObject decoration = Instantiate(decorationPrefab, spawnPosition, Quaternion.identity);
             spawnedDecorations.Add(decoration);
+            decoration.transform.SetParent(this.gameObject.transform);
         }
         else
         {

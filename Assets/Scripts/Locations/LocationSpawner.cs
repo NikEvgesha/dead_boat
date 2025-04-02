@@ -18,11 +18,14 @@ public class LocationSpawner : MonoBehaviour
     [Header("Оптимизация")]
     public float removalDistance = 200f;                // Расстояние позади поезда, после которого объект удаляется
 
+    private float _stopSpawnDistance = 100000f;
+
     private float lastSpawnZ;                           // Координата Z последнего созданного объекта
     private List<GameObject> spawnedLocations = new List<GameObject>();
 
     void Start()
     {
+        _stopSpawnDistance = GameManager.Instance.PlayDistance - spawnThreshold;
         // Инициализируем lastSpawnZ значением текущего пройденного расстояния,
         // чтобы объекты спавнились впереди поезда
         lastSpawnZ = boardController.TotalDistanceTraveled;
@@ -31,7 +34,7 @@ public class LocationSpawner : MonoBehaviour
     void Update()
     {
         // Если поезд приближается к точке спавна нового объекта, создаём его
-        if (boardController.TotalDistanceTraveled + spawnThreshold > lastSpawnZ)
+        if (boardController.TotalDistanceTraveled + spawnThreshold > lastSpawnZ && lastSpawnZ < _stopSpawnDistance )
         {
             SpawnLocation();
         }

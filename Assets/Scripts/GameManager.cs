@@ -11,6 +11,9 @@ public class GameManager : MonoBehaviour
     public PlayerStatsManager Player { get { return _player; } }
 
 
+    [Header("Дистанция всей игры")]
+    public float PlayDistance = 100000f;
+
 
     private void Awake()
     {
@@ -32,4 +35,5 @@ public class GameManager : MonoBehaviour
             _player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerStatsManager>();
         }
     }
+    
 }

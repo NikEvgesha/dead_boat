@@ -20,6 +20,7 @@ public class DriverSeatTrigger : MonoBehaviour
 
     // Ссылка на компонент PlayerInput для отслеживания прыжка
     private PlayerInput playerInput;
+    private bool _endGame; 
 
     // Сохраняем исходную позицию и поворот игрока для возврата при выходе
    // private Vector3 originalPlayerPosition;
@@ -34,17 +35,21 @@ public class DriverSeatTrigger : MonoBehaviour
         {
             playerCharacter = playerInput.gameObject;
         }
+        trainController.EndGame += EndGame;
     }
 
     private void OnTriggerEnter(Collider other)
     {
         // Если объект, входящий в триггер, является игроком, и он ещё не в режиме вождения
-        if (!isDriving && other.gameObject == playerCharacter)
+        if (!isDriving && other.gameObject == playerCharacter && !_endGame)
         {
             EnterDrivingMode();
         }
     }
-
+    private void EndGame()
+    {
+        _endGame = true;
+    }
     void EnterDrivingMode()
     {
         // Сохраняем исходную позицию и поворот игрока (на случай возврата)
