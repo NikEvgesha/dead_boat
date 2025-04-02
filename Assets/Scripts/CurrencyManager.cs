@@ -71,4 +71,15 @@ public class CurrencyManager : MonoBehaviour
     {
         return _balance[type];
     }
+
+    public bool CheckEnoughCurrency(CurrencyType type, int amount)
+    {
+        if (amount <= _balance[type])
+        {
+            return true;
+        }
+
+        // TODO: show hint
+        return false;
+    }
 }

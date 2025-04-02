@@ -39,9 +39,20 @@ public class PlayerInput : MonoBehaviour
     {
         get
         {
-            var tmp = _interaction;
-            _interaction = false;
-            return tmp;
+           return _interaction;
+            //_interaction = false;
+            //return tmp;
+        }
+        private set { }
+    }
+
+    public bool InteractionHold
+    {
+        get
+        {
+            return _interactionHold;
+            //_interaction = false;
+            //return tmp;
         }
         private set { }
     }
@@ -49,6 +60,7 @@ public class PlayerInput : MonoBehaviour
     private bool _jump;
     private bool _sprint;
     private bool _interaction;
+    private bool _interactionHold;
     private bool _pickUp;
     private bool _inTrain;
 
@@ -71,6 +83,7 @@ public class PlayerInput : MonoBehaviour
             _jump = _touchControls.jumpButton.IsTriggered;
             _pickUp = _touchControls.pickUpButton.IsTriggered;
             _interaction = _touchControls.putToInventoryButton.IsTriggered;
+            _interactionHold = _touchControls.putToInventoryButton.IsHolded;
             _sprint = _touchControls.sprintButton.IsHolded;
         }
         else
@@ -78,6 +91,7 @@ public class PlayerInput : MonoBehaviour
             _jump = Input.GetKeyDown(KeyCode.Space);
             _pickUp = Input.GetMouseButtonDown(0);
             _interaction = Input.GetKeyDown(KeyCode.E);
+            _interactionHold = Input.GetKey(KeyCode.E);
             _sprint = Input.GetKey(KeyCode.LeftShift);
         }
 

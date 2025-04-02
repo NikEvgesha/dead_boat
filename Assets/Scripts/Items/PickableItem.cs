@@ -208,4 +208,9 @@ public class PickableItem : MonoBehaviour
     }
 
 
+    public GameObject GetModel()
+    {
+        return _visualObj;
+    }
+
 }
