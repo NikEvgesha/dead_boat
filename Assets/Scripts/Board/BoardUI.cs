@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -30,7 +31,7 @@ public class BoardUI : MonoBehaviour
     private void SwitchFuel(float fuel,float maxFuel)
     {
         float fuelPercent = (fuel / maxFuel);
-        _fuel.text = (int)(fuelPercent*100) + " %";
+        _fuel.text = (int)Math.Ceiling(fuelPercent*100) + " %";
         _fuelDisplay.size = fuelPercent;
     }
     private void SwitcTime(int hour, int minute)

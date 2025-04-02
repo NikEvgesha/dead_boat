@@ -62,14 +62,17 @@ public class PlayerItemPickUp : MonoBehaviour
         {
             if (hit.transform.TryGetComponent(out PickableItem item))
             {
-                if (_raycastHitItem != null && _raycastHitItem != item)
+                if (item.enabled)
                 {
-                    _raycastHitItem.OnFocus(false);
-                }
-                _raycastHitItem = item;
-                item.OnFocus(true);
+                    if (_raycastHitItem != null && _raycastHitItem != item)
+                    {
+                        _raycastHitItem.OnFocus(false);
+                    }
+                    _raycastHitItem = item;
+                    item.OnFocus(true);
 
-                hitted = true;
+                    hitted = true;
+                }
             } 
         } 
         if (!hitted)

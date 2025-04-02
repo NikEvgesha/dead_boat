@@ -24,6 +24,7 @@ public class LocalizationManager : MonoBehaviour
             Debug.LogWarning("LocalizationManager уже существует! Удаляем дубликат.");
             Destroy(gameObject);
         }
+        LocalizationProvider = GetComponent<LocalizationProvider>();
     }
 
     private void OnEnable()
