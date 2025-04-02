@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -30,11 +31,14 @@ public class PickableItem : MonoBehaviour
 
     private Vector3 _velocity;
 
-    private List<ItemTag> _tags;
+    private HashSet<ItemTag> _tags;
+    private bool _usable;
 
 
-
+    public HashSet<ItemTag> Tags => _tags;
     public ItemData Data { get { return _itemData; } }
+    public bool Usable => _usable;
+
 
     private void OnEnable()
     {
@@ -90,7 +94,7 @@ public class PickableItem : MonoBehaviour
         if (Inventory.Instance.AddItem(this))
         {
             //SetVisibility(false);
-            gameObject.SetActive(false);
+            //gameObject.SetActive(false);
         }
     }
 
@@ -190,6 +194,17 @@ public class PickableItem : MonoBehaviour
             else
                 _tags.Add(ItemTag.Valuable);
         }
+
+        if (gameObject.TryGetComponent <UsableItem>(out UsableItem usableItem))
+        {
+            _usable = true;
+        }
+
+    }
+
+    public void SetKinematic(bool kinematic)
+    {
+        _rb.isKinematic = kinematic;
     }
 
 

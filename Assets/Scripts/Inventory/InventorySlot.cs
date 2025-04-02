@@ -3,7 +3,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 [RequireComponent(typeof(Image))]
-public class InventorySlot : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragHandler
+public class InventorySlot : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragHandler, IPointerClickHandler, IDropHandler
 {
 /*    [SerializeField] private Transform _container;
     [SerializeField] private InventoryItem _itemIconPrefab;*/
@@ -15,25 +15,32 @@ public class InventorySlot : MonoBehaviour, IDragHandler, IBeginDragHandler, IEn
     [SerializeField] private Text _tag;
     [SerializeField] private Text _price;
 
+    [SerializeField] private GameObject _activeMarker;
+
     [SerializeField] private InventoryIcon _container;
 
 
     private Transform _newParent;
     private Transform _currentParent;
-
+    private bool _isQuickSlot;
     protected PickableItem _item;
     public PickableItem CurrentItem { get { return _item; } }
     public bool Empty => (_item == null);
+    public bool QuickSlot { get; set; }
+    public bool Active { get; set; }
+    public int ID { get; set; }
 
 
     public virtual void InitSlot(PickableItem item)
     {
         if (item == null)
         {
+            UpdateParent();
             //_icon.enabled = false;
             _item = null;
             _container.gameObject.SetActive(false);
-            gameObject.SetActive(false);
+            if (!QuickSlot || !InventoryUI.Instance.IsOpen)
+                gameObject.SetActive(false);
             return;
         }
 
@@ -44,14 +51,9 @@ public class InventorySlot : MonoBehaviour, IDragHandler, IBeginDragHandler, IEn
         _container.ParentSlot = this;
         _currentParent = transform;
 
-        if (_name != null)
+        if (!QuickSlot)
         {
             _name.text = LocalizationManager.Instance.LocalizationData.GetTranslation(item.Data.Name, LocalizationManager.Instance.CurrentLanguage, LocalizationKeyType.Item.ToString());
-
-        }
-
-        if (_price != null)
-        {
             if (item.gameObject.TryGetComponent<SellableItem>(out SellableItem sell))
             {
                 _price.text = sell.Cost.ToString() + "$"; // use coin icon instead
@@ -60,9 +62,6 @@ public class InventorySlot : MonoBehaviour, IDragHandler, IBeginDragHandler, IEn
             {
                 _price.text = "";
             }
-        }
-        if (_tag != null)
-        {
             if (item.gameObject.GetComponent<FuelItem>() != null)
             {
                 _tag.text = LocalizationManager.Instance.LocalizationData.GetTranslation(ItemTag.Fuel.ToString(), LocalizationManager.Instance.CurrentLanguage, LocalizationKeyType.Tag.ToString());
@@ -149,8 +148,37 @@ public class InventorySlot : MonoBehaviour, IDragHandler, IBeginDragHandler, IEn
     public void DropOut()
     {
         Inventory.Instance.DropOutItem(_item, this);
-        //Destroy(gameObject);
     }
 
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (!QuickSlot)
+            DropOut();
+        else if (ControlManager.Instance.UseTouchControl)
+        {
+            SwitchActive(true);
+        }
+    }
+
+
+    public void OnDrop(PointerEventData eventData)
+    {
+        InventorySlot slot = eventData.pointerDrag.GetComponent<InventorySlot>();
+
+        if (slot == null || (!slot.Empty && !slot.CurrentItem.Usable)) return;
+
+        Inventory.Instance.TrySwitch(slot, this);
+
+    }
+
+
+    public void SwitchActive(bool active)
+    {
+        if (!QuickSlot) return;
+
+        Active = active;
+        _activeMarker.SetActive(active);
+    }
 
 }

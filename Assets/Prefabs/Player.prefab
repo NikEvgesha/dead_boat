@@ -31,6 +31,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 5816290059162164478}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1041231821080418451
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8641746225290527117}
+  m_Layer: 7
+  m_Name: HandPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8641746225290527117
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1041231821080418451}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.217, y: 0, z: 1.321}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5816290059162164478}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3724417479886405352
 GameObject:
   m_ObjectHideFlags: 0
@@ -93,6 +124,8 @@ MonoBehaviour:
   _groundMask:
     serializedVersion: 2
     m_Bits: 64
+  _waterForce: 4
+  _waterHeightCof: 0.2
   _YRotationLimitMax: 80
   _YRotationLimitMin: -80
   _onPlatform: 0
@@ -213,6 +246,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2137717012945004722}
   - component: {fileID: 4509977179953925714}
+  - component: {fileID: 1795777244992373194}
   m_Layer: 7
   m_Name: Inventory
   m_TagString: Untagged
@@ -247,10 +281,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ada55d443319e974e9bd93eb3323fe53, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _capacityTotal: 25
+  _capacity: 10
   _available: 10
   _quickSlotsCapacity: 5
   _dropOutPoint: {fileID: 3763508239936990894}
+  _activeItemManager: {fileID: 0}
+--- !u!114 &1795777244992373194
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4517758769131730985}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1f8b611bec7821141b39f1daf517ff8c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _handPoint: {fileID: 8641746225290527117}
 --- !u!1 &7898971971557895287
 GameObject:
   m_ObjectHideFlags: 0
@@ -283,6 +331,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3763508239936990894}
+  - {fileID: 8641746225290527117}
   m_Father: {fileID: 6360404398774814119}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!20 &4409945978509152069

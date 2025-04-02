@@ -14,7 +14,7 @@ public class InfoUI : MonoBehaviour
     }
 
 
-    public void SetInfoText(string name, List<ItemTag> tags)
+    public void SetInfoText(string name, HashSet<ItemTag> tags)
     {
 
         _itemName.text = LocalizationManager.Instance.LocalizationData.GetTranslation(name, LocalizationManager.Instance.CurrentLanguage, LocalizationKeyType.Item.ToString());
