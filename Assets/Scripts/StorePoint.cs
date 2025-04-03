@@ -14,12 +14,9 @@ public class StorePoint : MonoBehaviour
     [SerializeField] private Text _price;
     [SerializeField] private Text _name;
     [SerializeField] private Image _buyProgress;
-    [SerializeField] private GameObject _hintDesctop;
-    [SerializeField] private GameObject _hintTouch;
 
     [SerializeField] private bool _staticItem;
 
-    private PlayerInput _input;
     private bool _active;
     private float _progress;
     private bool _buyInProgress;
@@ -39,8 +36,6 @@ public class StorePoint : MonoBehaviour
             Instantiate(_itemPrefab.GetModel(), transform);
             _price.text = _storeItem.price.ToString() + "$";
             _name.text = LocalizationManager.Instance.LocalizationData.GetTranslation(_itemPrefab.Data.name, LocalizationManager.Instance.CurrentLanguage, LocalizationKeyType.Item.ToString());
-            _hintTouch.SetActive(ControlManager.Instance.UseTouchControl);
-            _hintDesctop.SetActive(!ControlManager.Instance.UseTouchControl);
 
             _BuyInfoCanvas.SetActive(false);
             _PriceCanvas.SetActive(false);
@@ -72,8 +67,6 @@ public class StorePoint : MonoBehaviour
         {
             _BuyInfoCanvas.SetActive(true);
             _active = true;
-            if (_input == null)
-                _input = other.gameObject.GetComponent<PlayerInput>();
         }
     }
 
@@ -90,9 +83,9 @@ public class StorePoint : MonoBehaviour
 
     private void Update()
     {
-        if (!_active || !_input || _buyInProgress) return;
+        if (!_active  || _buyInProgress) return;
 
-        if (_input.Interaction)
+        if (PlayerInput.Instance.Interaction)
         {
             TryBuy();
         }
@@ -111,7 +104,7 @@ public class StorePoint : MonoBehaviour
 
     private IEnumerator BuyProcess()
     {
-        while ((_buyTouchPanel.Hold || _input.InteractionHold) && _progress < 1f)
+        while ((_buyTouchPanel.Hold || PlayerInput.Instance.InteractionHold) && _progress < 1f)
         {
             _progress += Time.deltaTime;
             _buyProgress.fillAmount = _progress;

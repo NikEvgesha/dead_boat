@@ -1,4 +1,5 @@
 using System;
+using Unity.VisualScripting;
 using UnityEngine;
 
 [Serializable]
@@ -8,18 +9,30 @@ public struct TouchControls
     public OnScreenButton sprintButton;
     public OnScreenButton pickUpButton;
     public OnScreenButton putToInventoryButton;
-    public OnScreenButton buyButton;
+    public OnScreenButton attachButton;
     public OnScreenJoystick moveJoystick;
     public CameraTouchController cameraTouchController;
 }
+
+[Serializable]
+public struct DesktopHints
+{
+    public GameObject common;
+    public GameObject pickUp;
+    public GameObject putToInventory;
+    public GameObject attach;
+}
 public class ControlUI : MonoBehaviour
 {
+    private static ControlUI _instance;
+    public static ControlUI Instance => _instance;
     [SerializeField]
     private GameObject _mobileUI;
     [SerializeField]
     private GameObject _desktopUI;
 
     [SerializeField] private TouchControls _touchControls;
+    [SerializeField] private DesktopHints _descktopHints;
 
     private bool _isMobile;
 
@@ -29,12 +42,24 @@ public class ControlUI : MonoBehaviour
         _mobileUI.SetActive(isMobile);
         _desktopUI.SetActive(!isMobile);
     }
-    
 
-/*    public void SwitchPlatformControls(bool onPlatform)
+    private void Awake()
     {
-        _touchControls.jumpButton.gameObject.SetActive(onPlatform);
-    }*/
+        if (_instance == null)
+        {
+            _instance = this;
+            //DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+
+    /*    public void SwitchPlatformControls(bool onPlatform)
+        {
+            _touchControls.jumpButton.gameObject.SetActive(onPlatform);
+        }*/
 
     public TouchControls GetTouchControls()
     {
@@ -44,13 +69,31 @@ public class ControlUI : MonoBehaviour
 
     public void ShowPickUpButton(bool visible)
     {
-        _touchControls.pickUpButton.gameObject.SetActive(visible);
-        _touchControls.putToInventoryButton.gameObject.SetActive(visible);
+        if (_isMobile)
+            _touchControls.pickUpButton.gameObject.SetActive(visible);
+        else
+            _descktopHints.pickUp.SetActive(visible);
+    }
+
+    public void ShowPutToInventoryButton(bool visible)
+    {
+        if (_isMobile)
+            _touchControls.putToInventoryButton.gameObject.SetActive(visible);
+        else
+            _descktopHints.putToInventory.SetActive(visible);
     }
 
     public void OnItemPickUp(bool picked)
     {
         _touchControls.putToInventoryButton.gameObject.SetActive(!picked);
+    }
+
+    public void ShowAttachButton(bool visible)
+    {
+        if (_isMobile)
+            _touchControls.attachButton.gameObject.SetActive(visible);
+        else
+            _descktopHints.attach.SetActive(visible);
     }
 
 }

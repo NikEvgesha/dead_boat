@@ -28,13 +28,8 @@ public class DriverSeatTrigger : MonoBehaviour
 
     private void Start()
     {
-        playerCharacter = FindAnyObjectByType<PlayerMovement>().gameObject;
+        playerCharacter = GameManager.Instance.Player.gameObject;
         // Получаем ссылку на компонент PlayerInput у игрока
-        playerInput = playerCharacter.GetComponent<PlayerInput>();
-        if (playerInput != null && playerCharacter == null) 
-        {
-            playerCharacter = playerInput.gameObject;
-        }
         trainController.EndGame += EndGame;
     }
 
@@ -57,9 +52,9 @@ public class DriverSeatTrigger : MonoBehaviour
         //originalPlayerRotation = playerCharacter.transform.rotation;
 
         // Отключаем компонент обычного движения, если он есть
-        if (playerInput != null)
+        if (PlayerInput.Instance != null)
         {
-            playerInput.SitTrain(true);
+            PlayerInput.Instance.SitTrain(true);
             //movementComponent.enabled = false;
 
         }
@@ -77,7 +72,7 @@ public class DriverSeatTrigger : MonoBehaviour
     private void Update()
     {
         // Если игрок в режиме вождения, проверяем срабатывание прыжка через PlayerInput
-        if (isDriving && playerInput != null && playerInput.JumpTriggered)
+        if (isDriving && PlayerInput.Instance != null && PlayerInput.Instance.JumpTriggered)
         {
             ExitDrivingMode();
         }
@@ -86,9 +81,9 @@ public class DriverSeatTrigger : MonoBehaviour
     void ExitDrivingMode()
     {
         // Включаем обратно компонент обычного движения, если он был отключён
-        if (playerInput != null)
+        if (PlayerInput.Instance != null)
         {
-            playerInput.SitTrain(false);
+            PlayerInput.Instance.SitTrain(false);
         }
         // Отвязываем игрока от сиденья
         playerCharacter.transform.SetParent(trainController.transform);

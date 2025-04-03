@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(PlayerMovement))]
-[RequireComponent(typeof(PlayerInput))]
 public class PlayerStatsManager : MonoBehaviour
 {
     [SerializeField] private float _maxStamina = 100f;
@@ -15,8 +14,6 @@ public class PlayerStatsManager : MonoBehaviour
 
     private Dictionary<PlayerStat, float> _stats;
     private Dictionary<PlayerStat, float> _statsMax;
-
-    private PlayerInput _input;
 
     public Action NoStamina;
     public Action NoHealth;
@@ -62,7 +59,6 @@ public class PlayerStatsManager : MonoBehaviour
 
     private void Awake()
     {
-        _input = GetComponent<PlayerInput>();
         _stats = new()
         {
             { PlayerStat.Health, Health},
@@ -80,7 +76,7 @@ public class PlayerStatsManager : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (_input.Sprint)
+        if (PlayerInput.Instance.Sprint)
         {
             if (Stamina > 0)
                 Stamina -= _staminaConsumptionRate * Time.fixedDeltaTime;

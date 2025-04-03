@@ -46,3 +46,19 @@ public enum ItemSize
     Medium,
     Large
 }
+
+
+public enum ItemStatus
+{
+    Free,
+    Grabbed,
+    Attached,
+    InInventory
+}
+
+
+public enum StoreType
+{
+    Items,
+    Enemies
+}

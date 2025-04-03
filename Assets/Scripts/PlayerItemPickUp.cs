@@ -1,6 +1,5 @@
 using UnityEngine;
 
-[RequireComponent(typeof(PlayerInput))]
 public class PlayerItemPickUp : MonoBehaviour
 {
     [SerializeField] private Transform _itemJoint;
@@ -8,7 +7,6 @@ public class PlayerItemPickUp : MonoBehaviour
     [SerializeField] private float _pickUpDistance = 2f;
     [SerializeField] private LayerMask _layerMask;
 
-    private PlayerInput _input;
     private PickableItem _raycastHitItem;
     private PickableItem _grabbedItem;
     private ControlUI _controlUI;
@@ -17,13 +15,13 @@ public class PlayerItemPickUp : MonoBehaviour
 
     private void Start()
     {
-        _input = GetComponent<PlayerInput>();
         _controlUI = FindAnyObjectByType<ControlUI>();
     }
 
 
     private void Update()
     {
+        if (ControlManager.Instance.CursorActive) return;
         if (_grabbedItem && !_grabbedItem.Grabbed)
         {
             DropItem();
@@ -34,9 +32,8 @@ public class PlayerItemPickUp : MonoBehaviour
         {
             CheckRaycast();
         }
-        
 
-        if (_input.PickUp)
+        if (PlayerInput.Instance.PickUp)
         {
             if (_grabbedItem != null)
             {
@@ -47,9 +44,14 @@ public class PlayerItemPickUp : MonoBehaviour
             } 
         }
 
-        if (_input.Interaction)
+        if (PlayerInput.Instance.Interaction)
         {
             TryPutToInventory();
+        }
+
+        if (PlayerInput.Instance.Attach)
+        {
+            TryAttach();
         }
         
     }
@@ -85,7 +87,7 @@ public class PlayerItemPickUp : MonoBehaviour
         }
         if (_hitted != hitted)
         {
-            _controlUI.ShowPickUpButton(hitted);
+            //_controlUI.ShowPickUpButton(hitted);
             _hitted = hitted;
         }
             
@@ -93,7 +95,7 @@ public class PlayerItemPickUp : MonoBehaviour
 
     private void TryPickupObject()
     {
-        if (_raycastHitItem != null)
+        if (_raycastHitItem != null && !_raycastHitItem.Attached)
         {
             _grabbedItem = _raycastHitItem;
             _grabbedItem.PickUp(_itemJoint);
@@ -116,6 +118,21 @@ public class PlayerItemPickUp : MonoBehaviour
         _grabbedItem.Drop();
         _grabbedItem = null;
         _controlUI.OnItemPickUp(false);
+    }
+
+
+    private void TryAttach()
+    {
+        if (_grabbedItem != null)
+        {
+            if (_grabbedItem.TrySetAttach(true))
+            {
+                _grabbedItem = null;
+            }
+        } else if (_raycastHitItem != null)
+        {
+            _raycastHitItem.TrySetAttach(!_raycastHitItem.Attached);
+        }
     }
 
 }

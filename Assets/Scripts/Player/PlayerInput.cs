@@ -2,6 +2,8 @@ using UnityEngine;
 
 public class PlayerInput : MonoBehaviour
 {
+    private static PlayerInput _instance;
+    public static PlayerInput Instance { get { return _instance; } private set { } }
     public Vector3 Movement { get; private set; }
     public Vector2 Rotation { get; private set; }
 
@@ -58,6 +60,9 @@ public class PlayerInput : MonoBehaviour
     }
 
 
+    public bool Attach => _attach;
+    public bool Inventory => _inventory;
+
 
     private bool _jump;
     private bool _sprint;
@@ -65,7 +70,21 @@ public class PlayerInput : MonoBehaviour
     private bool _interactionHold;
     private bool _pickUp;
     private bool _inTrain;
+    private bool _attach;
+    private bool _inventory;
 
+
+    private void Awake()
+    {
+        if (_instance == null)
+        {
+            _instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
     private void Start()
     {
         _touchControls = FindAnyObjectByType<ControlUI>().GetTouchControls();
@@ -87,6 +106,7 @@ public class PlayerInput : MonoBehaviour
             _interaction = _touchControls.putToInventoryButton.IsTriggered;
             _interactionHold = _touchControls.putToInventoryButton.IsHolded;
             _sprint = _touchControls.sprintButton.IsHolded;
+            _attach = _touchControls.attachButton.IsTriggered;
         }
         else
         {
@@ -95,6 +115,8 @@ public class PlayerInput : MonoBehaviour
             _interaction = Input.GetKeyDown(KeyCode.E);
             _interactionHold = Input.GetKey(KeyCode.E);
             _sprint = Input.GetKey(KeyCode.LeftShift);
+            _attach = Input.GetKeyDown(KeyCode.Z);
+            _inventory = Input.GetKeyDown(KeyCode.B);
         }
 
         if (Input.GetKeyDown(KeyCode.Tab))

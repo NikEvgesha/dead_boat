@@ -1,17 +1,47 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class SellPoint : MonoBehaviour
 {
+    [SerializeField] private StoreType _type;
+    [SerializeField] private MoneyBag _moneyBagPrefab;
+    [SerializeField] private Transform _moneyBagPoint;
+
+
+    private MoneyBag _moneyBag;
 
     // TODO: spawn money bag
+
 
     private void OnTriggerEnter(Collider other)
     {
 
-        if (other.TryGetComponent<SellableItem>(out SellableItem item))
+        if (other.TryGetComponent<PickableItem>(out PickableItem item))
         {
-            CurrencyManager.Instance.AddCurrency(CurrencyType.Coins, item.Cost);
+            int cost = 0;
+            switch (_type)
+            {
+                case StoreType.Items:
+                    if (other.TryGetComponent<SellableItem>(out SellableItem sellable))
+                        cost = sellable.GetReward();
+                    break;
+                case StoreType.Enemies:
+                    if (other.TryGetComponent<EnemyReward>(out EnemyReward rewarded))
+                        cost = rewarded.GetReward();
+                    break;
+            }
+            if (_moneyBag == null)
+            {
+                _moneyBag = Instantiate(_moneyBagPrefab, _moneyBagPoint);
+                _moneyBag.Money = cost;
+            } else
+            {
+                _moneyBag.Money += cost;
+            }
             Destroy(other.gameObject);
+
+            
         }
     }
 

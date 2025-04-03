@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 
@@ -21,6 +22,8 @@ public class PickableItem : MonoBehaviour
     [SerializeField] private float _dropVelocityMultiplier = 2f;
     [SerializeField] private float _kinematicDistance = 30f;
 
+    private ItemStatus _status;
+    public ItemStatus Status => _status;
     public bool Grabbed { get; private set; }
 
     private Outline _outline;
@@ -28,8 +31,11 @@ public class PickableItem : MonoBehaviour
     private BoxCollider _collider;
     private Transform _itemPoint;
     private InfoUI _infoUI;
-    public bool _inGravitySource;
     private Transform _player;
+    private ItemAttacher _attacher;
+    private bool _attached;
+
+    public bool Attached => _attached;
 
 
     private Vector3 _velocity;
@@ -49,6 +55,7 @@ public class PickableItem : MonoBehaviour
         _collider = GetComponent<BoxCollider>();
         _rb = GetComponent<Rigidbody>();
         _infoUI = GetComponent<InfoUI>();
+        _attacher = GetComponent<ItemAttacher>();
         CheckTags();
         _infoUI.SetInfoText(Data.Name, _tags);
         if (_player != null)
@@ -57,6 +64,7 @@ public class PickableItem : MonoBehaviour
 
     private void Start()
     {
+        _status = ItemStatus.Free;
         _player = GameManager.Instance.Player.transform;
         if (_player != null)
             StartCoroutine(KinematicCheck());
@@ -89,86 +97,81 @@ public class PickableItem : MonoBehaviour
     {
         _outline.enabled = focus;
         _infoUI.ShowInfo(focus);
+        CheckPossibleActions(focus);
     }
 
     public void PickUp(Transform point)
     {
-        //transform.SetParent(point);
+        if (_status != ItemStatus.Free) return;
+
         Grabbed = true;
         _itemPoint = point;
         _rb.useGravity = false;
         _rb.freezeRotation = true;
-
-        //_rb.isKinematic = true;
         _useKinematicCheck = false;
-
         _rb.drag = _drag;
         _rb.angularDrag = _drag;
         OnFocus(false);
+        _attacher.CanAttach += CanAttachChange;
+
+        _status = ItemStatus.Grabbed;
+    }
+
+
+    private void CanAttachChange(bool canAttach)
+    {
+        CheckPossibleActions();
     }
 
     public void Drop()
     {
-        //transform.SetParent(null);
+        if (_status != ItemStatus.Grabbed && _status != ItemStatus.Attached) return;
+
         Grabbed = false;
         _itemPoint = null;
         _rb.freezeRotation = false;
         _rb.useGravity = true;
         _rb.velocity = _velocity * _dropVelocityMultiplier;
-
-        //_rb.isKinematic = false;
         _useKinematicCheck = true;
+        _rb.drag = _dragOrigin;
+        _rb.angularDrag = 0.5f;
+        _attacher.CanAttach -= CanAttachChange;
 
-        _rb.drag = _dragOrigin; // Reset drag
-        _rb.angularDrag = 0.5f; // Default angular drag
+        _status = ItemStatus.Free;
     }
 
 
     public void PutToInventory()
     {
+        if (_status != ItemStatus.Free) return;
+
         if (Inventory.Instance.AddItem(this))
         {
-            //SetVisibility(false);
-            //gameObject.SetActive(false);
             _useKinematicCheck = false;
+            TrySetAttach(false);
+            _status = ItemStatus.InInventory;
         }
+
     }
 
     public void DropOutFromInventory(Transform dropOutPoint)
     {
+        if (_status != ItemStatus.InInventory) return;
+
         gameObject.SetActive(true);
-        transform.SetParent(null); // TODO:  Objects Parent
+        transform.SetParent(null);
         transform.position = dropOutPoint.position;
-        //_rb.velocity = dropOutPoint.transform.forward;
         _useKinematicCheck = true;
+
+        _status = ItemStatus.Free;
     }
 
     private void FixedUpdate()
     {
-        /*        if (_itemPoint != null)
-                {
-                    Vector3 targetVelocity = _rb.velocity;
-                    Vector3 predictedPosition = _itemPoint.position + targetVelocity * Time.fixedDeltaTime;
-
-                    float distance = Vector3.Distance(transform.position, predictedPosition);
-
-                    transform.position = Vector3.SmoothDamp(
-                        transform.position,
-                        predictedPosition,
-                        ref _velocity,
-                        damping,
-                        _lerpSpeed
-                    );
-                }*/
-
-
-        if (Grabbed && _itemPoint != null)
+        if (_status == ItemStatus.Grabbed && _itemPoint != null)
         {
-
-            // Calculate target position and velocity
             Vector3 targetPosition = _itemPoint.position;
             Vector3 positionDelta = targetPosition - transform.position;
-
 
             float distance = positionDelta.magnitude;
 
@@ -178,9 +181,7 @@ public class PickableItem : MonoBehaviour
                 return;
             }
 
-
-                // If close enough, snap to position and stop
-                if (distance < _stopDistance)
+            if (distance < _stopDistance)
             {
                 transform.position = targetPosition;
                 _rb.velocity = Vector3.zero;
@@ -188,31 +189,15 @@ public class PickableItem : MonoBehaviour
                 return;
             }
 
-            // Calculate target velocity with distance-based scaling
             Vector3 targetVelocity = positionDelta.normalized * Mathf.Min(distance * _lerpSpeed, _lerpSpeed);
             _velocity = Vector3.Lerp(_velocity, targetVelocity, _damping);
 
-            // Apply additional damping based on distance
             float distanceDamping = Mathf.Clamp01(distance);
             _rb.velocity = Vector3.Lerp(_rb.velocity, _velocity * distanceDamping, Time.fixedDeltaTime * _lerpSpeed);
 
         }
 
     }
-
-
-/*    private void OnGravityChanged(bool inGravitySource)
-    {
-        _inGravitySource = inGravitySource;
-        if (!_inGravitySource) {
-            _rb.useGravity = false;
-            //_rb.velocity = Vector3.zero;
-        } else
-        {
-            _rb.useGravity = true;
-        }
-    }*/
-
 
 
     private void CheckTags()
@@ -226,7 +211,7 @@ public class PickableItem : MonoBehaviour
 
         if (gameObject.TryGetComponent<SellableItem>(out SellableItem sellableItem))
         {
-            if (sellableItem.Cost < 10)
+            if (sellableItem.GetReward() < 10)
                 _tags.Add(ItemTag.Trash);
             else
                 _tags.Add(ItemTag.Valuable);
@@ -249,6 +234,60 @@ public class PickableItem : MonoBehaviour
     public GameObject GetModel()
     {
         return _visualObj;
+    }
+
+
+    public bool TrySetAttach(bool attach)
+    {
+
+        if (attach && _status != ItemStatus.Attached && _attacher.InAttachZone)
+        {
+            
+            _attached = true;
+            Drop();
+            SetKinematic(true);
+            _status = ItemStatus.Attached;
+            _useKinematicCheck = false;
+            return true;
+        } else if (!attach && _status == ItemStatus.Attached)
+        {
+            SetKinematic(false);
+            _useKinematicCheck = true;
+            _attached = false;
+            //Drop();
+            _status = ItemStatus.Free;
+            return true;
+        }
+        return false;
+    }
+
+
+    private void CheckPossibleActions(bool focus = true)
+    {
+        switch (_status)
+        {
+            case ItemStatus.Free:
+                ControlUI.Instance.ShowAttachButton(focus);
+                ControlUI.Instance.ShowPickUpButton(focus);
+                ControlUI.Instance.ShowPutToInventoryButton(focus);
+                break;
+            case ItemStatus.Grabbed:
+                ControlUI.Instance.ShowAttachButton(_attacher.InAttachZone);
+                ControlUI.Instance.ShowPickUpButton(true);
+                ControlUI.Instance.ShowPutToInventoryButton(false);
+                break;
+            case ItemStatus.InInventory:
+                ControlUI.Instance.ShowAttachButton(false);
+                ControlUI.Instance.ShowPickUpButton(false);
+                ControlUI.Instance.ShowPutToInventoryButton(false);
+                break;
+            case ItemStatus.Attached:
+                ControlUI.Instance.ShowAttachButton(focus);
+                ControlUI.Instance.ShowPickUpButton(false);
+                ControlUI.Instance.ShowPutToInventoryButton(false);
+                break;
+            default: break;
+        }
     }
 
 

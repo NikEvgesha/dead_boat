@@ -56,7 +56,7 @@ public class InventorySlot : MonoBehaviour, IDragHandler, IBeginDragHandler, IEn
             _name.text = LocalizationManager.Instance.LocalizationData.GetTranslation(item.Data.Name, LocalizationManager.Instance.CurrentLanguage, LocalizationKeyType.Item.ToString());
             if (item.gameObject.TryGetComponent<SellableItem>(out SellableItem sell))
             {
-                _price.text = sell.Cost.ToString() + "$"; // use coin icon instead
+                _price.text = sell.GetReward().ToString() + "$"; // use coin icon instead
             }
             else
             {

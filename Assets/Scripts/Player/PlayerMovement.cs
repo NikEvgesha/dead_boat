@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(CharacterController))]
-[RequireComponent(typeof(PlayerInput))]
 public class PlayerMovement : MonoBehaviour
 {
     [SerializeField] private GameObject _camera;
@@ -22,7 +21,6 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private bool _onPlatform;
     [SerializeField] private bool _isGrounded;
 
-    private PlayerInput _input;
     private PlayerStatsManager _playerStats;
     private CharacterController _controller;
     private Rigidbody _rb;
@@ -39,7 +37,6 @@ public class PlayerMovement : MonoBehaviour
         _playerStats = GetComponent<PlayerStatsManager>();
         _controller = GetComponent<CharacterController>();
         _rb = GetComponent<Rigidbody>();
-        _input = GetComponent<PlayerInput>();
         _controlUI = FindAnyObjectByType<ControlUI>();
         _controlUI.UseMobileSetup(ControlManager.Instance.UseTouchControl);
     }
@@ -57,7 +54,7 @@ public class PlayerMovement : MonoBehaviour
             if (playerUpperY < waterSurfaceY)
             {
 
-                if (_input.JumpTriggered)
+                if (PlayerInput.Instance.JumpTriggered)
                 {
                     _velocity.y = _jumpPower;
                     return;
@@ -78,13 +75,13 @@ public class PlayerMovement : MonoBehaviour
     }
     private void Move()
     {
-        Vector3 movement = _input.Movement;
+        Vector3 movement = PlayerInput.Instance.Movement;
         Vector3 moveDirection = transform.TransformDirection(movement);
         moveDirection.y = 0f;
 
         Vector3 horizontalMovement = moveDirection * _moveSpeed;
 
-        if (_input.Sprint && _playerStats.Stamina > 0)
+        if (PlayerInput.Instance.Sprint && _playerStats.Stamina > 0)
         {
             horizontalMovement *= _sprintMultiplier;
         }
@@ -93,7 +90,7 @@ public class PlayerMovement : MonoBehaviour
         {
             _velocity.y = -0.5f;
 
-            if (_input.JumpTriggered)
+            if (PlayerInput.Instance.JumpTriggered)
             {
                 _velocity.y = _jumpPower;
             }
@@ -110,7 +107,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void CameraRotation()
     {
-        Vector2 rotationInput = _input.Rotation * _rotationSpeed * Time.deltaTime;
+        Vector2 rotationInput = PlayerInput.Instance.Rotation * _rotationSpeed * Time.deltaTime;
 
         _currentYRotation += rotationInput.x;
 

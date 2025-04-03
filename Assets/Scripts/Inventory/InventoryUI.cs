@@ -66,28 +66,37 @@ public class InventoryUI : MonoBehaviour
         }
     }
 
-
-    public void Open()
+    private void Update()
     {
-        _panel.SetActive(true);
-        _isOpen = true;
-        ControlManager.Instance.CursorActive = true;
-        for (int i = 0; i < _quickPanelCapacity; i++)
+        if (PlayerInput.Instance.Inventory)
         {
-            _quickSlots[i].gameObject.SetActive(true);
+            ToggleOpen();
         }
     }
 
-    public void Close()
+
+    public void ToggleOpen()
     {
-        ControlManager.Instance.CursorActive = false;
-        for (int i = 0; i < _quickPanelCapacity; i++)
+        if (!_isOpen)
         {
-            if (_quickSlots[i].Empty)
-                _quickSlots[i].gameObject.SetActive(false);
+            _panel.SetActive(true);
+            _isOpen = true;
+            ControlManager.Instance.CursorActive = true;
+            for (int i = 0; i < _quickPanelCapacity; i++)
+            {
+                _quickSlots[i].gameObject.SetActive(true);
+            }
+        } else
+        {
+            ControlManager.Instance.CursorActive = false;
+            for (int i = 0; i < _quickPanelCapacity; i++)
+            {
+                if (_quickSlots[i].Empty)
+                    _quickSlots[i].gameObject.SetActive(false);
+            }
+            _panel.SetActive(false);
+            _isOpen = false;
         }
-        _panel.SetActive(false);
-        _isOpen = false;
     }
 
 

@@ -1,14 +1,9 @@
 using UnityEngine;
 
-public class SellableItem : MonoBehaviour
+public class SellableItem : MonoBehaviour, ISellable
 {
     [SerializeField] private int _cost;
 
-    public int Cost { get { return _cost; } }
-
-    public void OnSell()
-    {
-
-    }
+    public int GetReward() => _cost;
 
 }

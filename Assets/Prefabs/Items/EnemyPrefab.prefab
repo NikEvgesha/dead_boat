@@ -270,7 +270,7 @@ GameObject:
   - component: {fileID: -2534717671714854867}
   - component: {fileID: -8747935883830415582}
   m_Layer: 8
-  m_Name: Zombie
+  m_Name: EnemyPrefab
   m_TagString: Item
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -418,6 +418,7 @@ MonoBehaviour:
   _drag: 10
   _dragOrigin: 0
   _dropVelocityMultiplier: 0.4
+  _kinematicDistance: 30
   _inGravitySource: 1
 --- !u!114 &6332745931715936289
 MonoBehaviour:
@@ -584,7 +585,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3260312220798304524}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dc42784cf147c0c48a680349fa168899, type: 3}
   m_Name: 
