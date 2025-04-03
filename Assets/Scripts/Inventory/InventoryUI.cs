@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public class InventoryUI : MonoBehaviour
@@ -15,6 +16,7 @@ public class InventoryUI : MonoBehaviour
     [SerializeField] private Text _capacityText;
     [SerializeField] private Text _capacityButtonText;
     [SerializeField] private GameObject _dropOutPanel;
+    [SerializeField] private ScrollRect _scrollRect;
 
     private static InventoryUI _instance;
     public static InventoryUI Instance { get { return _instance; } }

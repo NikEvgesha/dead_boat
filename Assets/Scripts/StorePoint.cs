@@ -9,6 +9,7 @@ public class StorePoint : MonoBehaviour
     
     [SerializeField] private GameObject _BuyInfoCanvas;
     [SerializeField] private GameObject _PriceCanvas;
+    [SerializeField] private BuyTouchHandler _buyTouchPanel;
 
     [SerializeField] private Text _price;
     [SerializeField] private Text _name;
@@ -45,6 +46,8 @@ public class StorePoint : MonoBehaviour
             _PriceCanvas.SetActive(false);
             _store = store;
             _store.PlayerEnter += SwitchPriceVisibility;
+            _buyTouchPanel = _BuyInfoCanvas.GetComponentInChildren<BuyTouchHandler>();
+            _buyTouchPanel.PointerDown += TryBuy;
         }
     }
 
@@ -52,6 +55,8 @@ public class StorePoint : MonoBehaviour
     {
         if (_store != null)
             _store.PlayerEnter -= SwitchPriceVisibility;
+        if (_buyTouchPanel != null)
+            _buyTouchPanel.PointerDown -= TryBuy;
     }
 
 
@@ -89,19 +94,24 @@ public class StorePoint : MonoBehaviour
 
         if (_input.Interaction)
         {
-            if (CurrencyManager.Instance.CheckEnoughCurrency(CurrencyType.Coins, _storeItem.price))
-            {
-                _buyInProgress = true;
-                _progress = 0;
-                StartCoroutine(BuyProcess());
-            }
+            TryBuy();
+        }
+    }
+
+    private void TryBuy()
+    {
+        if (CurrencyManager.Instance.CheckEnoughCurrency(CurrencyType.Coins, _storeItem.price))
+        {
+            _buyInProgress = true;
+            _progress = 0;
+            StartCoroutine(BuyProcess());
         }
     }
 
 
     private IEnumerator BuyProcess()
     {
-        while (_input.InteractionHold && _progress < 1f)
+        while ((_buyTouchPanel.Hold || _input.InteractionHold) && _progress < 1f)
         {
             _progress += Time.deltaTime;
             _buyProgress.fillAmount = _progress;

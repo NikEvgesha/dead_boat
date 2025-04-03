@@ -57,6 +57,8 @@ public class PlayerInput : MonoBehaviour
         private set { }
     }
 
+
+
     private bool _jump;
     private bool _sprint;
     private bool _interaction;

@@ -8,6 +8,7 @@ public struct TouchControls
     public OnScreenButton sprintButton;
     public OnScreenButton pickUpButton;
     public OnScreenButton putToInventoryButton;
+    public OnScreenButton buyButton;
     public OnScreenJoystick moveJoystick;
     public CameraTouchController cameraTouchController;
 }

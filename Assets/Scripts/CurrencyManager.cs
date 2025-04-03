@@ -8,6 +8,8 @@ public class CurrencyManager : MonoBehaviour
     [SerializeField] private Sprite _gemsIcon;
     [SerializeField] private Sprite _coinIcon;
 
+    [SerializeField] private int coins;
+
     private static CurrencyManager _instance;
 
     private Dictionary<CurrencyType, int> _balance = new() 
@@ -44,9 +46,8 @@ public class CurrencyManager : MonoBehaviour
     private void Start()
     {
         // load ?
-/*
-        _balance[CurrencyType.Coins] = 0;
-        _balance[CurrencyType.Gems] = 0;*/
+
+        AddCurrency(CurrencyType.Coins, coins);
     }
 
 

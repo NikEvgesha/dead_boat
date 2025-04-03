@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -18,6 +19,7 @@ public class PickableItem : MonoBehaviour
     [SerializeField] private float _drag = 10f;
     [SerializeField] private float _dragOrigin = 1f;
     [SerializeField] private float _dropVelocityMultiplier = 2f;
+    [SerializeField] private float _kinematicDistance = 30f;
 
     public bool Grabbed { get; private set; }
 
@@ -27,13 +29,14 @@ public class PickableItem : MonoBehaviour
     private Transform _itemPoint;
     private InfoUI _infoUI;
     public bool _inGravitySource;
+    private Transform _player;
 
 
     private Vector3 _velocity;
 
     private HashSet<ItemTag> _tags;
     private bool _usable;
-
+    private bool _useKinematicCheck = true;
 
     public HashSet<ItemTag> Tags => _tags;
     public ItemData Data { get { return _itemData; } }
@@ -48,8 +51,38 @@ public class PickableItem : MonoBehaviour
         _infoUI = GetComponent<InfoUI>();
         CheckTags();
         _infoUI.SetInfoText(Data.Name, _tags);
+        if (_player != null)
+            StartCoroutine(KinematicCheck());
     }
 
+    private void Start()
+    {
+        _player = GameManager.Instance.Player.transform;
+        if (_player != null)
+            StartCoroutine(KinematicCheck());
+    }
+
+    private void OnDisable()
+    {
+        StopAllCoroutines();
+    }
+
+    private IEnumerator KinematicCheck()
+    {
+        while (this.enabled)
+        {
+            yield return new WaitForSeconds(1);
+            if (!_useKinematicCheck) continue;
+
+            float distance = (transform.position - _player.position).magnitude;
+            if (distance < _kinematicDistance && _rb.isKinematic)
+                _rb.isKinematic = false;
+            else if (distance > _kinematicDistance && !_rb.isKinematic)
+                _rb.isKinematic = true;
+            
+        }
+        yield return null;
+    }
 
 
     public void OnFocus(bool focus)
@@ -67,6 +100,7 @@ public class PickableItem : MonoBehaviour
         _rb.freezeRotation = true;
 
         //_rb.isKinematic = true;
+        _useKinematicCheck = false;
 
         _rb.drag = _drag;
         _rb.angularDrag = _drag;
@@ -83,6 +117,7 @@ public class PickableItem : MonoBehaviour
         _rb.velocity = _velocity * _dropVelocityMultiplier;
 
         //_rb.isKinematic = false;
+        _useKinematicCheck = true;
 
         _rb.drag = _dragOrigin; // Reset drag
         _rb.angularDrag = 0.5f; // Default angular drag
@@ -95,6 +130,7 @@ public class PickableItem : MonoBehaviour
         {
             //SetVisibility(false);
             //gameObject.SetActive(false);
+            _useKinematicCheck = false;
         }
     }
 
@@ -104,6 +140,7 @@ public class PickableItem : MonoBehaviour
         transform.SetParent(null); // TODO:  Objects Parent
         transform.position = dropOutPoint.position;
         //_rb.velocity = dropOutPoint.transform.forward;
+        _useKinematicCheck = true;
     }
 
     private void FixedUpdate()
@@ -205,6 +242,7 @@ public class PickableItem : MonoBehaviour
     public void SetKinematic(bool kinematic)
     {
         _rb.isKinematic = kinematic;
+
     }
 
 
@@ -212,5 +250,7 @@ public class PickableItem : MonoBehaviour
     {
         return _visualObj;
     }
+
+
 
 }
