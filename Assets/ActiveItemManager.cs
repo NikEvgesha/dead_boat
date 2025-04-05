@@ -31,7 +31,8 @@ public class ActiveItemManager : MonoBehaviour
             _activeItem.SetKinematic(true);
         }
         InventoryUI.Instance.SetActiveItem(_activeItem);
-        GetActiveUsable().SetActiveItem(true);
+        if (_activeItem != null)
+            GetActiveUsable().SetActiveItem(true);
     }
     private void Update()
     {
