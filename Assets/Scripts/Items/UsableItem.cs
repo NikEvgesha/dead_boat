@@ -8,6 +8,7 @@ public class UsableItem : MonoBehaviour
     public bool IsActive { get { return _isActive; } }
     private PlayerItemPickUp _playerItemPickUp;
     public Action Use;
+    public Action StopUse;
     public Action<bool> Active;
     public void SetActiveItem(bool active)
     {
@@ -22,10 +23,18 @@ public class UsableItem : MonoBehaviour
     {
         if (_isActive)
         {
-            if (PlayerInput.Instance.UseItem && !_playerItemPickUp.PickUpIsUse())
+
+            Debug.Log("Нажата ли кнопка :" + PlayerInput.Instance.UseItem);
+            if (PlayerInput.Instance.UseItem)
             {
-                Use?.Invoke();
+                if(!_playerItemPickUp.PickUpIsUse())
+                    Use?.Invoke();
             }
+            else
+            {
+                StopUse?.Invoke();
+            }
+
         }
     }
     

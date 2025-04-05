@@ -1,7 +1,5 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 
@@ -10,6 +8,7 @@ public class PickableItem : MonoBehaviour
     //[SerializeField] private float _lerpSpeed = 15;
     [SerializeField] private ItemData _itemData;
     [SerializeField] private GameObject _visualObj;
+
 
     [SerializeField] private float _lerpSpeed = 10f;
     [SerializeField] private float _maxSpeed = 10f;
@@ -35,6 +34,7 @@ public class PickableItem : MonoBehaviour
     private ItemAttacher _attacher;
     private bool _attached;
 
+    private InventorySlot _currentSlot;
     public bool Attached => _attached;
 
 
@@ -297,7 +297,14 @@ public class PickableItem : MonoBehaviour
             default: break;
         }
     }
-
+    public void SetSlot( InventorySlot slot)
+    {
+        _currentSlot = slot;
+    }
+    public void Useble()
+    {
+        _currentSlot.UsebleActiveItem();
+    }
 
 
 }

@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.VFX;
 
 [RequireComponent(typeof(PlayerMovement))]
 public class PlayerStatsManager : MonoBehaviour
 {
+    public static PlayerStatsManager Instance;
+
     [SerializeField] private float _maxStamina = 100f;
     [SerializeField] private float _maxHealth = 100f;
     [SerializeField] private float _staminaConsumptionRate = 1f;
@@ -19,6 +21,7 @@ public class PlayerStatsManager : MonoBehaviour
     public Action NoStamina;
     public Action NoHealth;
     public Action<PlayerStat, float, float> StatChanged;
+
 
     public float Stamina
     {
@@ -47,6 +50,7 @@ public class PlayerStatsManager : MonoBehaviour
         }
         private set
         {
+            value = value >= _maxHealth ? _maxHealth : value;
             _health = Mathf.Clamp(value, 0, _maxHealth);
 
             if (_health == 0)
@@ -60,6 +64,14 @@ public class PlayerStatsManager : MonoBehaviour
 
     private void Awake()
     {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
         _stats = new()
         {
             { PlayerStat.Health, Health},
@@ -99,15 +111,12 @@ public class PlayerStatsManager : MonoBehaviour
     }
     public void TakeDamage( int damage)
     {
-        Debug.Log("Нанесли :" + damage);
-        Debug.Log("Сейчас Health :" + Health);
-        Debug.Log("Сейчас _health :" + _health);
 
         Health = _health - damage;
-
-        Debug.Log("Потом Health :" + Health);
-        Debug.Log("Потом _health :" + _health);
     }
-
+    public void AddHealth(int heal)
+    {
+        Health = _health + heal;
+    }
 
 }

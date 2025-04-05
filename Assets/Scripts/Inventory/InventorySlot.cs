@@ -48,6 +48,7 @@ public class InventorySlot : MonoBehaviour, IDragHandler, IBeginDragHandler, IEn
 
         //_icon.enabled = true;
         _item = item;
+        _item.SetSlot(this);
         _container.gameObject.SetActive(true);
         _icon.sprite = item.Data.IMG;
         _container.ParentSlot = this;
@@ -181,5 +182,11 @@ public class InventorySlot : MonoBehaviour, IDragHandler, IBeginDragHandler, IEn
         Active = active;
         _activeMarker.SetActive(active);
     }
-
+    public void UsebleActiveItem()
+    {
+        PickableItem item = _item;
+        UpdateParent();
+        DropOut();
+        Destroy(item.gameObject);
+    }
 }

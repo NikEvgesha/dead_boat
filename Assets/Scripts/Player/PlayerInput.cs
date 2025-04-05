@@ -116,6 +116,7 @@ public class PlayerInput : MonoBehaviour
             _interactionHold = _touchControls.putToInventoryButton.IsHolded;
             _sprint = _touchControls.sprintButton.IsHolded;
             _attach = _touchControls.attachButton.IsTriggered;
+            _useItem = _touchControls.pickUpButton.IsTriggered;
         }
         else
         {
@@ -126,10 +127,11 @@ public class PlayerInput : MonoBehaviour
             _sprint = Input.GetKey(KeyCode.LeftShift);
             _attach = Input.GetKeyDown(KeyCode.Z);
             _inventory = Input.GetKeyDown(KeyCode.B);
-            
+            //_useItem = Input.GetMouseButtonDown(0);
+            _useItem = Input.GetMouseButton(0);
         }
 
-        _useItem = _pickUp; //Переработать смысл кнопки
+        // _useItem = _pickUp; //Переработать смысл кнопки
 
         if (Input.GetKeyDown(KeyCode.Tab))
         {
