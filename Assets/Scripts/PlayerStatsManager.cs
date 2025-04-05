@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.VFX;
 
 [RequireComponent(typeof(PlayerMovement))]
 public class PlayerStatsManager : MonoBehaviour
@@ -95,6 +96,17 @@ public class PlayerStatsManager : MonoBehaviour
     public float GetStatMax(PlayerStat stat)
     {
         return _stats[stat];
+    }
+    public void TakeDamage( int damage)
+    {
+        Debug.Log("Нанесли :" + damage);
+        Debug.Log("Сейчас Health :" + Health);
+        Debug.Log("Сейчас _health :" + _health);
+
+        Health = _health - damage;
+
+        Debug.Log("Потом Health :" + Health);
+        Debug.Log("Потом _health :" + _health);
     }
 
 

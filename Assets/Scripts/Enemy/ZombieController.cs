@@ -21,6 +21,9 @@ public class ZombieController : MonoBehaviour
     public float attackRange = 2f;
     [Tooltip("Время между атаками (секунды)")]
     public float attackCooldown = 1.5f;
+    [Tooltip("Расстояние, на котором зомби начинает атаку")]
+    public float attackDamage = 5f;
+
 
     [Header("Параметры уровня моба")]
     [Tooltip("Уровень моба (от 1 до 10)")]
@@ -152,6 +155,7 @@ public class ZombieController : MonoBehaviour
         //TakeDamage(10);
         Debug.Log("Зомби атакует!");
         animator.SetTrigger("Attack");
+        _player.TakeDamage((int)attackDamage);
         // Здесь можно добавить дополнительную логику атаки (например, уменьшение HP цели).
     }
 
