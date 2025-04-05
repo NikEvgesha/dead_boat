@@ -31,6 +31,27 @@ public enum ItemTag
     Medicine,
     Dead
 }
+public enum Tag
+{
+    GravityPlatform,
+    Sun,
+    Decoration,
+    Location,
+    Item,
+    Water,
+    Inventory,
+}
+public enum Layer
+{
+    Default = 0,
+    Ground= 6,
+    Player = 7,
+    Pickable = 8,
+    SpawnLocations= 9,
+    WorldCanvas = 10,
+    Inventory = 11,
+}
+
 
 public enum LocalizationKeyType
 {

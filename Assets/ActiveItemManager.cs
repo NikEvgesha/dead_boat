@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class ActiveItemManager : MonoBehaviour
@@ -21,6 +19,7 @@ public class ActiveItemManager : MonoBehaviour
             _activeItem.transform.SetParent(Inventory.Instance.transform);
             _activeItem.gameObject.SetActive(false);
             _activeItem.SetKinematic(false);
+            GetActiveUsable().SetActiveItem(false);
         }
         _activeItem = newItem;
         if (newItem != null)
@@ -32,7 +31,7 @@ public class ActiveItemManager : MonoBehaviour
             _activeItem.SetKinematic(true);
         }
         InventoryUI.Instance.SetActiveItem(_activeItem);
-
+        GetActiveUsable().SetActiveItem(true);
     }
     private void Update()
     {

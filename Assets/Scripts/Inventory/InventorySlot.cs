@@ -18,6 +18,7 @@ public class InventorySlot : MonoBehaviour, IDragHandler, IBeginDragHandler, IEn
     [SerializeField] private GameObject _activeMarker;
 
     [SerializeField] private InventoryIcon _container;
+    [SerializeField] private Transform _slot;
 
 
     private Transform _newParent;
@@ -33,6 +34,7 @@ public class InventorySlot : MonoBehaviour, IDragHandler, IBeginDragHandler, IEn
 
     public virtual void InitSlot(PickableItem item)
     {
+        _slot = _slot == null ? transform : _slot;
         if (item == null)
         {
             UpdateParent();
@@ -49,7 +51,7 @@ public class InventorySlot : MonoBehaviour, IDragHandler, IBeginDragHandler, IEn
         _container.gameObject.SetActive(true);
         _icon.sprite = item.Data.IMG;
         _container.ParentSlot = this;
-        _currentParent = transform;
+        _currentParent = _slot;
 
         if (!QuickSlot)
         {
@@ -70,6 +72,7 @@ public class InventorySlot : MonoBehaviour, IDragHandler, IBeginDragHandler, IEn
             {
                 _tag.text = "";
             }
+            ActivateElements(true);
         }
 
     }
@@ -88,7 +91,15 @@ public class InventorySlot : MonoBehaviour, IDragHandler, IBeginDragHandler, IEn
                 itemIcon.SetNewParent(_container);
             }
         }*/
-
+    private void ActivateElements(bool activate)
+    {
+        if (_name != null)
+        {
+            _name.gameObject.SetActive(activate);
+            _tag.gameObject.SetActive(activate);
+            _price.gameObject.SetActive(activate);
+        }
+    }
 
     public void SetNewParent(Transform newParent)
     {
@@ -100,13 +111,7 @@ public class InventorySlot : MonoBehaviour, IDragHandler, IBeginDragHandler, IEn
     public void OnBeginDrag(PointerEventData eventData)
     {
         _icon.raycastTarget = false;
-        if (_name != null)
-        {
-            _name.gameObject.SetActive(false);
-            _tag.gameObject.SetActive(false);
-            _price.gameObject.SetActive(false);
-        }
-
+        ActivateElements(false);
 
         _newParent = transform;
         _container.transform.SetParent(InventoryUI.Instance.gameObject.transform, true);
@@ -121,12 +126,7 @@ public class InventorySlot : MonoBehaviour, IDragHandler, IBeginDragHandler, IEn
     public void OnEndDrag(PointerEventData eventData)
     {
         _icon.raycastTarget = true;
-        if (_name != null)
-        {
-            _name.gameObject.SetActive(true);
-            _tag.gameObject.SetActive(true);
-            _price.gameObject.SetActive(true);
-        }
+        ActivateElements(true);
         if (_newParent == null)
         {
             UpdateParent();
@@ -141,7 +141,7 @@ public class InventorySlot : MonoBehaviour, IDragHandler, IBeginDragHandler, IEn
 
     public void UpdateParent()
     {
-        _container.transform.SetParent(transform, true);
+        _container.transform.SetParent(_slot, true);
         _container.transform.localPosition = Vector3.zero;
     }
 
@@ -155,9 +155,10 @@ public class InventorySlot : MonoBehaviour, IDragHandler, IBeginDragHandler, IEn
     {
         if (!QuickSlot)
             DropOut();
-        else if (ControlManager.Instance.UseTouchControl)
+        else //if (ControlManager.Instance.UseTouchControl)
         {
-            SwitchActive(true);
+            Inventory.Instance.SetActiveItem(_item);
+            //SwitchActive(true);
         }
     }
 

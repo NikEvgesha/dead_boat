@@ -56,7 +56,11 @@ public class PlayerItemPickUp : MonoBehaviour
         
     }
 
-
+    public bool PickUpIsUse()
+    {
+        bool ray = _hitted && !_raycastHitItem.Attached;
+        return ray || _grabbedItem;
+    }
     private void CheckRaycast()
     {
         bool hitted = false;
@@ -93,14 +97,16 @@ public class PlayerItemPickUp : MonoBehaviour
             
     }
 
-    private void TryPickupObject()
+    private bool TryPickupObject()
     {
         if (_raycastHitItem != null && !_raycastHitItem.Attached)
         {
             _grabbedItem = _raycastHitItem;
             _grabbedItem.PickUp(_itemJoint);
             _controlUI.OnItemPickUp(true);
+            return true;
         }
+        return false;
     }
 
 

@@ -147,6 +147,10 @@ public class PickableItem : MonoBehaviour
 
         if (Inventory.Instance.AddItem(this))
         {
+            OnFocus(false);
+            tag = Tag.Inventory.ToString();
+            this.gameObject.layer = (int)Layer.Inventory;
+            _rb.interpolation = RigidbodyInterpolation.None;
             _useKinematicCheck = false;
             TrySetAttach(false);
             _status = ItemStatus.InInventory;
@@ -158,6 +162,10 @@ public class PickableItem : MonoBehaviour
     {
         if (_status != ItemStatus.InInventory) return;
 
+        tag = Tag.Item.ToString();
+        this.gameObject.layer = (int)Layer.Pickable;
+        _rb.interpolation = RigidbodyInterpolation.Interpolate;
+        
         gameObject.SetActive(true);
         transform.SetParent(null);
         transform.position = dropOutPoint.position;

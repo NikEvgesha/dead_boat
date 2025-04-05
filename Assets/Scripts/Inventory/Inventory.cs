@@ -42,6 +42,7 @@ public class Inventory : MonoBehaviour
         _activeItemManager = GetComponent<ActiveItemManager>();
         _bagItems = new();
         _quickPanelItems = new();
+        InventoryUI.Instance.UpdateCapacity(_bagItems.Count, _capacity);
         //InventoryUI.Instance.SpawnSlots(_capacityTotal - _quickSlotsCapacity, _quickSlotsCapacity);
         //InventoryUI.Instance.UpdateCapacity(_items.Count, _capacityTotal);
     }
@@ -94,19 +95,22 @@ public class Inventory : MonoBehaviour
     public void DropOutItem(PickableItem item, InventorySlot slot)
     {
         if (item == null) return;
-        item.DropOutFromInventory(_dropOutPoint);
         if (_quickPanelItems.Contains(item)) {
             _quickPanelItems.Remove(item);
             slot.InitSlot(null);
+            PickableItem nextItem = InventoryUI.Instance.GetNextUsable(item);
+            nextItem = nextItem == item ? null : nextItem;
+            _activeItemManager.SwitchActiveItem(nextItem);
         } else
         {
             _bagItems.Remove(item);
             InventoryUI.Instance.UpdateCapacity(_bagItems.Count, _capacity);
             slot.InitSlot(null);
         }
+        item.DropOutFromInventory(_dropOutPoint);
 
-        
-            
+
+
         //ItemDropOut?.Invoke(item);
     }
 
@@ -210,5 +214,8 @@ public class Inventory : MonoBehaviour
 
     }
    
-
+    public void SetActiveItem(PickableItem item)
+    {
+        _activeItemManager.SwitchActiveItem(item);
+    }
 }

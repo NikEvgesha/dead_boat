@@ -1,8 +1,6 @@
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.UI;
-using static UnityEditor.Experimental.GraphView.GraphView;
-using static UnityEngine.GraphicsBuffer;
 
 [RequireComponent(typeof(NavMeshAgent))]
 [RequireComponent(typeof(Animator))]
@@ -151,7 +149,7 @@ public class ZombieController : MonoBehaviour
     /// </summary>
     void Attack()
     {
-        TakeDamage(10);
+        //TakeDamage(10);
         Debug.Log("Зомби атакует!");
         animator.SetTrigger("Attack");
         // Здесь можно добавить дополнительную логику атаки (например, уменьшение HP цели).
@@ -162,8 +160,11 @@ public class ZombieController : MonoBehaviour
     /// </summary>
     public void TakeDamage(int damage)
     {
+
         if (_isDie)
             return;
+
+        Debug.Log("Зомби получает урон!");
         currentHP -= damage;
         if (!_hpBar.gameObject.activeSelf)
         {

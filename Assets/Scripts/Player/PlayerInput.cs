@@ -59,6 +59,14 @@ public class PlayerInput : MonoBehaviour
         private set { }
     }
 
+    public bool UseItem
+    {
+        get
+        {
+            return _useItem;
+        }
+        private set { }
+    }
 
     public bool Attach => _attach;
     public bool Inventory => _inventory;
@@ -72,6 +80,7 @@ public class PlayerInput : MonoBehaviour
     private bool _inTrain;
     private bool _attach;
     private bool _inventory;
+    private bool _useItem;
 
 
     private void Awake()
@@ -117,7 +126,10 @@ public class PlayerInput : MonoBehaviour
             _sprint = Input.GetKey(KeyCode.LeftShift);
             _attach = Input.GetKeyDown(KeyCode.Z);
             _inventory = Input.GetKeyDown(KeyCode.B);
+            
         }
+
+        _useItem = _pickUp; //Переработать смысл кнопки
 
         if (Input.GetKeyDown(KeyCode.Tab))
         {
