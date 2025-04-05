@@ -66,7 +66,11 @@ public class PlayerItemPickUp : MonoBehaviour
         bool hitted = false;
         if (Physics.Raycast(_cameraObj.position, _cameraObj.forward, out RaycastHit hit, _pickUpDistance, _layerMask))
         {
-            if (hit.transform.TryGetComponent(out PickableItem item))
+            PickableItem item = hit.transform.GetComponent<PickableItem>();
+            if (item == null)
+                item = hit.transform.GetComponentInParent<PickableItem>();
+
+            if (item)
             {
                 if (item.enabled)
                 {
