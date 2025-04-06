@@ -67,6 +67,14 @@ public class PlayerInput : MonoBehaviour
         }
         private set { }
     }
+    public bool Reload
+    {
+        get
+        {
+            return _reload;
+        }
+        private set { }
+    }
 
     public bool Attach => _attach;
     public bool Inventory => _inventory;
@@ -81,6 +89,7 @@ public class PlayerInput : MonoBehaviour
     private bool _attach;
     private bool _inventory;
     private bool _useItem;
+    private bool _reload;
 
 
     private void Awake()
@@ -117,6 +126,7 @@ public class PlayerInput : MonoBehaviour
             _sprint = _touchControls.sprintButton.IsHolded;
             _attach = _touchControls.attachButton.IsTriggered;
             _useItem = _touchControls.pickUpButton.IsTriggered;
+            //_reload
         }
         else
         {
@@ -127,6 +137,7 @@ public class PlayerInput : MonoBehaviour
             _sprint = Input.GetKey(KeyCode.LeftShift);
             _attach = Input.GetKeyDown(KeyCode.Z);
             _inventory = Input.GetKeyDown(KeyCode.B);
+            _reload = Input.GetKeyDown(KeyCode.R);
             //_useItem = Input.GetMouseButtonDown(0);
             _useItem = Input.GetMouseButton(0);
         }
