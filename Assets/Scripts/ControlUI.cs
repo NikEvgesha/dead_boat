@@ -10,6 +10,9 @@ public struct TouchControls
     public OnScreenButton pickUpButton;
     public OnScreenButton putToInventoryButton;
     public OnScreenButton attachButton;
+    public OnScreenButton reloadButton;
+    public OnScreenButton attackButton;
+    public OnScreenButton useButton;
     public OnScreenJoystick moveJoystick;
     public CameraTouchController cameraTouchController;
 }
@@ -94,6 +97,30 @@ public class ControlUI : MonoBehaviour
             _touchControls.attachButton.gameObject.SetActive(visible);
         else
             _descktopHints.attach.SetActive(visible);
+    }
+
+    public void ShowAttackButton(bool visible)
+    {
+        if (_isMobile)
+            _touchControls.attackButton.gameObject.SetActive(visible);
+        //else
+            //_descktopHints.attack.SetActive(visible);
+    }
+
+    public void ShowReloadButton(bool visible)
+    {
+        if (_isMobile)
+            _touchControls.reloadButton.gameObject.SetActive(visible);
+        //else
+            //_descktopHints.reload.SetActive(visible);
+    }
+
+    public void ShowUseButton(bool visible)
+    {
+        if (_isMobile)
+            _touchControls.useButton.gameObject.SetActive(visible);
+        //else
+        //_descktopHints.reload.SetActive(visible);
     }
 
 }

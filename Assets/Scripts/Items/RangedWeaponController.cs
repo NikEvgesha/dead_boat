@@ -40,7 +40,7 @@ public class RangedWeaponController : MonoBehaviour
         set 
         { 
             _currentAmmo = value;
-            AmmoUI.ChangeAmmo(_currentAmmo, _reserveAmmo);
+            AmmoUI.ChangeAmmo?.Invoke(_currentAmmo, _reserveAmmo);
         }
     }
     public int ReserveAmmo
@@ -49,7 +49,7 @@ public class RangedWeaponController : MonoBehaviour
         set
         {
             _reserveAmmo = value;
-            AmmoUI.ChangeAmmo(_currentAmmo, _reserveAmmo);
+            AmmoUI.ChangeAmmo?.Invoke(_currentAmmo, _reserveAmmo);
         }
     }
 
@@ -58,11 +58,12 @@ public class RangedWeaponController : MonoBehaviour
     private void Start()
     {
         fpsCam = Camera.main;
+        SetActiveUse(_usableItem.IsActive);
     }
     private void OnEnable()
     {
         _usableItem.Active += SetActiveUse;
-        SetActiveUse(_usableItem.IsActive);
+        //SetActiveUse(_usableItem.IsActive);
     }
 
     private void OnDisable()
@@ -70,9 +71,11 @@ public class RangedWeaponController : MonoBehaviour
         StopAllCoroutines();
         _isShooting = false;
         _active = false;
-        AmmoUI.UseGun(_active);
+        AmmoUI.UseGun?.Invoke(_active);
         _usableItem.Active -= SetActiveUse;
         _usableItem.Use -= UseUpdate;
+        ControlUI.Instance.ShowAttackButton(_active);
+        ControlUI.Instance.ShowReloadButton(_active);
     }
 
     private void Update()
@@ -91,8 +94,11 @@ public class RangedWeaponController : MonoBehaviour
             return;
 
         _active = active;
-        AmmoUI.UseGun(_active);
-        AmmoUI.ChangeAmmo(_currentAmmo, _reserveAmmo);
+
+        ControlUI.Instance.ShowAttackButton(_active);
+        ControlUI.Instance.ShowReloadButton(_active);
+        AmmoUI.UseGun?.Invoke(_active);
+        AmmoUI.ChangeAmmo?.Invoke(_currentAmmo, _reserveAmmo);
         if (_active)
             _usableItem.Use += UseUpdate;
         else

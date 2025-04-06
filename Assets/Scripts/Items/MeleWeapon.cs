@@ -30,7 +30,7 @@ public class MeleWeapon : MonoBehaviour
     private void OnEnable()
     {
         _usableItem.Active += SetActiveUse;
-        SetActiveUse(_usableItem.IsActive);
+        //SetActiveUse(_usableItem.IsActive);
     }
     private void OnDisable()
     {
@@ -40,6 +40,12 @@ public class MeleWeapon : MonoBehaviour
         _damageArea.enabled = false;
         _zombies.Clear();
         _usableItem.Active -= SetActiveUse;
+        ControlUI.Instance.ShowAttackButton(_active);
+    }
+
+    private void Start()
+    {
+        SetActiveUse(_usableItem.IsActive);
     }
     private void UseUpdate()
     {
@@ -76,6 +82,8 @@ public class MeleWeapon : MonoBehaviour
             return;
 
         _active = active;
+
+        ControlUI.Instance.ShowAttackButton(_active);
 
         _damageArea.enabled = false;
 

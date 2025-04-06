@@ -20,7 +20,7 @@ public class HealingBottleController : MonoBehaviour
     {
         // Подписываемся на событие Use при активации
         _usableItem.Active += SetActiveUse;
-        SetActiveUse(_usableItem.IsActive);
+        //SetActiveUse(_usableItem.IsActive);
     }
 
     private void OnDisable()
@@ -30,11 +30,18 @@ public class HealingBottleController : MonoBehaviour
         _usableItem.Active -= SetActiveUse;
         _usableItem.Use -= StartDrinking;
         _usableItem.StopUse -= StopDrinking;
+        ControlUI.Instance.ShowUseButton(false);
+    }
+
+    private void Start()
+    {
+        SetActiveUse(_usableItem.IsActive);
     }
 
     // Подписка/отписка от события Use в зависимости от активности
     private void SetActiveUse(bool active)
     {
+        ControlUI.Instance.ShowUseButton(active);
         if (active)
         {
             _usableItem.Use += StartDrinking;

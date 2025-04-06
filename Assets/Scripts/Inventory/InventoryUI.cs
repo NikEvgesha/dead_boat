@@ -101,7 +101,7 @@ public class InventoryUI : MonoBehaviour
 
     public void OnItemDrag(bool dragging)
     {
-        //_dropOutPanel.SetActive(dragging);
+        _dropOutPanel.SetActive(dragging);
     }
 
 

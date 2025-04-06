@@ -46,11 +46,10 @@ public class PlayerStatsManager : MonoBehaviour
     {
         get
         {
-            return _health / _maxHealth;
+            return _health;
         }
         private set
         {
-            value = value >= _maxHealth ? _maxHealth : value;
             _health = Mathf.Clamp(value, 0, _maxHealth);
 
             if (_health == 0)
@@ -107,7 +106,7 @@ public class PlayerStatsManager : MonoBehaviour
 
     public float GetStatMax(PlayerStat stat)
     {
-        return _stats[stat];
+        return _statsMax[stat];
     }
     public void TakeDamage( int damage)
     {

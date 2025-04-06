@@ -63,7 +63,7 @@ public class PlayerInput : MonoBehaviour
     {
         get
         {
-            return _useItem;
+            return _attack || _healing;
         }
         private set { }
     }
@@ -90,6 +90,8 @@ public class PlayerInput : MonoBehaviour
     private bool _inventory;
     private bool _useItem;
     private bool _reload;
+    private bool _attack;
+    private bool _healing;
 
 
     private void Awake()
@@ -125,8 +127,9 @@ public class PlayerInput : MonoBehaviour
             _interactionHold = _touchControls.putToInventoryButton.IsHolded;
             _sprint = _touchControls.sprintButton.IsHolded;
             _attach = _touchControls.attachButton.IsTriggered;
-            _useItem = _touchControls.pickUpButton.IsTriggered;
-            //_reload
+            _attack = _touchControls.attackButton.IsHolded;
+            _healing = _touchControls.useButton.IsHolded;
+            _reload = _touchControls.reloadButton.IsTriggered;
         }
         else
         {
@@ -139,7 +142,8 @@ public class PlayerInput : MonoBehaviour
             _inventory = Input.GetKeyDown(KeyCode.B);
             _reload = Input.GetKeyDown(KeyCode.R);
             //_useItem = Input.GetMouseButtonDown(0);
-            _useItem = Input.GetMouseButton(0);
+            _attack = Input.GetMouseButton(0);
+            _healing = _attack;
         }
 
         // _useItem = _pickUp; //Переработать смысл кнопки
