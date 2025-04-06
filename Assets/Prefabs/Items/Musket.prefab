@@ -122,11 +122,14 @@ MonoBehaviour:
   muzzleFlash: {fileID: 5425077395267631640}
   impactEffect: {fileID: 0}
   _animator: {fileID: 6527962080391305180}
+  hitLayers:
+    serializedVersion: 2
+    m_Bits: 320
   pelletCount: 10
   spreadAngle: 5
   maxAmmo: 10
-  currentAmmo: 10
-  reserveAmmo: 30
+  _currentAmmo: 10
+  _reserveAmmo: 30
   reloadTime: 2
   bulletTrailPrefab: {fileID: 573734600728898942, guid: d3a0060ed807e7d4cb7f7a32fc0e9610, type: 3}
   bulletSpeed: 1000

@@ -24,7 +24,7 @@ public class UsableItem : MonoBehaviour
         if (_isActive)
         {
 
-            Debug.Log("Нажата ли кнопка :" + PlayerInput.Instance.UseItem);
+            //Debug.Log("Нажата ли кнопка :" + PlayerInput.Instance.UseItem);
             if (PlayerInput.Instance.UseItem)
             {
                 if(!_playerItemPickUp.PickUpIsUse())

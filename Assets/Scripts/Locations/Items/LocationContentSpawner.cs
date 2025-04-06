@@ -54,7 +54,7 @@ public class LocationContentSpawner : MonoBehaviour
             if (Random.value <= enemySpawnChance)
             {
                 Instantiate(enemyPrefab, enemyPoint.position, enemyPoint.rotation, transform);
-            }
+            } 
         }
     }
 }

@@ -16,6 +16,7 @@ public class RangedWeaponController : MonoBehaviour
     [SerializeField] private ParticleSystem muzzleFlash;
     [SerializeField] private GameObject impactEffect;
     [SerializeField] private Animator _animator;         // Аниматор для оружия
+    [SerializeField] private LayerMask hitLayers;
 
 
     [Header("Настройки дробовика")]
@@ -24,14 +25,33 @@ public class RangedWeaponController : MonoBehaviour
 
     [Header("Настройки патронов")]
     [SerializeField] private int maxAmmo = 10;
-    [SerializeField] private int currentAmmo = 10;
-    [SerializeField] private int reserveAmmo = 30;
+    [SerializeField] private int _currentAmmo = 10 ;
+    [SerializeField] private int _reserveAmmo = 30;
     [SerializeField] private float reloadTime = 2f;
     private bool _isReloading = false;
 
     [Header("Трейл пули")]
     [SerializeField] private GameObject bulletTrailPrefab;
     [SerializeField] private float bulletSpeed = 100f; // Скорость "перемещения" трейла
+
+    public int CurrentAmmo 
+    { 
+        get { return _currentAmmo; }
+        set 
+        { 
+            _currentAmmo = value;
+            AmmoUI.ChangeAmmo(_currentAmmo, _reserveAmmo);
+        }
+    }
+    public int ReserveAmmo
+    {
+        get { return _reserveAmmo; }
+        set
+        {
+            _reserveAmmo = value;
+            AmmoUI.ChangeAmmo(_currentAmmo, _reserveAmmo);
+        }
+    }
 
     private bool _isShooting = false;
     private bool _active = false;
@@ -50,6 +70,7 @@ public class RangedWeaponController : MonoBehaviour
         StopAllCoroutines();
         _isShooting = false;
         _active = false;
+        AmmoUI.UseGun(_active);
         _usableItem.Active -= SetActiveUse;
         _usableItem.Use -= UseUpdate;
     }
@@ -57,7 +78,7 @@ public class RangedWeaponController : MonoBehaviour
     private void Update()
     {
         // Дополнительная проверка для перезарядки (клавиша R)
-        if (Input.GetKeyDown(KeyCode.R) && !_isReloading && currentAmmo < maxAmmo && reserveAmmo > 0)
+        if (PlayerInput.Instance.Reload && !_isReloading && _currentAmmo < maxAmmo && _reserveAmmo > 0)
         {
             StartCoroutine(Reload());
         }
@@ -70,7 +91,8 @@ public class RangedWeaponController : MonoBehaviour
             return;
 
         _active = active;
-
+        AmmoUI.UseGun(_active);
+        AmmoUI.ChangeAmmo(_currentAmmo, _reserveAmmo);
         if (_active)
             _usableItem.Use += UseUpdate;
         else
@@ -83,9 +105,10 @@ public class RangedWeaponController : MonoBehaviour
         if (_isReloading)
             return;
 
-        if (currentAmmo <= 0)
+        if (_currentAmmo <= 0)
         {
             Debug.Log("Патронов нет! Перезарядитесь.");
+            StartCoroutine(Reload());
             return;
         }
 
@@ -97,7 +120,7 @@ public class RangedWeaponController : MonoBehaviour
 
             Fire();
             _isShooting = true;
-            currentAmmo--; // Расходуем один патрон на выстрел (даже для дробовика)
+            CurrentAmmo--; // Расходуем один патрон на выстрел (даже для дробовика)
             StartCoroutine(ResetShooting());
         }
     }
@@ -120,12 +143,12 @@ public class RangedWeaponController : MonoBehaviour
         Debug.Log("Перезарядка...");
         yield return new WaitForSeconds(reloadTime);
 
-        int neededAmmo = maxAmmo - currentAmmo;
-        int ammoToReload = (reserveAmmo >= neededAmmo) ? neededAmmo : reserveAmmo;
-        currentAmmo += ammoToReload;
-        reserveAmmo -= ammoToReload;
+        int neededAmmo = maxAmmo - _currentAmmo;
+        int ammoToReload = (_reserveAmmo >= neededAmmo) ? neededAmmo : _reserveAmmo;
+        CurrentAmmo += ammoToReload;
+        ReserveAmmo -= ammoToReload;
         _isReloading = false;
-        Debug.Log("Перезарядка завершена. Текущие патроны: " + currentAmmo);
+        Debug.Log("Перезарядка завершена. Текущие патроны: " + _currentAmmo);
     }
 
     // Основной метод выстрела
@@ -160,7 +183,7 @@ public class RangedWeaponController : MonoBehaviour
         Vector3 start = muzzleTransform.position;
         Vector3 endPoint;
         RaycastHit hit;
-        if (Physics.Raycast(fpsCam.transform.position, direction, out hit, range))
+        if (Physics.Raycast(fpsCam.transform.position, direction, out hit, range, hitLayers))
         {
             Debug.Log("Попадание: " + hit.transform.name);
 
