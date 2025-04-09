@@ -15,6 +15,11 @@ public class AmmoUI : MonoBehaviour
         ChangeAmmo += NewAmmo;
         UseGun += ActivateAmmo;
     }
+    private void OnDestroy()
+    {
+        ChangeAmmo -= NewAmmo;
+        UseGun -= ActivateAmmo;
+    }
     private void NewAmmo(int inGun, int inStore)
     {
         _ammo.text = $"{inGun}/{inStore}";

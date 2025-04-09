@@ -147,6 +147,7 @@ public class BoardController : MonoBehaviour
             _endGame = true;
             EndGame?.Invoke();
             currentSpeed = 0f;
+            EndGameUIManager.EndGame(EndGameState.Win);
         }
 
         if (speed != currentSpeed)

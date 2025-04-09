@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using System.Collections;
+using System;
 
 // Перечисление состояний конца игры
 public enum EndGameState
@@ -39,20 +40,32 @@ public class EndGameUIManager : MonoBehaviour
     // Время отсчёта
     private float timerDuration;
     private float timerRemaining;
+    public static Action<EndGameState> EndGame;
+    private void Awake()
+    {
+        EndGame += ShowEndGameUIAction;
+    }
+    private void OnDestroy()
+    {
+        EndGame -= ShowEndGameUIAction;
+    }
     private void Start()
     {
         ShowEndGameUI(EndGameState.None);
     }
     // Текущее состояние конца игры
     private EndGameState currentState = EndGameState.None;
-
-    /// <summary>
-    /// Метод для отображения UI в конце игры.
-    /// </summary>
-    /// <param name="state">Состояние окончания игры: Win, Lose или Faint</param>
-    /// <param name="distance">Пройденная дистанция (применяется для состояний Win и Lose)</param>
-    /// <param name="duration">Длительность таймера (в секундах)</param>
-    public void ShowEndGameUI(EndGameState state, int distance = 0, float duration = 10f)
+    private void ShowEndGameUIAction(EndGameState state)
+    {
+        ShowEndGameUI(state);
+    }
+        /// <summary>
+        /// Метод для отображения UI в конце игры.
+        /// </summary>
+        /// <param name="state">Состояние окончания игры: Win, Lose или Faint</param>
+        /// <param name="distance">Пройденная дистанция (применяется для состояний Win и Lose)</param>
+        /// <param name="duration">Длительность таймера (в секундах)</param>
+        public void ShowEndGameUI(EndGameState state, int distance = 0, float duration = 10f)
     {
         currentState = state;
         timerDuration = duration;
@@ -198,7 +211,7 @@ public class EndGameUIManager : MonoBehaviour
     private void LoadLobby()
     {
         // Замените "LobbyScene" на имя вашей сцены лобби
-        SceneManager.LoadScene("LobbyScene");
+        SceneManager.LoadScene("SampleScene");
     }
 
     // Пример метода списания монет для возрождения
@@ -214,8 +227,10 @@ public class EndGameUIManager : MonoBehaviour
     private void RevivePlayer()
     {
         Debug.Log("Игрок возрожден");
+        PlayerStatsManager.Instance.Revive();
         // Спрячьте UI конца игры и восстановите игровое состояние
-        gameObject.SetActive(false);
+        ShowEndGameUI(EndGameState.None);
+        //gameObject.SetActive(false);
         // Дополнительные процедуры возрождения персонажа
     }
 

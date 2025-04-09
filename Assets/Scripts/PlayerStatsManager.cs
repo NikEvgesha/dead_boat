@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 [RequireComponent(typeof(PlayerMovement))]
@@ -14,6 +13,7 @@ public class PlayerStatsManager : MonoBehaviour
 
     private float _stamina;
     private float _health;
+    private bool _isDead;
 
     private Dictionary<PlayerStat, float> _stats;
     private Dictionary<PlayerStat, float> _statsMax;
@@ -110,12 +110,28 @@ public class PlayerStatsManager : MonoBehaviour
     }
     public void TakeDamage( int damage)
     {
+        if(_isDead) 
+            return;
 
         Health = _health - damage;
+        if (_health <= 0)
+            Dead();
     }
     public void AddHealth(int heal)
     {
+        if (_isDead)
+            return;
         Health = _health + heal;
+    }
+    public void Dead()
+    {
+        EndGameUIManager.EndGame(EndGameState.Faint);
+        _isDead = true;
+    }
+    public void Revive()
+    {
+        Health = _maxHealth;
+        _isDead = false;
     }
 
 }
