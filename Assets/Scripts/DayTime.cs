@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 public class DayTime : MonoBehaviour
@@ -13,12 +14,34 @@ public class DayTime : MonoBehaviour
     [SerializeField] private AnimationCurve _sunCurve;
     [SerializeField] private float _intensityMultiplier;
 
+    [SerializeField] private float _cycleDuration = 24f; // Длительность полного цикла в реальных часах
+    [SerializeField] private float _transitionSpeed = 10f; // Скорость перехода восхода/захода
+
+    [SerializeField] private float _dayAngle = 90f;
+    [SerializeField] private float _nightAngle = -90f;
+    [SerializeField] private Color _dayFogColor;
+    [SerializeField] private Color _nightFogColor;
+
+    [Header("Transition Timing")]
+    [SerializeField] private float _sunriseStart = 5.5f; // Начало восхода
+    [SerializeField] private float _sunriseEnd = 6.5f;   // Конец восхода
+    [SerializeField] private float _sunsetStart = 17.5f; // Начало заката
+    [SerializeField] private float _sunsetEnd = 18.5f;   // Конец заката
+
     [Header("Objects")]
     [SerializeField] private Light _sun;
+    [SerializeField] private Material _skybox;
 
     [Header("Time")]
     private int _hour;
     private int _minute;
+    private bool _isDay;
+    private float _dayDuration; // Длительность в игровых единицах (24 часа = 12 реальных часов)
+    private bool _isTransitioning;
+
+
+    private static readonly int _rotation = Shader.PropertyToID("_Rotation");
+    private static readonly int _exposure = Shader.PropertyToID("_Exposure");
 
     public Action<int, int> GetTime;
 
@@ -35,6 +58,9 @@ public class DayTime : MonoBehaviour
         {
             _sun = GameObject.FindGameObjectWithTag("Sun").GetComponent<Light>();
         }
+
+        _dayDuration = _cycleDuration * 3600f / 24f;
+        _skybox = RenderSettings.skybox;
     }
 
     private void OnValidate()
@@ -43,28 +69,55 @@ public class DayTime : MonoBehaviour
             ProgressTime();
     }
 
+    private void OnDisable()
+    {
+        _skybox.SetFloat(_rotation, 0);
+        _skybox.SetFloat(_exposure, 1);
+    }
+
     private void Update()
     {
-        _timeOfDay += Time.deltaTime * _orbitSpeed;
+        _timeOfDay += (Time.deltaTime * _orbitSpeed / _dayDuration) * 24f;
+        _timeOfDay %= 24f;
         ProgressTime();
+        UpdateLightning();
     }
 
     private void ProgressTime()
     {
         int oldMinute = _minute;
         int oldHour = _hour;
-        float currentTime = _timeOfDay / 24;
-        float sunRotation = Mathf.Lerp(-90, 270, currentTime);
+        float sunAngle;
 
-        _sun.transform.rotation = Quaternion.Euler(sunRotation, _axisOffset, 0);
+        if (_timeOfDay >= _sunriseStart && _timeOfDay <= _sunriseEnd)
+        {
+            // Быстрый восход
+            float t = (_timeOfDay - _sunriseStart) / (_sunriseEnd - _sunriseStart);
+            sunAngle = Mathf.Lerp(-90f, 90f, t);
+            _isTransitioning = true;
+            _skybox.SetFloat(_exposure, Mathf.Lerp(0.05f, 1f, t));
+        }
+        else if (_timeOfDay >= _sunsetStart && _timeOfDay <= _sunsetEnd)
+        {
+            // Быстрый закат
+            float t = (_timeOfDay - _sunsetStart) / (_sunsetEnd - _sunsetStart);
+            sunAngle = Mathf.Lerp(90f, 270f, t);
+            _isTransitioning = true;
+            _skybox.SetFloat(_exposure, Mathf.Lerp(1f, 0.05f, t));
+        }
+        else
+        {
+            // Неподвижное положение
+            _isTransitioning = false;
+            sunAngle = IsNight() ? -90f : 90f;
+        }
+
+        _sun.transform.rotation = Quaternion.Euler(sunAngle, _axisOffset, 0);
 
         _hour = Mathf.FloorToInt(_timeOfDay);
         _minute = Mathf.FloorToInt((_timeOfDay / (24f / 1440f) % 60));
 
-        RenderSettings.ambientLight = _nightLight.Evaluate(currentTime);
-        _sun.intensity = _sunCurve.Evaluate(currentTime) * _intensityMultiplier;
 
-        _timeOfDay %= 24;
         if (oldHour != _hour)
             SetNewTime();
     }
@@ -72,4 +125,23 @@ public class DayTime : MonoBehaviour
     {
         GetTime?.Invoke(_hour, _minute);
     }
+
+
+    private bool IsNight()
+    {
+        return (_timeOfDay < _sunriseEnd || _timeOfDay > _sunsetEnd);
+    }
+
+
+    private void UpdateLightning()
+    {
+        float timeNormalized = _timeOfDay / 24f;
+        RenderSettings.ambientLight = _nightLight.Evaluate(timeNormalized);
+        _sun.intensity = _sunCurve.Evaluate(timeNormalized) * _intensityMultiplier;
+        RenderSettings.fogColor = IsNight() ? _nightFogColor : _dayFogColor;
+        _skybox.SetFloat(_rotation, 180 + _timeOfDay);
+
+    }
+
+
 }
