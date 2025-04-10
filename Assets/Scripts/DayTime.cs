@@ -96,6 +96,7 @@ public class DayTime : MonoBehaviour
             sunAngle = Mathf.Lerp(-90f, 90f, t);
             _isTransitioning = true;
             _skybox.SetFloat(_exposure, Mathf.Lerp(0.05f, 1f, t));
+            RenderSettings.fogColor = Color.Lerp(_nightFogColor, _dayFogColor, t);
         }
         else if (_timeOfDay >= _sunsetStart && _timeOfDay <= _sunsetEnd)
         {
@@ -104,6 +105,7 @@ public class DayTime : MonoBehaviour
             sunAngle = Mathf.Lerp(90f, 270f, t);
             _isTransitioning = true;
             _skybox.SetFloat(_exposure, Mathf.Lerp(1f, 0.05f, t));
+            RenderSettings.fogColor = Color.Lerp(_dayFogColor, _nightFogColor, t);
         }
         else
         {
@@ -138,7 +140,7 @@ public class DayTime : MonoBehaviour
         float timeNormalized = _timeOfDay / 24f;
         RenderSettings.ambientLight = _nightLight.Evaluate(timeNormalized);
         _sun.intensity = _sunCurve.Evaluate(timeNormalized) * _intensityMultiplier;
-        RenderSettings.fogColor = IsNight() ? _nightFogColor : _dayFogColor;
+        //RenderSettings.fogColor = IsNight() ? _nightFogColor : _dayFogColor;
         _skybox.SetFloat(_rotation, 180 + _timeOfDay);
 
     }

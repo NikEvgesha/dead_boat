@@ -15,9 +15,9 @@ RenderSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 9
   m_Fog: 1
-  m_FogColor: {r: 0.64705884, g: 0.85882354, b: 0.91764706, a: 0}
+  m_FogColor: {r: 0.60784316, g: 1, b: 1, a: 0}
   m_FogMode: 3
-  m_FogDensity: 0.02
+  m_FogDensity: 0.01
   m_LinearFogStart: 0
   m_LinearFogEnd: 300
   m_AmbientSkyColor: {r: 0.6470986, g: 0.75575316, b: 0.82641506, a: 1}
@@ -3196,10 +3196,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 14153258767989125, guid: 5f4dad0599baba647bc01faaad41dd6f, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 66088909341937977, guid: 5f4dad0599baba647bc01faaad41dd6f, type: 3}
       propertyPath: m_Pivot.x
       value: 0
@@ -3280,33 +3276,9 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 1680355049850184743, guid: 5f4dad0599baba647bc01faaad41dd6f, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 2071898892395898451, guid: 5f4dad0599baba647bc01faaad41dd6f, type: 3}
       propertyPath: m_Name
       value: ControlCanvas
-      objectReference: {fileID: 0}
-    - target: {fileID: 4195699227077077692, guid: 5f4dad0599baba647bc01faaad41dd6f, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4309706678674952314, guid: 5f4dad0599baba647bc01faaad41dd6f, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5049800424694960873, guid: 5f4dad0599baba647bc01faaad41dd6f, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7217604337749419273, guid: 5f4dad0599baba647bc01faaad41dd6f, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8567143502431588687, guid: 5f4dad0599baba647bc01faaad41dd6f, type: 3}
-      propertyPath: m_IsActive
-      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -6238,170 +6210,6 @@ PrefabInstance:
       propertyPath: _sun
       value: 
       objectReference: {fileID: 705507994}
-    - target: {fileID: 3041664543134723738, guid: ca83881958ce89e4f82a91a68ccf54b3, type: 3}
-      propertyPath: _skybox
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 3041664543134723738, guid: ca83881958ce89e4f82a91a68ccf54b3, type: 3}
-      propertyPath: _sunsetEnd
-      value: 22.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 3041664543134723738, guid: ca83881958ce89e4f82a91a68ccf54b3, type: 3}
-      propertyPath: _timeOfDay
-      value: 7.4
-      objectReference: {fileID: 0}
-    - target: {fileID: 3041664543134723738, guid: ca83881958ce89e4f82a91a68ccf54b3, type: 3}
-      propertyPath: _orbitSpeed
-      value: 100
-      objectReference: {fileID: 0}
-    - target: {fileID: 3041664543134723738, guid: ca83881958ce89e4f82a91a68ccf54b3, type: 3}
-      propertyPath: _daySunAngle
-      value: 90
-      objectReference: {fileID: 0}
-    - target: {fileID: 3041664543134723738, guid: ca83881958ce89e4f82a91a68ccf54b3, type: 3}
-      propertyPath: _sunsetStart
-      value: 21.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 3041664543134723738, guid: ca83881958ce89e4f82a91a68ccf54b3, type: 3}
-      propertyPath: _dayFogColor.b
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3041664543134723738, guid: ca83881958ce89e4f82a91a68ccf54b3, type: 3}
-      propertyPath: _dayFogColor.g
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3041664543134723738, guid: ca83881958ce89e4f82a91a68ccf54b3, type: 3}
-      propertyPath: _dayFogColor.r
-      value: 0.6784314
-      objectReference: {fileID: 0}
-    - target: {fileID: 3041664543134723738, guid: ca83881958ce89e4f82a91a68ccf54b3, type: 3}
-      propertyPath: _nightSunAngle
-      value: -90
-      objectReference: {fileID: 0}
-    - target: {fileID: 3041664543134723738, guid: ca83881958ce89e4f82a91a68ccf54b3, type: 3}
-      propertyPath: _nightFogColor.b
-      value: 0.05882353
-      objectReference: {fileID: 0}
-    - target: {fileID: 3041664543134723738, guid: ca83881958ce89e4f82a91a68ccf54b3, type: 3}
-      propertyPath: _nightFogColor.g
-      value: 0.0627451
-      objectReference: {fileID: 0}
-    - target: {fileID: 3041664543134723738, guid: ca83881958ce89e4f82a91a68ccf54b3, type: 3}
-      propertyPath: _nightFogColor.r
-      value: 0.039215688
-      objectReference: {fileID: 0}
-    - target: {fileID: 3041664543134723738, guid: ca83881958ce89e4f82a91a68ccf54b3, type: 3}
-      propertyPath: _nightLight.key0.b
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3041664543134723738, guid: ca83881958ce89e4f82a91a68ccf54b3, type: 3}
-      propertyPath: _nightLight.key0.g
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3041664543134723738, guid: ca83881958ce89e4f82a91a68ccf54b3, type: 3}
-      propertyPath: _nightLight.key0.r
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3041664543134723738, guid: ca83881958ce89e4f82a91a68ccf54b3, type: 3}
-      propertyPath: _nightLight.key1.b
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3041664543134723738, guid: ca83881958ce89e4f82a91a68ccf54b3, type: 3}
-      propertyPath: _nightLight.key1.g
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3041664543134723738, guid: ca83881958ce89e4f82a91a68ccf54b3, type: 3}
-      propertyPath: _nightLight.key1.r
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3041664543134723738, guid: ca83881958ce89e4f82a91a68ccf54b3, type: 3}
-      propertyPath: _intensityMultiplier
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3041664543134723738, guid: ca83881958ce89e4f82a91a68ccf54b3, type: 3}
-      propertyPath: _sunCurve.m_Curve.Array.size
-      value: 5
-      objectReference: {fileID: 0}
-    - target: {fileID: 3041664543134723738, guid: ca83881958ce89e4f82a91a68ccf54b3, type: 3}
-      propertyPath: _sunCurve.m_Curve.Array.data[1].time
-      value: 0.26851657
-      objectReference: {fileID: 0}
-    - target: {fileID: 3041664543134723738, guid: ca83881958ce89e4f82a91a68ccf54b3, type: 3}
-      propertyPath: _sunCurve.m_Curve.Array.data[2].time
-      value: 0.49821547
-      objectReference: {fileID: 0}
-    - target: {fileID: 3041664543134723738, guid: ca83881958ce89e4f82a91a68ccf54b3, type: 3}
-      propertyPath: _sunCurve.m_Curve.Array.data[3].time
-      value: 0.7405943
-      objectReference: {fileID: 0}
-    - target: {fileID: 3041664543134723738, guid: ca83881958ce89e4f82a91a68ccf54b3, type: 3}
-      propertyPath: _sunCurve.m_Curve.Array.data[4].time
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3041664543134723738, guid: ca83881958ce89e4f82a91a68ccf54b3, type: 3}
-      propertyPath: _sunCurve.m_Curve.Array.data[1].value
-      value: 0.99955034
-      objectReference: {fileID: 0}
-    - target: {fileID: 3041664543134723738, guid: ca83881958ce89e4f82a91a68ccf54b3, type: 3}
-      propertyPath: _sunCurve.m_Curve.Array.data[2].value
-      value: 0.99357283
-      objectReference: {fileID: 0}
-    - target: {fileID: 3041664543134723738, guid: ca83881958ce89e4f82a91a68ccf54b3, type: 3}
-      propertyPath: _sunCurve.m_Curve.Array.data[3].value
-      value: 0.9932638
-      objectReference: {fileID: 0}
-    - target: {fileID: 3041664543134723738, guid: ca83881958ce89e4f82a91a68ccf54b3, type: 3}
-      propertyPath: _sunCurve.m_Curve.Array.data[4].value
-      value: -0.009403229
-      objectReference: {fileID: 0}
-    - target: {fileID: 3041664543134723738, guid: ca83881958ce89e4f82a91a68ccf54b3, type: 3}
-      propertyPath: _sunCurve.m_Curve.Array.data[1].inSlope
-      value: 0.13649793
-      objectReference: {fileID: 0}
-    - target: {fileID: 3041664543134723738, guid: ca83881958ce89e4f82a91a68ccf54b3, type: 3}
-      propertyPath: _sunCurve.m_Curve.Array.data[2].inSlope
-      value: -0.002781021
-      objectReference: {fileID: 0}
-    - target: {fileID: 3041664543134723738, guid: ca83881958ce89e4f82a91a68ccf54b3, type: 3}
-      propertyPath: _sunCurve.m_Curve.Array.data[3].inSlope
-      value: -0.121177465
-      objectReference: {fileID: 0}
-    - target: {fileID: 3041664543134723738, guid: ca83881958ce89e4f82a91a68ccf54b3, type: 3}
-      propertyPath: _sunCurve.m_Curve.Array.data[1].inWeight
-      value: 0.33333334
-      objectReference: {fileID: 0}
-    - target: {fileID: 3041664543134723738, guid: ca83881958ce89e4f82a91a68ccf54b3, type: 3}
-      propertyPath: _sunCurve.m_Curve.Array.data[1].outSlope
-      value: 0.13649793
-      objectReference: {fileID: 0}
-    - target: {fileID: 3041664543134723738, guid: ca83881958ce89e4f82a91a68ccf54b3, type: 3}
-      propertyPath: _sunCurve.m_Curve.Array.data[2].inWeight
-      value: 0.1137418
-      objectReference: {fileID: 0}
-    - target: {fileID: 3041664543134723738, guid: ca83881958ce89e4f82a91a68ccf54b3, type: 3}
-      propertyPath: _sunCurve.m_Curve.Array.data[2].outSlope
-      value: -0.002781021
-      objectReference: {fileID: 0}
-    - target: {fileID: 3041664543134723738, guid: ca83881958ce89e4f82a91a68ccf54b3, type: 3}
-      propertyPath: _sunCurve.m_Curve.Array.data[3].inWeight
-      value: 0.2379227
-      objectReference: {fileID: 0}
-    - target: {fileID: 3041664543134723738, guid: ca83881958ce89e4f82a91a68ccf54b3, type: 3}
-      propertyPath: _sunCurve.m_Curve.Array.data[3].outSlope
-      value: -0.121177465
-      objectReference: {fileID: 0}
-    - target: {fileID: 3041664543134723738, guid: ca83881958ce89e4f82a91a68ccf54b3, type: 3}
-      propertyPath: _sunCurve.m_Curve.Array.data[1].outWeight
-      value: 0.2179245
-      objectReference: {fileID: 0}
-    - target: {fileID: 3041664543134723738, guid: ca83881958ce89e4f82a91a68ccf54b3, type: 3}
-      propertyPath: _sunCurve.m_Curve.Array.data[2].outWeight
-      value: 0.33333334
-      objectReference: {fileID: 0}
-    - target: {fileID: 3041664543134723738, guid: ca83881958ce89e4f82a91a68ccf54b3, type: 3}
-      propertyPath: _sunCurve.m_Curve.Array.data[3].outWeight
-      value: 0.11812422
-      objectReference: {fileID: 0}
     - target: {fileID: 9076383604510570418, guid: ca83881958ce89e4f82a91a68ccf54b3, type: 3}
       propertyPath: m_Name
       value: DayTime

@@ -44,13 +44,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e5c3d1e8af4c1d944b425eadb170e23d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _timeOfDay: 8.05
-  _orbitSpeed: 0.05
+  _timeOfDay: 7.4
+  _orbitSpeed: 100
   _axisOffset: -68.4
   _nightLight:
     serializedVersion: 2
-    key0: {r: 1, g: 1, b: 1, a: 1}
-    key1: {r: 1, g: 1, b: 1, a: 1}
+    key0: {r: 0, g: 0, b: 0, a: 1}
+    key1: {r: 0, g: 0, b: 0, a: 1}
     key2: {r: 0, g: 0, b: 0, a: 0}
     key3: {r: 0, g: 0, b: 0, a: 0}
     key4: {r: 0, g: 0, b: 0, a: 0}
@@ -90,8 +90,35 @@ MonoBehaviour:
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
+      time: 0.26851657
+      value: 0.99955034
+      inSlope: 0.13649793
+      outSlope: 0.13649793
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.2179245
+    - serializedVersion: 3
+      time: 0.49821547
+      value: 0.99357283
+      inSlope: -0.002781021
+      outSlope: -0.002781021
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.1137418
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.7405943
+      value: 0.9932638
+      inSlope: -0.121177465
+      outSlope: -0.121177465
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.2379227
+      outWeight: 0.11812422
+    - serializedVersion: 3
       time: 1
-      value: 1
+      value: -0.009403229
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -101,4 +128,16 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  _intensityMultiplier: 1
+  _cycleDuration: 24
+  _transitionSpeed: 10
+  _dayAngle: 90
+  _nightAngle: -90
+  _dayFogColor: {r: 0.60784316, g: 1, b: 1, a: 0}
+  _nightFogColor: {r: 0.039215688, g: 0.0627451, b: 0.05882353, a: 0}
+  _sunriseStart: 5.5
+  _sunriseEnd: 6.5
+  _sunsetStart: 21.5
+  _sunsetEnd: 22.5
   _sun: {fileID: 0}
+  _skybox: {fileID: 0}
