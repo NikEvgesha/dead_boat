@@ -73,6 +73,7 @@ public class DayTime : MonoBehaviour
     {
         _skybox.SetFloat(_rotation, 0);
         _skybox.SetFloat(_exposure, 1);
+        RenderSettings.ambientIntensity = 1;
     }
 
     private void Update()
@@ -97,6 +98,8 @@ public class DayTime : MonoBehaviour
             _isTransitioning = true;
             _skybox.SetFloat(_exposure, Mathf.Lerp(0.05f, 1f, t));
             RenderSettings.fogColor = Color.Lerp(_nightFogColor, _dayFogColor, t);
+            RenderSettings.ambientIntensity = Mathf.Lerp(0, 1, t);
+            _sun.intensity = Mathf.Lerp(0.05f, 1f, t);
         }
         else if (_timeOfDay >= _sunsetStart && _timeOfDay <= _sunsetEnd)
         {
@@ -106,6 +109,8 @@ public class DayTime : MonoBehaviour
             _isTransitioning = true;
             _skybox.SetFloat(_exposure, Mathf.Lerp(1f, 0.05f, t));
             RenderSettings.fogColor = Color.Lerp(_dayFogColor, _nightFogColor, t);
+            RenderSettings.ambientIntensity = Mathf.Lerp(1, 0, t);
+            _sun.intensity = Mathf.Lerp(1f, 0.05f, t);
         }
         else
         {
@@ -138,8 +143,8 @@ public class DayTime : MonoBehaviour
     private void UpdateLightning()
     {
         float timeNormalized = _timeOfDay / 24f;
-        RenderSettings.ambientLight = _nightLight.Evaluate(timeNormalized);
-        _sun.intensity = _sunCurve.Evaluate(timeNormalized) * _intensityMultiplier;
+        //RenderSettings.ambientLight = _nightLight.Evaluate(timeNormalized);
+        //_sun.intensity = _sunCurve.Evaluate(timeNormalized) * _intensityMultiplier;
         //RenderSettings.fogColor = IsNight() ? _nightFogColor : _dayFogColor;
         _skybox.SetFloat(_rotation, 180 + _timeOfDay);
 

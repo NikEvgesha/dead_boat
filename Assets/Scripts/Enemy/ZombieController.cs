@@ -155,6 +155,9 @@ public class ZombieController : MonoBehaviour
     void Attack()
     {
         //TakeDamage(10);
+        agent.updateRotation = false;
+        transform.LookAt(_player.transform);
+        agent.updateRotation = true;
         Debug.Log("Зомби атакует!");
         animator.SetTrigger("Attack");
         _player.TakeDamage((int)attackDamage);
