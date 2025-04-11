@@ -3,7 +3,6 @@ using UnityEngine;
 
 public class RangedWeaponController : MonoBehaviour
 {
-    public enum WeaponType { Pistol, Rifle, Shotgun }
 
     [Header("Настройки оружия")]
     [SerializeField] private UsableItem _usableItem;
@@ -239,5 +238,18 @@ public class RangedWeaponController : MonoBehaviour
         }
         lr.SetPosition(1, end);
         Destroy(trail, 0.1f);
+    }
+    public WeaponType GetWeaponType()
+    {
+        return weaponType;
+    }
+    public bool TryAddAmmo(int ammo, WeaponType type)
+    {
+        if (type == weaponType)
+        {
+            ReserveAmmo += ammo;
+            return true;
+        }
+        return false;
     }
 }

@@ -218,4 +218,17 @@ public class Inventory : MonoBehaviour
     {
         _activeItemManager.SwitchActiveItem(item);
     }
+    public List<PickableItem> GetItems()
+    {
+        List<PickableItem> allItem = new List<PickableItem>();
+        foreach (var item in _bagItems)
+        {
+            allItem.Add(item);
+        }
+        foreach (var item in _quickPanelItems)
+        {
+            allItem.Add(item);
+        }
+        return allItem;
+    }
 }

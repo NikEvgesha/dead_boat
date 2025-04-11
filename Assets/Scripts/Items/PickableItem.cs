@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -48,9 +49,12 @@ public class PickableItem : MonoBehaviour
     public ItemData Data { get { return _itemData; } }
     public bool Usable => _usable;
 
+    public Action TakeItem;
 
     private void OnEnable()
     {
+        if (gameObject.GetComponentInParent<ZombieController>())
+            Debug.Log("Now");
         _outline = GetComponent<Outline>();
         _collider = GetComponent<BoxCollider>();
         _rb = GetComponent<Rigidbody>();
@@ -103,6 +107,7 @@ public class PickableItem : MonoBehaviour
     public void PickUp(Transform point)
     {
         if (_status != ItemStatus.Free) return;
+        
 
         Grabbed = true;
         _itemPoint = point;
@@ -144,7 +149,14 @@ public class PickableItem : MonoBehaviour
     public void PutToInventory()
     {
         if (_status != ItemStatus.Free) return;
-
+        if (_tags.Contains(ItemTag.Ammo))
+        {
+            if (this.GetComponent<AmmoItem>().AddAmmo())
+            {
+                Destroy(this.gameObject);
+                return;
+            }
+        }
         if (Inventory.Instance.AddItem(this))
         {
             OnFocus(false);
@@ -228,6 +240,11 @@ public class PickableItem : MonoBehaviour
         if (gameObject.TryGetComponent <UsableItem>(out UsableItem usableItem))
         {
             _usable = true;
+        }
+
+        if (gameObject.GetComponent<AmmoItem>() != null)
+        {
+            _tags.Add(ItemTag.Ammo);
         }
 
     }

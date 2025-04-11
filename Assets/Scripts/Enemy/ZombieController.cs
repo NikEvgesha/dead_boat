@@ -66,10 +66,12 @@ public class ZombieController : MonoBehaviour
         {
             _hpBar = GetComponentInChildren<Scrollbar>();
         }
+
     }
 
     void Start()
     {
+        _pickableItem.tag = Tag.Zomby.ToString();
         // Ограничиваем уровень от 1 до 10 и вычисляем параметр t (от 0 до 1)
         mobLevel = Mathf.Clamp(mobLevel, 1, 10);
         float t = (mobLevel - 1f) / 9f;
@@ -193,6 +195,7 @@ public class ZombieController : MonoBehaviour
             _simpleRagdoll.EnableRagdoll();
             _pickableItem.enabled = true;
             _pickableItem.transform.SetParent(null);
+            _pickableItem.tag = Tag.Item.ToString();
             //gameObject.SetActive(false);
         }
         // Здесь можно запустить анимацию смерти, отключить агента и т.д.

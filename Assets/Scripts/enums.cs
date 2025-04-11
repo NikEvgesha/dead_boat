@@ -5,7 +5,8 @@ public enum ItemType
     Heal,
     Fuel,
     Treasure,
-    Trash
+    Trash,
+    Ammo
 }
 
 
@@ -29,7 +30,8 @@ public enum ItemTag
     Valuable,
     Weapon,
     Medicine,
-    Dead
+    Dead,
+    Ammo
 }
 public enum Tag
 {
@@ -40,6 +42,7 @@ public enum Tag
     Item,
     Water,
     Inventory,
+    Zomby
 }
 public enum Layer
 {
@@ -82,4 +85,11 @@ public enum StoreType
 {
     Items,
     Enemies
+}
+
+public enum WeaponType 
+{ 
+    Pistol,
+    Rifle,
+    Shotgun 
 }
