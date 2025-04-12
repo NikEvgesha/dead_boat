@@ -259,9 +259,25 @@ public class PickableItem : MonoBehaviour
     {
         return _visualObj;
     }
-    public Transform GetSellPoint()
+    public List<Vector3> GetSellPoint()
     {
-        return _sellPoint;
+        if (_sellPoint == null)
+            return new List<Vector3>();
+
+        Vector3 offsetPosition = _sellPoint.localPosition;
+        Quaternion offsetRotationModel = _visualObj.transform.rotation;
+        Quaternion offsetRotationPoint = _sellPoint.transform.localRotation;
+        Vector3 offsetEulerRotation = offsetRotationPoint.eulerAngles;
+        Vector3 offsetScale = _sellPoint.localScale;
+
+        List<Vector3> offset = new List<Vector3>
+        {
+            offsetPosition,
+            offsetEulerRotation,
+            offsetScale
+        };
+
+        return offset;
     }
 
     public bool TrySetAttach(bool attach)

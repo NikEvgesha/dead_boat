@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -37,9 +38,20 @@ public class StorePoint : MonoBehaviour
             _itemPrefab = prefab;
         if (_itemPrefab.TryGetComponent<StoreItem>(out _storeItem))
         {
-            Transform sellPoint = _itemPrefab.GetSellPoint();
-            sellPoint = sellPoint == null ? _sellPoint : sellPoint;
-            Instantiate(_itemPrefab.GetModel(), sellPoint);
+            List<Vector3> offset = _itemPrefab.GetSellPoint();
+            if (offset.Count == 0)
+            {
+                Instantiate(_itemPrefab.GetModel(), _sellPoint);
+            }
+            else
+            {
+                GameObject model = Instantiate(_itemPrefab.GetModel(), _sellPoint);
+                model.transform.localPosition = offset[0];
+                Quaternion deltaRotation = Quaternion.Euler(offset[1]);
+                model.transform.localRotation = deltaRotation;
+                model.transform.localScale = offset[2];
+            }
+
             _price.text = _storeItem.price.ToString() + "$";
             _name.text = LocalizationManager.Instance.LocalizationData.GetTranslation(_itemPrefab.Data.name, LocalizationManager.Instance.CurrentLanguage, LocalizationKeyType.Item.ToString());
 

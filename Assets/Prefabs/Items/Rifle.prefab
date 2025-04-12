@@ -1,5 +1,36 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1927878776335889111
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8938489691654590633}
+  m_Layer: 0
+  m_Name: SellPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8938489691654590633
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1927878776335889111}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.51208895, y: 0.6140597, z: -0.37728965, w: 0.46727744}
+  m_LocalPosition: {x: -0.015, y: 0.036, z: 0.194}
+  m_LocalScale: {x: 0.46187425, y: 0.46187425, z: 0.46187425}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4316069213998548548}
+  m_LocalEulerAnglesHint: {x: 0.67, y: 180.886, z: 0.043}
 --- !u!1 &6122175830888637452
 GameObject:
   m_ObjectHideFlags: 0
@@ -33,6 +64,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 8938489691654590633}
   - {fileID: 3541075400026181487}
   - {fileID: 8401005555706286613}
   - {fileID: 1247419838003156670}
@@ -217,6 +249,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 5d7992b1fcc774244ac4a4c8697794bb, type: 3}
   m_PrefabInstance: {fileID: 3940320017556580484}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &4210793066776171989 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 5d7992b1fcc774244ac4a4c8697794bb, type: 3}
+  m_PrefabInstance: {fileID: 3940320017556580484}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &5009325307404333948
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -258,9 +295,13 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 11400000, guid: 10f03b71d998d9b48921ebf3822ad80d, type: 2}
     - target: {fileID: 1479338428269486501, guid: 2d8dfdad05134cb4c98fbc245e3591f7, type: 3}
+      propertyPath: _sellPoint
+      value: 
+      objectReference: {fileID: 8938489691654590633}
+    - target: {fileID: 1479338428269486501, guid: 2d8dfdad05134cb4c98fbc245e3591f7, type: 3}
       propertyPath: _visualObj
       value: 
-      objectReference: {fileID: 6122175830888637452}
+      objectReference: {fileID: 4210793066776171989}
     - target: {fileID: 1490339327076298921, guid: 2d8dfdad05134cb4c98fbc245e3591f7, type: 3}
       propertyPath: m_Layer
       value: 0
