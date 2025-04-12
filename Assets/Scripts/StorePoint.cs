@@ -6,7 +6,8 @@ public class StorePoint : MonoBehaviour
 {
     [SerializeField] private PickableItem _itemPrefab;
     [SerializeField] private Transform _buyPoint;
-    
+    [SerializeField] private Transform _sellPoint;
+
     [SerializeField] private GameObject _BuyInfoCanvas;
     [SerializeField] private GameObject _PriceCanvas;
     [SerializeField] private BuyTouchHandler _buyTouchPanel;
@@ -26,14 +27,19 @@ public class StorePoint : MonoBehaviour
 
     private ItemStore _store;
 
-
+    private void Start()
+    {
+        _sellPoint = _sellPoint == null ? _buyPoint : _sellPoint;
+    }
     public void InitPoint(ItemStore store, PickableItem prefab = null)
     {
         if (prefab != null)
             _itemPrefab = prefab;
         if (_itemPrefab.TryGetComponent<StoreItem>(out _storeItem))
         {
-            Instantiate(_itemPrefab.GetModel(), transform);
+            Transform sellPoint = _itemPrefab.GetSellPoint();
+            sellPoint = sellPoint == null ? _sellPoint : sellPoint;
+            Instantiate(_itemPrefab.GetModel(), sellPoint);
             _price.text = _storeItem.price.ToString() + "$";
             _name.text = LocalizationManager.Instance.LocalizationData.GetTranslation(_itemPrefab.Data.name, LocalizationManager.Instance.CurrentLanguage, LocalizationKeyType.Item.ToString());
 

@@ -70,6 +70,7 @@ public class RangedWeaponController : MonoBehaviour
         StopAllCoroutines();
         _isShooting = false;
         _active = false;
+        _isReloading = false;
         AmmoUI.UseGun?.Invoke(_active);
         _usableItem.Active -= SetActiveUse;
         _usableItem.Use -= UseUpdate;

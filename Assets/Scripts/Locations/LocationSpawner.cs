@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System;
 
 public class LocationSpawner : MonoBehaviour
 {
@@ -22,6 +23,8 @@ public class LocationSpawner : MonoBehaviour
 
     private float lastSpawnZ;                           // Координата Z последнего созданного объекта
     private List<GameObject> spawnedLocations = new List<GameObject>();
+
+    public static Action Change;
 
     void Start()
     {
@@ -52,17 +55,18 @@ public class LocationSpawner : MonoBehaviour
 
     void SpawnLocation()
     {
+        Change?.Invoke();
         // Вычисляем случайное расстояние до следующего объекта и обновляем lastSpawnZ
-        float distance = Random.Range(minDistance, maxDistance);
+        float distance = UnityEngine.Random.Range(minDistance, maxDistance);
         lastSpawnZ += distance;
 
         // Рассчитываем позицию спавна: фиксированные spawnX, spawnY, динамический Z
         Vector3 spawnPosition = new Vector3(spawnX, spawnY, lastSpawnZ);
 
         // Выбираем случайный префаб из коллекции с учетом шансов
-        if (locationCollection != null && locationCollection.spawnItems.Count > 0)
+        if (locationCollection != null) //&& locationCollection.spawnItems.Count > 0)
         {
-            GameObject chosenPrefab = locationCollection.GetRandomSpawnPrefab();
+            GameObject chosenPrefab = locationCollection.GetRandomSpawnPrefab(lastSpawnZ);
             if (chosenPrefab != null)
             {
                 GameObject spawnedObj = Instantiate(chosenPrefab, spawnPosition, Quaternion.identity);

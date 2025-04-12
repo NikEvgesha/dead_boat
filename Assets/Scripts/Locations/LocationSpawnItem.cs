@@ -5,4 +5,10 @@ public class LocationSpawnItem
 {
     public GameObject prefab; // Префаб объекта
     public float chance;      // Вес (шанс) появления данного объекта
+
+    public bool HaveMinSpawnDistence;
+    public float MinSpawnDistence;
+
+    public bool HaveMaxSpawnDistence;
+    public float MaxSpawnDistence;
 }

@@ -10,6 +10,7 @@ public class PickableItem : MonoBehaviour
     [SerializeField] private ItemData _itemData;
     [SerializeField] private GameObject _visualObj;
 
+    [SerializeField] private Transform _sellPoint;
 
     [SerializeField] private float _lerpSpeed = 10f;
     [SerializeField] private float _maxSpeed = 10f;
@@ -53,8 +54,6 @@ public class PickableItem : MonoBehaviour
 
     private void OnEnable()
     {
-        if (gameObject.GetComponentInParent<ZombieController>())
-            Debug.Log("Now");
         _outline = GetComponent<Outline>();
         _collider = GetComponent<BoxCollider>();
         _rb = GetComponent<Rigidbody>();
@@ -260,7 +259,10 @@ public class PickableItem : MonoBehaviour
     {
         return _visualObj;
     }
-
+    public Transform GetSellPoint()
+    {
+        return _sellPoint;
+    }
 
     public bool TrySetAttach(bool attach)
     {

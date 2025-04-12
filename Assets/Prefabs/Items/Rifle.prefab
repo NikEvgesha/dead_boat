@@ -78,8 +78,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 4.24}
-  m_Center: {x: -0.07, y: 0.09, z: 0.58}
+  m_Size: {x: 0.36, y: 1, z: 4.24}
+  m_Center: {x: 0, y: 0.09, z: 1.63}
 --- !u!65 &2500941584411243809
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -256,7 +256,7 @@ PrefabInstance:
     - target: {fileID: 1479338428269486501, guid: 2d8dfdad05134cb4c98fbc245e3591f7, type: 3}
       propertyPath: _itemData
       value: 
-      objectReference: {fileID: 11400000, guid: a77e87070c4c68b4eb3db06b45f9b679, type: 2}
+      objectReference: {fileID: 11400000, guid: 10f03b71d998d9b48921ebf3822ad80d, type: 2}
     - target: {fileID: 1479338428269486501, guid: 2d8dfdad05134cb4c98fbc245e3591f7, type: 3}
       propertyPath: _visualObj
       value: 
@@ -298,6 +298,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4339168338898006245, guid: 2d8dfdad05134cb4c98fbc245e3591f7, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6325844226534851711, guid: 2d8dfdad05134cb4c98fbc245e3591f7, type: 3}
       propertyPath: m_Enabled
       value: 0
       objectReference: {fileID: 0}
@@ -366,8 +370,24 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8542118718614108297, guid: 2d8dfdad05134cb4c98fbc245e3591f7, type: 3}
+      propertyPath: m_Size.y
+      value: 1.02
+      objectReference: {fileID: 0}
+    - target: {fileID: 8542118718614108297, guid: 2d8dfdad05134cb4c98fbc245e3591f7, type: 3}
+      propertyPath: m_Size.z
+      value: 4.49
+      objectReference: {fileID: 0}
+    - target: {fileID: 8542118718614108297, guid: 2d8dfdad05134cb4c98fbc245e3591f7, type: 3}
       propertyPath: m_Enabled
-      value: 0
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8542118718614108297, guid: 2d8dfdad05134cb4c98fbc245e3591f7, type: 3}
+      propertyPath: m_Center.y
+      value: -0.39
+      objectReference: {fileID: 0}
+    - target: {fileID: 8542118718614108297, guid: 2d8dfdad05134cb4c98fbc245e3591f7, type: 3}
+      propertyPath: m_Center.z
+      value: 1.59
       objectReference: {fileID: 0}
     - target: {fileID: 8542118718614108297, guid: 2d8dfdad05134cb4c98fbc245e3591f7, type: 3}
       propertyPath: m_IsTrigger
