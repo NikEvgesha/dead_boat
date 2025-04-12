@@ -9,6 +9,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6851079728866601173}
+  - component: {fileID: 4500287901934606990}
+  - component: {fileID: 8493181981523889026}
   m_Layer: 0
   m_Name: Spawners
   m_TagString: Untagged
@@ -35,6 +37,49 @@ Transform:
   - {fileID: 627611798171607903}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4500287901934606990
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3621920966845882407}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a5ac11cc976e418e8d13136b07e1f52, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_AgentTypeID: 0
+  m_CollectObjects: 0
+  m_Size: {x: 10, y: 10, z: 10}
+  m_Center: {x: 0, y: 2, z: 0}
+  m_LayerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_UseGeometry: 0
+  m_DefaultArea: 0
+  m_GenerateLinks: 0
+  m_IgnoreNavMeshAgent: 1
+  m_IgnoreNavMeshObstacle: 1
+  m_OverrideTileSize: 0
+  m_TileSize: 256
+  m_OverrideVoxelSize: 0
+  m_VoxelSize: 0.16666667
+  m_MinRegionArea: 2
+  m_NavMeshData: {fileID: 0}
+  m_BuildHeightMesh: 0
+--- !u!114 &8493181981523889026
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3621920966845882407}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cfbf7021a6e01f0429b4d9de91f57a45, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &1326510280483443613
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -235,23 +280,23 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2582094052364843008, guid: 8d4cfdf1d847b1543b812a7ce0973dba, type: 3}
       propertyPath: m_VersionIndex
-      value: 4931
+      value: 4937
       objectReference: {fileID: 0}
     - target: {fileID: 4464475043757007448, guid: 8d4cfdf1d847b1543b812a7ce0973dba, type: 3}
       propertyPath: m_VersionIndex
-      value: 5566
+      value: 5572
       objectReference: {fileID: 0}
     - target: {fileID: 7553539416824761562, guid: 8d4cfdf1d847b1543b812a7ce0973dba, type: 3}
       propertyPath: m_VersionIndex
-      value: 4998
+      value: 5004
       objectReference: {fileID: 0}
     - target: {fileID: 8131646377136319327, guid: 8d4cfdf1d847b1543b812a7ce0973dba, type: 3}
       propertyPath: m_VersionIndex
-      value: 5065
+      value: 5071
       objectReference: {fileID: 0}
     - target: {fileID: 8571441555433395842, guid: 8d4cfdf1d847b1543b812a7ce0973dba, type: 3}
       propertyPath: m_VersionIndex
-      value: 4998
+      value: 5004
       objectReference: {fileID: 0}
     - target: {fileID: 8600266575326448622, guid: 8d4cfdf1d847b1543b812a7ce0973dba, type: 3}
       propertyPath: m_LocalPosition.x
@@ -295,7 +340,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9018341654854507505, guid: 8d4cfdf1d847b1543b812a7ce0973dba, type: 3}
       propertyPath: m_VersionIndex
-      value: 5056
+      value: 5062
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
