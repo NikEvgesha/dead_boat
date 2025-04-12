@@ -119,6 +119,12 @@ public class PlayerInput : MonoBehaviour
 
     private void CheckControls()
     {
+        if (Input.GetKeyDown(KeyCode.Tab))
+        {
+            //ShowCursor(!IsCursorVisible);
+            ControlManager.Instance.CursorActive = !ControlManager.Instance.CursorActive;
+        }
+
         if (ControlManager.Instance.UseTouchControl)
         {
             _jump = _touchControls.jumpButton.IsTriggered;
@@ -134,25 +140,23 @@ public class PlayerInput : MonoBehaviour
         else
         {
             _jump = Input.GetKeyDown(KeyCode.Space);
-            _pickUp = Input.GetMouseButtonDown(0);
             _interaction = Input.GetKeyDown(KeyCode.E);
             _interactionHold = Input.GetKey(KeyCode.E);
             _sprint = Input.GetKey(KeyCode.LeftShift);
             _attach = Input.GetKeyDown(KeyCode.Z);
             _inventory = Input.GetKeyDown(KeyCode.B);
             _reload = Input.GetKeyDown(KeyCode.R);
-            //_useItem = Input.GetMouseButtonDown(0);
-            _attack = Input.GetMouseButton(0);
-            _healing = _attack;
+            if (!ControlManager.Instance.CursorActive)
+            {
+                _pickUp = Input.GetMouseButtonDown(0);
+                //_useItem = Input.GetMouseButtonDown(0);
+                _attack = Input.GetMouseButton(0);
+                _healing = _attack;
+            }
         }
 
         // _useItem = _pickUp; //Переработать смысл кнопки
 
-        if (Input.GetKeyDown(KeyCode.Tab))
-        {
-            //ShowCursor(!IsCursorVisible);
-            ControlManager.Instance.CursorActive = !ControlManager.Instance.CursorActive;
-        }
     }
 
     private void UpdateMovement()
