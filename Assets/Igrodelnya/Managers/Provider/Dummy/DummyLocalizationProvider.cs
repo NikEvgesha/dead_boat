@@ -5,7 +5,7 @@ public class DummyLocalizationProvider : LocalizationProvider
 {
     public override event Action<string> OnSwitchLang;
 
-    private string currentLanguage = "En";
+    private string currentLanguage = "Ru";
 
     public override string GetCurrentLanguage()
     {

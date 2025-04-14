@@ -8,6 +8,6 @@ public class DropOutPanel : MonoBehaviour, IDropHandler
     {
         InventorySlot slot = eventData.pointerDrag.GetComponent<InventorySlot>();
         if (slot != null && slot.CurrentItem != null)
-            slot.DropOut();
+            slot.SetNewParent(null);
     }
 }

@@ -87,7 +87,8 @@ public class InventoryUI : MonoBehaviour
             }
         } else
         {
-            ControlManager.Instance.CursorActive = false;
+            if (!ControlManager.Instance.UseTouchControl)
+                ControlManager.Instance.CursorActive = false;
             for (int i = 0; i < _quickPanelCapacity; i++)
             {
                 if (_quickSlots[i].Empty)

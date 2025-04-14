@@ -89,7 +89,8 @@ public class BoardController : MonoBehaviour
             }
             else
             {
-                inputValue = Input.GetAxis("Vertical");
+                //inputValue = Input.GetAxis("Vertical");
+                inputValue = PlayerInput.Instance.TrainMove;
             }
         }
         else

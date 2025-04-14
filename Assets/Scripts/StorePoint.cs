@@ -95,6 +95,9 @@ public class StorePoint : MonoBehaviour
             _active = false;
             _BuyInfoCanvas.SetActive(false);
             StopAllCoroutines();
+            _progress = 0;
+            _buyProgress.fillAmount = _progress;
+            _buyInProgress = false;
         }
     }
 

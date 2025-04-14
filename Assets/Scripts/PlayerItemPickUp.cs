@@ -21,7 +21,7 @@ public class PlayerItemPickUp : MonoBehaviour
 
     private void Update()
     {
-        if (ControlManager.Instance.CursorActive) return;
+        //if (ControlManager.Instance.CursorActive) return;
         if (_grabbedItem && !_grabbedItem.Grabbed)
         {
             DropItem();
@@ -84,7 +84,7 @@ public class PlayerItemPickUp : MonoBehaviour
                     hitted = true;
                 }
             } 
-        } 
+        }
         if (!hitted)
         {
             if (_raycastHitItem != null)
@@ -119,6 +119,8 @@ public class PlayerItemPickUp : MonoBehaviour
         if (_grabbedItem == null && _raycastHitItem != null)
         {
             _raycastHitItem.PutToInventory();
+            _raycastHitItem.OnFocus(false);
+            _raycastHitItem = null;
         }
     }
 

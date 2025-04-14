@@ -14,6 +14,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private LayerMask _groundMask;
     [SerializeField] private float _waterForce= 4f;
     [SerializeField] private float _waterHeightCof = 0.2f;
+    [SerializeField] private float _desktopRotationSpeedMultiplier = 2f;
 
     [SerializeField] private float _YRotationLimitMax = 80f;
     [SerializeField] private float _YRotationLimitMin = -80f;
@@ -108,6 +109,11 @@ public class PlayerMovement : MonoBehaviour
     private void CameraRotation()
     {
         Vector2 rotationInput = PlayerInput.Instance.Rotation * _rotationSpeed * Time.deltaTime;
+
+        if (!ControlManager.Instance.UseTouchControl)
+        {
+            rotationInput *= _desktopRotationSpeedMultiplier;
+        }
 
         _currentYRotation += rotationInput.x;
 

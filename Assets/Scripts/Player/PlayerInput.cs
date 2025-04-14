@@ -7,6 +7,8 @@ public class PlayerInput : MonoBehaviour
     public Vector3 Movement { get; private set; }
     public Vector2 Rotation { get; private set; }
 
+    public float TrainMove { get; private set; }
+
     private TouchControls _touchControls;
 
     public bool Sprint { get {
@@ -161,11 +163,6 @@ public class PlayerInput : MonoBehaviour
 
     private void UpdateMovement()
     {
-        if (_inTrain)
-        {
-            Movement = new Vector3(0f, 0f, 0f);
-            return;
-        }
 
         if (ControlManager.Instance.UseTouchControl)
         {
@@ -173,6 +170,13 @@ public class PlayerInput : MonoBehaviour
         } else
         {
             Movement = new Vector3(Input.GetAxisRaw("Horizontal"), 0f, Input.GetAxisRaw("Vertical")).normalized;
+        }
+
+        if (_inTrain)
+        {
+            TrainMove = Movement.z;
+            Movement = new Vector3(0f, 0f, 0f);
+            return;
         }
     }
 

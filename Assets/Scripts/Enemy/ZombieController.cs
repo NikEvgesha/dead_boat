@@ -84,6 +84,9 @@ public class ZombieController : MonoBehaviour
         if (Vector3.Distance(transform.position, target.position) > detectionDistance)
         {
             agent.enabled = false;
+        } else
+        {
+            EnsureOnNavMesh();
         }
     }
 
@@ -114,18 +117,19 @@ public class ZombieController : MonoBehaviour
                 // Если игрок уже в зоне обнаружения, включаем агент
                 if (distance <= detectionDistance)
                 {
-                    agent.enabled = true;
+                    EnsureOnNavMesh();
                 }
                 else
                 {
                     // Если игрок находится между detectionDistance и chaseDistance, можно решить включать агент тоже,
                     // чтобы зомби не теряли цель, если уже преследуют. Здесь можно настроить поведение по желанию.
-                    agent.enabled = true;
+                    EnsureOnNavMesh();
                 }
+                return;
             }
         }
 
-        if (!agent.enabled)
+        if (!agent.enabled || !agent.isOnNavMesh)
             return;
 
         // Обновляем направление движения
@@ -203,5 +207,30 @@ public class ZombieController : MonoBehaviour
         }
         // Здесь можно запустить анимацию смерти, отключить агента и т.д.
         Destroy(gameObject);
+    }
+
+
+
+    // Метод для перемещения зомби на ближайшую точку NavMesh
+    private bool EnsureOnNavMesh()
+    {
+        if (agent.enabled && agent.isOnNavMesh)
+        {
+            return true;
+        }
+
+        NavMeshHit hit;
+        // Ищем ближайшую точку на NavMesh в радиусе 50 единиц
+        if (NavMesh.SamplePosition(transform.position, out hit, 50f, NavMesh.AllAreas))
+        {
+            transform.position = hit.position; // Перемещаем зомби на NavMesh
+            agent.enabled = true; // Активируем агента
+            return true;
+        }
+        else
+        {
+            Debug.LogWarning($"Зомби {gameObject.name} не смог найти NavMesh в радиусе 50 единиц!");
+            return false;
+        }
     }
 }

@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.ProBuilder.Shapes;
 
 
 public class PickableItem : MonoBehaviour
@@ -341,5 +342,11 @@ public class PickableItem : MonoBehaviour
         _currentSlot.UsebleActiveItem();
     }
 
+    private void OnDestroy()
+    {
+        ControlUI.Instance.ShowAttachButton(false);
+        ControlUI.Instance.ShowPickUpButton(false);
+        ControlUI.Instance.ShowPutToInventoryButton(false);
+    }
 
 }
