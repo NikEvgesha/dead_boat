@@ -10,6 +10,7 @@ public class PlayerStatsManager : MonoBehaviour
     [SerializeField] private float _maxStamina = 100f;
     [SerializeField] private float _maxHealth = 100f;
     [SerializeField] private float _staminaConsumptionRate = 1f;
+    [SerializeField] private float _staminaRestoreRate = 5f;
 
     private float _stamina;
     private float _health;
@@ -95,7 +96,7 @@ public class PlayerStatsManager : MonoBehaviour
         } else
         {
             if (Stamina < _maxStamina)
-                Stamina += _staminaConsumptionRate * Time.fixedDeltaTime;
+                Stamina += _staminaRestoreRate * Time.fixedDeltaTime;
         }
     }
 

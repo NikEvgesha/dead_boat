@@ -16,11 +16,13 @@ public class DayTime : MonoBehaviour
 
     [SerializeField] private float _cycleDuration = 24f; // Длительность полного цикла в реальных часах
     [SerializeField] private float _transitionSpeed = 10f; // Скорость перехода восхода/захода
+    [SerializeField] private float _nightLightIntensity = 0.15f; // интенсивность света ночью
 
     [SerializeField] private float _dayAngle = 90f;
     [SerializeField] private float _nightAngle = -90f;
     [SerializeField] private Color _dayFogColor;
     [SerializeField] private Color _nightFogColor;
+    [SerializeField] private int _startDayTimeDistance = 100;
 
     [Header("Transition Timing")]
     [SerializeField] private float _sunriseStart = 5.5f; // Начало восхода
@@ -38,6 +40,8 @@ public class DayTime : MonoBehaviour
     private bool _isDay;
     private float _dayDuration; // Длительность в игровых единицах (24 часа = 12 реальных часов)
     private bool _isTransitioning;
+    private float _currentOrbitSpeed;
+    private BoardController _boardController;
 
 
     private static readonly int _rotation = Shader.PropertyToID("_Rotation");
@@ -61,6 +65,13 @@ public class DayTime : MonoBehaviour
 
         _dayDuration = _cycleDuration * 3600f / 24f;
         _skybox = RenderSettings.skybox;
+        _currentOrbitSpeed = 0;
+    }
+
+    private void Start()
+    {
+        _boardController = FindAnyObjectByType<BoardController>();
+        _boardController.SwitchDistance += CheckDistanceToStart;
     }
 
     private void OnValidate()
@@ -78,11 +89,21 @@ public class DayTime : MonoBehaviour
 
     private void Update()
     {
-        _timeOfDay += (Time.deltaTime * _orbitSpeed / _dayDuration) * 24f;
+        _timeOfDay += (Time.deltaTime * _currentOrbitSpeed / _dayDuration) * 24f;
         _timeOfDay %= 24f;
         ProgressTime();
         UpdateLightning();
     }
+
+    private void CheckDistanceToStart(float distance)
+    {
+        if (distance >= _startDayTimeDistance)
+        {
+            _currentOrbitSpeed = _orbitSpeed;
+            _boardController.SwitchDistance -= CheckDistanceToStart;
+        }
+    }
+
 
     private void ProgressTime()
     {
@@ -96,10 +117,10 @@ public class DayTime : MonoBehaviour
             float t = (_timeOfDay - _sunriseStart) / (_sunriseEnd - _sunriseStart);
             sunAngle = Mathf.Lerp(-90f, 90f, t);
             _isTransitioning = true;
-            _skybox.SetFloat(_exposure, Mathf.Lerp(0.05f, 1f, t));
+            _skybox.SetFloat(_exposure, Mathf.Lerp(_nightLightIntensity, 1f, t));
             RenderSettings.fogColor = Color.Lerp(_nightFogColor, _dayFogColor, t);
-            RenderSettings.ambientIntensity = Mathf.Lerp(0, 1, t);
-            _sun.intensity = Mathf.Lerp(0.05f, 1f, t);
+            RenderSettings.ambientIntensity = Mathf.Lerp(_nightLightIntensity * 3f, 1, t);
+            _sun.intensity = Mathf.Lerp(_nightLightIntensity, 1f, t);
         }
         else if (_timeOfDay >= _sunsetStart && _timeOfDay <= _sunsetEnd)
         {
@@ -107,10 +128,10 @@ public class DayTime : MonoBehaviour
             float t = (_timeOfDay - _sunsetStart) / (_sunsetEnd - _sunsetStart);
             sunAngle = Mathf.Lerp(90f, 270f, t);
             _isTransitioning = true;
-            _skybox.SetFloat(_exposure, Mathf.Lerp(1f, 0.05f, t));
+            _skybox.SetFloat(_exposure, Mathf.Lerp(1f, _nightLightIntensity, t));
             RenderSettings.fogColor = Color.Lerp(_dayFogColor, _nightFogColor, t);
-            RenderSettings.ambientIntensity = Mathf.Lerp(1, 0, t);
-            _sun.intensity = Mathf.Lerp(1f, 0.05f, t);
+            RenderSettings.ambientIntensity = Mathf.Lerp(1, _nightLightIntensity * 3f, t);
+            _sun.intensity = Mathf.Lerp(1f, _nightLightIntensity, t);
         }
         else
         {
