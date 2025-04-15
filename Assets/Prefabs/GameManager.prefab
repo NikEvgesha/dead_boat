@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 6165330688218145547}
   - component: {fileID: 5867659506555630179}
   - component: {fileID: 1448149686903299276}
+  - component: {fileID: 1412155055129163345}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -48,6 +49,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _player: {fileID: 0}
+  _lobbySceneName: SampleScene
+  isEndGame: 0
   PlayDistance: 20000
 --- !u!114 &6165330688218145547
 MonoBehaviour:
@@ -89,3 +92,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 508f9b20e0d07af459572f6160c7a543, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1412155055129163345
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4045810401006761561}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2ece652e44a5b2f4e9905e28a859e806, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _starterPackItems:
+  - {fileID: 5837536643105673945, guid: f36016d6f3f53c54dbbeadbbaf98b8d7, type: 3}
