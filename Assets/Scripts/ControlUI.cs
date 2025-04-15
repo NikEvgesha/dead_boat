@@ -1,5 +1,4 @@
 using System;
-using Unity.VisualScripting;
 using UnityEngine;
 
 [Serializable]
@@ -72,6 +71,8 @@ public class ControlUI : MonoBehaviour
 
     public void ShowPickUpButton(bool visible)
     {
+        if (GameManager.Instance.isEndGame)
+            return;
         if (_isMobile)
             _touchControls.pickUpButton.gameObject.SetActive(visible);
         else
@@ -80,6 +81,8 @@ public class ControlUI : MonoBehaviour
 
     public void ShowPutToInventoryButton(bool visible)
     {
+        if (GameManager.Instance.isEndGame)
+            return;
         if (_isMobile)
             _touchControls.putToInventoryButton.gameObject.SetActive(visible);
         else
@@ -88,19 +91,25 @@ public class ControlUI : MonoBehaviour
 
     public void OnItemPickUp(bool picked)
     {
+        if (GameManager.Instance.isEndGame)
+            return;
         _touchControls.putToInventoryButton.gameObject.SetActive(!picked);
     }
 
     public void ShowAttachButton(bool visible)
     {
+        if (GameManager.Instance.isEndGame)
+            return;
         if (_isMobile)
             _touchControls.attachButton.gameObject.SetActive(visible);
         else
             _descktopHints.attach.SetActive(visible);
     }
-
+    
     public void ShowAttackButton(bool visible)
     {
+        if (GameManager.Instance.isEndGame)
+            return;
         if (_isMobile)
             _touchControls.attackButton.gameObject.SetActive(visible);
         //else
@@ -109,6 +118,8 @@ public class ControlUI : MonoBehaviour
 
     public void ShowReloadButton(bool visible)
     {
+        if (GameManager.Instance.isEndGame)
+            return;
         if (_isMobile)
             _touchControls.reloadButton.gameObject.SetActive(visible);
         //else
@@ -117,10 +128,11 @@ public class ControlUI : MonoBehaviour
 
     public void ShowUseButton(bool visible)
     {
+        if (GameManager.Instance.isEndGame)
+            return;
         if (_isMobile)
             _touchControls.useButton.gameObject.SetActive(visible);
         //else
         //_descktopHints.reload.SetActive(visible);
     }
-
 }

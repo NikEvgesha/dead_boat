@@ -178,7 +178,9 @@ public class EndGameUIManager : MonoBehaviour
     public void OnPlayAgainClicked()
     {
         // Перезапуск текущей сцены
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        StopAllCoroutines();
+        GameManager.Instance.EndGame(false);
+        //SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     // Метод, привязанный к кнопке возрождения
@@ -203,6 +205,7 @@ public class EndGameUIManager : MonoBehaviour
             // При поражении: показать рекламу перед возрождением
             ShowAdAndRevive();
         }
+
     }
 
     #endregion
@@ -210,8 +213,10 @@ public class EndGameUIManager : MonoBehaviour
     // Метод для загрузки сцены лобби
     private void LoadLobby()
     {
+        StopAllCoroutines();
+        GameManager.Instance.EndGame(true);
         // Замените "LobbyScene" на имя вашей сцены лобби
-        SceneManager.LoadScene("SampleScene");
+        //SceneManager.LoadScene("SampleScene");
     }
 
     // Пример метода списания монет для возрождения
@@ -226,6 +231,7 @@ public class EndGameUIManager : MonoBehaviour
     // Метод возрождения игрока
     private void RevivePlayer()
     {
+        StopAllCoroutines();
         Debug.Log("Игрок возрожден");
         PlayerStatsManager.Instance.Revive();
         // Спрячьте UI конца игры и восстановите игровое состояние

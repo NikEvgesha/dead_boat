@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -7,9 +8,10 @@ public class GameManager : MonoBehaviour
 
 
     [SerializeField] private PlayerStatsManager _player;
-
+    [SerializeField] private string _lobbySceneName = "SampleScene";
     public PlayerStatsManager Player { get { return _player; } }
 
+    public bool isEndGame = false;
 
     [Header("Дистанция всей игры")]
     public float PlayDistance = 100000f;
@@ -20,6 +22,7 @@ public class GameManager : MonoBehaviour
         if (_instance == null)
         {
             _instance = this;
+            isEndGame = false;
             //DontDestroyOnLoad(gameObject);
         }
         else
@@ -34,6 +37,13 @@ public class GameManager : MonoBehaviour
         {
             _player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerStatsManager>();
         }
+    }
+
+    public void EndGame(bool lobby)
+    {
+        isEndGame = true;
+        string scenenName = lobby ? _lobbySceneName : SceneManager.GetActiveScene().name;
+        SceneManager.LoadScene(scenenName);
     }
     
 }
