@@ -45,6 +45,13 @@ public class DecorationSpawner : MonoBehaviour
 
     void Start()
     {
+
+        if (boardController == null)
+            boardController = FindAnyObjectByType<BoardController>();
+        if (boardController == null)
+            Debug.LogError("boardController не найден");
+        if (player == null)
+            player = boardController?.transform;
         _stopSpawnDistance = GameManager.Instance.PlayDistance - (2*spawnAreaOffset.y + spawnAreaSize.y);
         // Запускаем корутину для симуляции начального спавна
         StartCoroutine(SimulateInitialSpawns());

@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class FuelDeposit : MonoBehaviour
@@ -5,6 +6,7 @@ public class FuelDeposit : MonoBehaviour
     [Tooltip("Ссылка на TrainController, куда будет добавляться топливо")]
     public BoardController trainController;
 
+    public Action AddFuel;
     private void OnTriggerEnter(Collider other)
     {
         FuelItem fuelItem = other.GetComponent<FuelItem>();
@@ -13,6 +15,7 @@ public class FuelDeposit : MonoBehaviour
             trainController.AddFuel(fuelItem.fuelValue);
             Debug.Log("Добавлено топлива: " + fuelItem.fuelValue);
             // Удаляем объект после его использования
+            AddFuel?.Invoke();
             Destroy(other.gameObject);
         }
     }

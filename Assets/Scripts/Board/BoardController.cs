@@ -44,7 +44,11 @@ public class BoardController : MonoBehaviour
 
     // Общая пройденная дистанция (в метрах)
     public float TotalDistanceTraveled = 0f;
+
+    [SerializeField] private float _endTutorialDistance = 50f;
+
     private bool _endGame = false;
+    private bool _endTutorial = false;
 
     public Action<float> SwitchDistance;
     public Action<float> SwitchSpeed;
@@ -72,6 +76,11 @@ public class BoardController : MonoBehaviour
     {   
         while (this.enabled)
         {
+            if (TotalDistanceTraveled > _endTutorialDistance && !_endTutorial)
+            {
+                _endTutorial = true;
+                TutorialManager.Instance.QuickStopTutorial();
+            }
             SwitchDistance?.Invoke(TotalDistanceTraveled);
             yield return new WaitForSeconds(1);
         }

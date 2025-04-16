@@ -51,7 +51,8 @@ public class PickableItem : MonoBehaviour
     public ItemData Data { get { return _itemData; } }
     public bool Usable => _usable;
 
-    public Action TakeItem;
+    public Action PickUpItem;
+    public Action PutItemToInventory;
 
     private void OnEnable()
     {
@@ -120,6 +121,7 @@ public class PickableItem : MonoBehaviour
         _attacher.CanAttach += CanAttachChange;
 
         _status = ItemStatus.Grabbed;
+        PickUpItem?.Invoke();
     }
 
 
@@ -166,6 +168,7 @@ public class PickableItem : MonoBehaviour
             _useKinematicCheck = false;
             TrySetAttach(false);
             _status = ItemStatus.InInventory;
+            PutItemToInventory?.Invoke();
         }
 
     }

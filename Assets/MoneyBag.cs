@@ -1,7 +1,7 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.Windows;
 
 public class MoneyBag : MonoBehaviour
 {
@@ -18,6 +18,8 @@ public class MoneyBag : MonoBehaviour
     private bool _active;
     private float _progress;
     private bool _collectInProgress;
+
+    public Action TakeBag;
     public int Money
     {
         get
@@ -77,7 +79,7 @@ public class MoneyBag : MonoBehaviour
         _progress = 0;
         _fillImg.fillAmount = _progress;
         _collectInProgress = false;
-
+        TakeBag?.Invoke();
         Destroy(gameObject);
 
     }

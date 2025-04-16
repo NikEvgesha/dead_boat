@@ -28,6 +28,11 @@ public class LocationSpawner : MonoBehaviour
 
     void Start()
     {
+        if (boardController == null)
+            boardController = FindObjectOfType<BoardController>();
+        if (boardController == null)
+            Debug.LogError("BoardController не найден");
+
         _stopSpawnDistance = GameManager.Instance.PlayDistance - spawnThreshold;
         // Инициализируем lastSpawnZ значением текущего пройденного расстояния,
         // чтобы объекты спавнились впереди поезда

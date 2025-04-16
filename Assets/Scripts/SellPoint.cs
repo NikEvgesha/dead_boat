@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class SellPoint : MonoBehaviour
@@ -11,6 +10,7 @@ public class SellPoint : MonoBehaviour
 
     private MoneyBag _moneyBag;
 
+    public Action<StoreType> SellItem;
     // TODO: spawn money bag
 
 
@@ -44,10 +44,12 @@ public class SellPoint : MonoBehaviour
             {
                 _moneyBag = Instantiate(_moneyBagPrefab, _moneyBagPoint);
                 _moneyBag.Money = cost;
-            } else
+            }
+            else
             {
                 _moneyBag.Money += cost;
             }
+            SellItem?.Invoke(_type);
             Destroy(other.gameObject);
 
             

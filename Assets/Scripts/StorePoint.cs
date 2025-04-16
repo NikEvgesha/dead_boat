@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -27,6 +28,8 @@ public class StorePoint : MonoBehaviour
     public bool StaticItem => _staticItem;
 
     private ItemStore _store;
+
+    public Action BuyItem;
 
     private void Start()
     {
@@ -140,6 +143,7 @@ public class StorePoint : MonoBehaviour
         _progress = 0;
         _buyProgress.fillAmount = _progress;
         _buyInProgress = false;
+        BuyItem?.Invoke();
 
     }
 }

@@ -30,13 +30,17 @@ public class GameManager : MonoBehaviour
             Destroy(gameObject);
         }
     }
-
+    private void OnDestroy()
+    {
+        isEndGame = true;
+    }
     private void Start()
     {
         if (_player == null)
         {
             _player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerStatsManager>();
         }
+        TutorialManager.Instance.StartTutorial();
     }
 
     public void EndGame(bool lobby)
