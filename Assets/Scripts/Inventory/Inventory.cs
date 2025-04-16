@@ -41,7 +41,7 @@ public class Inventory : MonoBehaviour
 
     private void Start()
     {
-        _activeItemManager = GetComponent<ActiveItemManager>();
+        _activeItemManager = GetComponentInParent<ActiveItemManager>();
         _starterPack = GetComponent<StarterPackManager>();
         InventoryUI.Instance.UpdateCapacity(_bagItems.Count, _capacity);
         //InventoryUI.Instance.SpawnSlots(_capacityTotal - _quickSlotsCapacity, _quickSlotsCapacity);

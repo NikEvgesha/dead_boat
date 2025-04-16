@@ -40,7 +40,7 @@ public class GameManager : MonoBehaviour
         {
             _player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerStatsManager>();
         }
-        TutorialManager.Instance.StartTutorial();
+        //TutorialManager.Instance.StartTutorial();
     }
 
     public void EndGame(bool lobby)

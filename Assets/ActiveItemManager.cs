@@ -10,7 +10,6 @@ public class ActiveItemManager : MonoBehaviour
 
 
 
-
     public void SwitchActiveItem(PickableItem newItem)
     {
         if (newItem == _activeItem) return;
