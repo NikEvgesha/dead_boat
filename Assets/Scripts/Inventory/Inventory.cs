@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using UnityEngine;
 
 public class Inventory : MonoBehaviour
@@ -13,8 +14,9 @@ public class Inventory : MonoBehaviour
     private static Inventory _instance;
     public static Inventory Instance { get { return _instance; } }
 
-    private List<PickableItem> _bagItems;
-    private List<PickableItem> _quickPanelItems;
+    private List<PickableItem> _bagItems = new();
+    private List<PickableItem> _quickPanelItems = new();
+    private StarterPackManager _starterPack;
 
 
     public Action<PickableItem> ItemDropOut;
@@ -40,13 +42,24 @@ public class Inventory : MonoBehaviour
     private void Start()
     {
         _activeItemManager = GetComponent<ActiveItemManager>();
-        _bagItems = new();
-        _quickPanelItems = new();
+        _starterPack = GetComponent<StarterPackManager>();
         InventoryUI.Instance.UpdateCapacity(_bagItems.Count, _capacity);
         //InventoryUI.Instance.SpawnSlots(_capacityTotal - _quickSlotsCapacity, _quickSlotsCapacity);
         //InventoryUI.Instance.UpdateCapacity(_items.Count, _capacityTotal);
+
+        //SetStartItems(_starterPack.GetStartItems());
+
     }
 
+
+    public void SetStartItems(ReadOnlyCollection<PickableItem> items)
+    {
+        foreach (PickableItem item in items) {
+
+            PickableItem itemObj = Instantiate(item, null);
+            AddItem(itemObj);
+        }
+    }
 
 
     public bool AddItem(PickableItem item)
