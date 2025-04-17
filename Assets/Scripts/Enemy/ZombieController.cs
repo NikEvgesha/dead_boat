@@ -53,8 +53,11 @@ public class ZombieController : MonoBehaviour
     private PlayerStatsManager _player;
     private PickableItem _pickableItem;
 
+    [SerializeField] private AudioClip _audioDie;
+    [SerializeField] private AudioClip _audioDamage;
     [SerializeField] private AudioClip _audioHit;
     [SerializeField] private AudioSource _audioSource;
+    [SerializeField] private AudioSource _audioSourceEnemy;
     void Awake()
     {
         _pickableItem = GetComponentInChildren<PickableItem>();
@@ -184,6 +187,9 @@ public class ZombieController : MonoBehaviour
         if (_isDie)
             return;
 
+        if (_audioSourceEnemy)
+            if (_audioDamage)
+                _audioSourceEnemy.PlayOneShot(_audioDamage);
         Debug.Log("Зомби получает урон!");
         currentHP -= damage;
         if (!_hpBar.gameObject.activeSelf)
@@ -201,6 +207,9 @@ public class ZombieController : MonoBehaviour
 
     void Die()
     {
+        if (_audioSourceEnemy)
+            if (_audioDie)
+                _audioSourceEnemy.PlayOneShot(_audioDie);
         _hpBar.gameObject.SetActive(false);
         _isDie = true;
         Debug.Log("Зомби погибает.");
