@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -10,6 +9,9 @@ public class CurrencyManager : MonoBehaviour
 
     [SerializeField] private int coins;
 
+    [SerializeField] private AudioClip _audioBuy;
+    [SerializeField] private AudioClip _audioSell;
+    [SerializeField] private AudioSource _audioSource;
     private static CurrencyManager _instance;
 
     private Dictionary<CurrencyType, int> _balance = new() 
@@ -53,6 +55,9 @@ public class CurrencyManager : MonoBehaviour
 
     public void AddCurrency(CurrencyType type, int amount)
     {
+        if (_audioSource)
+            if(_audioSell)
+                _audioSource.PlayOneShot(_audioSell);
         _balance[type] += amount;
         CurrencyChanged?.Invoke(type, _balance[type]);
     }
@@ -61,6 +66,10 @@ public class CurrencyManager : MonoBehaviour
     {
         if (_balance[type] >= amount)
         {
+            if (_audioSource)
+                if (_audioBuy)
+                    _audioSource.PlayOneShot(_audioBuy);
+
             _balance[type] -= amount;
             CurrencyChanged?.Invoke(type, _balance[type]);
             return true;

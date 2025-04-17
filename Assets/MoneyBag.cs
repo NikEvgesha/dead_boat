@@ -75,12 +75,12 @@ public class MoneyBag : MonoBehaviour
         if (_progress >= 1f)
         {
             CurrencyManager.Instance.AddCurrency(CurrencyType.Coins, _money);
+            TakeBag?.Invoke();
+            Destroy(gameObject);
         }
         _progress = 0;
         _fillImg.fillAmount = _progress;
         _collectInProgress = false;
-        TakeBag?.Invoke();
-        Destroy(gameObject);
 
     }
 

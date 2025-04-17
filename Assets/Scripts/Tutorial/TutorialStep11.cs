@@ -18,7 +18,11 @@ public class TutorialStep11 : TutorialStep
         _canvas.SetActive(true);
         _player = _player ? _player : PlayerStatsManager.Instance.transform;
         if (!_goal)
+        {
             Debug.LogError("Ќет конечной точки дл€ стрелки в тутере");
+            DeactivateStep();
+            return;
+        }
         _line.StartArrowLine(_player, _goal);
         _item.AddFuel += DeactivateStep;
     }

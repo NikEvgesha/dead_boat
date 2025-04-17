@@ -52,6 +52,9 @@ public class ZombieController : MonoBehaviour
 
     private PlayerStatsManager _player;
     private PickableItem _pickableItem;
+
+    [SerializeField] private AudioClip _audioHit;
+    [SerializeField] private AudioSource _audioSource;
     void Awake()
     {
         _pickableItem = GetComponentInChildren<PickableItem>();
@@ -165,6 +168,10 @@ public class ZombieController : MonoBehaviour
         Debug.Log("Зомби атакует!");
         animator.SetTrigger("Attack");
         _player.TakeDamage((int)attackDamage);
+
+        if (_audioSource)
+            if (_audioHit)
+                _audioSource.PlayOneShot(_audioHit);
         // Здесь можно добавить дополнительную логику атаки (например, уменьшение HP цели).
     }
 

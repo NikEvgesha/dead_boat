@@ -20,6 +20,8 @@ public class StorePoint : MonoBehaviour
 
     [SerializeField] private bool _staticItem;
 
+    //[SerializeField] private AudioSource _audioSource;
+
     private bool _active;
     private float _progress;
     private bool _buyInProgress;
@@ -139,11 +141,13 @@ public class StorePoint : MonoBehaviour
         {
             CurrencyManager.Instance.RemoveCurrency(CurrencyType.Coins, _storeItem.price);
             Instantiate(_itemPrefab, _buyPoint);
+            BuyItem?.Invoke();
+            //if (_audioSource)
+                //_audioSource.Play();
         }
         _progress = 0;
         _buyProgress.fillAmount = _progress;
-        _buyInProgress = false;
-        BuyItem?.Invoke();
+        _buyInProgress = false; 
 
     }
 }

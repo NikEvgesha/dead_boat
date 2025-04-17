@@ -926,9 +926,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f29cd942bb2781342b73ce867073e261, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentFuel: 100
-  _maxFuel: 1000
-  fuelConsumptionRate: 0.1
+  currentFuel: 10
+  _maxFuel: 100
+  fuelConsumptionRate: 0.2
   acceleration: 5
   maxSpeed: 85
   coastDeceleration: 20
@@ -1519,7 +1519,7 @@ GameObject:
   - component: {fileID: 2405183959017592498}
   - component: {fileID: 8277460854855324394}
   - component: {fileID: 8821289765229909345}
-  m_Layer: 6
+  m_Layer: 2
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2000,7 +2000,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 673
+  m_VersionIndex: 697
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -2369,6 +2369,10 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 6
       objectReference: {fileID: 0}
+    - target: {fileID: 1383116331013231765, guid: 6df0efd240e71bb4ebd394f6b6367a10, type: 3}
+      propertyPath: m_TagString
+      value: Metal
+      objectReference: {fileID: 0}
     - target: {fileID: 2667762418299256934, guid: 6df0efd240e71bb4ebd394f6b6367a10, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -2411,7 +2415,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2693187578664864050, guid: 6df0efd240e71bb4ebd394f6b6367a10, type: 3}
       propertyPath: m_VersionIndex
-      value: 4834
+      value: 4921
       objectReference: {fileID: 0}
     - target: {fileID: 3131166765973345511, guid: 6df0efd240e71bb4ebd394f6b6367a10, type: 3}
       propertyPath: m_Layer
@@ -2419,7 +2423,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7671583434362331355, guid: 6df0efd240e71bb4ebd394f6b6367a10, type: 3}
       propertyPath: m_VersionIndex
-      value: 5478
+      value: 5565
       objectReference: {fileID: 0}
     - target: {fileID: 7671583434362331355, guid: 6df0efd240e71bb4ebd394f6b6367a10, type: 3}
       propertyPath: m_SelectedEdges.Array.size
@@ -2453,7 +2457,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 907206180600645475, guid: c4fa7d260b91b7e4ebc027d2c407e721, type: 3}
       propertyPath: m_VersionIndex
-      value: 8772
+      value: 8844
       objectReference: {fileID: 0}
     - target: {fileID: 2086898065992509868, guid: c4fa7d260b91b7e4ebc027d2c407e721, type: 3}
       propertyPath: m_Enabled
@@ -2461,7 +2465,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2948849852257557366, guid: c4fa7d260b91b7e4ebc027d2c407e721, type: 3}
       propertyPath: m_VersionIndex
-      value: 6016
+      value: 6088
       objectReference: {fileID: 0}
     - target: {fileID: 2957513122544968618, guid: c4fa7d260b91b7e4ebc027d2c407e721, type: 3}
       propertyPath: m_Enabled
@@ -2469,19 +2473,23 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2983050008209125496, guid: c4fa7d260b91b7e4ebc027d2c407e721, type: 3}
       propertyPath: m_VersionIndex
-      value: 1185
+      value: 1209
       objectReference: {fileID: 0}
     - target: {fileID: 3547305200944058120, guid: c4fa7d260b91b7e4ebc027d2c407e721, type: 3}
       propertyPath: m_Name
       value: BoardDefault
       objectReference: {fileID: 0}
+    - target: {fileID: 3547305200944058120, guid: c4fa7d260b91b7e4ebc027d2c407e721, type: 3}
+      propertyPath: m_TagString
+      value: Metal
+      objectReference: {fileID: 0}
     - target: {fileID: 3701388886959511219, guid: c4fa7d260b91b7e4ebc027d2c407e721, type: 3}
       propertyPath: m_VersionIndex
-      value: 2665
+      value: 2737
       objectReference: {fileID: 0}
     - target: {fileID: 4064112655458607687, guid: c4fa7d260b91b7e4ebc027d2c407e721, type: 3}
       propertyPath: m_VersionIndex
-      value: 749
+      value: 773
       objectReference: {fileID: 0}
     - target: {fileID: 4110679715062387086, guid: c4fa7d260b91b7e4ebc027d2c407e721, type: 3}
       propertyPath: m_LocalPosition.x
@@ -2525,15 +2533,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4166781164057209702, guid: c4fa7d260b91b7e4ebc027d2c407e721, type: 3}
       propertyPath: m_VersionIndex
-      value: 971
+      value: 995
       objectReference: {fileID: 0}
     - target: {fileID: 4557410373219126292, guid: c4fa7d260b91b7e4ebc027d2c407e721, type: 3}
       propertyPath: m_VersionIndex
-      value: 1185
+      value: 1209
       objectReference: {fileID: 0}
     - target: {fileID: 5164430790932885013, guid: c4fa7d260b91b7e4ebc027d2c407e721, type: 3}
       propertyPath: m_VersionIndex
-      value: 1185
+      value: 1209
       objectReference: {fileID: 0}
     - target: {fileID: 5554360841026946264, guid: c4fa7d260b91b7e4ebc027d2c407e721, type: 3}
       propertyPath: m_Enabled
@@ -2545,7 +2553,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5865354445565412046, guid: c4fa7d260b91b7e4ebc027d2c407e721, type: 3}
       propertyPath: m_VersionIndex
-      value: 7121
+      value: 7193
       objectReference: {fileID: 0}
     - target: {fileID: 7770535665489359980, guid: c4fa7d260b91b7e4ebc027d2c407e721, type: 3}
       propertyPath: trainController

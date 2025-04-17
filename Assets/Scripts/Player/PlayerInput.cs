@@ -197,4 +197,8 @@ public class PlayerInput : MonoBehaviour
     {
         _inTrain = inTrain;
     }
+    public bool InTrain()
+    {
+        return _inTrain;
+    }
 }

@@ -5083,9 +5083,17 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 451260270057983084, guid: 200718ddd62da0b459336e78f7e78f56, type: 3}
+      propertyPath: _audioHit
+      value: 
+      objectReference: {fileID: 8300000, guid: 72be54f714e5d434d8be1157bdc6c72a, type: 3}
+    - target: {fileID: 451260270057983084, guid: 200718ddd62da0b459336e78f7e78f56, type: 3}
       propertyPath: attackRange
       value: 7
       objectReference: {fileID: 0}
+    - target: {fileID: 451260270057983084, guid: 200718ddd62da0b459336e78f7e78f56, type: 3}
+      propertyPath: _audioSource
+      value: 
+      objectReference: {fileID: 4269286329253820373}
     - target: {fileID: 1230276129935840420, guid: 200718ddd62da0b459336e78f7e78f56, type: 3}
       propertyPath: m_Avatar
       value: 
@@ -5185,3 +5193,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _particle: {fileID: 7414891994354034753}
+--- !u!82 &4269286329253820373 stripped
+AudioSource:
+  m_CorrespondingSourceObject: {fileID: 7430585562900206916, guid: 200718ddd62da0b459336e78f7e78f56, type: 3}
+  m_PrefabInstance: {fileID: 6638643919134057105}
+  m_PrefabAsset: {fileID: 0}

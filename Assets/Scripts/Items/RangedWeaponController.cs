@@ -16,6 +16,9 @@ public class RangedWeaponController : MonoBehaviour
     [SerializeField] private GameObject impactEffect;
     [SerializeField] private Animator _animator;         // Аниматор для оружия
     [SerializeField] private LayerMask hitLayers;
+    [SerializeField] private AudioClip _audioReload;
+    [SerializeField] private AudioClip _audioShoot;
+    [SerializeField] private AudioSource _audioSource;
 
 
     [Header("Настройки дробовика")]
@@ -145,7 +148,9 @@ public class RangedWeaponController : MonoBehaviour
 
         if (_animator != null)
             _animator.SetTrigger("Reload");
-
+        if (_audioSource)
+            if (_audioReload)
+                _audioSource.PlayOneShot(_audioReload);
         Debug.Log("Перезарядка...");
         yield return new WaitForSeconds(reloadTime);
 
@@ -162,7 +167,10 @@ public class RangedWeaponController : MonoBehaviour
     {
         if (muzzleFlash != null)
             muzzleFlash.Play();
-
+        
+        if (_audioSource)
+            if(_audioShoot)
+                _audioSource.PlayOneShot(_audioShoot);
         // Если оружие - дробовик, выполняем несколько raycast'ов с разбросом
         if (weaponType == WeaponType.Shotgun)
         {

@@ -7,6 +7,7 @@ public class SellPoint : MonoBehaviour
     [SerializeField] private MoneyBag _moneyBagPrefab;
     [SerializeField] private Transform _moneyBagPoint;
 
+    [SerializeField] private AudioSource _audioSource;
 
     private MoneyBag _moneyBag;
 
@@ -51,8 +52,9 @@ public class SellPoint : MonoBehaviour
             }
             SellItem?.Invoke(_type);
             Destroy(other.gameObject);
+            if (_audioSource)
+                _audioSource.Play();
 
-            
         }
     }
 

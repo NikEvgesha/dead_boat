@@ -54,6 +54,7 @@ public class BoardController : MonoBehaviour
     public Action<float> SwitchSpeed;
     public Action<float,float> SwitchFuel;
     public Action EndGame;
+    [SerializeField] private AudioSource _audioSource;
 
     private void Awake()
     {
@@ -71,6 +72,12 @@ public class BoardController : MonoBehaviour
         StartCoroutine(UpdateUiDistance());
         SwitchSpeed?.Invoke(currentSpeed);
         SwitchFuel?.Invoke(currentFuel, _maxFuel);
+        if (_audioSource)
+        {
+            _audioSource.volume = 0;
+            _audioSource.Play();
+        }
+
     }
     IEnumerator UpdateUiDistance()
     {   
@@ -163,12 +170,11 @@ public class BoardController : MonoBehaviour
         if (speed != currentSpeed)
             SwitchSpeed?.Invoke(currentSpeed);
         //if (currentSpeed > 0)
-            //SwitchDistance?.Invoke(TotalDistanceTraveled);
+        //SwitchDistance?.Invoke(TotalDistanceTraveled);
 
-
-
+        if (_audioSource)
+            _audioSource.volume = (currentSpeed / 2) / maxSpeed;
     }
-
     // Метод для расхода топлива
     void ConsumeFuel(float amount)
     {

@@ -21,7 +21,11 @@ public class TutorialStep12 : TutorialStep
         _desctop.SetActive(!isMobile);
         _player = _player ? _player : PlayerStatsManager.Instance.transform;
         if (!_goal)
+        {
             Debug.LogError("Ќет конечной точки дл€ стрелки в тутере");
+            DeactivateStep();
+            return;
+        }
         _line.StartArrowLine(_player, _goal);
     }
     public override void DeactivateStep()

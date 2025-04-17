@@ -8,6 +8,9 @@ public class MeleWeapon : MonoBehaviour
     [SerializeField] private Animator _animator;
     [SerializeField] private BoxCollider _damageArea;
     [SerializeField] private int _damage;
+    [SerializeField] private AudioClip _audioHit;
+    [SerializeField] private AudioClip _audioSwing;
+    [SerializeField] private AudioSource _audioSource;
 
     private List<ZombieController> _zombies = new List<ZombieController>();
     private bool _use;
@@ -25,6 +28,10 @@ public class MeleWeapon : MonoBehaviour
 
             _zombies.Add(zombie);
             zombie.TakeDamage(_damage);
+
+            if (_audioSource)
+                if (_audioHit)
+                    _audioSource.PlayOneShot(_audioHit);
         }
     }
     private void OnEnable()
@@ -62,6 +69,9 @@ public class MeleWeapon : MonoBehaviour
         int randomAttack = Random.Range(1, 4);
         _animator.SetInteger("AttackIndex", randomAttack);
         _animator.SetTrigger("DoAttack");
+        if(_audioSource)
+            if(_audioSwing)
+                _audioSource.PlayOneShot(_audioSwing);
         StartCoroutine(EndAnimation());
     }
     
