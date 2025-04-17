@@ -40,7 +40,16 @@ public class PlayerMovement : MonoBehaviour
         _rb = GetComponent<Rigidbody>();
         _controlUI = FindAnyObjectByType<ControlUI>();
         _controlUI.UseMobileSetup(ControlManager.Instance.UseTouchControl);
+
+        Settings.instance.ChangeMouseSensitivity += ChangeMouseSensitivity;
     }
+
+
+    private void OnDisable()
+    {
+        Settings.instance.ChangeMouseSensitivity -= ChangeMouseSensitivity;
+    }
+
     private void OnTriggerStay(Collider other)
     {
         if (other.CompareTag("Water"))
@@ -121,6 +130,11 @@ public class PlayerMovement : MonoBehaviour
         _currentXRotation = Mathf.Clamp(_currentXRotation, _YRotationLimitMin, _YRotationLimitMax);
         transform.rotation = Quaternion.Euler(0f, _currentYRotation, 0f);
         _camera.transform.localRotation = Quaternion.Euler(_currentXRotation, 0f, 0f);
+    }
+
+    private void ChangeMouseSensitivity(float sens)
+    {
+        _rotationSpeed = Mathf.Lerp(10f, 100f, sens);
     }
 
 }

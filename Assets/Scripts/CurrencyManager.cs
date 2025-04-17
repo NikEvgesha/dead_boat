@@ -83,4 +83,10 @@ public class CurrencyManager : MonoBehaviour
         // TODO: show hint
         return false;
     }
+
+
+    public Sprite GetCurrencyIcon(CurrencyType type)
+    {
+        return _currencyIcons[type];
+    }
 }

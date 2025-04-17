@@ -16,6 +16,7 @@ public class GameManager : MonoBehaviour
     [Header("Дистанция всей игры")]
     public float PlayDistance = 100000f;
 
+    private bool _pause;
 
     private void Awake()
     {
@@ -49,5 +50,12 @@ public class GameManager : MonoBehaviour
         string scenenName = lobby ? _lobbySceneName : SceneManager.GetActiveScene().name;
         SceneManager.LoadScene(scenenName);
     }
-    
+
+    public void SetPause(bool paused)
+    {
+        _pause = paused;
+        Time.timeScale = paused ? 0f : 1f;
+        AudioListener.pause = paused;
+    }
+
 }
