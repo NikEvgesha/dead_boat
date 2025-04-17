@@ -1,28 +1,17 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-[Serializable]
-public struct SpecialShopItem
-{
-    public PickableItem item;
-    public int price;
-    public CurrencyType currencyType;
-}
 
-public class SpecialShop : MonoBehaviour
+public class SpecialShopPoint : MonoBehaviour
 {
-    [SerializeField] private List<SpecialShopItem> _items;
 
     [SerializeField] private Canvas _infoCanvas;
-    [SerializeField] private Canvas _shopCanvas;
+    [SerializeField] private BoatShop _shop;
     [SerializeField] private BuyTouchHandler _touchPanel;
     [SerializeField] private Transform _buyPoint;
     [SerializeField] private Image _openProgress;
-    [SerializeField] private DynamicGridSpawner _grid;
-    [SerializeField] private SpecialShopSlot _slotPrefab;
 
     private bool _active;
     private float _progress;
@@ -30,27 +19,15 @@ public class SpecialShop : MonoBehaviour
 
     public Action BuyItem;
 
-
-    private void OnEnable()
-    {
-
-    }
-
     private void Start()
     {
-        InitSlots();
+        _shop.ItemPurchased += OnItemPurchase;
     }
 
-
-    public void InitSlots()
+    private void OnDisable()
     {
-        foreach (SpecialShopItem item in _items)
-        {
-            SpecialShopSlot slot = _grid.SpawnObject<SpecialShopSlot>(_slotPrefab.gameObject);
-            slot.Init(item);
-        }
+        _shop.ItemPurchased -= OnItemPurchase;
     }
-
 
     private void OnTriggerEnter(Collider other)
     {
@@ -65,12 +42,17 @@ public class SpecialShop : MonoBehaviour
     {
         if (other.tag == "Player")
         {
+
+            if (_shop.Opened)
+                _shop.ToggleOpen();
+
             _active = false;
             _infoCanvas.gameObject.SetActive(false);
             StopAllCoroutines();
             _progress = 0;
             _openProgress.fillAmount = _progress;
             _openInProgress = false;
+
         }
     }
 
@@ -105,10 +87,17 @@ public class SpecialShop : MonoBehaviour
 
         if (_progress >= 1f)
         {
-            _shopCanvas.gameObject.SetActive(true);
+            _shop.ToggleOpen();
         }
         _progress = 0;
         _openProgress.fillAmount = _progress;
         _openInProgress = false;
     }
+
+
+    public void OnItemPurchase(PickableItem item)
+    {
+        Instantiate(item, _buyPoint);
+    }
+
 }

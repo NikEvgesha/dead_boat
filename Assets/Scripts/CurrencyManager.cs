@@ -6,6 +6,7 @@ public class CurrencyManager : MonoBehaviour
 {
     [SerializeField] private Sprite _gemsIcon;
     [SerializeField] private Sprite _coinIcon;
+    [SerializeField] private Sprite _realIcon; // Tmp
 
     [SerializeField] private int coins;
 
@@ -26,6 +27,7 @@ public class CurrencyManager : MonoBehaviour
     public int Coins { get { return _balance[CurrencyType.Coins]; } }
 
     public Action<CurrencyType, int> CurrencyChanged;
+    public Action NoGems;
     public static CurrencyManager Instance { get { return _instance; } }
 
     private void Awake()
@@ -36,6 +38,7 @@ public class CurrencyManager : MonoBehaviour
             _currencyIcons = new Dictionary<CurrencyType, Sprite> {
             {CurrencyType.Gems, _gemsIcon},
             {CurrencyType.Coins, _coinIcon},
+            {CurrencyType.Real, _realIcon},
         };
         }
         else
@@ -89,6 +92,10 @@ public class CurrencyManager : MonoBehaviour
             return true;
         }
 
+        if (type == CurrencyType.Gems)
+        {
+            NoGems?.Invoke();
+        }
         // TODO: show hint
         return false;
     }

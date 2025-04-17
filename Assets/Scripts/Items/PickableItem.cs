@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.ProBuilder.Shapes;
 
@@ -248,6 +249,11 @@ public class PickableItem : MonoBehaviour
         if (gameObject.GetComponent<AmmoItem>() != null)
         {
             _tags.Add(ItemTag.Ammo);
+        }
+
+        if (gameObject.GetComponent<EnemyReward>())
+        {
+            _tags.Add(ItemTag.Reward);
         }
 
     }

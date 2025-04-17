@@ -14,7 +14,27 @@ public class SettingUI : MonoBehaviour
         _panel.SetActive(_isOpen);
         GameManager.Instance.SetPause(_isOpen);
     }
-    private void OnEnable()
+    private void Start()
+    {
+        SoundManager.Instance.Ready += SetValues;
+    }
+
+    private void OnDisable()
+    {
+        SoundManager.Instance.Ready -= SetValues;
+    }
+
+    private void SetValues()
+    {
+        SoundManager.Instance.Ready += SetValues;
+    }
+
+    private void OnDisable()
+    {
+        SoundManager.Instance.Ready -= SetValues;
+    }
+
+    private void SetValues()
     {
         _musicVolume.value = SoundManager.Instance.MusicVolume;
         _soundVolume.value = SoundManager.Instance.SoundVolume;

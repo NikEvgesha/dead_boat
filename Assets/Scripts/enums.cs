@@ -13,7 +13,8 @@ public enum ItemType
 public enum CurrencyType
 {
     Coins,
-    Gems
+    Gems,
+    Real
 }
 
 public enum PlayerStat
@@ -31,7 +32,8 @@ public enum ItemTag
     Weapon,
     Medicine,
     Dead,
-    Ammo
+    Ammo,
+    Reward
 }
 public enum Tag
 {
