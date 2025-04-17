@@ -26,16 +26,6 @@ public class SettingUI : MonoBehaviour
 
     private void SetValues()
     {
-        SoundManager.Instance.Ready += SetValues;
-    }
-
-    private void OnDisable()
-    {
-        SoundManager.Instance.Ready -= SetValues;
-    }
-
-    private void SetValues()
-    {
         _musicVolume.value = SoundManager.Instance.MusicVolume;
         _soundVolume.value = SoundManager.Instance.SoundVolume;
     }
