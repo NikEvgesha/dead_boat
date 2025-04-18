@@ -135,7 +135,7 @@ public class DayTime : MonoBehaviour
         }
         else
         {
-            if (IsNight() != !_isNight)
+            if (IsNight() != _isNight)
             {
                 _isNight = !_isNight;
                 DayNightCycle?.Invoke();
