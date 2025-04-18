@@ -43,6 +43,7 @@ public class BoatShop : MonoBehaviour
         _isOpen = !_isOpen;
         _shopCanvas.gameObject.SetActive(_isOpen);
         ControlManager.Instance.CursorActive = _isOpen;
+        CurrencyManager.Instance.ShowGems?.Invoke(_isOpen);
     }
 
 

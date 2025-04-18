@@ -28,6 +28,7 @@ public class CurrencyManager : MonoBehaviour
 
     public Action<CurrencyType, int> CurrencyChanged;
     public Action NoGems;
+    public Action<bool> ShowGems;
     public static CurrencyManager Instance { get { return _instance; } }
 
     private void Awake()

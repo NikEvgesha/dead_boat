@@ -12,6 +12,7 @@ public class SpecialShopPoint : MonoBehaviour
     [SerializeField] private BuyTouchHandler _touchPanel;
     [SerializeField] private Transform _buyPoint;
     [SerializeField] private Image _openProgress;
+    [SerializeField] private AudioSource _source;
 
     private bool _active;
     private float _progress;
@@ -87,6 +88,7 @@ public class SpecialShopPoint : MonoBehaviour
 
         if (_progress >= 1f)
         {
+            _source.Play();
             _shop.ToggleOpen();
         }
         _progress = 0;

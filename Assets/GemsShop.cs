@@ -12,7 +12,7 @@ public struct CurrencyPackItem
 public class GemsShop : MonoBehaviour
 {
     [SerializeField] private List<CurrencyPackItem> _items;
-    [SerializeField] private Canvas _shopCanvas;
+    [SerializeField] private GameObject _shopCanvas;
     [SerializeField] private DynamicGridSpawner _grid;
     [SerializeField] private GemsShopSlot _slotPrefab;
 
@@ -46,6 +46,8 @@ public class GemsShop : MonoBehaviour
         _isOpen = !_isOpen;
         _shopCanvas.gameObject.SetActive(_isOpen);
         //ControlManager.Instance.CursorActive = _isOpen;
+        if (_isOpen)
+            CurrencyManager.Instance.ShowGems?.Invoke(true);
     }
 
 
