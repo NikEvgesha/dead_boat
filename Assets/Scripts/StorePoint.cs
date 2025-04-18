@@ -17,6 +17,7 @@ public class StorePoint : MonoBehaviour
     [SerializeField] private Text _price;
     [SerializeField] private Text _name;
     [SerializeField] private Image _buyProgress;
+    [SerializeField] private Image _currencyIcon;
 
     [SerializeField] private bool _staticItem;
 
@@ -26,6 +27,9 @@ public class StorePoint : MonoBehaviour
     private float _progress;
     private bool _buyInProgress;
     private StoreItem _storeItem;
+
+    private int price;
+    private CurrencyType currencyType;
 
     public bool StaticItem => _staticItem;
 
@@ -37,7 +41,7 @@ public class StorePoint : MonoBehaviour
     {
         _sellPoint = _sellPoint == null ? _buyPoint : _sellPoint;
     }
-    public void InitPoint(ItemStore store, PickableItem prefab = null)
+    public void InitPoint(bool inLobby, ItemStore store, PickableItem prefab = null)
     {
         if (prefab != null)
             _itemPrefab = prefab;
@@ -56,8 +60,18 @@ public class StorePoint : MonoBehaviour
                 model.transform.localRotation = deltaRotation;
                 model.transform.localScale = offset[2];
             }
-
-            _price.text = _storeItem.price.ToString() + "$";
+            if (inLobby)
+            {
+                currencyType = CurrencyType.Gems;
+                price = _storeItem.GemPrice;
+            } else
+            {
+                currencyType = CurrencyType.Coins;
+                price = _storeItem.CoinPrice;
+            }
+            _price.text = price.ToString();
+            _currencyIcon.sprite = CurrencyManager.Instance.GetCurrencyIcon(currencyType);
+                
             _name.text = LocalizationManager.Instance.LocalizationData.GetTranslation(_itemPrefab.Data.name, LocalizationManager.Instance.CurrentLanguage, LocalizationKeyType.Item.ToString());
 
             _BuyInfoCanvas.SetActive(false);
@@ -119,7 +133,7 @@ public class StorePoint : MonoBehaviour
 
     private void TryBuy()
     {
-        if (CurrencyManager.Instance.CheckEnoughCurrency(CurrencyType.Coins, _storeItem.price))
+        if (CurrencyManager.Instance.CheckEnoughCurrency(currencyType, price))
         {
             _buyInProgress = true;
             _progress = 0;
@@ -139,7 +153,7 @@ public class StorePoint : MonoBehaviour
 
         if (_progress >= 1f)
         {
-            CurrencyManager.Instance.RemoveCurrency(CurrencyType.Coins, _storeItem.price);
+            CurrencyManager.Instance.RemoveCurrency(currencyType, price);
             Instantiate(_itemPrefab, _buyPoint);
             BuyItem?.Invoke();
             //if (_audioSource)

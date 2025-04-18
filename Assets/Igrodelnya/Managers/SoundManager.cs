@@ -21,6 +21,7 @@ public class SoundManager : MonoBehaviour
     private string _soundName = "SoundVolume";
     private string _musicName = "MusicVolume";
 
+    public bool IsReady;
     public Action Ready;
     public static SoundManager Instance { get { return _instance; } }
     public bool isSoundOn { get { return _soundON; } }
@@ -74,6 +75,7 @@ public class SoundManager : MonoBehaviour
         //GameManager.Instance.GameLose += GameLose;
         //GameManager.Instance.GameWin += GameWon;
         Ready?.Invoke();
+        IsReady = true;
     }
     private void StartPlayMusic()
     {

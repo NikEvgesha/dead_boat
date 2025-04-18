@@ -8,7 +8,7 @@ public class GameManager : MonoBehaviour
 
 
     [SerializeField] private PlayerStatsManager _player;
-    [SerializeField] private string _lobbySceneName = "SampleScene";
+    [SerializeField] private string _lobbySceneName = "Lobby";
     public PlayerStatsManager Player { get { return _player; } }
 
     public bool isEndGame = false;
@@ -48,14 +48,16 @@ public class GameManager : MonoBehaviour
     {
         isEndGame = true;
         string scenenName = lobby ? _lobbySceneName : SceneManager.GetActiveScene().name;
-        SceneManager.LoadScene(scenenName);
+        SetPause(false);
+        GameLoader.Instance.LoadNextScene(scenenName, true);
     }
 
-    public void SetPause(bool paused)
+    public void SetPause(bool paused, bool controlAudio = true)
     {
         _pause = paused;
         Time.timeScale = paused ? 0f : 1f;
-        AudioListener.pause = paused;
+        if (controlAudio)
+            AudioListener.pause = paused;
     }
 
 }

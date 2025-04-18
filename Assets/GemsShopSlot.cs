@@ -1,11 +1,11 @@
 
 public class GemsShopSlot : SpecialShopSlot
 {
-    CurrencyPackItem _packData;
+    CurrencyPackData _packData;
     private GemsShop _shop;
-    public void Init(CurrencyPackItem packData, GemsShop shop)
+    public void Init(CurrencyPackData packData, GemsShop shop)
     {
-        base.Init(packData.packData.Data, packData.price, packData.currencyType);
+        base.Init(packData.Data, packData.Price, packData.PriceCurrencyType);
         _packData = packData;
         _shop = shop;
     }

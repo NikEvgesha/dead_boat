@@ -2,5 +2,6 @@ using UnityEngine;
 
 public class StoreItem : MonoBehaviour
 {
-    public int price;
+    public int CoinPrice;
+    public int GemPrice;
 }

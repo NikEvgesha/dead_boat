@@ -12,11 +12,18 @@ public class SettingUI : MonoBehaviour
         _isOpen = !_isOpen;
         ControlManager.Instance.CursorActive = _isOpen;
         _panel.SetActive(_isOpen);
-        GameManager.Instance.SetPause(_isOpen);
+        GameManager.Instance.SetPause(_isOpen, false);
     }
     private void Start()
     {
-        SoundManager.Instance.Ready += SetValues;
+        if (SoundManager.Instance.IsReady)
+        {
+            SetValues();
+        } else
+        {
+            SoundManager.Instance.Ready += SetValues;
+        }
+            
     }
 
     private void OnDisable()

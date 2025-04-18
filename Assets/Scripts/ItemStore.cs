@@ -7,6 +7,8 @@ public class ItemStore : MonoBehaviour
     [SerializeField] private Transform _pointsParent;
     [SerializeField] private StoreItemsCollection _collection;
 
+    [SerializeField] private bool _inLobby;
+
     private List<PickableItem> _availableItems;
 
     public Action<bool> PlayerEnter;
@@ -18,12 +20,12 @@ public class ItemStore : MonoBehaviour
         {
             if (point.StaticItem)
             {
-                point.InitPoint(this);
+                point.InitPoint(_inLobby, this);
             }
             else if (!point.StaticItem && _availableItems.Count > 0)
             {
                 int random_idx = UnityEngine.Random.Range(0, _availableItems.Count);
-                point.InitPoint(this, _availableItems[random_idx]);
+                point.InitPoint(_inLobby, this, _availableItems[random_idx]);
                 _availableItems.RemoveAt(random_idx);
             }
         }
