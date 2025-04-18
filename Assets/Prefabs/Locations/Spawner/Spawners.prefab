@@ -35,6 +35,7 @@ Transform:
   - {fileID: 5762678714162262002}
   - {fileID: 8087836037683382456}
   - {fileID: 627611798171607903}
+  - {fileID: 7872598053919540658}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &4500287901934606990
@@ -80,6 +81,61 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cfbf7021a6e01f0429b4d9de91f57a45, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &7622485659857275677
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7872598053919540658}
+  - component: {fileID: 3619080025223671522}
+  m_Layer: 0
+  m_Name: ZombySpawners
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7872598053919540658
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7622485659857275677}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 5.942134, y: 5.3447933, z: 8.379637}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6851079728866601173}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3619080025223671522
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7622485659857275677}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f747279a4c8b7e045852f8c711a83e8e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerTransform: {fileID: 0}
+  minSpawnDistance: 10
+  maxSpawnDistance: 40
+  enemyTypes:
+  - {fileID: 6512769847435685629, guid: 5d3128d8feb1dd844968ea85b6169de6, type: 3}
+  - {fileID: 6512769847435685629, guid: 9f27384872013c942a0a8b7cbbcb297a, type: 3}
+  - {fileID: 6512769847435685629, guid: c5a2348bdb3fd9346af542e9a0d1dd0b, type: 3}
+  - {fileID: 6512769847435685629, guid: 4afdcb4056c1f6044bdafc554f3d4b4b, type: 3}
+  - {fileID: 6512769847435685629, guid: 4e7ad2cfad7d5e14fa6f9683a74d5553, type: 3}
+  spawnCount: 1
+  cooldown: 7
 --- !u!1001 &1326510280483443613
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -1,6 +1,4 @@
 using System;
-using System.Collections;
-using System.Runtime.CompilerServices;
 using UnityEngine;
 
 public class DayTime : MonoBehaviour
@@ -38,6 +36,7 @@ public class DayTime : MonoBehaviour
     private int _hour;
     private int _minute;
     private bool _isDay;
+    private bool _isNight;
     private float _dayDuration; // Длительность в игровых единицах (24 часа = 12 реальных часов)
     private bool _isTransitioning;
     private float _currentOrbitSpeed;
@@ -48,6 +47,7 @@ public class DayTime : MonoBehaviour
     private static readonly int _exposure = Shader.PropertyToID("_Exposure");
 
     public Action<int, int> GetTime;
+    public Action DayNightCycle;
 
     private void Awake()
     {
@@ -135,9 +135,14 @@ public class DayTime : MonoBehaviour
         }
         else
         {
+            if (IsNight() != !_isNight)
+            {
+                _isNight = !_isNight;
+                DayNightCycle?.Invoke();
+            }
             // Неподвижное положение
             _isTransitioning = false;
-            sunAngle = IsNight() ? -90f : 90f;
+            sunAngle = _isNight ? -90f : 90f;
         }
 
         _sun.transform.rotation = Quaternion.Euler(sunAngle, _axisOffset, 0);
@@ -155,7 +160,7 @@ public class DayTime : MonoBehaviour
     }
 
 
-    private bool IsNight()
+    public bool IsNight()
     {
         return (_timeOfDay < _sunriseEnd || _timeOfDay > _sunsetEnd);
     }
