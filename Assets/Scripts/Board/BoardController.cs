@@ -55,6 +55,7 @@ public class BoardController : MonoBehaviour
     public Action<float,float> SwitchFuel;
     public Action EndGame;
     [SerializeField] private AudioSource _audioSource;
+    [SerializeField] private int _rewardForWin = 20;
 
     private void Awake()
     {
@@ -165,6 +166,7 @@ public class BoardController : MonoBehaviour
             EndGame?.Invoke();
             currentSpeed = 0f;
             EndGameUIManager.EndGame(EndGameState.Win);
+            CurrencyManager.Instance.AddCurrency(CurrencyType.Gems, _rewardForWin);
         }
 
         if (speed != currentSpeed)
