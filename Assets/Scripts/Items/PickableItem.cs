@@ -71,7 +71,7 @@ public class PickableItem : MonoBehaviour
     private void Start()
     {
         _status = ItemStatus.Free;
-        _player = GameManager.Instance.Player.transform;
+        _player = PlayerManager.Instance.transform;
         if (_player != null)
             StartCoroutine(KinematicCheck());
     }
