@@ -3,6 +3,7 @@ using UnityEngine;
 public class LobbyManager : MonoBehaviour
 {
     [SerializeField] private string _sceneName;
+    [SerializeField] private Transform _playerSpawnPoint;
 
 
     private static LobbyManager _instance;
@@ -18,6 +19,11 @@ public class LobbyManager : MonoBehaviour
         {
             Destroy(gameObject);
         }
+    }
+
+    private void Start()
+    {
+        PlayerManager.Instance.gameObject.transform.position = _playerSpawnPoint.position;
     }
 
 
