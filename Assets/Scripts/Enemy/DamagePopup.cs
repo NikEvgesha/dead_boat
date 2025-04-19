@@ -6,7 +6,6 @@ public class DamagePopup : MonoBehaviour
     [SerializeField] private Text textUI;         // ваш UI Text
     [SerializeField] private float floatSpeed = 2f;
     [SerializeField] private float fadeDuration = 1f;
-    [SerializeField] private DamagePopup _self;
 
     private Color originalColor;
     private float lifetime;

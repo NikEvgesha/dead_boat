@@ -201,4 +201,8 @@ public class PlayerInput : MonoBehaviour
     {
         return _inTrain;
     }
+    public void UseAttack(bool use)
+    {
+
+    }
 }
