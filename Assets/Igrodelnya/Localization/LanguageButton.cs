@@ -1,4 +1,3 @@
-using UnityEditor.Localization.Editor;
 using UnityEngine;
 
 public class LanguageButton : MonoBehaviour

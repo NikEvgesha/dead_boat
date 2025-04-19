@@ -161,6 +161,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1479338428269486501, guid: 2d8dfdad05134cb4c98fbc245e3591f7, type: 3}
+      propertyPath: _collider
+      value: 
+      objectReference: {fileID: 1602627603249816697}
+    - target: {fileID: 1479338428269486501, guid: 2d8dfdad05134cb4c98fbc245e3591f7, type: 3}
       propertyPath: _itemData
       value: 
       objectReference: {fileID: 11400000, guid: cf1aa2d190b23084c963054490e8d51e, type: 2}
@@ -421,7 +425,7 @@ MonoBehaviour:
   _usableItem: {fileID: 1312611646448416272}
   _animator: {fileID: 4642128061679541930}
   _damageArea: {fileID: 4344629821152587421}
-  _damage: 10
+  _damage: 20
   _audioHit: {fileID: 8300000, guid: ad254677847beca479f1fa6ed3c5bf21, type: 3}
   _audioSwing: {fileID: 8300000, guid: a1885a062dc424a4090dece0ea4946c2, type: 3}
   _audioSource: {fileID: 1572538813346606771}
@@ -470,5 +474,10 @@ BoxCollider:
 --- !u!4 &909084662430143948 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5177179249125788810, guid: 4778fb0ebd4d7554887f2bd7e6fa39c1, type: 3}
+  m_PrefabInstance: {fileID: 5423669548547905862}
+  m_PrefabAsset: {fileID: 0}
+--- !u!65 &1602627603249816697 stripped
+BoxCollider:
+  m_CorrespondingSourceObject: {fileID: 6735436603029585215, guid: 4778fb0ebd4d7554887f2bd7e6fa39c1, type: 3}
   m_PrefabInstance: {fileID: 5423669548547905862}
   m_PrefabAsset: {fileID: 0}

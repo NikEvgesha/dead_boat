@@ -31,7 +31,7 @@ public class PickableItem : MonoBehaviour
 
     private Outline _outline;
     private Rigidbody _rb;
-    private BoxCollider _collider;
+    [SerializeField] private BoxCollider _collider;
     private Transform _itemPoint;
     private InfoUI _infoUI;
     private Transform _player;
@@ -162,6 +162,9 @@ public class PickableItem : MonoBehaviour
         }
         if (Inventory.Instance.AddItem(this))
         {
+            if (_collider)
+                _collider.enabled = false;
+
             OnFocus(false);
             tag = Tag.Inventory.ToString();
             this.gameObject.layer = (int)Layer.Inventory;
@@ -177,6 +180,9 @@ public class PickableItem : MonoBehaviour
     public void DropOutFromInventory(Transform dropOutPoint)
     {
         if (_status != ItemStatus.InInventory) return;
+
+        if(_collider)
+            _collider.enabled = true;
 
         tag = Tag.Item.ToString();
         this.gameObject.layer = (int)Layer.Pickable;

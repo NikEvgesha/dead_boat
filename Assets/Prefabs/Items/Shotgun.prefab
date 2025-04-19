@@ -809,7 +809,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _usableItem: {fileID: 1312611646448416272}
   weaponType: 2
-  damage: 5
+  damage: 10
   range: 50
   fireRate: 0.5
   fpsCam: {fileID: 0}
@@ -823,11 +823,11 @@ MonoBehaviour:
   _audioReload: {fileID: 8300000, guid: c51e85e9c1093714b8a06b03ca1bab3e, type: 3}
   _audioShoot: {fileID: 8300000, guid: ee1dcde51264b8544a1939a8d7056075, type: 3}
   _audioSource: {fileID: 1643435653972498817}
-  pelletCount: 10
+  pelletCount: 6
   spreadAngle: 10
-  maxAmmo: 2
-  _currentAmmo: 2
-  _reserveAmmo: 30
+  maxAmmo: 6
+  _currentAmmo: 6
+  _reserveAmmo: 0
   reloadTime: 2
   bulletTrailPrefab: {fileID: 573734600728898942, guid: d3a0060ed807e7d4cb7f7a32fc0e9610, type: 3}
   bulletSpeed: 1000
@@ -959,11 +959,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 458234114888676937, guid: 2d8dfdad05134cb4c98fbc245e3591f7, type: 3}
       propertyPath: GemPrice
-      value: 129
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 458234114888676937, guid: 2d8dfdad05134cb4c98fbc245e3591f7, type: 3}
       propertyPath: CoinPrice
-      value: 100
+      value: 50
       objectReference: {fileID: 0}
     - target: {fileID: 993834585313546614, guid: 2d8dfdad05134cb4c98fbc245e3591f7, type: 3}
       propertyPath: m_Layer
@@ -973,6 +973,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1479338428269486501, guid: 2d8dfdad05134cb4c98fbc245e3591f7, type: 3}
+      propertyPath: _collider
+      value: 
+      objectReference: {fileID: 4067528470813163450}
     - target: {fileID: 1479338428269486501, guid: 2d8dfdad05134cb4c98fbc245e3591f7, type: 3}
       propertyPath: _itemData
       value: 

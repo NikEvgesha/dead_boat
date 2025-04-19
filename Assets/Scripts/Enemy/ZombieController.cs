@@ -186,7 +186,7 @@ public class ZombieController : MonoBehaviour
 
         if (_isDie)
             return;
-
+        DamagePopup.Create(transform, damage);
         if (_audioSourceEnemy)
             if (_audioDamage)
                 _audioSourceEnemy.PlayOneShot(_audioDamage);
