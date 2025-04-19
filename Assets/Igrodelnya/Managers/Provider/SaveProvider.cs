@@ -18,4 +18,9 @@ public abstract class SaveProvider : MonoBehaviour
 
     // Общий метод сохранения прогресса
     public abstract void SaveProgress();
+    public abstract bool CheckProgress();
+
+    public abstract void SaveGems(int amount);
+
+    public abstract int LoadGems();
 }

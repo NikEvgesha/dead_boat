@@ -8,7 +8,7 @@ public class CurrencyManager : MonoBehaviour
     [SerializeField] private Sprite _coinIcon;
     [SerializeField] private Sprite _realIcon; // Tmp
 
-    [SerializeField] private int coins;
+    [SerializeField] private int StartCoinsAmount;
 
     [SerializeField] private AudioClip _audioBuy;
     [SerializeField] private AudioClip _audioSell;
@@ -51,11 +51,16 @@ public class CurrencyManager : MonoBehaviour
 
     private void Start()
     {
-        // load ?
-
-        AddCurrency(CurrencyType.Coins, coins);
+        AddCurrency(CurrencyType.Coins, StartCoinsAmount);
+        AddCurrency(CurrencyType.Gems, SaveManager.Instance.GetGems());
     }
 
+
+    public void Reset()
+    {
+        _balance[CurrencyType.Coins] = 0;
+        AddCurrency(CurrencyType.Coins, StartCoinsAmount);
+    }
 
     public void AddCurrency(CurrencyType type, int amount)
     {
@@ -64,6 +69,8 @@ public class CurrencyManager : MonoBehaviour
                 _audioSource.PlayOneShot(_audioSell);
         _balance[type] += amount;
         CurrencyChanged?.Invoke(type, _balance[type]);
+        if (type == CurrencyType.Gems)
+            SaveManager.Instance.SaveGems(_balance[type]);
     }
 
     public bool RemoveCurrency(CurrencyType type, int amount)
@@ -76,6 +83,8 @@ public class CurrencyManager : MonoBehaviour
 
             _balance[type] -= amount;
             CurrencyChanged?.Invoke(type, _balance[type]);
+            if (type == CurrencyType.Gems)
+                SaveManager.Instance.SaveGems(_balance[type]);
             return true;
         }
         return false;

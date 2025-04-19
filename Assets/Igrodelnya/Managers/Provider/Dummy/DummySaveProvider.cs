@@ -15,7 +15,21 @@ public class DummySaveProvider : SaveProvider
         }
         return volumes;
     }
-    public override void SaveVolume(float musicVolume, float soundVolume) {
+    public override void SaveGems(int amount) {
+        PlayerPrefs.SetInt("Gems", amount);
+    }
+
+    public override int LoadGems()
+    {
+        int gems = 0;
+        if (PlayerPrefs.HasKey("Gems"))
+        {
+            gems = PlayerPrefs.GetInt("Gems");
+        }
+        return gems;
+    }
+    public override void SaveVolume(float musicVolume, float soundVolume)
+    {
         PlayerPrefs.SetFloat("MusicVolume", musicVolume);
         PlayerPrefs.SetFloat("SoundVolume", soundVolume);
     }
@@ -24,4 +38,6 @@ public class DummySaveProvider : SaveProvider
     public override void SaveLevelUnlock(int id, bool unlocked) { }
     public override void SaveLevelWin(int id, bool win) { }
     public override void SaveProgress() { }
+
+    public override bool CheckProgress() { return true; }
 }

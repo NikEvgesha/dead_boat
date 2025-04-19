@@ -1,4 +1,6 @@
+using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using UnityEngine;
 
 public class StarterPackManager : MonoBehaviour
@@ -7,6 +9,13 @@ public class StarterPackManager : MonoBehaviour
 
     private void Start()
     {
+        //StartCoroutine(AddStarterPack());
+    }
+
+
+    private IEnumerator AddStarterPack()
+    {
+        yield return null;
         foreach (var item in _starterPackItems)
         {
             PickableItem itemObj = Instantiate(item, null);
@@ -14,8 +23,8 @@ public class StarterPackManager : MonoBehaviour
         }
     }
 
-/*    public ReadOnlyCollection<PickableItem> GetStartItems()
+    public ReadOnlyCollection<PickableItem> GetStartItems()
     {
         return _starterPackItems.AsReadOnly();
-    }*/
+    }
 }

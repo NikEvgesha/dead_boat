@@ -95,3 +95,10 @@ public enum WeaponType
     Rifle,
     Shotgun 
 }
+
+public enum Location
+{
+    None,
+    Lobby,
+    Game
+}

@@ -37,27 +37,35 @@ public class Inventory : MonoBehaviour
         }
 
         _instance = this;
+        _activeItemManager = GetComponent<ActiveItemManager>();
+        _starterPack = GetComponent<StarterPackManager>();
     }
 
     private void Start()
     {
-        _activeItemManager = GetComponentInParent<ActiveItemManager>();
-        _starterPack = GetComponent<StarterPackManager>();
         InventoryUI.Instance.UpdateCapacity(_bagItems.Count, _capacity);
         //InventoryUI.Instance.SpawnSlots(_capacityTotal - _quickSlotsCapacity, _quickSlotsCapacity);
         //InventoryUI.Instance.UpdateCapacity(_items.Count, _capacityTotal);
 
-        //SetStartItems(_starterPack.GetStartItems());
+        SetStartItems(_starterPack.GetStartItems());
 
     }
 
+    public void ResetInventory()
+    {
+        _activeItemManager.SwitchActiveItem(null);
+        _bagItems.Clear();
+        _quickPanelItems.Clear();
+        InventoryUI.Instance.Reset();
+        SetStartItems(_starterPack.GetStartItems());
+    }
 
     public void SetStartItems(ReadOnlyCollection<PickableItem> items)
     {
         foreach (PickableItem item in items) {
 
             PickableItem itemObj = Instantiate(item, null);
-            AddItem(itemObj);
+            itemObj.PutToInventory();
         }
     }
 

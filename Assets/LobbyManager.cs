@@ -37,6 +37,6 @@ public class LobbyManager : MonoBehaviour
 
     public void StartGame()
     {
-        GameLoader.Instance.LoadNextScene(_sceneName, true);
+        LoadingManager.Instance.LoadLocation(Location.Game);
     }
 }

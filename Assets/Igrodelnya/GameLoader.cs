@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -5,12 +6,13 @@ using UnityEngine.SceneManagement;
 public class GameLoader : MonoBehaviour
 {
 
-    //[SerializeField] private GameOptions _gameOptions;
+    [SerializeField] private GameObject _loadingImage;
     private string _currentSceneName;
     private static GameLoader _instance;
     private AsyncOperation _asyncOperation;
 
     public static GameLoader Instance { get { return _instance; } }
+    public Action OnSceneLoaded;
 
 
     private void Awake()
@@ -43,6 +45,7 @@ public class GameLoader : MonoBehaviour
 
         if (asyncMode)
         {
+            _loadingImage.SetActive(true);
             StartCoroutine("SceneLoad", _currentSceneName);
         } else
         {
@@ -57,11 +60,13 @@ public class GameLoader : MonoBehaviour
     {
         float loadingProgress;
         _asyncOperation = SceneManager.LoadSceneAsync(sceneName);
-        while (_asyncOperation.progress < 0.9f)
+        while (_asyncOperation.progress < 0.95f)
         {
-            loadingProgress = Mathf.Clamp01(_asyncOperation.progress / 0.9f);
+            loadingProgress = Mathf.Clamp01(_asyncOperation.progress / 0.95f);
             yield return true;
         }
+        _loadingImage.SetActive(false);
+        OnSceneLoaded?.Invoke();
     }
 
 

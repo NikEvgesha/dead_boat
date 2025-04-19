@@ -8,6 +8,8 @@ public class SaveManager : MonoBehaviour
 
     [SerializeField] private SaveProvider saveProvider; // Назначаем в инспекторе нужный провайдер (YG2SaveProvider, DebugSaveProvider и т.д.)
 
+    public bool IsNewPlayer => saveProvider.CheckProgress() == false;
+
     private void Awake()
     {
         if (_instance == null)
@@ -58,6 +60,17 @@ public class SaveManager : MonoBehaviour
     public float GetLevelScore(int levelId)
     {
         return saveProvider.LoadScore(levelId);
+    }
+
+
+    public void SaveGems(int amount)
+    {
+        saveProvider.SaveGems(amount);
+    }
+
+    public int GetGems()
+    {
+        return saveProvider.LoadGems();
     }
 
     // Остальные методы аналогично делегируют работу провайдеру...

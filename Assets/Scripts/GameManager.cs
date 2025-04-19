@@ -52,8 +52,11 @@ public class GameManager : MonoBehaviour
     public void EndGame(bool lobby)
     {
         isEndGame = true;
-        string scenenName = lobby ? _lobbySceneName : SceneManager.GetActiveScene().name;
+        Location location = lobby ? Location.Lobby : Location.Game;
         PauseManager.Instance.SetPause(false);
-        GameLoader.Instance.LoadNextScene(scenenName, true);
+        LoadingManager.Instance.LoadLocation(location);
+        DontDestroyOnLoad(PlayerManager.Instance.gameObject);
+        Inventory.Instance.ResetInventory();
+        CurrencyManager.Instance.Reset();
     }
 }

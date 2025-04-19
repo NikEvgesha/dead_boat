@@ -27,6 +27,7 @@ public class InventoryUI : MonoBehaviour
     private int _bagCapacity;
     private bool _isOpen;
     private InventorySlot _activeSlot;
+    private bool _initialized;
 
     public bool IsOpen => _isOpen;
 
@@ -43,26 +44,31 @@ public class InventoryUI : MonoBehaviour
 
     private void Start()
     {
-        _quickPanelCapacity = Inventory.Instance.QuickPanelCapacity;
-        _bagCapacity = Inventory.Instance.BagCapacity;
-        for (int i = 0; i < _quickPanelCapacity; i++)
+        if (!_initialized)
         {
-            InventorySlot slot = Instantiate(_QuickSlotPrefab, _quickSlotsParent);
-            slot.QuickSlot = true;
-            _quickSlots.Add(slot);
-            slot.InitSlot(null);
-            slot.ID = i;
-        }
+            _quickPanelCapacity = Inventory.Instance.QuickPanelCapacity;
+            _bagCapacity = Inventory.Instance.BagCapacity;
+            for (int i = 0; i < _quickPanelCapacity; i++)
+            {
+                InventorySlot slot = Instantiate(_QuickSlotPrefab, _quickSlotsParent);
+                slot.QuickSlot = true;
+                _quickSlots.Add(slot);
+                slot.InitSlot(null);
+                slot.ID = i;
+            }
 
 
-        for (int i = 0; i < _bagCapacity; i++)
-        {
-            InventorySlot slot = Instantiate(_InventorySlotPrefab, _inventorySlotsParent);
-            slot.QuickSlot = false;
-            _mainSlots.Add(slot);
-            slot.InitSlot(null);
-            slot.ID = i;
+            for (int i = 0; i < _bagCapacity; i++)
+            {
+                InventorySlot slot = Instantiate(_InventorySlotPrefab, _inventorySlotsParent);
+                slot.QuickSlot = false;
+                _mainSlots.Add(slot);
+                slot.InitSlot(null);
+                slot.ID = i;
+            }
+            _initialized = true;
         }
+        
     }
 
     private void Update()
@@ -255,5 +261,18 @@ public class InventoryUI : MonoBehaviour
         }
     }
 
+
+    public void Reset()
+    {
+        for (int i = 0; i < _quickPanelCapacity; i++)
+        {
+            _quickSlots[i].InitSlot(null);
+        }
+
+        for (int i = 0; i < _bagCapacity; i++)
+        {
+            _mainSlots[i].InitSlot(null);
+        }
+    }
 
 }
