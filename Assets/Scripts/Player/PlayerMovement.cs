@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -31,7 +32,28 @@ public class PlayerMovement : MonoBehaviour
     private float _currentYRotation = 0f;
     private ControlUI _controlUI;
 
-    
+    private bool _inTeleport;
+    private Vector3 _teleportPosition;
+
+    private static PlayerMovement _instance;
+    public static PlayerMovement Instance { get { return _instance; } }
+
+
+    private void Awake()
+    {
+        if (_instance == null)
+        {
+            _instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Debug.LogWarning("PlayerMovement уже существует! Удаляем дубликат.");
+            Destroy(gameObject);
+        }
+    }
+
+
 
     void Start()
     {
@@ -78,6 +100,10 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
+        if (_inTeleport)
+        {
+            return;
+        }
         _isGrounded = _controller.isGrounded;
         Move();
         if (!ControlManager.Instance.CursorActive || ControlManager.Instance.UseTouchControl)
@@ -135,6 +161,19 @@ public class PlayerMovement : MonoBehaviour
     private void ChangeMouseSensitivity(float sens)
     {
         _rotationSpeed = Mathf.Lerp(10f, 100f, sens);
+    }
+
+    public void Teleport(Transform position)
+    {
+        _inTeleport = true;
+        transform.position = position.position;
+        StartCoroutine(WaitForTeleport());
+    }
+
+    private IEnumerator WaitForTeleport()
+    {
+        yield return new WaitForSeconds(0.3f);
+        _inTeleport = false;
     }
 
 }
