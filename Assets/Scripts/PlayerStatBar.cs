@@ -15,7 +15,7 @@ public class PlayerStatBar : MonoBehaviour
 
     private void Start()
     {
-        _player = GameManager.Instance.Player;
+        _player = PlayerManager.Instance.StatsManager;
         _player.StatChanged += OnStatChange;
     }
 

@@ -180,6 +180,7 @@ public class EndGameUIManager : MonoBehaviour
         // Перезапуск текущей сцены
         StopAllCoroutines();
         GameManager.Instance.EndGame(false);
+        ShowEndGameUI(EndGameState.None);
         //SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
@@ -215,6 +216,7 @@ public class EndGameUIManager : MonoBehaviour
     {
         StopAllCoroutines();
         GameManager.Instance.EndGame(true);
+        ShowEndGameUI(EndGameState.None);
         // Замените "LobbyScene" на имя вашей сцены лобби
         //SceneManager.LoadScene("SampleScene");
     }

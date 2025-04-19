@@ -39,5 +39,5 @@ public class DummySaveProvider : SaveProvider
     public override void SaveLevelWin(int id, bool win) { }
     public override void SaveProgress() { }
 
-    public override bool CheckProgress() { return true; }
+    public override bool CheckProgress() { return false; }
 }

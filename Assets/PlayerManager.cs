@@ -5,6 +5,10 @@ public class PlayerManager : MonoBehaviour
     private static PlayerManager _instance;
     public static PlayerManager Instance { get { return _instance; } }
 
+    private PlayerStatsManager _playerStatsManager;
+
+    public PlayerStatsManager StatsManager => _playerStatsManager;
+
 
     private void Awake()
     {
@@ -18,5 +22,8 @@ public class PlayerManager : MonoBehaviour
             Debug.LogWarning("PlayerManager уже существует! Удаляем дубликат.");
             Destroy(gameObject);
         }
+        _playerStatsManager = GetComponent<PlayerStatsManager>();
     }
+
+
 }

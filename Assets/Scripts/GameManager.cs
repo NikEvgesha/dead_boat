@@ -44,7 +44,7 @@ public class GameManager : MonoBehaviour
         if (_player == null)
         {
             _player = PlayerManager.Instance.GetComponent<PlayerStatsManager>();
-            _player.gameObject.transform.position = _playerSpawnPoint.position;
+            PlayerMovement.Instance.Teleport(_playerSpawnPoint);
         }
         GameStart?.Invoke();
     }
@@ -58,5 +58,6 @@ public class GameManager : MonoBehaviour
         DontDestroyOnLoad(PlayerManager.Instance.gameObject);
         Inventory.Instance.ResetInventory();
         CurrencyManager.Instance.Reset();
+        PlayerStatsManager.Instance.Revive();
     }
 }

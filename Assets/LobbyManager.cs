@@ -30,8 +30,8 @@ public class LobbyManager : MonoBehaviour
 
     private void Start()
     {
-        
-        PlayerManager.Instance.gameObject.transform.position = _playerSpawnPoint.position;
+        PlayerMovement.Instance.Teleport(_playerSpawnPoint);
+        //PlayerManager.Instance.gameObject.transform.position = _playerSpawnPoint.position;
     }
 
 

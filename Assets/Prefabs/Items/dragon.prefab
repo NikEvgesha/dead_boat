@@ -858,6 +858,7 @@ GameObject:
   - component: {fileID: 7335244893110959007}
   - component: {fileID: 6690723623588285383}
   - component: {fileID: 2477522732134431319}
+  - component: {fileID: 4672573200131863578}
   m_Layer: 0
   m_Name: dragon
   m_TagString: Untagged
@@ -907,6 +908,7 @@ MonoBehaviour:
   _dragOrigin: 1
   _dropVelocityMultiplier: 2
   _kinematicDistance: 30
+  _collider: {fileID: 0}
 --- !u!114 &4391307100338732031
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -999,8 +1001,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 0.73956907, y: 1.1155589, z: 1.3955579}
+  m_Center: {x: 0.25879937, y: 0.05777943, z: 0.06262997}
 --- !u!114 &2477522732134431319
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1016,6 +1018,27 @@ MonoBehaviour:
   _infoObj: {fileID: 8195709381165643794}
   _itemName: {fileID: 6119656357525006208}
   _itemTags: {fileID: 3655230159016907352}
+--- !u!65 &4672573200131863578
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4070193271896431842}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1.259908, z: 2.8750503}
+  m_Center: {x: 0, y: -0.01856494, z: -0.64512885}
 --- !u!1 &8114085555978512264
 GameObject:
   m_ObjectHideFlags: 0
