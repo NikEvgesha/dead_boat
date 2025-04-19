@@ -136,17 +136,17 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5586192829940442243}
-  m_LocalRotation: {x: -0.019015232, y: 0.70480376, z: -0.017345361, w: -0.7089354}
+  m_LocalRotation: {x: 0.0010381184, y: 0.70505947, z: 0.0028248206, w: -0.7091418}
   m_LocalPosition: {x: 0, y: 0, z: -0.04}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 7178953044581774}
   m_Father: {fileID: 6398061691547800206}
-  m_LocalEulerAnglesHint: {x: 2.947, y: -89.668, z: -0.127}
+  m_LocalEulerAnglesHint: {x: -0.313, y: -89.669, z: -0.146}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 12.41, y: 4.49}
+  m_AnchoredPosition: {x: 12.66, y: 4.25}
   m_SizeDelta: {x: 10.0856, y: 2.6722}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!223 &6035809294486273364
@@ -223,6 +223,7 @@ GameObject:
   - component: {fileID: 5574255975305350657}
   - component: {fileID: 4437073615888661927}
   - component: {fileID: 9035370686230806767}
+  - component: {fileID: 4389317767678243604}
   m_Layer: 5
   m_Name: Text (Legacy)
   m_TagString: Untagged
@@ -291,6 +292,21 @@ MonoBehaviour:
     m_VerticalOverflow: 0
     m_LineSpacing: 1
   m_Text: Sheriffs
+--- !u!114 &4389317767678243604
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7163044148421407462}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dd4151974eac4ae4ba8ed7bcb9cf28ae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localizationData: {fileID: 11400000, guid: 247e385684679874b849f4c64cf8b6fc, type: 2}
+  selectedKey: Game/Location/Sheriffs
+  currentLanguage: Ru
 --- !u!1001 &1939336156866855923
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -662,6 +678,10 @@ PrefabInstance:
     - target: {fileID: 5256768072253840903, guid: 050c9ddd337ae6741be41fa31afc0ecc, type: 3}
       propertyPath: m_Name
       value: SellPoint
+      objectReference: {fileID: 0}
+    - target: {fileID: 8346932477842827817, guid: 050c9ddd337ae6741be41fa31afc0ecc, type: 3}
+      propertyPath: selectedKey
+      value: Game/HelpInfo/GetPirate
       objectReference: {fileID: 0}
     - target: {fileID: 8653896522363440736, guid: 050c9ddd337ae6741be41fa31afc0ecc, type: 3}
       propertyPath: m_LocalRotation.w

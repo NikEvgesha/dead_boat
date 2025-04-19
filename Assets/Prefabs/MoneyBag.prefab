@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 4379093025110669602}
   - component: {fileID: 1681461807508882486}
   - component: {fileID: 8858301458302857704}
+  - component: {fileID: 7744954584687763527}
   m_Layer: 0
   m_Name: BuyFillBar
   m_TagString: Untagged
@@ -36,8 +37,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.035393413, y: 0.05867361}
   m_AnchorMax: {x: 0.3744649, y: 0.9464905}
-  m_AnchoredPosition: {x: -3.3029327, y: 1.6009903}
-  m_SizeDelta: {x: -10.583492, y: -33.108734}
+  m_AnchoredPosition: {x: -0.1499939, y: 1.6009903}
+  m_SizeDelta: {x: 0.59, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1681461807508882486
 CanvasRenderer:
@@ -72,11 +73,25 @@ MonoBehaviour:
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
-  m_FillAmount: 0.695
+  m_FillAmount: 0
   m_FillClockwise: 0
   m_FillOrigin: 2
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &7744954584687763527
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 245325379034903517}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 86710e43de46f6f4bac7c8e50813a599, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_AspectMode: 1
+  m_AspectRatio: 1
 --- !u!1 &913859639392010818
 GameObject:
   m_ObjectHideFlags: 0
@@ -88,6 +103,7 @@ GameObject:
   - component: {fileID: 4596606855338251771}
   - component: {fileID: 4155900807839824289}
   - component: {fileID: 7045691787508806295}
+  - component: {fileID: 527412386049850086}
   m_Layer: 0
   m_Name: BuyText
   m_TagString: Untagged
@@ -156,6 +172,21 @@ MonoBehaviour:
     m_VerticalOverflow: 0
     m_LineSpacing: 1
   m_Text: "\u0421\u043E\u0431\u0440\u0430\u0442\u044C"
+--- !u!114 &527412386049850086
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 913859639392010818}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dd4151974eac4ae4ba8ed7bcb9cf28ae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localizationData: {fileID: 11400000, guid: 247e385684679874b849f4c64cf8b6fc, type: 2}
+  selectedKey: Game/HelpInfo/Collect
+  currentLanguage: Ru
 --- !u!1 &1053620816056501981
 GameObject:
   m_ObjectHideFlags: 0
@@ -227,7 +258,7 @@ MonoBehaviour:
     m_FontStyle: 0
     m_BestFit: 1
     m_MinSize: 6
-    m_MaxSize: 40
+    m_MaxSize: 60
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -269,8 +300,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.42274442, y: 0.6303423}
   m_AnchorMax: {x: 0.97325426, y: 0.9464905}
-  m_AnchoredPosition: {x: 2.593408, y: -5.2817917}
-  m_SizeDelta: {x: -6.946953, y: -16.918413}
+  m_AnchoredPosition: {x: -0.12999725, y: 0.45999908}
+  m_SizeDelta: {x: -1.51, y: 1.03}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6923410851551185987
 CanvasRenderer:

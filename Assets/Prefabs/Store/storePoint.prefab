@@ -96,7 +96,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &4054577362125204736
 RectTransform:
   m_ObjectHideFlags: 0
@@ -250,6 +250,7 @@ GameObject:
   - component: {fileID: 6320449575918124461}
   - component: {fileID: 8521041390066522315}
   - component: {fileID: 5389649423336584825}
+  - component: {fileID: 504373140588793049}
   m_Layer: 0
   m_Name: BuyText
   m_TagString: Untagged
@@ -318,6 +319,21 @@ MonoBehaviour:
     m_VerticalOverflow: 0
     m_LineSpacing: 1
   m_Text: "\u041A\u0443\u043F\u0438\u0442\u044C"
+--- !u!114 &504373140588793049
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1871441188992755892}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dd4151974eac4ae4ba8ed7bcb9cf28ae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localizationData: {fileID: 11400000, guid: 247e385684679874b849f4c64cf8b6fc, type: 2}
+  selectedKey: Buy
+  currentLanguage: Ru
 --- !u!1 &2289631103989620812
 GameObject:
   m_ObjectHideFlags: 0

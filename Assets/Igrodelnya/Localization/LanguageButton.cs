@@ -1,3 +1,4 @@
+using UnityEditor.Localization.Editor;
 using UnityEngine;
 
 public class LanguageButton : MonoBehaviour
@@ -8,6 +9,10 @@ public class LanguageButton : MonoBehaviour
 
     public string Language { get => language; set => language = value; }
 
+    private void Start()
+    {
+        localizationProvider = LocalizationManager.Instance.LocalizationProvider;
+    }
     public void OnButtonClick()
     {
         if (string.IsNullOrEmpty(language))

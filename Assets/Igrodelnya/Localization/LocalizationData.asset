@@ -38,9 +38,13 @@ MonoBehaviour:
     - 'Your record:'
   - Key: Play
     Translations:
-    - "\u0418\u0433\u0440\u0430\u0442\u044C"
-    - Play
+    - "\u041D\u0430\u0447\u0430\u0442\u044C \u0438\u0433\u0440\u0443"
+    - Start game
   - Key: Buy
+    Translations:
+    - "\u041A\u0443\u043F\u0438\u0442\u044C"
+    - Buy
+  - Key: BuyFor
     Translations:
     - "\u041A\u0443\u043F\u0438\u0442\u044C \u0437\u0430"
     - Buy for
@@ -56,6 +60,10 @@ MonoBehaviour:
     Translations:
     - "\u0412\u0435\u0440\u043D\u0443\u0442\u044C\u0441\u044F \u0432 \u043C\u0435\u043D\u044E?"
     - Return to menu?
+  - Key: Menu
+    Translations:
+    - "\u041C\u0435\u043D\u044E"
+    - Menu
   - Key: SensivitySettings
     Translations:
     - "\u0421\u043A\u043E\u0440\u043E\u0441\u0442\u044C \u043A\u0430\u043C\u0435\u0440\u044B"
@@ -66,26 +74,20 @@ MonoBehaviour:
     - Exit
   - Key: ControlHint
     Translations:
-    - "W - \u0412\u043F\u0435\u0440\u0435\u0434\nS - \u041D\u0430\u0437\u0430\u0434\nA
-      - \u0412\u043B\u0435\u0432\u043E\nD - \u0412\u043F\u0440\u0430\u0432\u043E\n\u041F\u0440\u043E\u0431\u0435\u043B
-      - \u0420\u0443\u0447\u043D\u043E\u0439 \u0442\u043E\u0440\u043C\u043E\u0437\nF
-      - \u0412\u0435\u0440\u043D\u0443\u0442\u044C\u0441\u044F \u043D\u0430 \u0441\u043F\u0430\u0432\u043D\nTab
-      - \u041F\u043E\u043A\u0430\u0437\u0430\u0442\u044C \u043C\u044B\u0448\u043A\u0443"
-    - 'W - Go forward
+    - "WSAD - \u041F\u0435\u0440\u0435\u043C\u0435\u0449\u0435\u043D\u0438\u0435\n\u041F\u0440\u043E\u0431\u0435\u043B
+      - \u041F\u0440\u044B\u0436\u043E\u043A\nLShift - \u0423\u0441\u043A\u043E\u0440\u0435\u043D\u0438\u0435\nTab
+      - \u041F\u043E\u043A\u0430\u0437\u0430\u0442\u044C \u043A\u0443\u0440\u0441\u043E\u0440\nB
+      - \u0418\u043D\u0432\u0435\u043D\u0442\u0430\u0440\u044C"
+    - 'WSAD - Move
 
-      S - Brakes/Reverse
+      Spacebar - Jump
 
-      A - Turn left
+      LShift - Accelerate
 
-      D - Turn
-      Right
+      Tab -
+      Show Cursor
 
-      Space - Handbrake
-
-      F - Return to spavn
-
-      Tab - Show
-      mouse'
+      B - Inventory'
   - Key: ShopReal
     Translations:
     - "\u041C\u0430\u0433\u0430\u0437\u0438\u043D"
@@ -396,6 +398,43 @@ MonoBehaviour:
     Translations:
     - "\u041F\u0430\u0442\u0440\u043E\u043D\u044B \u0434\u043B\u044F \u0432\u0438\u043D\u0442\u043E\u0432\u043A\u0438"
     - Rifle ammunition
+  - Key: Game/Location/GeneralStore
+    Translations:
+    - "\u041F\u044F\u0442\u0451\u0440\u043E\u0447\u043A\u0430"
+    - General Store
+  - Key: Game/Location/TradingHut
+    Translations:
+    - "\u0422\u043E\u0440\u0433\u043E\u0432\u044B\u0439 \u0434\u043E\u043C"
+    - Trading Hut
+  - Key: Game/Location/Sheriffs
+    Translations:
+    - "\u0428\u0435\u0440\u0438\u0444"
+    - Sheriffs
+  - Key: Game/Location/Hospital
+    Translations:
+    - "\u0411\u043E\u043B\u044C\u043D\u0438\u0446\u0430"
+    - Hospital
+  - Key: Game/Location/GunStore
+    Translations:
+    - "\u041E\u0440\u0443\u0436\u0435\u0439\u043D\u044B\u0439"
+    - Gun Store
+  - Key: Game/Location/FishermanShark
+    Translations:
+    - "\u0414\u043E\u043C \u0420\u044B\u0431\u0430\u043A\u0430"
+    - Fisherman Shark
+  - Key: Game/HelpInfo/GetPirate
+    Translations:
+    - "\u0414\u043E\u0441\u0442\u0430\u0432\u044C \u043F\u0438\u0440\u0430\u0442\u0430
+      \u0441\u044E\u0434\u0430"
+    - Get pirate here
+  - Key: Game/HelpInfo/SellItem
+    Translations:
+    - "\u041F\u0440\u043E\u0434\u0430\u0442\u044C \u043F\u0440\u0435\u0434\u043C\u0435\u0442\u044B"
+    - Sell items
+  - Key: Game/HelpInfo/Collect
+    Translations:
+    - "\u0421\u0431\u0440\u0430\u0442\u044C"
+    - Collect
   - Key: Tutorial/Step1/Mobile
     Translations:
     - "\u0412\u043E\u0437\u044C\u043C\u0438 \u0438 \u043F\u0440\u043E\u0434\u0430\u0439
