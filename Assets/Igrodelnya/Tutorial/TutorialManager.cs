@@ -15,8 +15,19 @@ public class TutorialManager : MonoBehaviour
         else
         {
             Destroy(gameObject);
+            return;
         }
+
+        GameManager.Instance.GameStart += StartTutorial;
     }
+
+    private void OnDisable()
+    {
+        if (GameManager.Instance)
+            GameManager.Instance.GameStart -= StartTutorial;
+    }
+
+
     public void StartTutorial()
     {
         if (_tutorialSteps.Count <= 0)

@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -9,9 +10,12 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] private PlayerStatsManager _player;
     [SerializeField] private string _lobbySceneName = "Lobby";
+    [SerializeField] private Transform _playerSpawnPoint;
     public PlayerStatsManager Player { get { return _player; } }
 
     public bool isEndGame = false;
+
+    public Action GameStart;
 
     [Header("Дистанция всей игры")]
     public float PlayDistance = 100000f;
@@ -39,25 +43,17 @@ public class GameManager : MonoBehaviour
     {
         if (_player == null)
         {
-            _player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerStatsManager>();
+            _player = PlayerManager.Instance.GetComponent<PlayerStatsManager>();
+            _player.gameObject.transform.position = _playerSpawnPoint.position;
         }
-        TutorialManager.Instance.StartTutorial();
+        GameStart?.Invoke();
     }
 
     public void EndGame(bool lobby)
     {
         isEndGame = true;
         string scenenName = lobby ? _lobbySceneName : SceneManager.GetActiveScene().name;
-        SetPause(false);
+        PauseManager.Instance.SetPause(false);
         GameLoader.Instance.LoadNextScene(scenenName, true);
     }
-
-    public void SetPause(bool paused, bool controlAudio = true)
-    {
-        _pause = paused;
-        Time.timeScale = paused ? 0f : 1f;
-        if (controlAudio)
-            AudioListener.pause = paused;
-    }
-
 }
