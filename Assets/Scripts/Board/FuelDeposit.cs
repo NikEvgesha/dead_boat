@@ -13,7 +13,11 @@ public class FuelDeposit : MonoBehaviour
         FuelItem fuelItem = other.GetComponent<FuelItem>();
         if (fuelItem != null)
         {
-            if(_audioSource)
+            if (fuelItem.InFire)
+                return;
+
+            fuelItem.InFire = true;
+            if (_audioSource)
                 _audioSource.Play();
             trainController.AddFuel(fuelItem.fuelValue);
             Debug.Log("Добавлено топлива: " + fuelItem.fuelValue);
