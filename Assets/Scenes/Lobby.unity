@@ -43248,7 +43248,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!1 &1362350168815270219
 GameObject:
   m_ObjectHideFlags: 0
@@ -49175,13 +49175,14 @@ GameObject:
   - component: {fileID: 1887891099024645438}
   - component: {fileID: 4028825659808298707}
   - component: {fileID: 5836642279040113975}
+  - component: {fileID: 5836642279040113976}
   m_Layer: 5
   m_Name: DistanceText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!1 &3174819711752582565
 GameObject:
   m_ObjectHideFlags: 0
@@ -52009,7 +52010,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!82 &4000776023722186786
 AudioSource:
   m_ObjectHideFlags: 0
@@ -55344,7 +55345,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!223 &5705200461598120312
 Canvas:
   m_ObjectHideFlags: 0
@@ -55458,7 +55459,7 @@ RectTransform:
   m_Father: {fileID: 999928488934734063}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 20, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -55591,6 +55592,21 @@ MonoBehaviour:
     m_VerticalOverflow: 0
     m_LineSpacing: 1
   m_Text: "\u041C\u0435\u0442\u0440\u044B"
+--- !u!114 &5836642279040113976
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3174819711693835846}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dd4151974eac4ae4ba8ed7bcb9cf28ae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localizationData: {fileID: 11400000, guid: 247e385684679874b849f4c64cf8b6fc, type: 2}
+  selectedKey: 
+  currentLanguage: Ru
 --- !u!114 &5865354444281864438
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -60425,7 +60441,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!1 &6968743917541130123
 GameObject:
   m_ObjectHideFlags: 0

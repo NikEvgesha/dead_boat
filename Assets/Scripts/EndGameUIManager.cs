@@ -104,7 +104,8 @@ public class EndGameUIManager : MonoBehaviour
         {
             timerMessageTextFaint.gameObject.SetActive(true);
             // Состояние обморока: не показываем заголовок и информацию о дистанции.
-            timerMessageTextFaint.text = string.Format("Осталось {0} секунд", Mathf.Ceil(timerRemaining));
+            string tagText = LocalizationManager.Instance.LocalizationData.GetTranslation("Game/SecLeft", LocalizationManager.Instance.CurrentLanguage);
+            timerMessageTextFaint.text = string.Format(tagText, Mathf.Ceil(timerRemaining));
             reviveButton.gameObject.SetActive(true); // Возрождение за монеты
             StartCoroutine(FaintStateTimer());
         }
@@ -115,10 +116,12 @@ public class EndGameUIManager : MonoBehaviour
             titleTextWin.gameObject.SetActive(true); 
             distanceObject.SetActive(true);
             timerMessageText.gameObject.SetActive(true);
-            distanceText.text = string.Format("Пройденный путь: {0}м", distance);
+            string tagText = LocalizationManager.Instance.LocalizationData.GetTranslation("Game/Traveled", LocalizationManager.Instance.CurrentLanguage);
+            distanceText.text = string.Format(tagText, distance);
             playAgainButton.gameObject.SetActive(true);
             // Текст таймера для победы/поражения
-            timerMessageText.text = string.Format("Возвращаемся в лобби через {0} секунд", Mathf.Ceil(timerRemaining));
+            tagText = LocalizationManager.Instance.LocalizationData.GetTranslation("Game/AutoLeft", LocalizationManager.Instance.CurrentLanguage);
+            timerMessageText.text = string.Format(tagText, Mathf.Ceil(timerRemaining));
             StartCoroutine(WinLoseStateTimer());
         }
         else if (state == EndGameState.Lose)
@@ -128,10 +131,12 @@ public class EndGameUIManager : MonoBehaviour
             titleObject.SetActive(true);
             titleTextLose.gameObject.SetActive(true);
             distanceObject.SetActive(true);
-            distanceText.text = string.Format("Пройденный путь: {0}м", distance);
+            string tagText = LocalizationManager.Instance.LocalizationData.GetTranslation("Game/Traveled", LocalizationManager.Instance.CurrentLanguage);
+            distanceText.text = string.Format(tagText, distance);
             playAgainButton.gameObject.SetActive(true);
             reviveButton.gameObject.SetActive(true);
-            timerMessageText.text = string.Format("Возвращаемся в лобби через {0} секунд", Mathf.Ceil(timerRemaining));
+            tagText = LocalizationManager.Instance.LocalizationData.GetTranslation("Game/AutoLeft", LocalizationManager.Instance.CurrentLanguage);
+            timerMessageText.text = string.Format(tagText, Mathf.Ceil(timerRemaining));
             StartCoroutine(WinLoseStateTimer());
         }
     }
@@ -143,7 +148,8 @@ public class EndGameUIManager : MonoBehaviour
         {
             // Обновление слайдера и текстового сообщения
             timerSlider.value = timerRemaining;
-            timerMessageTextFaint.text = string.Format("Осталось {0} секунд", Mathf.Ceil(timerRemaining));
+            string tagText = LocalizationManager.Instance.LocalizationData.GetTranslation("Game/SecLeft", LocalizationManager.Instance.CurrentLanguage);
+            timerMessageTextFaint.text = string.Format(tagText, Mathf.Ceil(timerRemaining));
             yield return new WaitForSeconds(1f);
             timerRemaining--;
         }
@@ -158,7 +164,8 @@ public class EndGameUIManager : MonoBehaviour
         {
             // Обновление слайдера и текстового сообщения
             timerSlider.value = timerRemaining;
-            timerMessageText.text = string.Format("Возвращаемся в лобби через {0} секунд", Mathf.Ceil(timerRemaining));
+            string tagText = LocalizationManager.Instance.LocalizationData.GetTranslation("Game/AutoLeft", LocalizationManager.Instance.CurrentLanguage);
+            timerMessageText.text = string.Format(tagText, Mathf.Ceil(timerRemaining));
             yield return new WaitForSeconds(1f);
             timerRemaining--;
         }
