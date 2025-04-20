@@ -18,7 +18,7 @@ public class StorePoint : MonoBehaviour
     [SerializeField] private Text _name;
     [SerializeField] private Image _buyProgress;
     [SerializeField] private Image _currencyIcon;
-    [SerializeField] private Text _noMoney;
+    [SerializeField] private Image _noMoney;
     private bool _isNoMoney;
 
 
@@ -131,8 +131,8 @@ public class StorePoint : MonoBehaviour
         if (PlayerInput.Instance.Interaction)
         {
             TryBuy();
-        } 
-        else if (_isNoMoney)
+        }
+        if (_isNoMoney && !PlayerInput.Instance.InteractionHold)
         {
             _isNoMoney = false;
             _noMoney.gameObject.SetActive(_isNoMoney);
