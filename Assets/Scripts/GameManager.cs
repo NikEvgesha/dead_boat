@@ -1,7 +1,6 @@
 using System;
 using UnityEngine;
-using UnityEngine.SceneManagement;
-
+[DefaultExecutionOrder(-1)]
 public class GameManager : MonoBehaviour
 {
     private static GameManager _instance;

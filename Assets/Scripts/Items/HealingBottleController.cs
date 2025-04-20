@@ -44,11 +44,13 @@ public class HealingBottleController : MonoBehaviour
         ControlUI.Instance.ShowUseButton(active);
         if (active)
         {
+            _animator.enabled = true;
             _usableItem.Use += StartDrinking;
             _usableItem.StopUse += StopDrinking;
         }
         else
         {
+            _animator.enabled = false;
             _usableItem.Use -= StartDrinking;
             _usableItem.StopUse -= StopDrinking;
         }
