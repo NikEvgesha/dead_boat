@@ -2,17 +2,17 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-[Serializable]
+/*[Serializable]
 public struct SpecialShopItem
 {
     public PickableItem item;
     public int price;
     public CurrencyType currencyType;
-}
+}*/
 
 public class BoatShop : MonoBehaviour
 {
-    [SerializeField] private List<SpecialShopItem> _items;
+    [SerializeField] private List<PickableItem> _items;
     [SerializeField] private Canvas _shopCanvas;
     [SerializeField] private DynamicGridSpawner _grid;
     [SerializeField] private BoatShopSlot _slotPrefab;
@@ -31,7 +31,7 @@ public class BoatShop : MonoBehaviour
 
     public void InitSlots()
     {
-        foreach (SpecialShopItem item in _items)
+        foreach (PickableItem item in _items)
         {
             BoatShopSlot slot = _grid.SpawnObject<BoatShopSlot>(_slotPrefab.gameObject);
             slot.Init(item, this);
@@ -47,13 +47,17 @@ public class BoatShop : MonoBehaviour
     }
 
 
-    public void TryBuy(SpecialShopItem itemData)
+    public void TryBuy(PickableItem itemData)
     {
-        if (CurrencyManager.Instance.CheckEnoughCurrency(itemData.currencyType, itemData.price))
+        if (itemData.TryGetComponent<StoreItem>(out StoreItem item))
         {
-            ItemPurchased?.Invoke(itemData.item);
-            CurrencyManager.Instance.RemoveCurrency(itemData.currencyType, itemData.price);
+            if (CurrencyManager.Instance.CheckEnoughCurrency(CurrencyType.Gems, item.GemPrice))
+            {
+                ItemPurchased?.Invoke(itemData);
+                CurrencyManager.Instance.RemoveCurrency(CurrencyType.Gems, item.GemPrice);
+            }
         }
+
     }
 
 }

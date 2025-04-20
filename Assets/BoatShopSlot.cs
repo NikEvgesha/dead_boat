@@ -1,14 +1,17 @@
 
 public class BoatShopSlot : SpecialShopSlot
 {
-    private SpecialShopItem _itemData;
+    private PickableItem _itemData;
     private BoatShop _shop;
 
-    public void Init(SpecialShopItem itemData, BoatShop shop)
+    public void Init(PickableItem itemData, BoatShop shop)
     {
-        base.Init(itemData.item.Data, itemData.price, itemData.currencyType);
-        _itemData = itemData;
-        _shop = shop;
+        if (itemData.TryGetComponent<StoreItem>(out StoreItem item))
+        {
+            base.Init(itemData.Data, item.GemPrice, CurrencyType.Gems);
+            _itemData = itemData;
+            _shop = shop;
+        }
     }
 
     public override void OnClick()

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using UnityEngine;
@@ -47,8 +48,15 @@ public class Inventory : MonoBehaviour
         //InventoryUI.Instance.SpawnSlots(_capacityTotal - _quickSlotsCapacity, _quickSlotsCapacity);
         //InventoryUI.Instance.UpdateCapacity(_items.Count, _capacityTotal);
 
-        SetStartItems(_starterPack.GetStartItems());
+        StartCoroutine(AddStarterPack());
 
+    }
+
+
+    private IEnumerator AddStarterPack()
+    {
+        yield return null;
+        SetStartItems(_starterPack.GetStartItems());
     }
 
     public void ResetInventory()
