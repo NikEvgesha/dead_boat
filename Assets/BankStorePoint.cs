@@ -13,7 +13,7 @@ public class BankStorePoint : MonoBehaviour
     [SerializeField] private BuyTouchHandler _buyTouchPanel;
 
     private float _progress;
-    private bool _buyInProgress;
+    //private bool _buyInProgress;
 
     private bool _active;
 
@@ -46,7 +46,7 @@ public class BankStorePoint : MonoBehaviour
             StopAllCoroutines();
             _progress = 0;
             _buyProgress.fillAmount = _progress;
-            _buyInProgress = false;
+            //_buyInProgress = false;
         }
     }
 
@@ -63,7 +63,7 @@ public class BankStorePoint : MonoBehaviour
 
     private void TryBuy()
     {
-        _buyInProgress = true;
+        //_buyInProgress = true;
         _progress = 0;
         StartCoroutine(BuyProcess());
     }
@@ -85,7 +85,7 @@ public class BankStorePoint : MonoBehaviour
         }
         _progress = 0;
         _buyProgress.fillAmount = _progress;
-        _buyInProgress = false;
+        //_buyInProgress = false;
 
     }
 }

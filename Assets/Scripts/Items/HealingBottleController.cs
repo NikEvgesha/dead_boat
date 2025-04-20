@@ -13,8 +13,8 @@ public class HealingBottleController : MonoBehaviour
     // Внутренние переменные
     private bool _isDrinking = false;
     private Coroutine _drinkRoutine;
-    private float _lastUseTime;
-    private float _useThreshold = 0.1f; // Если событие Use не вызвано 0.1 сек, считаем, что кнопка отпущена
+    //private float _lastUseTime;
+    //private float _useThreshold = 0.1f; // Если событие Use не вызвано 0.1 сек, считаем, что кнопка отпущена
 
     private void OnEnable()
     {

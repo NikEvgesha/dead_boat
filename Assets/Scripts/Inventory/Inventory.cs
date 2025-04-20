@@ -7,7 +7,7 @@ using UnityEngine;
 public class Inventory : MonoBehaviour
 {
     [SerializeField] private int _capacity = 10;
-    [SerializeField] private int _available = 25;
+    //[SerializeField] private int _available = 25;
     [SerializeField] private int _quickSlotsCapacity = 5;
     [SerializeField] private Transform _dropOutPoint;
     [SerializeField] private ActiveItemManager _activeItemManager;

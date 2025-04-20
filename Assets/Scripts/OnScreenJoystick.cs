@@ -8,17 +8,17 @@ public class OnScreenJoystick : MonoBehaviour, IDragHandler, IPointerUpHandler, 
     [SerializeField] private float maxRadius = 100f;    // Maximum distance knob can move
 
     private Vector2 inputVector;                       // The final input value
-    private Vector2 startPos;                          // Initial position of background
-    private bool isDragging = false;
+    //private Vector2 startPos;                          // Initial position of background
+    //private bool isDragging = false;
 
     void Start()
     {
-        startPos = background.anchoredPosition;
+        //startPos = background.anchoredPosition;
     }
 
     public void OnPointerDown(PointerEventData eventData)
     {
-        isDragging = true;
+        //isDragging = true;
         OnDrag(eventData);
     }
 
@@ -39,7 +39,7 @@ public class OnScreenJoystick : MonoBehaviour, IDragHandler, IPointerUpHandler, 
 
     public void OnPointerUp(PointerEventData eventData)
     {
-        isDragging = false;
+        //isDragging = false;
         inputVector = Vector2.zero;
         knob.anchoredPosition = Vector2.zero;
     }

@@ -1,9 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.ProBuilder.Shapes;
 
 
 public class PickableItem : MonoBehaviour
@@ -15,7 +13,7 @@ public class PickableItem : MonoBehaviour
     [SerializeField] private Transform _sellPoint;
 
     [SerializeField] private float _lerpSpeed = 10f;
-    [SerializeField] private float _maxSpeed = 10f;
+    //[SerializeField] private float _maxSpeed = 10f;
     [SerializeField] private float _damping = 0.1f;
     [SerializeField] private float _stopDistance = 0.05f;
     [SerializeField] private float _maxDistance = 8f;

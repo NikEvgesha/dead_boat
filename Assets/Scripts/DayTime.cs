@@ -13,11 +13,11 @@ public class DayTime : MonoBehaviour
     [SerializeField] private float _intensityMultiplier;
 
     [SerializeField] private float _cycleDuration = 24f; // Длительность полного цикла в реальных часах
-    [SerializeField] private float _transitionSpeed = 10f; // Скорость перехода восхода/захода
+    //[SerializeField] private float _transitionSpeed = 10f; // Скорость перехода восхода/захода
     [SerializeField] private float _nightLightIntensity = 0.15f; // интенсивность света ночью
 
-    [SerializeField] private float _dayAngle = 90f;
-    [SerializeField] private float _nightAngle = -90f;
+    //[SerializeField] private float _dayAngle = 90f;
+    //[SerializeField] private float _nightAngle = -90f;
     [SerializeField] private Color _dayFogColor;
     [SerializeField] private Color _nightFogColor;
     [SerializeField] private int _startDayTimeDistance = 100;
@@ -35,10 +35,10 @@ public class DayTime : MonoBehaviour
     [Header("Time")]
     private int _hour;
     private int _minute;
-    private bool _isDay;
+    //private bool _isDay;
     private bool _isNight;
     private float _dayDuration; // Длительность в игровых единицах (24 часа = 12 реальных часов)
-    private bool _isTransitioning;
+    //private bool _isTransitioning;
     private float _currentOrbitSpeed;
     private BoardController _boardController;
 
@@ -116,7 +116,7 @@ public class DayTime : MonoBehaviour
             // Быстрый восход
             float t = (_timeOfDay - _sunriseStart) / (_sunriseEnd - _sunriseStart);
             sunAngle = Mathf.Lerp(-90f, 90f, t);
-            _isTransitioning = true;
+            //_isTransitioning = true;
             _skybox.SetFloat(_exposure, Mathf.Lerp(_nightLightIntensity, 1f, t));
             RenderSettings.fogColor = Color.Lerp(_nightFogColor, _dayFogColor, t);
             RenderSettings.ambientIntensity = Mathf.Lerp(_nightLightIntensity * 3f, 1, t);
@@ -127,7 +127,7 @@ public class DayTime : MonoBehaviour
             // Быстрый закат
             float t = (_timeOfDay - _sunsetStart) / (_sunsetEnd - _sunsetStart);
             sunAngle = Mathf.Lerp(90f, 270f, t);
-            _isTransitioning = true;
+            //_isTransitioning = true;
             _skybox.SetFloat(_exposure, Mathf.Lerp(1f, _nightLightIntensity, t));
             RenderSettings.fogColor = Color.Lerp(_dayFogColor, _nightFogColor, t);
             RenderSettings.ambientIntensity = Mathf.Lerp(1, _nightLightIntensity * 3f, t);
@@ -141,7 +141,7 @@ public class DayTime : MonoBehaviour
                 DayNightCycle?.Invoke();
             }
             // Неподвижное положение
-            _isTransitioning = false;
+            //_isTransitioning = false;
             sunAngle = _isNight ? -90f : 90f;
         }
 

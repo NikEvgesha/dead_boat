@@ -8,7 +8,7 @@ public class GameManager : MonoBehaviour
 
 
     [SerializeField] private PlayerStatsManager _player;
-    [SerializeField] private string _lobbySceneName = "Lobby";
+    //[SerializeField] private string _lobbySceneName = "Lobby";
     [SerializeField] private Transform _playerSpawnPoint;
     public PlayerStatsManager Player { get { return _player; } }
 
