@@ -52,7 +52,7 @@ public class ZombieController : MonoBehaviour
 
     private PlayerStatsManager _player;
     private PickableItem _pickableItem;
-
+    private bool _isInitialized;
     [SerializeField] private AudioClip _audioDie;
     [SerializeField] private AudioClip _audioDamage;
     [SerializeField] private AudioClip _audioHit;
@@ -77,35 +77,26 @@ public class ZombieController : MonoBehaviour
 
     void Start()
     {
-        _pickableItem.tag = Tag.Zomby.ToString();
-        // ќграничиваем уровень от 1 до 10 и вычисл€ем параметр t (от 0 до 1)
-        mobLevel = Mathf.Clamp(mobLevel, 1, 10);
-        float t = (mobLevel - 1f) / 9f;
-        agent.speed = Mathf.Lerp(minSpeed, maxSpeed, t);
-        _currentMaxHP = Mathf.RoundToInt(Mathf.Lerp(minHP, maxHP, t));
-        currentHP = _currentMaxHP;
-        lastAttackTime = -attackCooldown;
-        _hpBar.gameObject.SetActive(false);
-        // Ќа старте, если игрок далеко (больше detectionDistance), отключаем NavMeshAgent
-        if (Vector3.Distance(transform.position, target.position) > detectionDistance)
-        {
-            agent.enabled = false;
-        } else
-        {
-            EnsureOnNavMesh();
-        }
+        Initialized();
     }
 
     void Update()
     {
-        if (_isDie)
-            return;
-        if (target == null)
+        if (_isDie || target == null)
             return;
 
         float distance = Vector3.Distance(transform.position, target.position);
 
         // ≈сли игрок находитс€ слишком далеко (за пределами chaseDistance), отключаем агент и прекращаем обработку
+        if (!CheckSeePlayer(distance) || !agent.enabled || !agent.isOnNavMesh)
+            return;
+
+        // ќбновл€ем направление движени€
+        agent.SetDestination(target.position);
+        TryAttack(distance);
+    }
+    private bool CheckSeePlayer(float distance)
+    {
         if (distance > chaseDistance)
         {
             if (agent.enabled)
@@ -113,7 +104,7 @@ public class ZombieController : MonoBehaviour
                 agent.enabled = false;
                 animator.SetFloat("Speed", 0f);
             }
-            return;
+            return false;
         }
         else
         {
@@ -131,15 +122,41 @@ public class ZombieController : MonoBehaviour
                     // чтобы зомби не тер€ли цель, если уже преследуют. «десь можно настроить поведение по желанию.
                     EnsureOnNavMesh();
                 }
-                return;
+                return false;
             }
         }
-
-        if (!agent.enabled || !agent.isOnNavMesh)
+        return true;
+    }
+    public void Initialized(int level = 1)
+    {
+        if (_isInitialized)
             return;
 
-        // ќбновл€ем направление движени€
-        agent.SetDestination(target.position);
+        mobLevel = level;
+
+        _pickableItem.tag = Tag.Zomby.ToString();
+        // ќграничиваем уровень от 1 до 10 и вычисл€ем параметр t (от 0 до 1)
+        mobLevel = Mathf.Clamp(mobLevel, 1, 10);
+        float t = (mobLevel - 1f) / 9f;
+        agent.speed = Mathf.Lerp(minSpeed, maxSpeed, t);
+        _currentMaxHP = Mathf.RoundToInt(Mathf.Lerp(minHP, maxHP, t));
+        currentHP = _currentMaxHP;
+        lastAttackTime = -attackCooldown;
+        _hpBar.gameObject.SetActive(false);
+        // Ќа старте, если игрок далеко (больше detectionDistance), отключаем NavMeshAgent
+        if (Vector3.Distance(transform.position, target.position) > detectionDistance)
+        {
+            agent.enabled = false;
+        }
+        else
+        {
+            EnsureOnNavMesh();
+        }
+
+        _isInitialized = true;
+    }
+    private void TryAttack(float distance)
+    {
 
         if (distance <= attackRange)
         {
@@ -158,7 +175,6 @@ public class ZombieController : MonoBehaviour
             animator.SetFloat("Speed", agent.velocity.magnitude);
         }
     }
-
     /// <summary>
     /// «апускает анимацию атаки (и может наносить урон цели).
     /// </summary>

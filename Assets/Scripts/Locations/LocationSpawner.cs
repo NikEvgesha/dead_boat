@@ -22,7 +22,7 @@ public class LocationSpawner : MonoBehaviour
     private float _stopSpawnDistance = 100000f;
 
     private float lastSpawnZ;                           // Координата Z последнего созданного объекта
-    private List<GameObject> spawnedLocations = new List<GameObject>();
+    private List<LocationContentSpawner> spawnedLocations = new List<LocationContentSpawner>();
 
     public static Action Change;
 
@@ -71,12 +71,13 @@ public class LocationSpawner : MonoBehaviour
         // Выбираем случайный префаб из коллекции с учетом шансов
         if (locationCollection != null) //&& locationCollection.spawnItems.Count > 0)
         {
-            GameObject chosenPrefab = locationCollection.GetRandomSpawnPrefab(lastSpawnZ);
+            LocationContentSpawner chosenPrefab = locationCollection.GetRandomSpawnPrefab(lastSpawnZ);
             if (chosenPrefab != null)
             {
-                GameObject spawnedObj = Instantiate(chosenPrefab, spawnPosition, Quaternion.identity);
+                LocationContentSpawner spawnedObj = Instantiate(chosenPrefab, spawnPosition, Quaternion.identity);
                 spawnedLocations.Add(spawnedObj);
                 spawnedObj.transform.SetParent(this.gameObject.transform);
+                spawnedObj.SetLevel(boardController.GetLevel());
             }
             else
             {

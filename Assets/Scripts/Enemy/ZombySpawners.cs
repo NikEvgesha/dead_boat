@@ -7,7 +7,7 @@ public class ZombieSpawner : MonoBehaviour
     [Header("Player Reference")]
     [Tooltip("Трансформ игрока, вокруг которого спавнить мобов")]
     [SerializeField] private Transform playerTransform;
-
+    [SerializeField] private BoardController _boardController;
     [Header("Spawn Radius")]
     [Tooltip("Минимальное расстояние от игрока")]
     [SerializeField] private float minSpawnDistance = 5f;
@@ -30,6 +30,10 @@ public class ZombieSpawner : MonoBehaviour
     {
         if (!playerTransform)
             playerTransform = PlayerStatsManager.Instance.transform;
+
+        if (!_boardController)
+            _boardController = FindAnyObjectByType<BoardController>();
+
         if (!corutineStart)
         {
             corutineStart = true;
@@ -86,7 +90,8 @@ public class ZombieSpawner : MonoBehaviour
         for (int i = 0; i < spawnCount; i++)
         {
             Vector3 spawnPos = GetRandomPositionInAnnulus();
-            Instantiate(prefab, spawnPos, prefab.transform.rotation, transform);
+            ZombieController zomby = Instantiate(prefab, spawnPos, prefab.transform.rotation, transform);
+            zomby.Initialized(_boardController.GetLevel());
         }
     }
 

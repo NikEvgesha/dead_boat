@@ -10,7 +10,7 @@ public class LocationSpawnCollection : ScriptableObject
     private List<LocationSpawnItem> _actualSpawnItems;
     
     // Метод для выбора случайного префаба с учетом весов
-    public GameObject GetRandomSpawnPrefab()
+    public LocationContentSpawner GetRandomSpawnPrefab()
     {
         // Вычисляем сумму всех шансов
         float totalWeight = 0f;
@@ -31,7 +31,7 @@ public class LocationSpawnCollection : ScriptableObject
         }
         return null; // На всякий случай, если что-то пошло не так
     }
-    public GameObject GetRandomSpawnPrefab(float distance)
+    public LocationContentSpawner GetRandomSpawnPrefab(float distance)
     {
         _actualSpawnItems = new List<LocationSpawnItem>();
         foreach (var item in spawnItems)

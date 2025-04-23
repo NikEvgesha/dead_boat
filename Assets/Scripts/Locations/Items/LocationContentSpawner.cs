@@ -11,15 +11,16 @@ public class LocationContentSpawner : MonoBehaviour
     public List<LocationSpawnPoint> itemSpawnPoints;
 
     [Header("Враги")]
-    [Tooltip("Префаб врага, защищающего локацию")]
-    public GameObject enemyPrefab;
+    [Tooltip("Типы врагов, защищающего локацию")]
+    public List<ZombieController> _enemyPrefabs;
 
     [Tooltip("Список точек для спавна врагов")]
     public List<Transform> enemySpawnPoints;
 
-    [Tooltip("Вероятность спавна врагов (от 0 до 1)")]
+    private int _level = 1;
+    /*[Tooltip("Вероятность спавна врагов (от 0 до 1)")]
     [Range(0f, 1f)]
-    public float enemySpawnChance = 1f;
+    public float enemySpawnChance = 1f;*/
 
     void Start()
     {
@@ -49,12 +50,16 @@ public class LocationContentSpawner : MonoBehaviour
     /// </summary>
     void SpawnEnemies()
     {
+        ZombieController enemyPrefab;
         foreach (var enemyPoint in enemySpawnPoints)
         {
-            if (Random.value <= enemySpawnChance)
-            {
-                Instantiate(enemyPrefab, enemyPoint.position, enemyPoint.rotation, transform);
-            } 
+            enemyPrefab = _enemyPrefabs[Random.Range(0, _enemyPrefabs.Count)];
+            enemyPrefab = Instantiate(enemyPrefab, enemyPoint.position, enemyPoint.rotation, transform);
+            enemyPrefab.Initialized(_level);
         }
+    }
+    public void SetLevel(int level)
+    {
+        _level = level;
     }
 }

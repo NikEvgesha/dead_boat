@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.ProBuilder.MeshOperations;
 
 public class BoardController : MonoBehaviour
 {
@@ -28,6 +29,11 @@ public class BoardController : MonoBehaviour
     [Header("Настройки водителя")]
     [Tooltip("Находится ли игрок на водительском месте")]
     public bool playerOnSeat = false;
+
+    [SerializeField] private int _levels = 10;
+    private int _level = 1;
+
+    private float _levelDistance;
 
     private float _endPoint = 100000f;
 
@@ -70,6 +76,7 @@ public class BoardController : MonoBehaviour
     private void Start()
     {
         _endPoint = GameManager.Instance.PlayDistance;
+        _levelDistance = _endPoint / _levels;
         StartCoroutine(UpdateUiDistance());
         SwitchSpeed?.Invoke(currentSpeed);
         SwitchFuel?.Invoke(currentFuel, _maxFuel);
@@ -89,6 +96,7 @@ public class BoardController : MonoBehaviour
                 _endTutorial = true;
                 TutorialManager.Instance.QuickStopTutorial();
             }
+            _level = (int)Math.Ceiling(TotalDistanceTraveled / _levelDistance);
             SwitchDistance?.Invoke(TotalDistanceTraveled);
             yield return new WaitForSeconds(1);
         }
@@ -221,5 +229,9 @@ public class BoardController : MonoBehaviour
     public float DistanceKm
     {
         get { return TotalDistanceTraveled / 1000f; }
+    }
+    public int GetLevel()
+    {
+        return _level;
     }
 }
