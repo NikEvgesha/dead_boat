@@ -1,3 +1,4 @@
+using TouchControlsKit;
 using UnityEngine;
 
 public class PlayerInput : MonoBehaviour
@@ -185,7 +186,8 @@ public class PlayerInput : MonoBehaviour
     {
         if (ControlManager.Instance.UseTouchControl)
         {
-            Rotation = _touchControls.cameraTouchController.GetRotationInput();
+            //Rotation = _touchControls.cameraTouchController.GetRotationInput();
+            Rotation = TCKInput.GetAxis("Touchpad");
         }
         else
         {

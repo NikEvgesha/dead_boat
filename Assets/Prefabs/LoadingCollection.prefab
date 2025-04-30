@@ -160,6 +160,114 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3bf0467eac44b314ab36d25440d72991, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &419233650901151142
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6036966021965761035}
+  - component: {fileID: 1357541041698573507}
+  - component: {fileID: 7618194930125525955}
+  - component: {fileID: 3062662971797651768}
+  m_Layer: 5
+  m_Name: Touchpad
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &6036966021965761035
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 419233650901151142}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3888553138707903916}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 238.44067, y: 0}
+  m_SizeDelta: {x: -476.8812, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &1357541041698573507
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 419233650901151142}
+  m_CullTransparentMesh: 1
+--- !u!114 &7618194930125525955
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 419233650901151142}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 0, g: 0, b: 0, a: 0}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: 3bfb280c14ab2614e937e8ebb7d77083, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!114 &3062662971797651768
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 419233650901151142}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 60526d02b6fa60847a64bab878042138, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  updateMode: 2
+  baseRect: {fileID: 6036966021965761035}
+  baseImage: {fileID: 7618194930125525955}
+  identifier: Touchpad
+  baseImageColor:
+    serializedVersion: 2
+    rgba: 2785017855
+  enable: 1
+  active: 1
+  visible: 1
+  sensitivity: 5
+  axesLag: 1
+  axesLagSpeed: 15
+  axisX:
+    enabled: 1
+    inverse: 0
+  axisY:
+    enabled: 1
+    inverse: 0
+  showTouchZone: 0
 --- !u!1 &1344559512744091628
 GameObject:
   m_ObjectHideFlags: 0
@@ -2436,6 +2544,10 @@ PrefabInstance:
       propertyPath: m_Enabled
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 2258076212063124987, guid: f4bff2b203e789242a54a0fad5fea349, type: 3}
+      propertyPath: _useTouchControls
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4185805019874051651, guid: f4bff2b203e789242a54a0fad5fea349, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -2578,11 +2690,115 @@ PrefabInstance:
       propertyPath: m_Name
       value: ControlCanvas
       objectReference: {fileID: 0}
+    - target: {fileID: 3974538560098567748, guid: 5f4dad0599baba647bc01faaad41dd6f, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 6752428863929075718, guid: 5f4dad0599baba647bc01faaad41dd6f, type: 3}
+      insertIndex: 0
+      addedObject: {fileID: 6036966021965761035}
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 974439244597466415, guid: 5f4dad0599baba647bc01faaad41dd6f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2862121577761955094}
+    - targetCorrespondingSourceObject: {fileID: 8157855004044690773, guid: 5f4dad0599baba647bc01faaad41dd6f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 489483738633489213}
+    - targetCorrespondingSourceObject: {fileID: 8414269447518696690, guid: 5f4dad0599baba647bc01faaad41dd6f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 660491763714745884}
+    - targetCorrespondingSourceObject: {fileID: 6111887450250240075, guid: 5f4dad0599baba647bc01faaad41dd6f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2892652358090074212}
   m_SourcePrefab: {fileID: 100100000, guid: 5f4dad0599baba647bc01faaad41dd6f, type: 3}
+--- !u!1 &1834405253320440063 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8157855004044690773, guid: 5f4dad0599baba647bc01faaad41dd6f, type: 3}
+  m_PrefabInstance: {fileID: 7513015989927968170}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &489483738633489213
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1834405253320440063}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_EffectColor: {r: 0, g: 0, b: 0, a: 1}
+  m_EffectDistance: {x: 2, y: -2}
+  m_UseGraphicAlpha: 1
+--- !u!1 &2055582376816953688 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8414269447518696690, guid: 5f4dad0599baba647bc01faaad41dd6f, type: 3}
+  m_PrefabInstance: {fileID: 7513015989927968170}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &660491763714745884
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2055582376816953688}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_EffectColor: {r: 0, g: 0, b: 0, a: 1}
+  m_EffectDistance: {x: 2, y: -2}
+  m_UseGraphicAlpha: 1
+--- !u!224 &3888553138707903916 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 6752428863929075718, guid: 5f4dad0599baba647bc01faaad41dd6f, type: 3}
+  m_PrefabInstance: {fileID: 7513015989927968170}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &4364640583170989537 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6111887450250240075, guid: 5f4dad0599baba647bc01faaad41dd6f, type: 3}
+  m_PrefabInstance: {fileID: 7513015989927968170}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2892652358090074212
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4364640583170989537}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_EffectColor: {r: 0, g: 0, b: 0, a: 1}
+  m_EffectDistance: {x: 2, y: -2}
+  m_UseGraphicAlpha: 1
+--- !u!1 &7333689128712857733 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 974439244597466415, guid: 5f4dad0599baba647bc01faaad41dd6f, type: 3}
+  m_PrefabInstance: {fileID: 7513015989927968170}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2862121577761955094
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7333689128712857733}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_EffectColor: {r: 0, g: 0, b: 0, a: 1}
+  m_EffectDistance: {x: 2, y: -2}
+  m_UseGraphicAlpha: 1
 --- !u!224 &7541651135033453715 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 66088909341937977, guid: 5f4dad0599baba647bc01faaad41dd6f, type: 3}
