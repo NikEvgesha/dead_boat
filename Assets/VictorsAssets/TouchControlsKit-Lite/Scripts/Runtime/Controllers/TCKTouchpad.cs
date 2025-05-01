@@ -9,6 +9,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 namespace TouchControlsKit
 {
@@ -16,7 +17,7 @@ namespace TouchControlsKit
         IPointerUpHandler, IPointerDownHandler, IDragHandler, IPointerEnterHandler
     {
         GameObject prevPointerPressGO;
-
+        [SerializeField] Text _debugLog;
 
         // Set Visible
         protected override void OnApplyVisible()
@@ -39,6 +40,13 @@ namespace TouchControlsKit
                 currentDirection = currentPosition - defaultPosition;
                 
                 float touchForce = Vector2.Distance( defaultPosition, currentPosition ) * 2f;
+                //if (_debugLog)
+                    //_debugLog.text = touchForce + "\n" + _debugLog.text;
+                if (touchForce > 1000f)
+                {
+                    touchForce = 0;
+                    currentPosition = defaultPosition;
+                }
                 defaultPosition = currentPosition;
 
                 SetAxes( currentDirection.normalized * touchForce / 100f * sensitivity );

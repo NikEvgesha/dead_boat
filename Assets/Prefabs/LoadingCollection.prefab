@@ -268,6 +268,7 @@ MonoBehaviour:
     enabled: 1
     inverse: 0
   showTouchZone: 0
+  _debugLog: {fileID: 0}
 --- !u!1 &1344559512744091628
 GameObject:
   m_ObjectHideFlags: 0
@@ -2546,7 +2547,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2258076212063124987, guid: f4bff2b203e789242a54a0fad5fea349, type: 3}
       propertyPath: _useTouchControls
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4185805019874051651, guid: f4bff2b203e789242a54a0fad5fea349, type: 3}
       propertyPath: m_LocalPosition.x
@@ -2701,6 +2702,9 @@ PrefabInstance:
       insertIndex: 0
       addedObject: {fileID: 6036966021965761035}
     m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 9067317721387146202, guid: 5f4dad0599baba647bc01faaad41dd6f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8807014385646487088}
     - targetCorrespondingSourceObject: {fileID: 974439244597466415, guid: 5f4dad0599baba647bc01faaad41dd6f, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2862121577761955094}
@@ -2714,6 +2718,23 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 2892652358090074212}
   m_SourcePrefab: {fileID: 100100000, guid: 5f4dad0599baba647bc01faaad41dd6f, type: 3}
+--- !u!1 &1555445367135200880 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 9067317721387146202, guid: 5f4dad0599baba647bc01faaad41dd6f, type: 3}
+  m_PrefabInstance: {fileID: 7513015989927968170}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &8807014385646487088
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1555445367135200880}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba3951097443c604d93f3d7ab71fa9e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1834405253320440063 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 8157855004044690773, guid: 5f4dad0599baba647bc01faaad41dd6f, type: 3}

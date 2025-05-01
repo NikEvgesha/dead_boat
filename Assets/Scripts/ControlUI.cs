@@ -35,9 +35,12 @@ public class ControlUI : MonoBehaviour
 
     [SerializeField] private TouchControls _touchControls;
     [SerializeField] private DesktopHints _descktopHints;
-
+    private bool _isQuitting;
     private bool _isMobile;
-
+    private void OnApplicationQuit()
+    {
+        _isQuitting = true;
+    }
     public void UseMobileSetup(bool isMobile)
     {
         _isMobile = isMobile;
@@ -71,7 +74,7 @@ public class ControlUI : MonoBehaviour
 
     public void ShowPickUpButton(bool visible)
     {
-        if (GameManager.Instance && GameManager.Instance.isEndGame)
+        if (_isQuitting)
             return;
         if (_isMobile)
             _touchControls.pickUpButton.gameObject.SetActive(visible);
@@ -81,7 +84,7 @@ public class ControlUI : MonoBehaviour
 
     public void ShowPutToInventoryButton(bool visible)
     {
-        if (GameManager.Instance && GameManager.Instance.isEndGame)
+        if (_isQuitting)
             return;
         if (_isMobile)
             _touchControls.putToInventoryButton.gameObject.SetActive(visible);
@@ -91,14 +94,14 @@ public class ControlUI : MonoBehaviour
 
     public void OnItemPickUp(bool picked)
     {
-        if (GameManager.Instance && GameManager.Instance.isEndGame)
+        if (_isQuitting)
             return;
         _touchControls.putToInventoryButton.gameObject.SetActive(!picked);
     }
 
     public void ShowAttachButton(bool visible)
     {
-        if (GameManager.Instance && GameManager.Instance.isEndGame)
+        if (_isQuitting)
             return;
         if (_isMobile)
             _touchControls.attachButton.gameObject.SetActive(visible);
@@ -108,7 +111,7 @@ public class ControlUI : MonoBehaviour
     
     public void ShowAttackButton(bool visible)
     {
-        if (GameManager.Instance && GameManager.Instance.isEndGame)
+        if (_isQuitting)
             return;
         if (_isMobile)
             _touchControls.attackButton.gameObject.SetActive(visible);
@@ -118,7 +121,7 @@ public class ControlUI : MonoBehaviour
 
     public void ShowReloadButton(bool visible)
     {
-        if (GameManager.Instance && GameManager.Instance.isEndGame)
+        if (_isQuitting)
             return;
         if (_isMobile)
             _touchControls.reloadButton.gameObject.SetActive(visible);
@@ -128,7 +131,7 @@ public class ControlUI : MonoBehaviour
 
     public void ShowUseButton(bool visible)
     {
-        if (GameManager.Instance && GameManager.Instance.isEndGame)
+        if (_isQuitting)
             return;
         if (_isMobile)
             _touchControls.useButton.gameObject.SetActive(visible);
