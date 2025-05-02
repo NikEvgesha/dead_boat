@@ -34,12 +34,12 @@ public class MirraSDKLocalizationProvider : LocalizationProvider
         if (!MirraSDK.IsInitialized) return;
         // получаем текущий код языка
         string current = GetCurrentLanguage();
-        Debug.Log(current+ " And " + lastLangCode);
+        Debug.Log("Был язык: " + lastLangCode + " Новый язык: " + current);
         // если изменилось — уведомляем подписчиков
         if (lastLangCode != null && current != lastLangCode)
         {
 
-            Debug.Log("Switch последний шаг " + current);
+            Debug.Log("Изменяем язык на " + current);
             lastLangCode = current;
             OnSwitchLang?.Invoke(current);
         }
@@ -53,18 +53,20 @@ public class MirraSDKLocalizationProvider : LocalizationProvider
         if (!MirraSDK.IsInitialized) return "en";
         string name = MirraSDK.Language.Current.ToString();
 
-        Debug.Log("Основные шаги 1 - " + name);
+        Debug.Log(name + " = Берем значение языка из СДК ");
         if (_exceptions.TryGetValue(name, out var code))
         {
 
-            Debug.Log("Основные шаги 2 - " + code);
+            Debug.Log("Необычный код языка - " + code);
             return code;
         }
         // стандартное правило: первые две буквы
-        Debug.Log("Основные шаги 3 - " + name);
-        return name.Length >= 2
+        code = name.Length >= 2
             ? name.Substring(0, 2).ToLowerInvariant()
             : name.ToLowerInvariant();
+
+        Debug.Log(code + " = Сокращенное значение из СДК ");
+        return code;
     }
 
     /// <summary>
@@ -72,7 +74,7 @@ public class MirraSDKLocalizationProvider : LocalizationProvider
     /// </summary>
     public override void SwitchLanguage(string langCode)
     {
-        Debug.Log("Switch До " + MirraSDK.IsInitialized);
+        Debug.Log("Проверка инициализации СДК - " + MirraSDK.IsInitialized);
         if (!MirraSDK.IsInitialized) return;
         // приводим к нижнему регистру
         langCode = langCode.ToLowerInvariant();
@@ -84,8 +86,8 @@ public class MirraSDKLocalizationProvider : LocalizationProvider
             if (candidateName.StartsWith(langCode))
             {
                 MirraSDK.Language.Current = candidate;
+                Debug.Log("Усталавливаем MirraSDK.Language.Current = " + candidate);
                 CheckLeng();
-                Debug.Log("Switch Внутри " + candidate);
                 return;
             }
         }
