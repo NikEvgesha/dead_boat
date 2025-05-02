@@ -11,7 +11,7 @@ public class MirraSDKAnalyticsProvider : AnalyticsProvider
     /// </summary>
     public override void Initialize()
     {
-        MirraSDK.Analytics.WaitForEventsReporter(() =>
+        MirraSDK.WaitForProviders(() =>
         {
             Debug.Log("MirraSDKAnalyticsProvider: Events reporter initialized");
         });  // :contentReference[oaicite:0]{index=0}

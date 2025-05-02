@@ -3,17 +3,17 @@ using UnityEngine;
 using MirraGames.SDK;  // пространство имён SDK
 
 //#if MIRRA_SDK_ENABLED
-public class MirraSDKMetricaProvider : PurchasesProvider
+public class MirraSDKPurchaseProvider : PurchasesProvider
 {
     private bool isInitialized = false;
     private Action<bool> currentCallback;
 
     public override void Initialize()
     {
-        MirraSDK.Payments.WaitForProviders(() =>
+        MirraSDK.WaitForProviders(() =>
         {
             isInitialized = true;
-            Debug.Log("MirraSDK: Payments initialized");
+            //Debug.Log("MirraSDK: Payments initialized");
         });  // :contentReference[oaicite:0]{index=0}
     }
 

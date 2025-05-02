@@ -6,15 +6,22 @@ using MirraGames.SDK;  // добавили пространство имЄн SDK
 
 public class MirraSDKAdsProvider : AdsProvider
 {
+    private bool isInitialized;
     public override void Initialize()
     {
-        // ¬ MirraSDK нет €вной инициализации Ads-модул€,
-        // но логируем факт подключени€ провайдера
-        Debug.Log("MirraSDKAdsProvider initialized");
+        MirraSDK.WaitForProviders(() =>
+        {
+            // устанавливаем начальное значение
+            isInitialized=true;
+            // ¬ MirraSDK нет €вной инициализации Ads-модул€,
+            // но логируем факт подключени€ провайдера
+            Debug.Log("MirraSDKAdsProvider initialized");
+        });
     }
 
     public override bool IsRewardedAdReady()
     {
+        if (!isInitialized) return false;
         return MirraSDK.Ads.IsRewardedReady;
     }
 

@@ -1,65 +1,96 @@
-
-//#if MIRRA_SDK_ENABLED
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using MirraGames.SDK;  // пространство имён MirraSDK
 using MirraGames.SDK.Common;
-using System.Globalization;
 
 public class MirraSDKLocalizationProvider : LocalizationProvider
 {
     // событие при смене языка, передаём код в lowercase, например "en", "ru"
     public override event Action<string> OnSwitchLang;
 
-    // хранит последний известный язык
+    // хранит последний известный код языка
     private string lastLangCode = null;
+
+    // словарь для нестандартных кодов ISO
+    private static readonly Dictionary<string, string> _exceptions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+    {
+        { "Portuguese", "pt" },
+        { "Chinese",   "zh" },
+        // добавляйте прочие исключения здесь
+    };
 
     private void OnEnable()
     {
         // Ждём, пока провайдеры локализации не инициализируются
-        MirraSDK.Language.WaitForProviders(() =>
+        MirraSDK.WaitForProviders(() =>
         {
             // устанавливаем начальное значение
-            lastLangCode = MirraSDK.Language.Current.ToString().ToLowerInvariant();
+            lastLangCode = GetCurrentLanguage();
         });
     }
-
-    private void Update()
+    private void CheckLeng()
     {
-        // проверяем, что система локализации уже готова
-        if (!MirraSDK.Language.IsInitialized) return;
-
-        // получаем текущий язык
-        string current = MirraSDK.Language.Current.ToString().ToLowerInvariant();
-
+        if (!MirraSDK.IsInitialized) return;
+        // получаем текущий код языка
+        string current = GetCurrentLanguage();
+        Debug.Log(current+ " And " + lastLangCode);
         // если изменилось — уведомляем подписчиков
         if (lastLangCode != null && current != lastLangCode)
         {
+
+            Debug.Log("Switch последний шаг " + current);
             lastLangCode = current;
             OnSwitchLang?.Invoke(current);
         }
-    }
 
-    // Возвращаем код текущего языка
+    }
+    /// <summary>
+    /// Возвращаем код текущего языка: двухбуквенный ISO или из словаря исключений
+    /// </summary>
     public override string GetCurrentLanguage()
     {
-        return MirraSDK.Language.Current.ToString().ToLowerInvariant();
+        if (!MirraSDK.IsInitialized) return "en";
+        string name = MirraSDK.Language.Current.ToString();
+
+        Debug.Log("Основные шаги 1 - " + name);
+        if (_exceptions.TryGetValue(name, out var code))
+        {
+
+            Debug.Log("Основные шаги 2 - " + code);
+            return code;
+        }
+        // стандартное правило: первые две буквы
+        Debug.Log("Основные шаги 3 - " + name);
+        return name.Length >= 2
+            ? name.Substring(0, 2).ToLowerInvariant()
+            : name.ToLowerInvariant();
     }
 
-    // Переключаем язык по коду (например "en", "ru", "ja")
+    /// <summary>
+    /// Переключаем язык по коду (например "en", "ru", "ja").
+    /// </summary>
     public override void SwitchLanguage(string langCode)
     {
-        // Пробуем спарсить строку в enum LanguageType
-        if (Enum.TryParse(
-            /* текст */    CultureInfo.InvariantCulture.TextInfo.ToTitleCase(langCode),
-            /* тип */      out LanguageType lang))
+        Debug.Log("Switch До " + MirraSDK.IsInitialized);
+        if (!MirraSDK.IsInitialized) return;
+        // приводим к нижнему регистру
+        langCode = langCode.ToLowerInvariant();
+
+        // перебираем все значения enum LanguageType
+        foreach (LanguageType candidate in Enum.GetValues(typeof(LanguageType)))
         {
-            MirraSDK.Language.Current = lang;
+            string candidateName = candidate.ToString().ToLowerInvariant();
+            if (candidateName.StartsWith(langCode))
+            {
+                MirraSDK.Language.Current = candidate;
+                CheckLeng();
+                Debug.Log("Switch Внутри " + candidate);
+                return;
+            }
         }
-        else
-        {
-            Debug.LogWarning($"MirraSDKLocalizationProvider: неверный код языка «{langCode}»");
-        }
+
+        Debug.LogWarning($"MirraSDKLocalizationProvider: unsupported language code '{langCode}'");
     }
 
     private void OnDisable()
@@ -68,4 +99,3 @@ public class MirraSDKLocalizationProvider : LocalizationProvider
         lastLangCode = null;
     }
 }
-//#endif

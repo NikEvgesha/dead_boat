@@ -1,3 +1,4 @@
+using MirraGames.SDK;
 using System;
 using UnityEngine;
 
@@ -32,18 +33,27 @@ public class LoadingManager : MonoBehaviour
     void Start()
     {
         GameLoader.Instance.OnSceneLoaded += OnSceneLoaded;
+        MirraSDK.WaitForProviders(static () => {
+            LoadingManager.Instance.StartGame();
+            // Методы SDK не должны вызывать вылет или NullReferenceException,
+            // делегат будет вызван только когда все провайдеры имеют статус IsInitialized.
+        });
+
+    }
+    private void StartGame()
+    {
+
         if (SaveManager.Instance.IsNewPlayer)
         {
             GameLoader.Instance.LoadNextScene(_gameScene, true);
             _location = Location.Game;
-        }  
+        }
         else
         {
             GameLoader.Instance.LoadNextScene(_lobbyScene, true);
             _location = Location.Lobby;
         }
     }
-
 
     private void OnDisable()
     {

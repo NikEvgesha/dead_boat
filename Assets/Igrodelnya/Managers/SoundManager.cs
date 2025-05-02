@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.Audio;
+using MirraGames.SDK;  // MirraSDK audio API
 
 public class SoundManager : MonoBehaviour
 {
@@ -15,86 +16,139 @@ public class SoundManager : MonoBehaviour
     [SerializeField] private AudioClip _win;
 
     private static SoundManager _instance;
-    private bool _soundON;
+    public static SoundManager Instance => _instance;
+
     private float _soundVolume;
     private float _musicVolume;
-    private string _soundName = "SoundVolume";
-    private string _musicName = "MusicVolume";
 
-    public bool IsReady;
-    public Action Ready;
-    public static SoundManager Instance { get { return _instance; } }
-    public bool isSoundOn { get { return _soundON; } }
+    // Названия параметров в AudioMixer
+    private readonly string _soundName = "SoundVolume";
+    private readonly string _musicName = "MusicVolume";
+
+    public bool IsReady { get; private set; }
+    public event Action Ready;
+
+    /// <summary>
+    /// Глобальный мастер-громкость через MirraSDK
+    /// </summary>
+    public float MasterVolume
+    {
+        get => MirraSDK.Audio.Volume;
+        set
+        {
+            MirraSDK.Audio.Volume = Mathf.Clamp01(value);
+            //Debug.Log($"Master volume set to: {MirraSDK.Audio.Volume}");
+        }
+    }
+
+    /// <summary>
+    /// Громкость звуковых эффектов (SFX)
+    /// </summary>
     public float SoundVolume
     {
-        get { return _soundVolume; }
+        get => _soundVolume;
         set
         {
-            _soundVolume = value;
-            _mixer.audioMixer.SetFloat(_soundName, Mathf.Lerp(minVolume, maxVolume, _curve.Evaluate(_soundVolume)));
-            //VolumeChange?.Invoke(_volume);
-            SaveManager.Instance.SaveSoundVolume(value);
+            _soundVolume = Mathf.Clamp01(value);
+            // Применяем к группе SFX
+            float db = Mathf.Lerp(minVolume, maxVolume, _curve.Evaluate(_soundVolume));
+            _mixer.audioMixer.SetFloat(_soundName, db);
+            // Обновляем глобальную громкость
+            //MasterVolume = _soundVolume;
+            SaveManager.Instance.SaveSoundVolume(_soundVolume);
+            //Debug.Log($"Sound SFX volume set to: {_soundVolume} (db={db})");
         }
     }
+
+    /// <summary>
+    /// Громкость фоновой музыки
+    /// </summary>
     public float MusicVolume
     {
-        get { return _musicVolume; }
+        get => _musicVolume;
         set
         {
-            _musicVolume = value;
-            _mixer.audioMixer.SetFloat(_musicName, Mathf.Lerp(minVolume, maxVolume, _curve.Evaluate(_musicVolume)));
-            //VolumeChange?.Invoke(_volume);
-            SaveManager.Instance.SaveMusicVolume(value);
+            _musicVolume = Mathf.Clamp01(value);
+            float db = Mathf.Lerp(minVolume, maxVolume, _curve.Evaluate(_musicVolume));
+            _mixer.audioMixer.SetFloat(_musicName, db);
+            //MasterVolume = _musicVolume;
+            SaveManager.Instance.SaveMusicVolume(_musicVolume);
+            //Debug.Log($"Music volume set to: {_musicVolume} (db={db})");
         }
     }
-    
-
-    public Action<float> VolumeChange;
-
-    // volume change
-
 
     private void Awake()
     {
-        if (Instance == null)
+        if (_instance == null)
         {
             _instance = this;
-            //DontDestroyOnLoad(gameObject);
+            DontDestroyOnLoad(gameObject);
         }
         else
         {
             Destroy(gameObject);
+            return;
         }
-        _music.Play();
+
     }
+
     private void Start()
     {
+        MirraSDK.WaitForProviders(static () => {
+            SoundManager.Instance.StartGame();
+            // Методы SDK не должны вызывать вылет или NullReferenceException,
+            // делегат будет вызван только когда все провайдеры имеют статус IsInitialized.
+        });
+    }
+    private void StartGame()
+    {
+        // Загружаем сохранённые параметры
         float[] volume = SaveManager.Instance.GetVolume();
         MusicVolume = volume[0];
         SoundVolume = volume[1];
-        //GameManager.Instance.GameLose += GameLose;
-        //GameManager.Instance.GameWin += GameWon;
-        Ready?.Invoke();
+
         IsReady = true;
+        Ready?.Invoke();
+        PlayMusicLoop();
     }
-    private void StartPlayMusic()
+    public void OnPauseAudioChanged(bool paused)
     {
-        _music.Play();
+        // Управление звуком через MirraSDK при паузе
+        MirraSDK.Audio.Pause = paused; 
     }
-    private void GameLose()
+
+    public void PlayUIClick()
     {
-        _music.loop = false;
-        _music.clip = _lose;
-        _music.Play();
+        if (_uiClick != null)
+            _uiClick.Play();
     }
-    private void GameWon(float none)
+
+    public void PlayMusicLoop()
     {
-        _music.loop = false;
-        _music.clip = _win;
-        _music.Play();
+        if (_music != null)
+        {
+            _music.loop = true;
+            _music.Play();
+        }
     }
-    public void PlayUIClick() 
+
+    public void PlayLose()
     {
-        _uiClick.Play();
+        if (_music != null && _lose != null)
+        {
+            _music.loop = false;
+            _music.clip = _lose;
+            _music.Play();
+        }
+    }
+
+    public void PlayWin()
+    {
+        if (_music != null && _win != null)
+        {
+            _music.loop = false;
+            _music.clip = _win;
+            _music.Play();
+        }
     }
 }

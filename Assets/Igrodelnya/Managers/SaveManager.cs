@@ -15,7 +15,7 @@ public class SaveManager : MonoBehaviour
         if (_instance == null)
         {
             _instance = this;
-            DontDestroyOnLoad(gameObject);
+            //DontDestroyOnLoad(gameObject);
             saveProvider.Initialize();
             StartCoroutine(ProgressSavingRoutine());
         }
