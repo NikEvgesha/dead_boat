@@ -11,6 +11,7 @@ public class MirraSDKLocalizationProvider : LocalizationProvider
 
     // хранит последний известный код языка
     private string lastLangCode = null;
+    private string _langCode = null;
 
     // словарь для нестандартных кодов ISO
     private static readonly Dictionary<string, string> _exceptions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -33,7 +34,7 @@ public class MirraSDKLocalizationProvider : LocalizationProvider
     {
         if (!MirraSDK.IsInitialized) return;
         // получаем текущий код языка
-        string current = GetCurrentLanguage();
+        string current = _langCode;
         Debug.Log("Был язык: " + lastLangCode + " Новый язык: " + current);
         // если изменилось — уведомляем подписчиков
         if (lastLangCode != null && current != lastLangCode)
@@ -53,11 +54,11 @@ public class MirraSDKLocalizationProvider : LocalizationProvider
         if (!MirraSDK.IsInitialized) return "en";
         string name = MirraSDK.Language.Current.ToString();
 
-        Debug.Log(name + " = Берем значение языка из СДК ");
+        //Debug.Log(name + " = Берем значение языка из СДК ");
         if (_exceptions.TryGetValue(name, out var code))
         {
 
-            Debug.Log("Необычный код языка - " + code);
+            //Debug.Log("Необычный код языка - " + code);
             return code;
         }
         // стандартное правило: первые две буквы
@@ -65,7 +66,7 @@ public class MirraSDKLocalizationProvider : LocalizationProvider
             ? name.Substring(0, 2).ToLowerInvariant()
             : name.ToLowerInvariant();
 
-        Debug.Log(code + " = Сокращенное значение из СДК ");
+        //Debug.Log(code + " = Сокращенное значение из СДК ");
         return code;
     }
 
@@ -74,7 +75,7 @@ public class MirraSDKLocalizationProvider : LocalizationProvider
     /// </summary>
     public override void SwitchLanguage(string langCode)
     {
-        Debug.Log("Проверка инициализации СДК - " + MirraSDK.IsInitialized);
+        //Debug.Log("Проверка инициализации СДК - " + MirraSDK.IsInitialized);
         if (!MirraSDK.IsInitialized) return;
         // приводим к нижнему регистру
         langCode = langCode.ToLowerInvariant();
@@ -85,8 +86,9 @@ public class MirraSDKLocalizationProvider : LocalizationProvider
             string candidateName = candidate.ToString().ToLowerInvariant();
             if (candidateName.StartsWith(langCode))
             {
-                MirraSDK.Language.Current = candidate;
-                Debug.Log("Усталавливаем MirraSDK.Language.Current = " + candidate);
+                _langCode = langCode.ToLowerInvariant();
+                //MirraSDK.Language.Current = candidate;
+                //Debug.Log("Усталавливаем MirraSDK.Language.Current = " + candidate);
                 CheckLeng();
                 return;
             }
