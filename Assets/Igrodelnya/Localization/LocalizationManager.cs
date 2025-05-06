@@ -65,9 +65,14 @@ public class LocalizationManager : MonoBehaviour
     public void ChangeLanguage(string newLanguage)
     {
         Debug.Log($"язык начал измен€тьс€ на: {newLanguage}");
-        if (localizationData == null || !localizationData.Languages.Contains(newLanguage) || newLanguage == currentLanguage)
+        if (localizationData == null || newLanguage == currentLanguage)
         {
             return;
+        }
+
+        if (!localizationData.Languages.Contains(newLanguage))
+        {
+            newLanguage = "En";
         }
 
         currentLanguage = newLanguage;

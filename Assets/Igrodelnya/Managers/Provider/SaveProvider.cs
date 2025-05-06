@@ -2,6 +2,7 @@ using UnityEngine;
 
 public abstract class SaveProvider : MonoBehaviour
 {
+    public bool Changed;
     public abstract void Initialize();
 
     // Методы для работы с громкостью

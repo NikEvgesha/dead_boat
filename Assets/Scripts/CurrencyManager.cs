@@ -1,3 +1,4 @@
+using MirraGames.SDK;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -51,6 +52,7 @@ public class CurrencyManager : MonoBehaviour
 
     private void Start()
     {
+        
         AddCurrency(CurrencyType.Coins, StartCoinsAmount);
         AddCurrency(CurrencyType.Gems, SaveManager.Instance.GetGems());
     }

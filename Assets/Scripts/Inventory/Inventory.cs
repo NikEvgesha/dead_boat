@@ -106,6 +106,9 @@ public class Inventory : MonoBehaviour
                 InventoryUI.Instance.AddItemToBag(item);
                 InventoryUI.Instance.UpdateCapacity(_bagItems.Count, _capacity);
                 added = true;
+            } else
+            {
+                InventoryUI.Instance.DisplayNoSpaceHint();
             }
         }
 
@@ -203,6 +206,9 @@ public class Inventory : MonoBehaviour
                     _quickPanelItems.Remove(dropped.CurrentItem);
                     dropped.InitSlot(null);
                     InventoryUI.Instance.UpdateCapacity(_bagItems.Count, _capacity);
+                } else
+                {
+                    InventoryUI.Instance.DisplayNoSpaceHint();
                 }
                 if (activeUpdated)
                 {
@@ -236,9 +242,10 @@ public class Inventory : MonoBehaviour
                     }
                 }
             }
+            
         }
 
-        
+        InventoryUI.Instance.OnItemDrag(false);
 
 
     }

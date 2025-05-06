@@ -8759,6 +8759,7 @@ MonoBehaviour:
   _quickSlotsParent: {fileID: 4815401095502633420}
   _capacityText: {fileID: 4269997044102000926}
   _capacityButtonText: {fileID: 3751293747880522199}
+  _buttonAnimation: {fileID: 7461902780277882996}
   _dropOutPanel: {fileID: 4403129001086474589}
   _scrollRect: {fileID: 7292082930615411656}
 --- !u!1 &8596567111877228524
@@ -9407,6 +9408,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 2309598373863218344, guid: ceb46ebc82fd9704ca585ddfb11ec97c, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6467622188006353863}
+    - targetCorrespondingSourceObject: {fileID: 2309598373863218344, guid: ceb46ebc82fd9704ca585ddfb11ec97c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7461902780277882996}
     - targetCorrespondingSourceObject: {fileID: 7541445280159259723, guid: ceb46ebc82fd9704ca585ddfb11ec97c, type: 3}
       insertIndex: -1
       addedObject: {fileID: 595093965890229432}
@@ -9459,6 +9463,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3bf0467eac44b314ab36d25440d72991, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!95 &7461902780277882996
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5526984140985945432}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: bb5d6d37946213647b52122ecad11ee5, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!224 &8473246101674307573 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 1813149509216255493, guid: ceb46ebc82fd9704ca585ddfb11ec97c, type: 3}

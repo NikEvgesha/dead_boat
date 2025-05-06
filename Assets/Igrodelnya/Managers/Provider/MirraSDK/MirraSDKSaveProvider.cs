@@ -29,6 +29,7 @@ public class MirraSDKSaveProvider : SaveProvider
         if (!isInitialize) return;
         MirraSDK.Data.SetFloat("MusicVolume", musicVolume);
         MirraSDK.Data.SetFloat("SoundVolume", soundVolume);
+        Changed = true;
     }
 
     public override void SaveScore(float score, int levelId)
@@ -36,6 +37,7 @@ public class MirraSDKSaveProvider : SaveProvider
         if (!isInitialize) return;
         // Ключ «Score_1», «Score_2» и т.д.
         MirraSDK.Data.SetFloat($"Score_{levelId}", score);
+        Changed = true;
     }
 
     public override float LoadScore(int levelId)
@@ -49,18 +51,20 @@ public class MirraSDKSaveProvider : SaveProvider
     {
         if (!isInitialize) return;
         MirraSDK.Data.SetBool($"LevelUnlock_{id}", unlocked);
+        Changed = true;
     }
 
     public override void SaveLevelWin(int id, bool win)
     {
         if (!isInitialize) return;
         MirraSDK.Data.SetBool($"LevelWin_{id}", win);
+        Changed = true;
     }
 
     public override void SaveGems(int amount)
     {
         if (!isInitialize) return;
-
+        Changed = true;
         MirraSDK.Data.SetInt("Gems", amount);
     }
 
@@ -75,7 +79,11 @@ public class MirraSDKSaveProvider : SaveProvider
     {
         if (!isInitialize) return;
         // Синхронизировать все изменения с провайдером (локальным или облачным)
-        MirraSDK.Data.Save();
+        if (Changed)
+        {
+            MirraSDK.Data.Save();
+            Changed = false;
+        }
     }
 
     public override bool CheckProgress()

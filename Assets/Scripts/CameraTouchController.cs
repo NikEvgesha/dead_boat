@@ -31,20 +31,24 @@ public class CameraTouchController : MonoBehaviour, IPointerDownHandler, IPointe
             // Проверяем, не над UI ли касание
             if (EventSystem.current.IsPointerOverGameObject(touch.fingerId))
             {
+                Debug.Log("Pointer over UI");
                 EndDrag();
                 continue;
             }
 
             if (touch.phase == TouchPhase.Began && !_isDragging)
             {
+                Debug.Log("Begin drag");
                 StartDrag(touch.position, touch.fingerId);
             }
             else if (touch.phase == TouchPhase.Moved && _isDragging)
             {
+                Debug.Log("move drag");
                 Drag(touch.position);
             }
             else if (touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled)
             {
+                Debug.Log("end drag");
                 EndDrag();
             }
         }

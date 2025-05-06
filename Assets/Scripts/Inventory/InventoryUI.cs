@@ -14,6 +14,7 @@ public class InventoryUI : MonoBehaviour
 
     [SerializeField] private Text _capacityText;
     [SerializeField] private Text _capacityButtonText;
+    [SerializeField] private Animator _buttonAnimation;
     [SerializeField] private GameObject _dropOutPanel;
     [SerializeField] private ScrollRect _scrollRect;
 
@@ -273,6 +274,11 @@ public class InventoryUI : MonoBehaviour
         {
             _mainSlots[i].InitSlot(null);
         }
+    }
+
+    public void DisplayNoSpaceHint()
+    {
+        _buttonAnimation.SetTrigger("NoSpace");
     }
 
 }

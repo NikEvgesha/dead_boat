@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using MirraGames.SDK.Common;
 
 public class SaveManager : MonoBehaviour
 {
@@ -7,7 +8,6 @@ public class SaveManager : MonoBehaviour
     public static SaveManager Instance => _instance;
 
     [SerializeField] private SaveProvider saveProvider; // Ќазначаем в инспекторе нужный провайдер (YG2SaveProvider, DebugSaveProvider и т.д.)
-
     public bool IsNewPlayer => saveProvider.CheckProgress() == false;
 
     private void Awake()
@@ -66,6 +66,7 @@ public class SaveManager : MonoBehaviour
     public void SaveGems(int amount)
     {
         saveProvider.SaveGems(amount);
+        LeaderboardManager.Instance.SaveScore(LBName.gems.ToString(), amount);
     }
 
     public int GetGems()

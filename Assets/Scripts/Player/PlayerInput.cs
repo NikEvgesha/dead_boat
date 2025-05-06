@@ -186,8 +186,8 @@ public class PlayerInput : MonoBehaviour
     {
         if (ControlManager.Instance.UseTouchControl)
         {
-            //Rotation = _touchControls.cameraTouchController.GetRotationInput();
-            Rotation = TCKInput.GetAxis("Touchpad");
+            Rotation = _touchControls.cameraTouchController.GetRotationInput();
+            //Rotation = TCKInput.GetAxis("Touchpad");
         }
         else
         {

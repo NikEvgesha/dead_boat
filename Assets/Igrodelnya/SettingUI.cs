@@ -16,8 +16,8 @@ public class SettingUI : MonoBehaviour
         _isOpen = !_isOpen;
 
         _lobbyButtons.SetActive(GameManager.Instance);
-
-        ControlManager.Instance.CursorActive = _isOpen;
+        if (!ControlManager.Instance.UseTouchControl)
+            ControlManager.Instance.CursorActive = _isOpen;
         _panel.SetActive(_isOpen);
         PauseManager.Instance.SetPause(_isOpen, false);
     }
