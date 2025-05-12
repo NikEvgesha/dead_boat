@@ -1,20 +1,23 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class DistanceProgressChecker : AchievementProgressChecker
 {
     [SerializeField] private BoardController _board;
 
-    protected new void Start()
+    protected void Start()
     {
         _board = GetComponent<BoardController>();
-        base.Start();
+        _board.SwitchDistance += OnValueChange;
     }
 
-    protected override void CheckValue()
+    private void OnDisable()
     {
-        int currentValue = (int)_board.TotalDistanceTraveled;
+        _board.SwitchDistance -= OnValueChange;
+    }
+
+    private void OnValueChange(float value)
+    {
+        int currentValue = (int)value;
         if (_value != currentValue)
         {
             _value = currentValue;

@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.UI;
@@ -37,6 +38,8 @@ public class ZombieController : MonoBehaviour
     public int minHP = 50;
     [Tooltip("Максимальное количество HP (при уровне 10)")]
     public int maxHP = 200;
+
+    public Action Death;
 
     [Tooltip("HP bar")]
     [SerializeField] private Scrollbar _hpBar;
@@ -238,7 +241,8 @@ public class ZombieController : MonoBehaviour
             //gameObject.SetActive(false);
         }
         // Здесь можно запустить анимацию смерти, отключить агента и т.д.
-        AchievementManager.Instance.UpdateData(AchievementType.EnemiesKilled);
+        //AchievementManager.Instance.UpdateData(AchievementType.EnemiesKilled);
+        Death?.Invoke();
         Destroy(gameObject);
     }
 

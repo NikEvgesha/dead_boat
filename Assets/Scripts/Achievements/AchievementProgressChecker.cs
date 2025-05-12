@@ -11,7 +11,7 @@ public abstract class AchievementProgressChecker : MonoBehaviour
 
     protected int _value;
 
-    protected void Start()
+/*    protected void Start()
     {
         StartCoroutine(CheckUpdate());
     }
@@ -23,9 +23,9 @@ public abstract class AchievementProgressChecker : MonoBehaviour
             CheckValue();
             yield return new WaitForSeconds(_updateTime);
         }
-    }
+    } */
 
-    protected abstract void CheckValue();
+    //protected abstract void OnValueChange();
 
 /*    private void OnEventTriggered(int value)
     {
