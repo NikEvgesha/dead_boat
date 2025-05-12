@@ -238,6 +238,7 @@ public class ZombieController : MonoBehaviour
             //gameObject.SetActive(false);
         }
         // Здесь можно запустить анимацию смерти, отключить агента и т.д.
+        AchievementManager.Instance.UpdateData(AchievementType.EnemiesKilled);
         Destroy(gameObject);
     }
 

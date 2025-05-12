@@ -1,3 +1,4 @@
+using MirraGames.SDK;
 using UnityEngine;
 
 public class DummySaveProvider : SaveProvider
@@ -40,4 +41,35 @@ public class DummySaveProvider : SaveProvider
     public override void SaveProgress() { }
 
     public override bool CheckProgress() { return false; }
+
+    public override void SaveAchievementProgress(AchievementType id, int progress)
+    {
+        PlayerPrefs.SetInt(id.ToString(), progress);
+    }
+
+    public override int LoadAchievementProgress(AchievementType id)
+    {
+        int progress = 0;
+        if (PlayerPrefs.HasKey(id.ToString()))
+        {
+            progress = PlayerPrefs.GetInt(id.ToString());
+        }
+        return progress;
+    }
+
+
+    public override void SaveAchievementStatus(string id, bool progress)
+    {
+        PlayerPrefs.SetInt(id, progress ? 1: 0);
+    }
+
+    public override bool LoadAchievementStatus(string id)
+    {
+        int progress = 0;
+        if (PlayerPrefs.HasKey(id))
+        {
+            progress = PlayerPrefs.GetInt(id);
+        }
+        return progress == 1 ? true : false;
+    }
 }

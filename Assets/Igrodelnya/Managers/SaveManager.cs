@@ -74,5 +74,26 @@ public class SaveManager : MonoBehaviour
         return saveProvider.LoadGems();
     }
 
+
+    public void SaveAchiementTypeProgress(AchievementType achievementType, int progress)
+    {
+        saveProvider.SaveAchievementProgress(achievementType, progress);
+    }
+
+    public int GetAchievementTypeProgress(AchievementType achievementType)
+    {
+        return saveProvider.LoadAchievementProgress(achievementType);
+    }
+
+    public void SaveAchiementStatus(string achievementID, bool progress)
+    {
+        saveProvider.SaveAchievementStatus(achievementID, progress);
+    }
+
+    public bool GetAchievementStatus(string achievementID)
+    {
+        return saveProvider.LoadAchievementStatus(achievementID);
+    }
+
     // Остальные методы аналогично делегируют работу провайдеру...
 }

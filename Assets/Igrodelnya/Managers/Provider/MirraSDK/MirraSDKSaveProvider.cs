@@ -93,4 +93,33 @@ public class MirraSDKSaveProvider : SaveProvider
         return MirraSDK.Data.HasKey("MusicVolume")
             || MirraSDK.Data.HasKey("Gems");
     }
+
+
+    public override void SaveAchievementProgress(AchievementType id, int progress)
+    {
+        if (!isInitialize) return;
+        Changed = true;
+        MirraSDK.Data.SetInt(id.ToString(), progress);
+    }
+
+    public override int LoadAchievementProgress(AchievementType id)
+    {
+        if (!isInitialize)
+            return 0;
+        return MirraSDK.Data.GetInt(id.ToString(), 0);
+    }
+
+    public override void SaveAchievementStatus(string id, bool rewarded)
+    {
+        if (!isInitialize) return;
+        Changed = true;
+        MirraSDK.Data.SetBool(id.ToString(), rewarded);
+    }
+
+    public override bool LoadAchievementStatus(string id)
+    {
+        if (!isInitialize)
+            return false;
+        return MirraSDK.Data.GetBool(id.ToString(), false);
+    }
 }

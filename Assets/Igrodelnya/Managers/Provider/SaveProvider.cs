@@ -24,4 +24,10 @@ public abstract class SaveProvider : MonoBehaviour
     public abstract void SaveGems(int amount);
 
     public abstract int LoadGems();
+
+    public abstract void SaveAchievementProgress(AchievementType id, int progress);
+    public abstract int LoadAchievementProgress(AchievementType id);
+
+    public abstract void SaveAchievementStatus(string id, bool progress);
+    public abstract bool LoadAchievementStatus(string id);
 }

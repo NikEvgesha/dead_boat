@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e6df8ac7afabff419bcf587e2fb20be, type: 3}
+  m_Name: Achievements
+  m_EditorClassIdentifier: 
+  achievements:
+  - id: Distance_10
+    type: 0
+    requirement: 10000
+  - id: Distance_50
+    type: 0
+    requirement: 50000
+  - id: Distance_100
+    type: 0
+    requirement: 100000
+  - id: EnemiesKilled_1
+    type: 1
+    requirement: 1
+  - id: EnemiesKilled_20
+    type: 1
+    requirement: 20
+  - id: EnemiesKilled_100
+    type: 1
+    requirement: 100

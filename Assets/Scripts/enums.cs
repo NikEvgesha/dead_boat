@@ -62,7 +62,8 @@ public enum LocalizationKeyType
 {
     Settings,
     Item,
-    Tag
+    Tag,
+    Achievement
 }
 
 public enum ItemSize
@@ -101,4 +102,13 @@ public enum Location
     None,
     Lobby,
     Game
+}
+
+public enum AchievementType
+{
+    Distance,
+    EnemiesKilled,
+    WinCount,
+    DeathCount,
+    ItemsCollected
 }
