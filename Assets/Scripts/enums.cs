@@ -63,7 +63,8 @@ public enum LocalizationKeyType
     Settings,
     Item,
     Tag,
-    Achievement
+    Achievement,
+    Level
 }
 
 public enum ItemSize
@@ -110,5 +111,6 @@ public enum AchievementType
     EnemiesKilled,
     WinCount,
     DeathCount,
-    ItemsCollected
+    ItemsCollected,
+    TotalDistance
 }

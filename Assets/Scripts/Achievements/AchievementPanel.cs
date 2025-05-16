@@ -43,8 +43,8 @@ public class AchievementPanel : MonoBehaviour
 
     private void SetAchievement(Achievement achievment)
     {
-        _title.text = LocalizationManager.Instance.LocalizationData.GetTranslation(achievment.id + "_Title", LocalizationManager.Instance.CurrentLanguage, LocalizationKeyType.Achievement.ToString());
-        _description.text = LocalizationManager.Instance.LocalizationData.GetTranslation(achievment.id + "_Description", LocalizationManager.Instance.CurrentLanguage, LocalizationKeyType.Achievement.ToString());
+        _title.text = achievment.title;
+        _description.text = achievment.description;
         isActive = true;
         Show();
     }

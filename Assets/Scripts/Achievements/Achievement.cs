@@ -1,18 +1,20 @@
 
-[System.Serializable]
-public class Achievement
+using UnityEngine;
+
+[CreateAssetMenu(fileName = "Achievement", menuName ="ScriptableObject/Achievement")]
+public class Achievement : ScriptableObject
 {
     public string id;
     public AchievementType type;
     public int requirement;
-
-    // доабвить current progress ? сохранять тип + текущий прогресс и на старте загружать и проходиться по списку,
-    // если прогресс больше требуемого - разблокировать достижение
+    public string title => LocalizationManager.Instance.LocalizationData.GetTranslation(id + "_Title", LocalizationManager.Instance.CurrentLanguage, LocalizationKeyType.Achievement.ToString());
+    public string description => LocalizationManager.Instance.LocalizationData.GetTranslation(id + "_Description", LocalizationManager.Instance.CurrentLanguage, LocalizationKeyType.Achievement.ToString());
 
     private bool unlocked = false;
     private bool rewarded;
 
     public bool Unlocked => unlocked;
+
 
     public void StartUnlock(bool unlock)
     {

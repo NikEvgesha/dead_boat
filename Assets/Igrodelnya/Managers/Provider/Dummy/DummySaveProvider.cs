@@ -72,4 +72,13 @@ public class DummySaveProvider : SaveProvider
         }
         return progress == 1 ? true : false;
     }
+
+    public override void SaveLevelStatus(string key, bool unlocked)
+    {
+        PlayerPrefs.SetInt(key, unlocked ? 1 : 0);
+    }
+    public override bool LoadLevelStatus(string key)
+    {
+        return PlayerPrefs.GetInt(key) == 1;
+    }
 }

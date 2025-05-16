@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SocialPlatforms.Impl;
+using UnityEngine.Scripting;
 
 public class AchievementManager : MonoBehaviour
 {
@@ -62,11 +63,23 @@ public class AchievementManager : MonoBehaviour
         if (data == 0)
         {
             progress[type]++;
-            Debug.Log(type.ToString() + " set to:" + progress[type]);
             updated = true;
         } else if (progress[type] != data)
         {
-            progress[type] = data;
+            switch (type)
+            {
+                case AchievementType.TotalDistance:
+                    {
+                        progress[type] += data;
+                        break;
+                    }
+                default:
+                    {
+                        progress[type] = data;
+                        break;
+                    }
+            }
+            
             updated = true;
         }
         
@@ -95,6 +108,19 @@ public class AchievementManager : MonoBehaviour
         }
         
         
+    }
+
+
+    public bool CheckAchievementProgress(Achievement achievement)
+    {
+        if (achievement == null) 
+            return true;
+        return (progress[achievement.type] >= achievement.requirement);
+    }
+
+    public int GetCurrentProgress(AchievementType type)
+    {
+        return progress[type];
     }
 
 }

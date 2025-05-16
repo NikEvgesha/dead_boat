@@ -53,10 +53,11 @@ public class GameManager : MonoBehaviour
         isEndGame = true;
         Location location = lobby ? Location.Lobby : Location.Game;
         PauseManager.Instance.SetPause(false);
-        LoadingManager.Instance.LoadLocation(location);
+        PlayerManager.Instance.transform.parent = null;
         DontDestroyOnLoad(PlayerManager.Instance.gameObject);
         Inventory.Instance.ResetInventory();
         CurrencyManager.Instance.Reset();
         PlayerStatsManager.Instance.Revive();
+        LoadingManager.Instance.LoadLocation(location);
     }
 }

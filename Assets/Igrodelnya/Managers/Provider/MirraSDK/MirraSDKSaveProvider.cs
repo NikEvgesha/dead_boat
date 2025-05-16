@@ -122,4 +122,18 @@ public class MirraSDKSaveProvider : SaveProvider
             return false;
         return MirraSDK.Data.GetBool(id.ToString(), false);
     }
+
+
+    public override void SaveLevelStatus(string key, bool unlocked)
+    {
+        if (!isInitialize) return;
+        Changed = true;
+        MirraSDK.Data.SetBool(key, unlocked);
+    }
+    public override bool LoadLevelStatus(string key)
+    {
+        if (!isInitialize)
+            return false;
+        return MirraSDK.Data.GetBool(key, false);
+    }
 }

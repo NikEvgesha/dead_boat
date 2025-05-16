@@ -30,4 +30,7 @@ public abstract class SaveProvider : MonoBehaviour
 
     public abstract void SaveAchievementStatus(string id, bool progress);
     public abstract bool LoadAchievementStatus(string id);
+
+    public abstract void SaveLevelStatus(string lvlName, bool unlocked);
+    public abstract bool LoadLevelStatus(string lvlName);
 }

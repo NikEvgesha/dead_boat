@@ -95,5 +95,15 @@ public class SaveManager : MonoBehaviour
         return saveProvider.LoadAchievementStatus(achievementID);
     }
 
+    public void SaveLevelStatus(string lvlName, bool unlocked)
+    {
+        saveProvider.SaveLevelStatus("LevelStatus_" + lvlName, unlocked);
+    }
+
+    public bool GetLevelStatus(string lvlName)
+    {
+        return saveProvider.LoadLevelStatus("LevelStatus_" + lvlName);
+    }
+
     // Остальные методы аналогично делегируют работу провайдеру...
 }

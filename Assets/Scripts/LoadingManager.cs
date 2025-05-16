@@ -66,11 +66,11 @@ public class LoadingManager : MonoBehaviour
         LocationChanged?.Invoke(CurrentLocation);
     }
 
-    public void LoadLocation(Location location)
+    public void LoadLocation(Location location, string sceneName = null)
     {
         if (location == Location.Game)
         {
-            GameLoader.Instance.LoadNextScene(_gameScene, true);
+            GameLoader.Instance.LoadNextScene(sceneName != null ? sceneName : _gameScene, true);
             _location = Location.Game;
         }
         else if (location == Location.Lobby)
