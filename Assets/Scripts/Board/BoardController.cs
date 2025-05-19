@@ -174,8 +174,8 @@ public class BoardController : MonoBehaviour
             _endGame = true;
             EndGame?.Invoke();
             currentSpeed = 0f;
-            EndGameUIManager.EndGame(EndGameState.Win);
-            CurrencyManager.Instance.AddCurrency(CurrencyType.Gems, _rewardForWin);
+            //EndGameUIManager.EndGame(EndGameState.Win);
+            //CurrencyManager.Instance.AddCurrency(CurrencyType.Gems, _rewardForWin);
         }
 
         if (speed != currentSpeed)

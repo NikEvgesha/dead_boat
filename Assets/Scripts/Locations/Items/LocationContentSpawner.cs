@@ -55,7 +55,7 @@ public class LocationContentSpawner : MonoBehaviour
         {
             enemyPrefab = _enemyPrefabs[Random.Range(0, _enemyPrefabs.Count)];
             enemyPrefab = Instantiate(enemyPrefab, enemyPoint.position, enemyPoint.rotation, transform);
-            enemyPrefab.Initialized(_level);
+            enemyPrefab.InitializeLevel(_level);
         }
     }
     public void SetLevel(int level)

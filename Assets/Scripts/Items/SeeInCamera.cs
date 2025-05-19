@@ -28,7 +28,8 @@ public class SeeInCamera : MonoBehaviour
         switch (testVector)
         {
             case 0:
-                gameObject.transform.LookAt(_mainCamera.transform.position);
+                if (_mainCamera)
+                    gameObject.transform.LookAt(_mainCamera.transform.position);
                 return;
             case 1:
                 testV = Vector3.left;

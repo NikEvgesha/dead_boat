@@ -1,175 +1,83 @@
-using System;
+// ZombieController.cs
 using UnityEngine;
 using UnityEngine.AI;
-using UnityEngine.UI;
 
-[RequireComponent(typeof(NavMeshAgent))]
-[RequireComponent(typeof(Animator))]
-public class ZombieController : MonoBehaviour
+[RequireComponent(typeof(NavMeshAgent), typeof(Animator))]
+public class ZombieController : LevelledEnemy
 {
-    [Header("Настройки цели и активации")]
-    [Tooltip("Цель (например, игрок), к которой будет двигаться зомби")]
+    [Header("Таргетинг и дистанции")]
     public Transform target;
-
-    [Tooltip("Расстояние, на котором зомби впервые замечают игрока и активируются")]
     public float detectionDistance = 30f;
-
-    [Tooltip("Расстояние, при превышении которого зомби прекращают преследование игрока")]
     public float chaseDistance = 50f;
 
-    [Header("Настройки атаки")]
-    [Tooltip("Расстояние, на котором зомби начинает атаку")]
+    [Header("Атака")]
     public float attackRange = 2f;
-    [Tooltip("Время между атаками (секунды)")]
     public float attackCooldown = 1.5f;
-    [Tooltip("Расстояние, на котором зомби начинает атаку")]
-    public float attackDamage = 5f;
-
-
-    [Header("Параметры уровня моба")]
-    [Tooltip("Уровень моба (от 1 до 10)")]
-    [Range(1, 10)]
-    public int mobLevel = 1;
-    [Tooltip("Минимальная скорость (при уровне 1)")]
-    public float minSpeed = 2f;
-    [Tooltip("Максимальная скорость (при уровне 10)")]
-    public float maxSpeed = 6f;
-    [Tooltip("Минимальное количество HP (при уровне 1)")]
-    public int minHP = 50;
-    [Tooltip("Максимальное количество HP (при уровне 10)")]
-    public int maxHP = 200;
-
-    public Action Death;
-
-    [Tooltip("HP bar")]
-    [SerializeField] private Scrollbar _hpBar;
+    public int attackDamage = 5;
 
     private NavMeshAgent agent;
     private Animator animator;
-    private float lastAttackTime;
-    [SerializeField] private int currentHP;
-    [SerializeField] private int _currentMaxHP;
-    private bool _isDie;
-    private SimpleRagdoll _simpleRagdoll;
-    private bool _useRagdoll;
+    private float lastAttack;
+    private SimpleRagdoll ragdoll;
+    private PickableItem pickable;
+    private PlayerStatsManager player;
 
-    private PlayerStatsManager _player;
-    private PickableItem _pickableItem;
-    private bool _isInitialized;
-    [SerializeField] private AudioClip _audioDie;
-    [SerializeField] private AudioClip _audioDamage;
-    [SerializeField] private AudioClip _audioHit;
-    [SerializeField] private AudioSource _audioSource;
-    [SerializeField] private AudioSource _audioSourceEnemy;
-    void Awake()
+    protected override void Awake()
     {
-        _pickableItem = GetComponentInChildren<PickableItem>();
-        _pickableItem.enabled = false;
-        _simpleRagdoll = GetComponent<SimpleRagdoll>();
-        _useRagdoll = _simpleRagdoll != null;
-        _player = FindAnyObjectByType<PlayerStatsManager>();
-        target = _player.transform;
+        base.Awake();
         agent = GetComponent<NavMeshAgent>();
         animator = GetComponent<Animator>();
-        if (_hpBar == null)
-        {
-            _hpBar = GetComponentInChildren<Scrollbar>();
-        }
-
+        ragdoll = GetComponent<SimpleRagdoll>();
+        pickable = GetComponentInChildren<PickableItem>();
+        if (pickable) pickable.enabled = false;
+        player = FindObjectOfType<PlayerStatsManager>();
+        target = player?.transform;
     }
 
     void Start()
     {
-        Initialized();
+        InitializeLevel(mobLevel);
+        if (Vector3.Distance(transform.position, target.position) > detectionDistance)
+            agent.enabled = false;
+        else
+            EnsureOnNavMesh();
     }
 
     void Update()
     {
-        if (_isDie || target == null)
-            return;
-
-        float distance = Vector3.Distance(transform.position, target.position);
-
-        // Если игрок находится слишком далеко (за пределами chaseDistance), отключаем агент и прекращаем обработку
-        if (!CheckSeePlayer(distance) || !agent.enabled || !agent.isOnNavMesh)
-            return;
-
-        // Обновляем направление движения
+        if (isDead || target == null) return;
+        float dist = Vector3.Distance(transform.position, target.position);
+        if (!CheckSee(dist)) return;
         agent.SetDestination(target.position);
-        TryAttack(distance);
+        HandleAttack(dist);
     }
-    private bool CheckSeePlayer(float distance)
+
+    bool CheckSee(float dist)
     {
-        if (distance > chaseDistance)
+        if (dist > chaseDistance)
         {
             if (agent.enabled)
             {
                 agent.enabled = false;
-                animator.SetFloat("Speed", 0f);
+                animator.SetFloat("Speed", 0);
             }
             return false;
         }
-        else
-        {
-            // Если агент отключен, а игрок уже достаточно близко (в пределах chaseDistance), включаем его
-            if (!agent.enabled)
-            {
-                // Если игрок уже в зоне обнаружения, включаем агент
-                if (distance <= detectionDistance)
-                {
-                    EnsureOnNavMesh();
-                }
-                else
-                {
-                    // Если игрок находится между detectionDistance и chaseDistance, можно решить включать агент тоже,
-                    // чтобы зомби не теряли цель, если уже преследуют. Здесь можно настроить поведение по желанию.
-                    EnsureOnNavMesh();
-                }
-                return false;
-            }
-        }
+        if (!agent.enabled)
+            EnsureOnNavMesh();
         return true;
     }
-    public void Initialized(int level = 1)
+
+    void HandleAttack(float dist)
     {
-        if (_isInitialized)
-            return;
-
-        mobLevel = level;
-
-        _pickableItem.tag = Tag.Zomby.ToString();
-        // Ограничиваем уровень от 1 до 10 и вычисляем параметр t (от 0 до 1)
-        mobLevel = Mathf.Clamp(mobLevel, 1, 10);
-        float t = (mobLevel - 1f) / 9f;
-        agent.speed = Mathf.Lerp(minSpeed, maxSpeed, t);
-        _currentMaxHP = Mathf.RoundToInt(Mathf.Lerp(minHP, maxHP, t));
-        currentHP = _currentMaxHP;
-        lastAttackTime = -attackCooldown;
-        _hpBar.gameObject.SetActive(false);
-        // На старте, если игрок далеко (больше detectionDistance), отключаем NavMeshAgent
-        if (Vector3.Distance(transform.position, target.position) > detectionDistance)
-        {
-            agent.enabled = false;
-        }
-        else
-        {
-            EnsureOnNavMesh();
-        }
-
-        _isInitialized = true;
-    }
-    private void TryAttack(float distance)
-    {
-
-        if (distance <= attackRange)
+        if (dist <= attackRange)
         {
             agent.isStopped = true;
-            animator.SetFloat("Speed", 0f);
-
-            if (Time.time - lastAttackTime >= attackCooldown)
+            animator.SetFloat("Speed", 0);
+            if (Time.time - lastAttack >= attackCooldown)
             {
                 Attack();
-                lastAttackTime = Time.time;
+                lastAttack = Time.time;
             }
         }
         else
@@ -178,96 +86,47 @@ public class ZombieController : MonoBehaviour
             animator.SetFloat("Speed", agent.velocity.magnitude);
         }
     }
-    /// <summary>
-    /// Запускает анимацию атаки (и может наносить урон цели).
-    /// </summary>
+
     void Attack()
     {
-        //TakeDamage(10);
-        agent.updateRotation = false;
-        transform.LookAt(_player.transform);
-        agent.updateRotation = true;
-        Debug.Log("Зомби атакует!");
+        transform.LookAt(player.transform);
         animator.SetTrigger("Attack");
-        _player.TakeDamage((int)attackDamage);
-
-        if (_audioSource)
-            if (_audioHit)
-                _audioSource.PlayOneShot(_audioHit);
-        // Здесь можно добавить дополнительную логику атаки (например, уменьшение HP цели).
+        player.TakeDamage(attackDamage);
+        if (audioSource && audioHit)
+            audioSource.PlayOneShot(audioHit);
     }
 
-    /// <summary>
-    /// Получает урон и проверяет, если HP <= 0, то уничтожает зомби.
-    /// </summary>
-    public void TakeDamage(int damage)
+    public override void TakeDamage(int damage)
     {
-
-        if (_isDie)
-            return;
-        DamagePopup.Create(transform, damage);
-        if (_audioSourceEnemy)
-            if (_audioDamage)
-                _audioSourceEnemy.PlayOneShot(_audioDamage);
-        Debug.Log("Зомби получает урон!");
-        currentHP -= damage;
-        if (!_hpBar.gameObject.activeSelf)
-        {
-            _hpBar.gameObject.SetActive(true);
-        }
-        _hpBar.size = (float)currentHP / _currentMaxHP;
-        //Debug.Log(_hpBar.size);
-        if (currentHP <= 0)
-        {
-            Die();
-        }
-
+        base.TakeDamage(damage);
+        animator.SetTrigger("Hurt");
     }
 
-    void Die()
+    protected override void Die()
     {
-        if (_audioSourceEnemy)
-            if (_audioDie)
-                _audioSourceEnemy.PlayOneShot(_audioDie);
-        _hpBar.gameObject.SetActive(false);
-        _isDie = true;
-        Debug.Log("Зомби погибает.");
-        if (_useRagdoll)
+        if (ragdoll)
         {
-            _simpleRagdoll.EnableRagdoll();
-            _pickableItem.enabled = true;
-            _pickableItem.transform.SetParent(null);
-            _pickableItem.tag = Tag.Item.ToString();
-            //gameObject.SetActive(false);
+            ragdoll.EnableRagdoll();
+            if (pickable)
+            {
+                pickable.enabled = true;
+                pickable.transform.SetParent(null);
+                pickable.tag = Tag.Item.ToString();
+            }
         }
-        // Здесь можно запустить анимацию смерти, отключить агента и т.д.
-        //AchievementManager.Instance.UpdateData(AchievementType.EnemiesKilled);
-        Death?.Invoke();
-        Destroy(gameObject);
+        base.Die();
     }
 
-
-
-    // Метод для перемещения зомби на ближайшую точку NavMesh
-    private bool EnsureOnNavMesh()
+    bool EnsureOnNavMesh()
     {
-        if (agent.enabled && agent.isOnNavMesh)
-        {
-            return true;
-        }
-
         NavMeshHit hit;
-        // Ищем ближайшую точку на NavMesh в радиусе 50 единиц
         if (NavMesh.SamplePosition(transform.position, out hit, 50f, NavMesh.AllAreas))
         {
-            transform.position = hit.position; // Перемещаем зомби на NavMesh
-            agent.enabled = true; // Активируем агента
+            transform.position = hit.position;
+            agent.enabled = true;
             return true;
         }
-        else
-        {
-            Debug.LogWarning($"Зомби {gameObject.name} не смог найти NavMesh в радиусе 50 единиц!");
-            return false;
-        }
+        Debug.LogWarning($"{name} не нашёл NavMesh");
+        return false;
     }
 }

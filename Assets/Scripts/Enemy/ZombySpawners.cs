@@ -91,7 +91,7 @@ public class ZombieSpawner : MonoBehaviour
         {
             Vector3 spawnPos = GetRandomPositionInAnnulus();
             ZombieController zomby = Instantiate(prefab, spawnPos, prefab.transform.rotation, transform);
-            zomby.Initialized(_boardController.GetLevel());
+            zomby.InitializeLevel(_boardController.GetLevel());
         }
     }
 
