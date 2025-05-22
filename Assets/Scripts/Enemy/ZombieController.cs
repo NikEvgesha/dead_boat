@@ -115,6 +115,7 @@ public class ZombieController : LevelledEnemy
             }
         }
         base.Die();
+        Destroy(gameObject);
     }
 
     bool EnsureOnNavMesh()

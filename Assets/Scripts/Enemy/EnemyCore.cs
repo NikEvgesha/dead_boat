@@ -20,6 +20,7 @@ public abstract class EnemyCore : MonoBehaviour
     public event Action Death;
 
     protected int currentHP;
+    protected int _maxHP;
     protected bool isDead;
 
     protected virtual void Awake()
@@ -33,6 +34,7 @@ public abstract class EnemyCore : MonoBehaviour
     /// </summary>
     public virtual void SetHP(int maxHP)
     {
+        _maxHP = maxHP;
         currentHP = maxHP;
         if (hpBar)
         {
@@ -55,7 +57,7 @@ public abstract class EnemyCore : MonoBehaviour
         if (hpBar && !hpBar.gameObject.activeSelf)
             hpBar.gameObject.SetActive(true);
         if (hpBar)
-            hpBar.size = (float)currentHP / (hpBar.size * currentHP + damage);
+            hpBar.size = (float)currentHP / _maxHP;
 
         if (currentHP <= 0)
             Die();
@@ -78,7 +80,6 @@ public abstract class EnemyCore : MonoBehaviour
 
         PlayDeathSound();
         Death?.Invoke();
-        Destroy(gameObject);
     }
 
     protected virtual void PlayDeathSound()

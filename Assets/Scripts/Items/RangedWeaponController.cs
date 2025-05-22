@@ -201,7 +201,7 @@ public class RangedWeaponController : MonoBehaviour
         {
             Debug.Log("Попадание: " + hit.transform.name);
 
-            ZombieController targetHealth = hit.transform.GetComponentInParent<ZombieController>();
+            EnemyCore targetHealth = hit.transform.GetComponentInParent<EnemyCore>();
             if (targetHealth != null)
             {
                 targetHealth.TakeDamage((int)damage);

@@ -336,25 +336,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0177e9fc3bea84e4a9e741f521d39257, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  hpBar: {fileID: 0}
+  audioDie: {fileID: 8300000, guid: 63c86cb2a6c86bf42b4d122664308fa0, type: 3}
+  audioDamage: {fileID: 8300000, guid: 511e652f918795842a0ff090a3b711d7, type: 3}
+  audioHit: {fileID: 8300000, guid: db712e5bca9528148964933cd0a9d93b, type: 3}
+  audioSource: {fileID: 7430585562900206916}
+  audioSourceEnemy: {fileID: 0}
+  mobLevel: 1
+  minSpeed: 2
+  maxSpeed: 6
+  minHP: 65
+  maxHP: 160
   target: {fileID: 0}
   detectionDistance: 30
   chaseDistance: 50
   attackRange: 1.5
   attackCooldown: 1.5
   attackDamage: 5
-  mobLevel: 1
-  minSpeed: 2
-  maxSpeed: 6
-  minHP: 50
-  maxHP: 200
-  _hpBar: {fileID: 6590664241972111287}
-  currentHP: 0
-  _currentMaxHP: 0
-  _audioDie: {fileID: 8300000, guid: 63c86cb2a6c86bf42b4d122664308fa0, type: 3}
-  _audioDamage: {fileID: 8300000, guid: db712e5bca9528148964933cd0a9d93b, type: 3}
-  _audioHit: {fileID: 8300000, guid: 511e652f918795842a0ff090a3b711d7, type: 3}
-  _audioSource: {fileID: 7430585562900206916}
-  _audioSourceEnemy: {fileID: 5001706238427311223}
 --- !u!114 &90849046845403669
 MonoBehaviour:
   m_ObjectHideFlags: 0

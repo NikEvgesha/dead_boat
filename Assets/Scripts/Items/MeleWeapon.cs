@@ -12,7 +12,7 @@ public class MeleWeapon : MonoBehaviour
     [SerializeField] private AudioClip _audioSwing;
     [SerializeField] private AudioSource _audioSource;
 
-    private List<ZombieController> _zombies = new List<ZombieController>();
+    private List<EnemyCore> _zombies = new List<EnemyCore>();
     private bool _use;
     private bool _active;
 
@@ -20,7 +20,7 @@ public class MeleWeapon : MonoBehaviour
     {
         if (!_usableItem.IsActive)
             return;
-        ZombieController zombie = other.GetComponentInParent<ZombieController>();
+        EnemyCore zombie = other.GetComponentInParent<EnemyCore>();
         if (_use && zombie)
         {
             if (_zombies.Contains(zombie))

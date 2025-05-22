@@ -1420,7 +1420,6 @@ MonoBehaviour:
   _visualObj: {fileID: 5371316712090260022}
   _sellPoint: {fileID: 0}
   _lerpSpeed: 10
-  _maxSpeed: 10
   _damping: 0.1
   _stopDistance: 0.05
   _maxDistance: 8
@@ -1442,6 +1441,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   fuelValue: 10
+  InFire: 0
 --- !u!114 &6559594758592132792
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1782,13 +1782,9 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 451260270057983084, guid: 200718ddd62da0b459336e78f7e78f56, type: 3}
-      propertyPath: maxHP
-      value: 160
-      objectReference: {fileID: 0}
-    - target: {fileID: 451260270057983084, guid: 200718ddd62da0b459336e78f7e78f56, type: 3}
-      propertyPath: minHP
-      value: 65
-      objectReference: {fileID: 0}
+      propertyPath: audioSourceEnemy
+      value: 
+      objectReference: {fileID: 5236964359354044767}
     - target: {fileID: 451260270057983084, guid: 200718ddd62da0b459336e78f7e78f56, type: 3}
       propertyPath: _audioSourceEnemy
       value: 

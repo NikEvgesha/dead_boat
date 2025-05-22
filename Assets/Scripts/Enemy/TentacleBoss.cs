@@ -7,6 +7,15 @@ public class TentacleBoss : TriggerBossFight
     //[SerializeField] private Animator _animator;
     [SerializeField] private List<TentaclePart> _tentacle = new List<TentaclePart>();
     private float _currentHP;
+    public float HP
+    {
+        get { return _currentHP; }
+        set 
+        { 
+            _currentHP = value;
+            hpBar.size = value / _startHP;
+        }
+    }
     private float _startHP = 0.1f;
     public override void StartBossFight()
     {
@@ -16,7 +25,7 @@ public class TentacleBoss : TriggerBossFight
             item.StartUseTentakl();
             _startHP += item.GetStartHP();
         }
-        _currentHP = _startHP;
+        HP = _startHP;
         ChangeTentacle(null);
         //_animator.SetTrigger(_triggerStartAnimation);
     }
@@ -36,19 +45,21 @@ public class TentacleBoss : TriggerBossFight
         _tentacle.Remove(old);
         if (_tentacle.Count == 0)
         {
-            BossDead();
+            StartCoroutine(DeadBoss());
             return;
         }
         ChangeTentacle(old);
     }
-    private void BossDead()
-    {
-        //_animator.SetTrigger(_triggerDeadAnimation);
-        DeadBoss();
-    }
     private IEnumerator DeadBoss()
     {
+
+        if (hpBar)
+            hpBar.gameObject.SetActive(false);
         yield return new WaitForSeconds(1);
         EndGameUIManager.EndGame(EndGameState.Win);
+    }
+    public void TakeDamage(float damage)
+    {
+        HP -= damage;
     }
 }
