@@ -11,7 +11,8 @@ public class PlayerStatsManager : MonoBehaviour
     [SerializeField] private float _maxHealth = 100f;
     [SerializeField] private float _staminaConsumptionRate = 1f;
     [SerializeField] private float _staminaRestoreRate = 5f;
-
+    [SerializeField] private Animator _animator;
+    private string _animatorTrigger = "Damage";
     private float _stamina;
     private float _health;
     private bool _isDead;
@@ -115,6 +116,7 @@ public class PlayerStatsManager : MonoBehaviour
             return;
 
         Health = _health - damage;
+        _animator.SetTrigger(_animatorTrigger);
         if (_health <= 0)
             Dead();
     }

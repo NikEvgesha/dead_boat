@@ -144,22 +144,33 @@ public class RangedWeaponController : MonoBehaviour
     // Перезарядка оружия
     private IEnumerator Reload()
     {
-        _isReloading = true;
+        if (ReserveAmmo!=0)
+        {
+            _isReloading = true;
 
-        if (_animator != null)
-            _animator.SetTrigger("Reload");
-        if (_audioSource)
-            if (_audioReload)
-                _audioSource.PlayOneShot(_audioReload);
-        Debug.Log("Перезарядка...");
-        yield return new WaitForSeconds(reloadTime);
+            if (_animator != null)
+                _animator.SetTrigger("Reload");
+            if (_audioSource)
+                if (_audioReload)
+                    _audioSource.PlayOneShot(_audioReload);
+            Debug.Log("Перезарядка...");
+            yield return new WaitForSeconds(reloadTime);
 
-        int neededAmmo = maxAmmo - _currentAmmo;
-        int ammoToReload = (_reserveAmmo >= neededAmmo) ? neededAmmo : _reserveAmmo;
-        CurrentAmmo += ammoToReload;
-        ReserveAmmo -= ammoToReload;
-        _isReloading = false;
-        Debug.Log("Перезарядка завершена. Текущие патроны: " + _currentAmmo);
+            int neededAmmo = maxAmmo - _currentAmmo;
+            int ammoToReload = (_reserveAmmo >= neededAmmo) ? neededAmmo : _reserveAmmo;
+            CurrentAmmo += ammoToReload;
+            ReserveAmmo -= ammoToReload;
+            _isReloading = false;
+            Debug.Log("Перезарядка завершена. Текущие патроны: " + _currentAmmo);
+        } 
+        else
+        {
+            _isReloading = true;
+            AmmoUI.Instance.NoAmmo();
+            Debug.Log("Добавить анимацию отсутствия патрон");
+            yield return new WaitForSeconds(1);
+            _isReloading = false;
+        }
     }
 
     // Основной метод выстрела

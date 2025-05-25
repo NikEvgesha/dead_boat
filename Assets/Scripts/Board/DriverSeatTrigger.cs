@@ -62,7 +62,7 @@ public class DriverSeatTrigger : MonoBehaviour
         // Телепортируем игрока к сиденью водителя и прикрепляем его к нему
         playerCharacter.transform.position = driverSeatTransform.position;
         playerCharacter.transform.rotation = driverSeatTransform.rotation;
-        playerCharacter.transform.SetParent(driverSeatTransform);
+        //playerCharacter.transform.SetParent(driverSeatTransform);
 
         // Активируем управление поездом
         trainController.playerOnSeat = true;
@@ -86,7 +86,7 @@ public class DriverSeatTrigger : MonoBehaviour
             PlayerInput.Instance.SitTrain(false);
         }
         // Отвязываем игрока от сиденья
-        playerCharacter.transform.SetParent(trainController.transform);
+        //playerCharacter.transform.SetParent(trainController.transform);
         // Перемещаем игрока в безопасную позицию рядом с креслом (сдвиг вправо на 2 единицы, можно изменить)
         //playerCharacter.transform.position = driverSeatTransform.position + driverSeatTransform.right * 2f;
         //playerCharacter.transform.rotation = originalPlayerRotation;

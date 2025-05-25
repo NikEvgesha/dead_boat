@@ -37,6 +37,9 @@ public class PlayerMovement : MonoBehaviour
     private static PlayerMovement _instance;
     public static PlayerMovement Instance { get { return _instance; } }
 
+    private float _waitStart = 1f;
+    private float _lagStart = 1f;
+    private bool _isStart;
 
     private void Awake()
     {
@@ -50,6 +53,7 @@ public class PlayerMovement : MonoBehaviour
             Debug.LogWarning("PlayerMovement уже существует! Удаляем дубликат.");
             Destroy(gameObject);
         }
+        _waitStart = _lagStart;
     }
 
 
@@ -100,9 +104,14 @@ public class PlayerMovement : MonoBehaviour
     void Update()
     {
         if (_inTeleport)
-        {
             return;
+
+        if (!_isStart)
+        {
+            _waitStart -= Time.deltaTime;
+            _isStart = _waitStart <= 0;
         }
+
         _isGrounded = _controller.isGrounded;
         Move();
         if (!ControlManager.Instance.CursorActive || ControlManager.Instance.UseTouchControl)
@@ -149,6 +158,7 @@ public class PlayerMovement : MonoBehaviour
             rotationInput *= _desktopRotationSpeedMultiplier;
         }
 
+        if (!_isStart) return;
         _currentYRotation += rotationInput.x;
 
         _currentXRotation -= rotationInput.y;
@@ -165,7 +175,10 @@ public class PlayerMovement : MonoBehaviour
     public void Teleport(Transform position)
     {
         _inTeleport = true;
+        _isStart = false;
+        _waitStart = _lagStart;
         transform.position = position.position;
+        //transform.rotation = position.rotation;
         StartCoroutine(WaitForTeleport());
     }
 

@@ -85,7 +85,10 @@ public class ZombieSpawner : MonoBehaviour
     {
         if (playerTransform == null || enemyTypes.Count == 0)
             return;
+        if (_boardController)
+        {
 
+        }
         var prefab = enemyTypes[nextEnemyType];
         for (int i = 0; i < spawnCount; i++)
         {
