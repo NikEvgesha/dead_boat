@@ -103,6 +103,9 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
+        if (!ControlManager.Instance.MoveActive)
+            return;
+
         if (_inTeleport)
             return;
 
@@ -113,6 +116,7 @@ public class PlayerMovement : MonoBehaviour
         }
 
         _isGrounded = _controller.isGrounded;
+
         Move();
         if (!ControlManager.Instance.CursorActive || ControlManager.Instance.UseTouchControl)
             CameraRotation();

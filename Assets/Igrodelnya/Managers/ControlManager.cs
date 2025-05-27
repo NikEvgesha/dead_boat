@@ -8,7 +8,7 @@ public class ControlManager : MonoBehaviour
     [SerializeField] private bool _useTouchControls;
     [SerializeField] private DeviceProvider _provider;
     private bool _cursorActive;
-
+    private bool _moveActive = true;
     public bool UseTouchControl { get { return _useTouchControls; } private set { } }
     public bool CursorActive
     {
@@ -37,7 +37,18 @@ public class ControlManager : MonoBehaviour
 
         }
     }
+    public bool MoveActive
+    {
+        get
+        {
+            return _moveActive;
+        }
 
+        set
+        {
+            _moveActive = value;
+        }
+    }
     private void Awake()
     {
         if (_instance == null)

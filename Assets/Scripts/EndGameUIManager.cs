@@ -89,12 +89,14 @@ public class EndGameUIManager : MonoBehaviour
         //  нопка перехода в лобби показываетс€ всегда
         if (state == EndGameState.None)
         {
+            ControlManager.Instance.MoveActive = true;
             lobbyButton.gameObject.SetActive(false);
             timerSlider.gameObject.SetActive(false);
             _panel.gameObject.SetActive(false);
         } 
         else
         {
+            ControlManager.Instance.MoveActive = false;
             _panel.gameObject.SetActive(true);
             lobbyButton.gameObject.SetActive(true);
             timerSlider.gameObject.SetActive(true);
