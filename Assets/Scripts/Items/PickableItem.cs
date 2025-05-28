@@ -228,7 +228,7 @@ public class PickableItem : MonoBehaviour
     }
 
 
-    private void CheckTags()
+    public void CheckTags()
     {
         _tags = new();
 
@@ -245,7 +245,7 @@ public class PickableItem : MonoBehaviour
                 _tags.Add(ItemTag.Valuable);
         }
 
-        if (gameObject.TryGetComponent <UsableItem>(out UsableItem usableItem))
+        if (gameObject.TryGetComponent<UsableItem>(out UsableItem usableItem))
         {
             _usable = true;
         }
@@ -360,6 +360,11 @@ public class PickableItem : MonoBehaviour
         ControlUI.Instance.ShowAttachButton(false);
         ControlUI.Instance.ShowPickUpButton(false);
         ControlUI.Instance.ShowPutToInventoryButton(false);
+    }
+
+    public bool HaveTag(ItemTag tag)
+    {
+        return _tags.Contains(tag);
     }
 
 }

@@ -126,7 +126,7 @@ public class Inventory : MonoBehaviour
 
     public void DropOutItem(PickableItem item, InventorySlot slot)
     {
-        if (item == null) return;
+        if (item == null || LoadingManager.Instance.CurrentLocation == Location.Lobby) return;
         if (_quickPanelItems.Contains(item)) {
             _quickPanelItems.Remove(item);
             slot.InitSlot(null);
@@ -266,5 +266,22 @@ public class Inventory : MonoBehaviour
             allItem.Add(item);
         }
         return allItem;
+    }
+
+    public bool CheckSpace(bool isUsable)
+    {
+        bool haveEmptySlot = false;
+        if (isUsable)
+        {
+            haveEmptySlot = _quickPanelItems.Count < _quickSlotsCapacity;
+        }
+        haveEmptySlot = _bagItems.Count < _capacity;
+
+        if (!haveEmptySlot)
+        {
+            InventoryUI.Instance.DisplayNoSpaceHint();
+        }
+
+        return haveEmptySlot;
     }
 }

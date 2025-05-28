@@ -141,13 +141,17 @@ public class StorePoint : MonoBehaviour
 
     private void TryBuy()
     {
-        if (CurrencyManager.Instance.CheckEnoughCurrency(currencyType, price))
+        bool enoughMoney = CurrencyManager.Instance.CheckEnoughCurrency(currencyType, price);
+        _itemPrefab.CheckTags();
+        bool isAmmo = _itemPrefab.HaveTag(ItemTag.Ammo);
+        bool isUsable = _itemPrefab.Usable;
+        if (enoughMoney && (isAmmo || Inventory.Instance.CheckSpace(isUsable)))
         {
             _buyInProgress = true;
             _progress = 0;
             StartCoroutine(BuyProcess());
         }
-        else
+        else if (!enoughMoney)
         {
             _isNoMoney = true;
             _noMoney.gameObject.SetActive(_isNoMoney);
@@ -167,7 +171,11 @@ public class StorePoint : MonoBehaviour
         if (_progress >= 1f)
         {
             CurrencyManager.Instance.RemoveCurrency(currencyType, price);
-            Instantiate(_itemPrefab, _buyPoint);
+            PickableItem item = Instantiate(_itemPrefab, _buyPoint);
+            if (LoadingManager.Instance.CurrentLocation == Location.Lobby)
+            {
+                item.PutToInventory();
+            }
             BuyItem?.Invoke();
             //if (_audioSource)
                 //_audioSource.Play();

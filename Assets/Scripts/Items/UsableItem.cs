@@ -22,6 +22,7 @@ public class UsableItem : MonoBehaviour
     }
     private void Update()
     {
+        if (LoadingManager.Instance.CurrentLocation == Location.Lobby) return;
         if (_isActive)
         {
 
