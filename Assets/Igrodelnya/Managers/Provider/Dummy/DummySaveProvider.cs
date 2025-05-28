@@ -1,4 +1,5 @@
 using MirraGames.SDK;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class DummySaveProvider : SaveProvider
@@ -80,5 +81,19 @@ public class DummySaveProvider : SaveProvider
     public override bool LoadLevelStatus(string key)
     {
         return PlayerPrefs.GetInt(key) == 1;
+    }
+
+    public override void SaveLobbyItem(string id)
+    {
+        
+    }
+    public override List<string> LoadLobbyItems()
+    {
+        return new List<string>();
+    }
+
+    public override void ResetLobbyItems()
+    {
+
     }
 }

@@ -13,16 +13,6 @@ public class StarterPackManager : MonoBehaviour
     }
 
 
-    private IEnumerator AddStarterPack()
-    {
-        yield return null;
-        foreach (var item in _starterPackItems)
-        {
-            PickableItem itemObj = Instantiate(item, null);
-            itemObj.PutToInventory();
-        }
-    }
-
     public ReadOnlyCollection<PickableItem> GetStartItems()
     {
         return _starterPackItems.AsReadOnly();

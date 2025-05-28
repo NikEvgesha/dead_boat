@@ -1,5 +1,12 @@
 using UnityEngine;
-using MirraGames.SDK;  // доступ к MirraSDK.Data
+using MirraGames.SDK;
+using System.Collections.Generic;  // доступ к MirraSDK.Data
+
+[System.Serializable]
+public class ListSaver
+{
+    public List<string> list;
+}
 
 public class MirraSDKSaveProvider : SaveProvider
 {
@@ -135,5 +142,37 @@ public class MirraSDKSaveProvider : SaveProvider
         if (!isInitialize)
             return false;
         return MirraSDK.Data.GetBool(key, false);
+    }
+
+
+    public override void SaveLobbyItem(string id)
+    {
+        if (!isInitialize) return;
+        Changed = true;
+        ListSaver items = MirraSDK.Data.GetObject<ListSaver>("LobbyItems", new ListSaver());
+        Debug.Log("current items: " + items.list.Count);
+        items.list.Add(id);
+        MirraSDK.Data.SetObject("LobbyItems", items);
+
+        ListSaver NewItems = MirraSDK.Data.GetObject<ListSaver>("LobbyItems", new ListSaver());
+        Debug.Log("item saved: " + id);
+        Debug.Log("items: " + NewItems.list.Count);
+    }
+    public override List<string> LoadLobbyItems()
+    {
+        ListSaver items = new();
+        if (isInitialize)
+        {
+            items = MirraSDK.Data.GetObject<ListSaver>("LobbyItems", new ListSaver());
+        }
+        Debug.Log("items loaded: " + items.list.Count);
+        return items.list;
+    }
+
+    public override void ResetLobbyItems()
+    {
+        if (!isInitialize) return;
+        Changed = true;
+        MirraSDK.Data.SetObject("LobbyItems", new ListSaver());
     }
 }

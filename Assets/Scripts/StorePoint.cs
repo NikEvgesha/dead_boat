@@ -174,7 +174,8 @@ public class StorePoint : MonoBehaviour
             PickableItem item = Instantiate(_itemPrefab, _buyPoint);
             if (LoadingManager.Instance.CurrentLocation == Location.Lobby)
             {
-                item.PutToInventory();
+                Inventory.Instance.AddItem(item);
+                SaveManager.Instance.SaveLobbyItem(item.Data.Name);
             }
             BuyItem?.Invoke();
             //if (_audioSource)

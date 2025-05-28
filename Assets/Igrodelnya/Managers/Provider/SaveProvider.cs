@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public abstract class SaveProvider : MonoBehaviour
@@ -33,4 +34,9 @@ public abstract class SaveProvider : MonoBehaviour
 
     public abstract void SaveLevelStatus(string lvlName, bool unlocked);
     public abstract bool LoadLevelStatus(string lvlName);
+
+    public abstract void SaveLobbyItem(string id);
+    public abstract List<string> LoadLobbyItems();
+
+    public abstract void ResetLobbyItems();
 }

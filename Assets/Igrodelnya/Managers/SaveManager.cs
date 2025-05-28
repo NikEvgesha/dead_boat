@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using MirraGames.SDK.Common;
+using System.Collections.Generic;
 
 public class SaveManager : MonoBehaviour
 {
@@ -103,6 +104,21 @@ public class SaveManager : MonoBehaviour
     public bool GetLevelStatus(string lvlName)
     {
         return saveProvider.LoadLevelStatus("LevelStatus_" + lvlName);
+    }
+
+    public void SaveLobbyItem(string id)
+    {
+        saveProvider.SaveLobbyItem(id);
+    }
+
+    public List<string> LoadLobbyItems()
+    {
+        return saveProvider.LoadLobbyItems();
+    }
+
+    public void ResetLobbyItems()
+    {
+        saveProvider.ResetLobbyItems();
     }
 
     // Остальные методы аналогично делегируют работу провайдеру...

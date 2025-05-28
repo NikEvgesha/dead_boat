@@ -73,8 +73,20 @@ public class Inventory : MonoBehaviour
         foreach (PickableItem item in items) {
 
             PickableItem itemObj = Instantiate(item, null);
-            itemObj.PutToInventory();
+            AddItem(itemObj);
         }
+
+        List<string> purchasedItems = SaveManager.Instance.LoadLobbyItems();
+        foreach (string id in purchasedItems)
+        {
+            PickableItem item = ItemsManager.Instance.GetItem(id);
+            if (item != null)
+            {
+                PickableItem itemObj = Instantiate(item, null);
+                AddItem(itemObj);
+            }
+        }
+
     }
 
 
@@ -92,6 +104,7 @@ public class Inventory : MonoBehaviour
                 added = true;
                 if (_activeItemManager.Active == null)
                 {
+                    item.PutToInventory();
                     _activeItemManager.SwitchActiveItem(item);
                     return true;
                 }
@@ -113,8 +126,10 @@ public class Inventory : MonoBehaviour
         }
 
 
+
         if (added)
         {
+            item.PutToInventory();
             item.transform.SetParent(transform);
             item.gameObject.SetActive(false);  
             return true;
@@ -139,7 +154,9 @@ public class Inventory : MonoBehaviour
             InventoryUI.Instance.UpdateCapacity(_bagItems.Count, _capacity);
             slot.InitSlot(null);
         }
+        
         item.DropOutFromInventory(_dropOutPoint);
+        item.gameObject.SetActive(true);
 
 
 

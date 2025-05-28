@@ -45,6 +45,7 @@ public class GameManager : MonoBehaviour
             _player = PlayerManager.Instance.GetComponent<PlayerStatsManager>();
             PlayerMovement.Instance.Teleport(_playerSpawnPoint);
         }
+        SaveManager.Instance.ResetLobbyItems();
         GameStart?.Invoke();
     }
 

@@ -23,7 +23,7 @@ public class PickableItem : MonoBehaviour
     [SerializeField] private float _dropVelocityMultiplier = 2f;
     [SerializeField] private float _kinematicDistance = 30f;
 
-    private ItemStatus _status;
+    private ItemStatus _status = ItemStatus.Free;
     public ItemStatus Status => _status;
     public bool Grabbed { get; private set; }
 
@@ -42,9 +42,10 @@ public class PickableItem : MonoBehaviour
 
     private Vector3 _velocity;
 
-    private HashSet<ItemTag> _tags;
+    private HashSet<ItemTag> _tags = new();
     private bool _usable;
     private bool _useKinematicCheck = true;
+    private bool _componentsInitialized = false;
 
     public HashSet<ItemTag> Tags => _tags;
     public ItemData Data { get { return _itemData; } }
@@ -53,14 +54,11 @@ public class PickableItem : MonoBehaviour
     public Action PickUpItem;
     public Action PutItemToInventory;
 
+   
+
     private void OnEnable()
     {
-        _outline = GetComponent<Outline>();
-        _collider = GetComponent<BoxCollider>();
-        _rb = GetComponent<Rigidbody>();
-        _infoUI = GetComponent<InfoUI>();
-        _attacher = GetComponent<ItemAttacher>();
-        CheckTags();
+        CheckComponents();
         _infoUI.SetInfoText(Data.Name, _tags);
         if (_player != null)
             StartCoroutine(KinematicCheck());
@@ -68,7 +66,7 @@ public class PickableItem : MonoBehaviour
 
     private void Start()
     {
-        _status = ItemStatus.Free;
+        //_status = ItemStatus.Free;
         _player = PlayerManager.Instance.transform;
         if (_player != null)
             StartCoroutine(KinematicCheck());
@@ -77,6 +75,18 @@ public class PickableItem : MonoBehaviour
     private void OnDisable()
     {
         StopAllCoroutines();
+    }
+
+    public void CheckComponents()
+    {
+        if (_componentsInitialized) return;
+        _outline = GetComponent<Outline>();
+        _collider = GetComponent<BoxCollider>();
+        _rb = GetComponent<Rigidbody>();
+        _infoUI = GetComponent<InfoUI>();
+        _attacher = GetComponent<ItemAttacher>();
+        CheckTags();
+        _componentsInitialized = true;
     }
 
     private IEnumerator KinematicCheck()
@@ -99,6 +109,7 @@ public class PickableItem : MonoBehaviour
 
     public void OnFocus(bool focus)
     {
+        CheckComponents();
         _outline.enabled = focus;
         _infoUI.ShowInfo(focus);
         CheckPossibleActions(focus);
@@ -149,6 +160,7 @@ public class PickableItem : MonoBehaviour
 
     public void PutToInventory()
     {
+        CheckComponents();
         if (_status != ItemStatus.Free) return;
         if (_tags.Contains(ItemTag.Ammo))
         {
@@ -158,8 +170,6 @@ public class PickableItem : MonoBehaviour
                 return;
             }
         }
-        if (Inventory.Instance.AddItem(this))
-        {
             if (_collider)
                 _collider.enabled = false;
 
@@ -171,7 +181,6 @@ public class PickableItem : MonoBehaviour
             TrySetAttach(false);
             _status = ItemStatus.InInventory;
             PutItemToInventory?.Invoke();
-        }
 
     }
 
@@ -179,17 +188,16 @@ public class PickableItem : MonoBehaviour
     {
         if (_status != ItemStatus.InInventory) return;
 
-        if(_collider)
+        if (_collider)
             _collider.enabled = true;
 
         tag = Tag.Item.ToString();
         this.gameObject.layer = (int)Layer.Pickable;
         _rb.interpolation = RigidbodyInterpolation.Interpolate;
-        
-        gameObject.SetActive(true);
+        _useKinematicCheck = true;
+
         transform.SetParent(null);
         transform.position = dropOutPoint.position;
-        _useKinematicCheck = true;
 
         _status = ItemStatus.Free;
     }
@@ -230,7 +238,6 @@ public class PickableItem : MonoBehaviour
 
     public void CheckTags()
     {
-        _tags = new();
 
         if (gameObject.GetComponent<FuelItem>() != null)
         {
