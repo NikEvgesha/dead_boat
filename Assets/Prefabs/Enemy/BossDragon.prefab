@@ -280,6 +280,7 @@ GameObject:
   - component: {fileID: 4594371594261014411}
   - component: {fileID: 4477845267457034405}
   - component: {fileID: 8876784566973978621}
+  - component: {fileID: 542711345258861319}
   m_Layer: 8
   m_Name: Dragon
   m_TagString: Untagged
@@ -322,7 +323,7 @@ SkinnedMeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 02bde27b42528a44d9a8ffda40c44da0, type: 2}
+  - {fileID: 2100000, guid: 7cd79f61b360cd8469916a275eee2cab, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -388,10 +389,32 @@ BoxCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
-  m_Size: {x: 3.132297, y: 2.2366762, z: 3.2144046}
-  m_Center: {x: -0.000000016415516, y: 0.42593384, z: 0.3477881}
+  m_Size: {x: 1, y: 1.58, z: 3}
+  m_Center: {x: 0, y: 0.26, z: 0.35}
+--- !u!64 &542711345258861319
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4596229537612397495}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 4300000, guid: bcf471273cc460644bee464d85b13464, type: 3}
 --- !u!1 &4596283032140808489
 GameObject:
   m_ObjectHideFlags: 0
@@ -791,6 +814,7 @@ GameObject:
   - component: {fileID: 6894940347910519016}
   - component: {fileID: 5753171406411494504}
   - component: {fileID: 4136330557854969030}
+  - component: {fileID: 7525548215538647995}
   m_Layer: 0
   m_Name: BossDragon
   m_TagString: Untagged
@@ -823,7 +847,7 @@ NavMeshAgent:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4931231161241002067}
-  m_Enabled: 1
+  m_Enabled: 0
   m_AgentTypeID: 0
   m_Radius: 0.5
   m_Speed: 3.5
@@ -877,15 +901,22 @@ MonoBehaviour:
   audioHit: {fileID: 8300000, guid: db712e5bca9528148964933cd0a9d93b, type: 3}
   audioSource: {fileID: 4136330557854969030}
   audioSourceEnemy: {fileID: 4136330557854969030}
-  _starsHP: 2000
+  _starsHP: 1000
   orbitCenter: {fileID: 0}
   orbitRadius: 36.3
   orbitAngularSpeed: 45
   orbitDuration: 5
   orbitHeight: 18.33
-  fireProjectile: {fileID: 7927056270357127380, guid: 9d85a4e0c6af82f489bd7fd93c34e1bc, type: 3}
+  fireProjectile: {fileID: 2021459799381133166, guid: 9a401dd90e7cac74182480e84ec2f0c2, type: 3}
   shootDuration: 3
   timeBetweenShots: 0.5
+  diveHeightOffset: -5
+  diveSpeed: 40
+  diveDamage: 20
+  shootCooldown: 5
+  diveCooldown: 8
+  speedMultiplier: 0.5
+  MaxSpeedMultiplier: 1.5
 --- !u!82 &4136330557854969030
 AudioSource:
   m_ObjectHideFlags: 0
@@ -982,6 +1013,27 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!65 &7525548215538647995
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4931231161241002067}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1.58, z: 3}
+  m_Center: {x: 0, y: 0.26, z: 0.35}
 --- !u!1 &6042949889972262095
 GameObject:
   m_ObjectHideFlags: 0
