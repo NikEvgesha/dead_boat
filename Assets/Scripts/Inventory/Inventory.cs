@@ -90,6 +90,12 @@ public class Inventory : MonoBehaviour
     public bool AddItem(PickableItem item)
     {
         bool added = false;
+
+        if (item.GetComponent<AmmoItem>() != null)
+        {
+            item.PutToInventory();
+            return true;
+        }
         
         if (item.Usable)
         {

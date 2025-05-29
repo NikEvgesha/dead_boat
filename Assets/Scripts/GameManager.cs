@@ -60,12 +60,13 @@ public class GameManager : MonoBehaviour
         {
             Inventory.Instance.SetLoadedInventory();
             SaveManager.Instance.SaveGameProgress(0, Inventory.Instance.GetInventoryList());
+            
         }
+        GameStart?.Invoke();
 
-        
         SaveManager.Instance.ResetLobbyItems();
 
-        GameStart?.Invoke();
+        
     }
 
     public void EndGame(bool lobby)
