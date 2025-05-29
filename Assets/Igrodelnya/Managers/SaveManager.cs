@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections;
 using MirraGames.SDK.Common;
 using System.Collections.Generic;
+using MirraGames.SDK;
 
 public class SaveManager : MonoBehaviour
 {
@@ -127,6 +128,8 @@ public class SaveManager : MonoBehaviour
         saveProvider.SaveDistance(distance);
         if (items != null)
             saveProvider.SaveInventory(items);
+
+        Debug.Log("Progress Saved");
        
     }
 
@@ -135,6 +138,43 @@ public class SaveManager : MonoBehaviour
     public (int, List<string>) LoadGameProgress()
     {
         return (saveProvider.LoadDistance(), saveProvider.LoadInventory());
+    }
+
+
+    public void SaveFuel(int fuel)
+    {
+        saveProvider.SaveFuel(fuel);
+    }
+    public int LoadFuel()
+    {
+        return saveProvider.LoadFuel();
+    }
+
+    public void SaveAttachedItem(string id)
+    {
+        saveProvider.SaveAttachedItem(id);
+    }
+
+    public List<string> LoadAttachedItems()
+    {
+        return saveProvider.LoadAttachedItems();
+    }
+
+    public void ResetAttachedItems()
+    {
+        saveProvider.ResetAttachedItems();
+    }
+
+    public void DeleteAttachedItem(string id)
+    {
+        List<string> current = saveProvider.LoadAttachedItems();
+        current.Remove(id);
+        saveProvider.SaveAllAttachedItems(current);
+    }
+
+    public void SaveInventory()
+    {
+        saveProvider.SaveInventory(Inventory.Instance.GetInventoryList());
     }
 
     // Остальные методы аналогично делегируют работу провайдеру...

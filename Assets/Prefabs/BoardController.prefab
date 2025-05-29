@@ -1079,6 +1079,7 @@ Transform:
   - {fileID: 5556257858172982324}
   - {fileID: 909098444883574162}
   - {fileID: 2325831894171661663}
+  - {fileID: 825915091990714664}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!54 &5775901137769488220
@@ -1129,6 +1130,7 @@ MonoBehaviour:
   brakeDeceleration: 20
   playerOnSeat: 0
   _levels: 10
+  _loadedItemsSpawnPoint: {fileID: 825915091990714664}
   ignoreInputDuration: 0.5
   TotalDistanceTraveled: 0
   _endTutorialDistance: 50
@@ -1677,6 +1679,37 @@ MonoBehaviour:
   m_Bidirectional: 1
   m_AutoUpdatePosition: 1
   m_Area: 0
+--- !u!1 &5652479133431927392
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 825915091990714664}
+  m_Layer: 6
+  m_Name: LoadedItemsSpawnPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &825915091990714664
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5652479133431927392}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 2.5, z: -12.83}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2979064991470697230}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5785035498221247863
 GameObject:
   m_ObjectHideFlags: 0

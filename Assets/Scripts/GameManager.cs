@@ -16,6 +16,7 @@ public class GameManager : MonoBehaviour
     public bool isEndGame = false;
 
     public Action GameStart;
+    public Action<int> GameResume;
 
     [Header("Дистанция всей игры")]
     public float PlayDistance = 100000f;
@@ -54,12 +55,14 @@ public class GameManager : MonoBehaviour
         if (loadedData.Item1 >= 0)
         {
             Inventory.Instance.SetLoadedInventory(loadedData.Item2);
+            GameResume?.Invoke(loadedData.Item1);
         } else
         {
             Inventory.Instance.SetLoadedInventory();
+            SaveManager.Instance.SaveGameProgress(0, Inventory.Instance.GetInventoryList());
         }
 
-        SaveManager.Instance.SaveGameProgress(0, Inventory.Instance.GetInventoryList());
+        
         SaveManager.Instance.ResetLobbyItems();
 
         GameStart?.Invoke();
@@ -76,6 +79,7 @@ public class GameManager : MonoBehaviour
         Inventory.Instance.ResetInventory();
         CurrencyManager.Instance.Reset();
         PlayerStatsManager.Instance.Revive();
+        SaveManager.Instance.ResetAttachedItems();
         LoadingManager.Instance.LoadLocation(location);
     }
 }

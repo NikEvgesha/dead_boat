@@ -47,4 +47,13 @@ public abstract class SaveProvider : MonoBehaviour
     public abstract List<string> LoadInventory();
     public abstract int LoadDistance();
 
+    public abstract void SaveFuel(int fuel);
+    public abstract int LoadFuel();
+
+    public abstract void SaveAttachedItem(string id);
+    public abstract void SaveAllAttachedItems(List<string> items);
+    public abstract List<string> LoadAttachedItems();
+
+    public abstract void ResetAttachedItems();
+
 }

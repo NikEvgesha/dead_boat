@@ -107,4 +107,32 @@ public class DummySaveProvider : SaveProvider
     public override int LoadDistance() {
         return 0;
     }
+
+
+    public override void SaveFuel(int fuel)
+    {
+    }
+    public override int LoadFuel()
+    {
+        return 0;
+    }
+
+
+    public override void SaveAttachedItem(string id)
+    {
+
+    }
+    public override List<string> LoadAttachedItems()
+    {
+        return new List<string>();
+    }
+
+    public override void ResetAttachedItems()
+    {
+        
+    }
+
+    public override void SaveAllAttachedItems(List<string> items)
+    {
+    }
 }

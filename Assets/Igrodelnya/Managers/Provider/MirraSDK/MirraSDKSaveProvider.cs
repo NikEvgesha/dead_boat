@@ -210,4 +210,58 @@ public class MirraSDKSaveProvider : SaveProvider
         return -1;
     }
 
+    public override void SaveFuel(int fuel)
+    {
+        if (!isInitialize) return;
+        Changed = true;
+        MirraSDK.Data.SetInt("Fuel", fuel);
+    }
+    public override int LoadFuel()
+    {
+        if (isInitialize)
+        {
+            return MirraSDK.Data.GetInt("Fuel");
+        }
+        return 0;
+    }
+
+    public override void SaveAttachedItem(string id)
+    {
+        if (!isInitialize) return;
+        Changed = true;
+        ListSaver items = MirraSDK.Data.GetObject<ListSaver>("AttachedItems", new ListSaver());
+        items.list.Add(id);
+        MirraSDK.Data.SetObject("AttachedItems", items);
+        Debug.Log("attached: " + id);
+
+        ListSaver NewItems = MirraSDK.Data.GetObject<ListSaver>("AttachedItems", new ListSaver());
+
+        Debug.Log("total attached: " + NewItems.list.Count);
+    }
+    public override List<string> LoadAttachedItems()
+    {
+        ListSaver items = new();
+        if (isInitialize)
+        {
+            items = MirraSDK.Data.GetObject<ListSaver>("AttachedItems", new ListSaver());
+        }
+
+        Debug.Log("attached items loaded: " + items.list.Count);
+        return items.list;
+    }
+
+    public override void ResetAttachedItems()
+    {
+        if (!isInitialize) return;
+        Changed = true;
+        MirraSDK.Data.SetObject("AttachedItems", new ListSaver());
+    }
+
+    public override void SaveAllAttachedItems(List<string> items)
+    {
+        if (!isInitialize) return;
+        Changed = true;
+        MirraSDK.Data.SetObject("AttachedItems", items);
+    }
+
 }

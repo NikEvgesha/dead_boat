@@ -48,9 +48,18 @@ public class Inventory : MonoBehaviour
         InventoryUI.Instance.UpdateCapacity(_bagItems.Count, _capacity);
         //InventoryUI.Instance.SpawnSlots(_capacityTotal - _quickSlotsCapacity, _quickSlotsCapacity);
         //InventoryUI.Instance.UpdateCapacity(_items.Count, _capacityTotal);
-
+        StartCoroutine(SaveInventory());
     }
 
+
+    private IEnumerator SaveInventory()
+    {
+        while (this.enabled && LoadingManager.Instance.CurrentLocation == Location.Game)
+        {
+            yield return new WaitForSeconds(1);
+            SaveManager.Instance.SaveInventory();
+        }
+    }
 
     private IEnumerator AddStarterPack()
     {

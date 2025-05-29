@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class BoardController : MonoBehaviour
@@ -31,6 +32,8 @@ public class BoardController : MonoBehaviour
 
     [SerializeField] private int _levels = 10;
     private int _level = 1;
+
+    [SerializeField] private Transform _loadedItemsSpawnPoint;
 
     private float _levelDistance;
 
@@ -68,10 +71,19 @@ public class BoardController : MonoBehaviour
     {
         // ≈сли на объекте есть Rigidbody, переводим его в кинематический режим,
         // чтобы не зависеть от гравитации и столкновений
+        GameManager.Instance.GameResume += SetStartDistance;
         Rigidbody rb = GetComponent<Rigidbody>();
         if (rb != null)
         {
             rb.isKinematic = true;
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.GameResume -= SetStartDistance;
         }
     }
     private void Start()
@@ -79,7 +91,7 @@ public class BoardController : MonoBehaviour
         _endPoint = GameManager.Instance.PlayDistance;
         _levelDistance = _endPoint / _levels;
         StartCoroutine(UpdateUiDistance());
-        StartCoroutine(CheckProgressSave());
+        //StartCoroutine(CheckProgressSave());
         SwitchSpeed?.Invoke(currentSpeed);
         SwitchFuel?.Invoke(currentFuel, _maxFuel);
         if (_audioSource)
@@ -105,7 +117,7 @@ public class BoardController : MonoBehaviour
         yield return null;
     }
 
-    private IEnumerator CheckProgressSave()
+/*    private IEnumerator CheckProgressSave()
     {
         while (this.enabled)
         {
@@ -119,7 +131,7 @@ public class BoardController : MonoBehaviour
                 yield return new WaitForSeconds(1);
             }
         }
-    }
+    }*/
 
 
         private void Update()
@@ -256,6 +268,21 @@ public class BoardController : MonoBehaviour
 
     public void SetStartDistance(int distance)
     {
-        TotalDistanceTraveled = distance % 10000 * 10000;
+        TotalDistanceTraveled = distance;
+        currentFuel = SaveManager.Instance.LoadFuel();
+
+        List<string> attachedItems = SaveManager.Instance.LoadAttachedItems();
+        //SetStartItems(_starterPack.GetStartItems());
+        foreach (string id in attachedItems)
+        {
+            PickableItem item = ItemsManager.Instance.GetItem(id);
+            if (item != null)
+            {
+                PickableItem itemObj = Instantiate(item, transform);
+                itemObj.transform.position = _loadedItemsSpawnPoint.position;
+            }
+                
+        }
+        SaveManager.Instance.ResetAttachedItems();
     }
 }
