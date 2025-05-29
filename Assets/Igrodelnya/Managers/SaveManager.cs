@@ -121,5 +121,21 @@ public class SaveManager : MonoBehaviour
         saveProvider.ResetLobbyItems();
     }
 
+
+    public void SaveGameProgress(int distance = -1, List<PickableItem> items = null)
+    { 
+        saveProvider.SaveDistance(distance);
+        if (items != null)
+            saveProvider.SaveInventory(items);
+       
+    }
+
+    public void ResetGameProgress() => SaveGameProgress();
+
+    public (int, List<string>) LoadGameProgress()
+    {
+        return (saveProvider.LoadDistance(), saveProvider.LoadInventory());
+    }
+
     // Остальные методы аналогично делегируют работу провайдеру...
 }

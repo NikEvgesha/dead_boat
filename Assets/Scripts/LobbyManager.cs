@@ -31,6 +31,8 @@ public class LobbyManager : MonoBehaviour
     private void Start()
     {
         PlayerMovement.Instance.Teleport(_playerSpawnPoint);
+        Inventory.Instance.SetLoadedInventory();
+        SaveManager.Instance.SaveGameProgress(-1, Inventory.Instance.GetItems());
         //PlayerManager.Instance.gameObject.transform.position = _playerSpawnPoint.position;
     }
 

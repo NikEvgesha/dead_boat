@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using UnityEngine;
 
 public class Inventory : MonoBehaviour
@@ -48,8 +49,6 @@ public class Inventory : MonoBehaviour
         //InventoryUI.Instance.SpawnSlots(_capacityTotal - _quickSlotsCapacity, _quickSlotsCapacity);
         //InventoryUI.Instance.UpdateCapacity(_items.Count, _capacityTotal);
 
-        StartCoroutine(AddStarterPack());
-
     }
 
 
@@ -74,17 +73,6 @@ public class Inventory : MonoBehaviour
 
             PickableItem itemObj = Instantiate(item, null);
             AddItem(itemObj);
-        }
-
-        List<string> purchasedItems = SaveManager.Instance.LoadLobbyItems();
-        foreach (string id in purchasedItems)
-        {
-            PickableItem item = ItemsManager.Instance.GetItem(id);
-            if (item != null)
-            {
-                PickableItem itemObj = Instantiate(item, null);
-                AddItem(itemObj);
-            }
         }
 
     }
@@ -300,5 +288,32 @@ public class Inventory : MonoBehaviour
         }
 
         return haveEmptySlot;
+    }
+
+
+    public List<PickableItem> GetInventoryList()
+    {
+        return _bagItems.Concat(_quickPanelItems).ToList();
+    }
+
+    public void SetLoadedInventory(List<string> items = null)
+    {
+        List<PickableItem> itemPrefabs = new();
+        if (items == null)
+        {
+            ResetInventory();
+            items = SaveManager.Instance.LoadLobbyItems();
+            //SetStartItems(_starterPack.GetStartItems());
+        }
+        foreach (var id in items)
+        {
+            PickableItem item = ItemsManager.Instance.GetItem(id);
+            if (item != null)
+            {
+                itemPrefabs.Add(item);
+            }
+                
+        }
+        SetStartItems(itemPrefabs.AsReadOnly());
     }
 }

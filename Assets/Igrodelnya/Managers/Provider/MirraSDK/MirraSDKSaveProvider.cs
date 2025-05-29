@@ -5,7 +5,7 @@ using System.Collections.Generic;  // доступ к MirraSDK.Data
 [System.Serializable]
 public class ListSaver
 {
-    public List<string> list;
+    public List<string> list = new();
 }
 
 public class MirraSDKSaveProvider : SaveProvider
@@ -150,13 +150,10 @@ public class MirraSDKSaveProvider : SaveProvider
         if (!isInitialize) return;
         Changed = true;
         ListSaver items = MirraSDK.Data.GetObject<ListSaver>("LobbyItems", new ListSaver());
-        Debug.Log("current items: " + items.list.Count);
         items.list.Add(id);
         MirraSDK.Data.SetObject("LobbyItems", items);
 
         ListSaver NewItems = MirraSDK.Data.GetObject<ListSaver>("LobbyItems", new ListSaver());
-        Debug.Log("item saved: " + id);
-        Debug.Log("items: " + NewItems.list.Count);
     }
     public override List<string> LoadLobbyItems()
     {
@@ -165,7 +162,6 @@ public class MirraSDKSaveProvider : SaveProvider
         {
             items = MirraSDK.Data.GetObject<ListSaver>("LobbyItems", new ListSaver());
         }
-        Debug.Log("items loaded: " + items.list.Count);
         return items.list;
     }
 
@@ -175,4 +171,43 @@ public class MirraSDKSaveProvider : SaveProvider
         Changed = true;
         MirraSDK.Data.SetObject("LobbyItems", new ListSaver());
     }
+
+
+    public override void SaveDistance(int distance) {
+        if (!isInitialize) return;
+        Changed = true;
+        MirraSDK.Data.SetInt("Distance", distance);
+    }
+    public override void SaveInventory(List<PickableItem> items) {
+        if (!isInitialize) return;
+        Changed = true;
+
+        ListSaver listSaver = new();
+
+        foreach (PickableItem item in items)
+        {
+            listSaver.list.Add(item.Data.Name);
+        }
+
+        MirraSDK.Data.SetObject<ListSaver>("InventoryList", listSaver);
+    }
+
+    public override List<string> LoadInventory()
+    {
+        ListSaver items = new();
+        if (isInitialize)
+        {
+            items = MirraSDK.Data.GetObject<ListSaver>("InventoryList", new ListSaver());
+        }
+        return items.list;
+    }
+    public override int LoadDistance()
+    {
+        if (isInitialize)
+        {
+            return MirraSDK.Data.GetInt("Distance");
+        }
+        return -1;
+    }
+
 }

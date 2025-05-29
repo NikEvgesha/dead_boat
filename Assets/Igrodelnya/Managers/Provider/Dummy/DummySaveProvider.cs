@@ -96,4 +96,15 @@ public class DummySaveProvider : SaveProvider
     {
 
     }
+
+
+    public override void SaveDistance(int distance) { }
+    public override void SaveInventory(List<PickableItem> items) { }
+
+    public override List<string> LoadInventory() {
+        return new List<string>();
+    }
+    public override int LoadDistance() {
+        return 0;
+    }
 }

@@ -42,8 +42,8 @@ public class LoadingManager : MonoBehaviour
     }
     private void StartGame()
     {
-
-        if (SaveManager.Instance.IsNewPlayer)
+        bool haveSave = SaveManager.Instance.LoadGameProgress().Item1 >= 0;
+        if (SaveManager.Instance.IsNewPlayer || haveSave)
         {
             GameLoader.Instance.LoadNextScene(_gameScene, true);
             _location = Location.Game;

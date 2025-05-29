@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 [DefaultExecutionOrder(-1)]
 public class GameManager : MonoBehaviour
@@ -45,7 +46,22 @@ public class GameManager : MonoBehaviour
             _player = PlayerManager.Instance.GetComponent<PlayerStatsManager>();
             PlayerMovement.Instance.Teleport(_playerSpawnPoint);
         }
+
+        (int, List<string>) loadedData = SaveManager.Instance.LoadGameProgress();
+
+        Debug.Log(String.Format("LOADED DATA: {0},  {1} items", loadedData.Item1, loadedData.Item2.Count));
+
+        if (loadedData.Item1 >= 0)
+        {
+            Inventory.Instance.SetLoadedInventory(loadedData.Item2);
+        } else
+        {
+            Inventory.Instance.SetLoadedInventory();
+        }
+
+        SaveManager.Instance.SaveGameProgress(0, Inventory.Instance.GetInventoryList());
         SaveManager.Instance.ResetLobbyItems();
+
         GameStart?.Invoke();
     }
 

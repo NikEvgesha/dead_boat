@@ -39,4 +39,12 @@ public abstract class SaveProvider : MonoBehaviour
     public abstract List<string> LoadLobbyItems();
 
     public abstract void ResetLobbyItems();
+
+
+    public abstract void SaveDistance(int distance);
+    public abstract void SaveInventory(List<PickableItem> items);
+
+    public abstract List<string> LoadInventory();
+    public abstract int LoadDistance();
+
 }

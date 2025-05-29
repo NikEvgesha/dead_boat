@@ -55,6 +55,8 @@ public class BoardController : MonoBehaviour
     private bool _endGame = false;
     private bool _endTutorial = false;
 
+    private int _nextSavePoint = 10000;
+
     public Action<float> SwitchDistance;
     public Action<float> SwitchSpeed;
     public Action<float,float> SwitchFuel;
@@ -77,6 +79,7 @@ public class BoardController : MonoBehaviour
         _endPoint = GameManager.Instance.PlayDistance;
         _levelDistance = _endPoint / _levels;
         StartCoroutine(UpdateUiDistance());
+        StartCoroutine(CheckProgressSave());
         SwitchSpeed?.Invoke(currentSpeed);
         SwitchFuel?.Invoke(currentFuel, _maxFuel);
         if (_audioSource)
@@ -101,7 +104,24 @@ public class BoardController : MonoBehaviour
         }
         yield return null;
     }
-    
+
+    private IEnumerator CheckProgressSave()
+    {
+        while (this.enabled)
+        {
+            if (TotalDistanceTraveled >= _nextSavePoint)
+            {
+                SaveManager.Instance.SaveGameProgress(_nextSavePoint, Inventory.Instance.GetInventoryList());
+                _nextSavePoint += 10000;
+                yield return new WaitForSeconds(30);
+            } else
+            {
+                yield return new WaitForSeconds(1);
+            }
+        }
+    }
+
+
         private void Update()
     {
         // Обновляем ввод только если водитель за рулём
@@ -232,5 +252,10 @@ public class BoardController : MonoBehaviour
     public int GetLevel()
     {
         return _level;
+    }
+
+    public void SetStartDistance(int distance)
+    {
+        TotalDistanceTraveled = distance % 10000 * 10000;
     }
 }
