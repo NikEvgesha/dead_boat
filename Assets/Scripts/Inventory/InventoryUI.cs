@@ -105,6 +105,31 @@ public class InventoryUI : MonoBehaviour
             _isOpen = false;
         }
     }
+    public void ToggleOpen( bool itOpen)
+    {
+        if (itOpen)
+        {
+            _panel.SetActive(true);
+            _isOpen = true;
+            //ControlManager.Instance.CursorActive = true;
+            for (int i = 0; i < _quickPanelCapacity; i++)
+            {
+                _quickSlots[i].gameObject.SetActive(true);
+            }
+        }
+        else
+        {
+            //if (!ControlManager.Instance.UseTouchControl)
+                //ControlManager.Instance.CursorActive = false;
+            for (int i = 0; i < _quickPanelCapacity; i++)
+            {
+                if (_quickSlots[i].Empty)
+                    _quickSlots[i].gameObject.SetActive(false);
+            }
+            _panel.SetActive(false);
+            _isOpen = false;
+        }
+    }
 
 
     public void OnItemDrag(bool dragging)

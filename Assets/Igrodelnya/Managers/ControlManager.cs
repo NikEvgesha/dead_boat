@@ -34,6 +34,8 @@ public class ControlManager : MonoBehaviour
                 Cursor.visible = value;
                 Cursor.lockState = value ? CursorLockMode.None : CursorLockMode.Locked;
             }
+            if (_moveActive)
+                InventoryUI.Instance.ToggleOpen(value);
 
         }
     }

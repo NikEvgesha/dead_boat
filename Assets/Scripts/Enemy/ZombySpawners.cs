@@ -85,10 +85,9 @@ public class ZombieSpawner : MonoBehaviour
     {
         if (playerTransform == null || enemyTypes.Count == 0)
             return;
-        if (_boardController)
-        {
-
-        }
+        if (_boardController.TotalDistanceTraveled >= GameManager.Instance.PlayDistance - 500)
+            return;
+        
         var prefab = enemyTypes[nextEnemyType];
         for (int i = 0; i < spawnCount; i++)
         {

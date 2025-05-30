@@ -25,7 +25,8 @@ public class UsableItem : MonoBehaviour
         if (LoadingManager.Instance.CurrentLocation == Location.Lobby) return;
         if (_isActive)
         {
-
+            if (!ControlManager.Instance.MoveActive)
+                return;
             //Debug.Log("Нажата ли кнопка :" + PlayerInput.Instance.UseItem);
             if (PlayerInput.Instance.UseItem)
             {

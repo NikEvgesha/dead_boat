@@ -29,6 +29,7 @@ public class PlayerMovement : MonoBehaviour
     private Vector3 _velocity;
     private float _currentXRotation = 0f;
     private float _currentYRotation = 0f;
+    private float _startYRotation = 0f;
     private ControlUI _controlUI;
 
     private bool _inTeleport;
@@ -38,7 +39,7 @@ public class PlayerMovement : MonoBehaviour
     public static PlayerMovement Instance { get { return _instance; } }
 
     private float _waitStart = 1f;
-    private float _lagStart = 1f;
+    private float _lagStart = 0.1f;
     private bool _isStart;
 
     private void Awake()
@@ -60,6 +61,7 @@ public class PlayerMovement : MonoBehaviour
 
     void Start()
     {
+        _startYRotation = transform.rotation.eulerAngles.y;
         _playerStats = GetComponent<PlayerStatsManager>();
         _controller = GetComponent<CharacterController>();
         _rb = GetComponent<Rigidbody>();
@@ -167,7 +169,7 @@ public class PlayerMovement : MonoBehaviour
 
         _currentXRotation -= rotationInput.y;
         _currentXRotation = Mathf.Clamp(_currentXRotation, _YRotationLimitMin, _YRotationLimitMax);
-        transform.rotation = Quaternion.Euler(0f, _currentYRotation, 0f);
+        transform.rotation = Quaternion.Euler(0f, _currentYRotation + _startYRotation, 0f);
         _camera.transform.localRotation = Quaternion.Euler(_currentXRotation, 0f, 0f);
     }
 

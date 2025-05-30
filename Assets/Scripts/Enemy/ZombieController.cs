@@ -29,7 +29,11 @@ public class ZombieController : LevelledEnemy
         animator = GetComponent<Animator>();
         ragdoll = GetComponent<SimpleRagdoll>();
         pickable = GetComponentInChildren<PickableItem>();
-        if (pickable) pickable.enabled = false;
+        if (pickable)
+        {
+            pickable.enabled = false;
+            pickable.tag = Tag.Zomby.ToString();
+        }
         player = FindObjectOfType<PlayerStatsManager>();
         target = player?.transform;
     }

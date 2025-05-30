@@ -90,13 +90,15 @@ public class EndGameUIManager : MonoBehaviour
         if (state == EndGameState.None)
         {
             ControlManager.Instance.MoveActive = true;
+            ControlManager.Instance.CursorActive = false;
             lobbyButton.gameObject.SetActive(false);
             timerSlider.gameObject.SetActive(false);
             _panel.gameObject.SetActive(false);
         } 
         else
         {
-            ControlManager.Instance.MoveActive = false;
+            ControlManager.Instance.MoveActive = false; 
+            ControlManager.Instance.CursorActive = true;
             _panel.gameObject.SetActive(true);
             lobbyButton.gameObject.SetActive(true);
             timerSlider.gameObject.SetActive(true);

@@ -1443,7 +1443,6 @@ MonoBehaviour:
   _visualObj: {fileID: 5371316712090260022}
   _sellPoint: {fileID: 0}
   _lerpSpeed: 10
-  _maxSpeed: 10
   _damping: 0.1
   _stopDistance: 0.05
   _maxDistance: 8
@@ -1465,6 +1464,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   fuelValue: 10
+  InFire: 0
 --- !u!114 &6559594758592132792
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1854,6 +1854,10 @@ PrefabInstance:
     - target: {fileID: 7518567881013586689, guid: 200718ddd62da0b459336e78f7e78f56, type: 3}
       propertyPath: m_Name
       value: just_zombie
+      objectReference: {fileID: 0}
+    - target: {fileID: 7518567881013586689, guid: 200718ddd62da0b459336e78f7e78f56, type: 3}
+      propertyPath: m_TagString
+      value: Enemy
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:
