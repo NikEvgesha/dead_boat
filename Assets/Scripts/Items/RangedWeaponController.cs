@@ -28,7 +28,7 @@ public class RangedWeaponController : MonoBehaviour
     [Header("Настройки патронов")]
     [SerializeField] private int maxAmmo = 10;
     [SerializeField] private int _currentAmmo = 10 ;
-    [SerializeField] private int _reserveAmmo = 30;
+    //private int _reserveAmmo = 30;
     [SerializeField] private float reloadTime = 2f;
     private bool _isReloading = false;
 
@@ -42,16 +42,22 @@ public class RangedWeaponController : MonoBehaviour
         set 
         { 
             _currentAmmo = value;
-            AmmoUI.ChangeAmmo?.Invoke(_currentAmmo, _reserveAmmo);
+            AmmoUI.ChangeAmmo?.Invoke(_currentAmmo, ReserveAmmo);
         }
     }
     public int ReserveAmmo
     {
-        get { return _reserveAmmo; }
+        get { return PlayerAmmoManager.Instance.GetAmmo(weaponType); }
         set
         {
-            _reserveAmmo = value;
-            AmmoUI.ChangeAmmo?.Invoke(_currentAmmo, _reserveAmmo);
+            int change = PlayerAmmoManager.Instance.GetAmmo(weaponType) - value;
+            if (change < 0)
+                PlayerAmmoManager.Instance.AddAmmo(weaponType,change);
+
+            if (change > 0)
+                PlayerAmmoManager.Instance.UseAmmo(weaponType, change);
+
+            AmmoUI.ChangeAmmo?.Invoke(_currentAmmo, PlayerAmmoManager.Instance.GetAmmo(weaponType));
         }
     }
 
@@ -84,7 +90,7 @@ public class RangedWeaponController : MonoBehaviour
     private void Update()
     {
         // Дополнительная проверка для перезарядки (клавиша R)
-        if (PlayerInput.Instance.Reload && !_isReloading && _currentAmmo < maxAmmo && _reserveAmmo > 0)
+        if (PlayerInput.Instance.Reload && !_isReloading && _currentAmmo < maxAmmo && ReserveAmmo > 0)
         {
             StartCoroutine(Reload());
         }
@@ -101,7 +107,7 @@ public class RangedWeaponController : MonoBehaviour
         ControlUI.Instance.ShowAttackButton(_active);
         ControlUI.Instance.ShowReloadButton(_active);
         AmmoUI.UseGun?.Invoke(_active);
-        AmmoUI.ChangeAmmo?.Invoke(_currentAmmo, _reserveAmmo);
+        AmmoUI.ChangeAmmo?.Invoke(_currentAmmo, ReserveAmmo);
         if (_active)
             _usableItem.Use += UseUpdate;
         else
@@ -157,7 +163,7 @@ public class RangedWeaponController : MonoBehaviour
             yield return new WaitForSeconds(reloadTime);
 
             int neededAmmo = maxAmmo - _currentAmmo;
-            int ammoToReload = (_reserveAmmo >= neededAmmo) ? neededAmmo : _reserveAmmo;
+            int ammoToReload = (ReserveAmmo >= neededAmmo) ? neededAmmo : ReserveAmmo;
             CurrentAmmo += ammoToReload;
             ReserveAmmo -= ammoToReload;
             _isReloading = false;
@@ -265,6 +271,7 @@ public class RangedWeaponController : MonoBehaviour
     }
     public bool TryAddAmmo(int ammo, WeaponType type)
     {
+        // Сюда больше не приходят
         if (type == weaponType)
         {
             ReserveAmmo += ammo;

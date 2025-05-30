@@ -7,6 +7,12 @@ public class AmmoItem : MonoBehaviour
     [SerializeField] private WeaponType AmmoType;
     public bool AddAmmo()
     {
+        PlayerAmmoManager.Instance.AddAmmo(AmmoType, AmmoCount);
+        return true;
+    }
+
+        public bool AddAmmo(string old)
+    {
         List<PickableItem> items = Inventory.Instance.GetItems();
         foreach (var item in items)
         {
