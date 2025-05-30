@@ -1,6 +1,5 @@
 using UnityEngine;
 using System.Collections;
-using MirraGames.SDK.Common;
 using System.Collections.Generic;
 using MirraGames.SDK;
 
@@ -10,10 +9,17 @@ public class SaveManager : MonoBehaviour
     public static SaveManager Instance => _instance;
 
     [SerializeField] private SaveProvider saveProvider; // Назначаем в инспекторе нужный провайдер (YG2SaveProvider, DebugSaveProvider и т.д.)
+    [SerializeField] private bool _newPlayer;
     public bool IsNewPlayer => saveProvider.CheckProgress() == false;
 
     private void Awake()
     {
+
+        if (_newPlayer)
+        {
+            MirraSDK.Data.DeleteAll();
+        }
+
         if (_instance == null)
         {
             _instance = this;
@@ -25,6 +31,7 @@ public class SaveManager : MonoBehaviour
         {
             Destroy(gameObject);
         }
+
     }
 
     private IEnumerator ProgressSavingRoutine()
@@ -34,6 +41,12 @@ public class SaveManager : MonoBehaviour
             yield return new WaitForSeconds(1);
             saveProvider.SaveProgress();
         }
+    }
+
+
+    public void SetSave(bool haveSave)
+    {
+        saveProvider.SetSave(haveSave);
     }
 
     // Пример методов, которые делегируют работу провайдеру:
@@ -150,7 +163,7 @@ public class SaveManager : MonoBehaviour
         return saveProvider.LoadFuel();
     }
 
-    public void SaveAttachedItem(string id)
+/*    public void SaveAttachedItem(string id)
     {
         saveProvider.SaveAttachedItem(id);
     }
@@ -170,12 +183,12 @@ public class SaveManager : MonoBehaviour
         List<string> current = saveProvider.LoadAttachedItems();
         current.Remove(id);
         saveProvider.SaveAllAttachedItems(current);
-    }
+    }*/
 
-    public void SaveInventory()
+/*    public void SaveInventory()
     {
         saveProvider.SaveInventory(Inventory.Instance.GetInventoryList());
-    }
+    }*/
 
     // Остальные методы аналогично делегируют работу провайдеру...
 }

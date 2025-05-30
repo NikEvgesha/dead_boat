@@ -97,8 +97,7 @@ public class MirraSDKSaveProvider : SaveProvider
     {
         if (!isInitialize) return false;
         // Есть ли хоть что-то из основных ключей?
-        return MirraSDK.Data.HasKey("MusicVolume")
-            || MirraSDK.Data.HasKey("Gems");
+        return MirraSDK.Data.GetBool("Save", false);
     }
 
 
@@ -136,12 +135,17 @@ public class MirraSDKSaveProvider : SaveProvider
         if (!isInitialize) return;
         Changed = true;
         MirraSDK.Data.SetBool(key, unlocked);
+
+        bool res = MirraSDK.Data.GetBool(key);
+        Debug.Log("level " + key + " unlocked: " + res);
     }
     public override bool LoadLevelStatus(string key)
     {
         if (!isInitialize)
             return false;
-        return MirraSDK.Data.GetBool(key, false);
+        bool res = MirraSDK.Data.GetBool(key, false);
+        Debug.Log("level " + key + " unlocked: " + res);
+        return res;
     }
 
 
@@ -205,7 +209,7 @@ public class MirraSDKSaveProvider : SaveProvider
     {
         if (isInitialize)
         {
-            return MirraSDK.Data.GetInt("Distance");
+            return MirraSDK.Data.GetInt("Distance", -1);
         }
         return -1;
     }
@@ -262,6 +266,14 @@ public class MirraSDKSaveProvider : SaveProvider
         if (!isInitialize) return;
         Changed = true;
         MirraSDK.Data.SetObject("AttachedItems", items);
+    }
+
+
+    public override void SetSave(bool save)
+    {
+        if (!isInitialize) return;
+        Changed = true;
+        MirraSDK.Data.SetBool("Save", save);
     }
 
 }

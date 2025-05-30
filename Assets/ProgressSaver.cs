@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class ProgressSaver : MonoBehaviour
 {
-    private int lastDistance = 0;
+/*    private int lastDistance = 0;
     private void OnTriggerEnter(Collider other)
     {
         if (other.gameObject.TryGetComponent<TrainMagnet>(out TrainMagnet boardCollider))
@@ -12,5 +12,5 @@ public class ProgressSaver : MonoBehaviour
             SaveManager.Instance.SaveGameProgress(lastDistance, Inventory.Instance.GetItems());
             SaveManager.Instance.SaveFuel((int)board.currentFuel);
         }
-    }
+    }*/
 }

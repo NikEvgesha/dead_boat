@@ -314,11 +314,11 @@ public class PickableItem : MonoBehaviour
             _status = ItemStatus.Attached;
             _useKinematicCheck = false;
 
-            if (transform.parent != null && transform.parent.TryGetComponent<BoardController>(out BoardController board))
+/*            if (transform.parent != null && transform.parent.TryGetComponent<BoardController>(out BoardController board))
             {
                 SaveManager.Instance.SaveAttachedItem(Data.Name);
                 SaveManager.Instance.SaveInventory();
-            }
+            }*/
 
             return true;
         } else if (!attach && _status == ItemStatus.Attached)
@@ -329,10 +329,10 @@ public class PickableItem : MonoBehaviour
             //Drop();
             _status = ItemStatus.Free;
 
-            if (transform.parent != null && transform.parent.TryGetComponent<BoardController>(out BoardController board))
+/*            if (transform.parent != null && transform.parent.TryGetComponent<BoardController>(out BoardController board))
             {
                 SaveManager.Instance.DeleteAttachedItem(Data.Name);
-            }
+            }*/
 
             return true;
         }

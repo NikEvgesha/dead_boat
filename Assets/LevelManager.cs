@@ -39,7 +39,8 @@ public class LevelManager : MonoBehaviour
 
         foreach (LevelData lvl in _levels.Levels)
         {
-            lvl.SetUnlock(AchievementManager.Instance.CheckAchievementProgress(lvl.Requirement));
+            if (!lvl.Unlocked) 
+                lvl.SetUnlock(AchievementManager.Instance.CheckAchievementProgress(lvl.Requirement));
         }
 
             _mapUI.Init(_levels.Levels);

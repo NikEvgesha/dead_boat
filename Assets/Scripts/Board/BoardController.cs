@@ -71,7 +71,7 @@ public class BoardController : MonoBehaviour
     {
         // ≈сли на объекте есть Rigidbody, переводим его в кинематический режим,
         // чтобы не зависеть от гравитации и столкновений
-        GameManager.Instance.GameResume += SetStartDistance;
+        //GameManager.Instance.GameResume += SetStartDistance;
         Rigidbody rb = GetComponent<Rigidbody>();
         if (rb != null)
         {
@@ -79,13 +79,13 @@ public class BoardController : MonoBehaviour
         }
     }
 
-    private void OnDisable()
+/*    private void OnDisable()
     {
         if (GameManager.Instance != null)
         {
             GameManager.Instance.GameResume -= SetStartDistance;
         }
-    }
+    }*/
     private void Start()
     {
         _endPoint = GameManager.Instance.PlayDistance;
@@ -266,7 +266,7 @@ public class BoardController : MonoBehaviour
         return _level;
     }
 
-    public void SetStartDistance(int distance)
+/*    public void SetStartDistance(int distance)
     {
         TotalDistanceTraveled = distance;
         currentFuel = SaveManager.Instance.LoadFuel();
@@ -283,6 +283,6 @@ public class BoardController : MonoBehaviour
             }
                 
         }
-        SaveManager.Instance.ResetAttachedItems();
-    }
+        //SaveManager.Instance.ResetAttachedItems();
+    }*/
 }

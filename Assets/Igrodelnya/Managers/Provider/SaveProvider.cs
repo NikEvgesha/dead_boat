@@ -56,4 +56,7 @@ public abstract class SaveProvider : MonoBehaviour
 
     public abstract void ResetAttachedItems();
 
+
+    public abstract void SetSave(bool save);
+
 }

@@ -135,4 +135,8 @@ public class DummySaveProvider : SaveProvider
     public override void SaveAllAttachedItems(List<string> items)
     {
     }
+
+    public override void SetSave(bool save)
+    {
+    }
 }

@@ -19,10 +19,4 @@ public class LevelMapUI : MonoBehaviour
             lvl.Init(lvlData, this);
         }
     }
-
-    public void ShowLoskedLevelWindow(LevelData lvlData)
-    {
-        //_lockedLevelWindow.SetLevelInfo(lvlData);
-        _lockedLevelWindow.SetActive(true);
-    }
 }

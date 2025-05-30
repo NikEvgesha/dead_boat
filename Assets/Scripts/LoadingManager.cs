@@ -47,6 +47,7 @@ public class LoadingManager : MonoBehaviour
         {
             GameLoader.Instance.LoadNextScene(_gameScene, true);
             _location = Location.Game;
+            SaveManager.Instance.SetSave(true);
         }
         else
         {

@@ -80,7 +80,7 @@ public class GameManager : MonoBehaviour
         Inventory.Instance.ResetInventory();
         CurrencyManager.Instance.Reset();
         PlayerStatsManager.Instance.Revive();
-        SaveManager.Instance.ResetAttachedItems();
+        //SaveManager.Instance.ResetAttachedItems();
         LoadingManager.Instance.LoadLocation(location);
     }
 }

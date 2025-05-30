@@ -8,6 +8,8 @@ public class LevelMapElement : MonoBehaviour
     [SerializeField] private Text _title;
     [SerializeField] private Text _requierementInfo;
     [SerializeField] private Image _progressBar;
+    [SerializeField] private Text _levelPrice;
+    [SerializeField] private GameObject _unlockButton;
    
     private LevelData _levelData;
     private LevelMapUI _levelMapUI;
@@ -29,6 +31,7 @@ public class LevelMapElement : MonoBehaviour
             Destroy(_lockIMG);
             Destroy(_requierementInfo.gameObject);
             Destroy(_progressBar.transform.parent.gameObject);
+            Destroy(_unlockButton);
         } else
         {
             int currentProgress = AchievementManager.Instance.GetCurrentProgress(lvlData.Requirement.type);
@@ -36,6 +39,7 @@ public class LevelMapElement : MonoBehaviour
             
             _requierementInfo.text = string.Format("{0}\n{1}/{2}", lvlData.Requirement.description, currentProgress, requirement);
             _progressBar.fillAmount = (float)currentProgress / requirement;
+            _levelPrice.text = _levelData.Price.ToString();
         }
     }
 
@@ -45,9 +49,19 @@ public class LevelMapElement : MonoBehaviour
         {
             ControlManager.Instance.CursorActive = false;
             LoadingManager.Instance.LoadLocation(Location.Game, _levelData.Scene);
-        } else
+        }
+    }
+
+
+    public void UnlockLevel()
+    {
+        if (CurrencyManager.Instance.CheckEnoughCurrency(CurrencyType.Gems, _levelData.Price) && CurrencyManager.Instance.RemoveCurrency(CurrencyType.Gems, _levelData.Price))
         {
-            _levelMapUI.ShowLoskedLevelWindow(_levelData);
+            Destroy(_lockIMG);
+            Destroy(_requierementInfo.gameObject);
+            Destroy(_progressBar.transform.parent.gameObject);
+            Destroy(_unlockButton);
+            _levelData.SetUnlock(true, true);
         }
     }
 }
