@@ -38,8 +38,16 @@ public class PlayerInput : MonoBehaviour
         }
         private set { } 
     }
-
-
+    public bool ForcePickUp
+    {
+        get
+        {
+            var tmp = _forcePickUp;
+            _forcePickUp = false;
+            return tmp;
+        }
+        set { _forcePickUp = value; }
+    }
     public bool Interaction
     {
         get
@@ -88,6 +96,7 @@ public class PlayerInput : MonoBehaviour
     private bool _interaction;
     private bool _interactionHold;
     private bool _pickUp;
+    private bool _forcePickUp;
     private bool _inTrain;
     private bool _attach;
     private bool _inventory;

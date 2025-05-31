@@ -44,7 +44,7 @@ public class PlayerItemPickUp : MonoBehaviour
             } 
         }
 
-        if (PlayerInput.Instance.Interaction)
+        if (PlayerInput.Instance.Interaction || PlayerInput.Instance.ForcePickUp)
         {
             TryPutToInventory();
         }

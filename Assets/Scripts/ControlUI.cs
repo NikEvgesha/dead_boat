@@ -77,7 +77,22 @@ public class ControlUI : MonoBehaviour
         if (_isQuitting)
             return;
         if (_isMobile)
+        {
             _touchControls.pickUpButton.gameObject.SetActive(visible);
+
+            if (Input.GetMouseButtonDown(0) && visible)
+            {
+                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                if (Physics.Raycast(ray, out RaycastHit hit))
+                {
+                    PickableItem clickable = hit.collider.GetComponent<PickableItem>();
+                    if (clickable != null)
+                    {
+                        PlayerInput.Instance.ForcePickUp = true;
+                    }
+                }
+            }
+        }
         else
             _descktopHints.pickUp.SetActive(visible);
     }
