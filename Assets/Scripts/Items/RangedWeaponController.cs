@@ -108,12 +108,22 @@ public class RangedWeaponController : MonoBehaviour
         ControlUI.Instance.ShowReloadButton(_active);
         AmmoUI.UseGun?.Invoke(_active);
         AmmoUI.ChangeAmmo?.Invoke(_currentAmmo, ReserveAmmo);
-        if (_active)
-            _usableItem.Use += UseUpdate;
-        else
-            _usableItem.Use -= UseUpdate;
-    }
 
+        if (_active)
+        {
+            PlayerAmmoManager.Instance.NewAmmo += NewAmmo;
+            _usableItem.Use += UseUpdate;
+        }
+        else
+        {
+            PlayerAmmoManager.Instance.NewAmmo -= NewAmmo;
+            _usableItem.Use -= UseUpdate;
+        }
+    }
+    private void NewAmmo()
+    {
+        ReserveAmmo = ReserveAmmo;
+    }
     // Ìועמה, גûחûגאולûי ןמ סמבûעט‏ Use
     private void UseUpdate()
     {

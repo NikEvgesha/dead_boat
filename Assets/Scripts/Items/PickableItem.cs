@@ -345,7 +345,7 @@ public class PickableItem : MonoBehaviour
         switch (_status)
         {
             case ItemStatus.Free:
-                ControlUI.Instance.ShowAttachButton(focus);
+                ControlUI.Instance.ShowAttachButton(_attacher.InAttachZone);
                 ControlUI.Instance.ShowPickUpButton(focus);
                 ControlUI.Instance.ShowPutToInventoryButton(focus);
                 break;

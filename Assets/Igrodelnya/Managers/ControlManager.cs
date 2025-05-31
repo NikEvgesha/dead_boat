@@ -22,6 +22,8 @@ public class ControlManager : MonoBehaviour
 
         set
         {
+            if (_useTouchControls)
+                return;
             if (_provider && _provider.IsInitialized())
             {
                 _cursorActive = value;

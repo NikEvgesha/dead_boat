@@ -6,6 +6,7 @@ public class SettingUI : MonoBehaviour
     [SerializeField] private Scrollbar _musicVolume;
     [SerializeField] private Scrollbar _soundVolume;
     [SerializeField] private GameObject _panel;
+    [SerializeField] private GameObject _exitButton;
 
 
     [SerializeField] private GameObject _lobbyButtons;
@@ -19,6 +20,7 @@ public class SettingUI : MonoBehaviour
         if (!ControlManager.Instance.UseTouchControl)
             ControlManager.Instance.CursorActive = _isOpen;
         _panel.SetActive(_isOpen);
+        _exitButton.SetActive(_isOpen);
         PauseManager.Instance.SetPause(_isOpen, false);
     }
     private void Start()

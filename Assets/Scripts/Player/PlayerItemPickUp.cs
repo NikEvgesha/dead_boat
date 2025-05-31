@@ -108,6 +108,7 @@ public class PlayerItemPickUp : MonoBehaviour
             _grabbedItem = _raycastHitItem;
             _grabbedItem.PickUp(_itemJoint);
             _controlUI.OnItemPickUp(true);
+            _grabbedItem.OnFocus(true);
             return true;
         }
         return false;

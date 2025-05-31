@@ -29,10 +29,12 @@ public class MirraSDKLeaderboardProvider : LeaderboardProvider
                     data.Records.Add(rec);
                 }
 
-
+                Debug.Log("onScoreTableResolve : " + scoreTable.Count);
                 onLoad(data);
             },
             onScoreTableError: () => {
+
+                Debug.Log("onScoreTableError");
                 onLoad(new LBData());
             }
         );

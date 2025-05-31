@@ -19,6 +19,7 @@ public class PlayerAmmoManager : MonoBehaviour
 
     // ќсновной словарь: дл€ каждого WeaponType Ч свой счЄтчик патронов
     private Dictionary<WeaponType, int> _ammo;
+    public Action NewAmmo;
 
     private void Awake()
     {
@@ -64,6 +65,7 @@ public class PlayerAmmoManager : MonoBehaviour
         if (!_ammo.ContainsKey(weapon))
             _ammo[weapon] = 0;
         _ammo[weapon] += amount;
+        NewAmmo?.Invoke();
     }
 
     /// <summary>

@@ -87,7 +87,8 @@ public class InventoryUI : MonoBehaviour
         {
             _panel.SetActive(true);
             _isOpen = true;
-            ControlManager.Instance.CursorActive = true;
+            if (!ControlManager.Instance.UseTouchControl)
+                ControlManager.Instance.CursorActive = true;
             for (int i = 0; i < _quickPanelCapacity; i++)
             {
                 _quickSlots[i].gameObject.SetActive(true);
