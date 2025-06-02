@@ -9,7 +9,6 @@ public class GameManager : MonoBehaviour
 
 
     [SerializeField] private PlayerStatsManager _player;
-    //[SerializeField] private string _lobbySceneName = "Lobby";
     [SerializeField] private Transform _playerSpawnPoint;
     public PlayerStatsManager Player { get { return _player; } }
 
@@ -22,6 +21,7 @@ public class GameManager : MonoBehaviour
     public float PlayDistance = 100000f;
 
     private bool _pause;
+    private PlayerAmmoManager _ammoManager;
 
     private void Awake()
     {
@@ -47,6 +47,7 @@ public class GameManager : MonoBehaviour
             _player = PlayerManager.Instance.GetComponent<PlayerStatsManager>();
             PlayerMovement.Instance.Teleport(_playerSpawnPoint);
         }
+        _ammoManager = _player.GetComponent<PlayerAmmoManager>();
 
         (int, List<string>) loadedData = SaveManager.Instance.LoadGameProgress();
 
@@ -60,8 +61,8 @@ public class GameManager : MonoBehaviour
         {
             Inventory.Instance.SetLoadedInventory();
             SaveManager.Instance.SaveGameProgress(0, Inventory.Instance.GetInventoryList());
-            
         }
+        _ammoManager.Save();
         GameStart?.Invoke();
 
         SaveManager.Instance.ResetLobbyItems();
@@ -82,6 +83,8 @@ public class GameManager : MonoBehaviour
         PlayerStatsManager.Instance.Revive();
         PlayerInput.Instance.SitTrain(false);
         //SaveManager.Instance.ResetAttachedItems();
+        SaveManager.Instance.SaveGameProgress(-1, Inventory.Instance.GetItems());
+        _ammoManager.ResetAmmo();
         LoadingManager.Instance.LoadLocation(location);
     }
 }

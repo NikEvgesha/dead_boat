@@ -139,4 +139,9 @@ public class DummySaveProvider : SaveProvider
     public override void SetSave(bool save)
     {
     }
+
+    public override void SaveAmmo(WeaponType type, int amount) { }
+    public override int LoadAmmo(WeaponType type) {
+        return 0;
+    }
 }

@@ -175,7 +175,9 @@ public class StorePoint : MonoBehaviour
             if (LoadingManager.Instance.CurrentLocation == Location.Lobby)
             {
                 Inventory.Instance.AddItem(item);
-                SaveManager.Instance.SaveLobbyItem(item.Data.Name);
+                if (!item.HaveTag(ItemTag.Ammo))
+                    SaveManager.Instance.SaveLobbyItem(item.Data.Name);
+                    
             }
             BuyItem?.Invoke();
             //if (_audioSource)

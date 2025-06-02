@@ -276,4 +276,20 @@ public class MirraSDKSaveProvider : SaveProvider
         MirraSDK.Data.SetBool("Save", save);
     }
 
+    public override void SaveAmmo(WeaponType type, int amount) 
+    {
+        if (!isInitialize) return;
+        Changed = true;
+        MirraSDK.Data.SetInt("Ammo_" + type.ToString(), amount);
+    }
+    public override int LoadAmmo(WeaponType type)
+    {
+        int ammo = 0;
+        if (isInitialize)
+        {
+            ammo = MirraSDK.Data.GetInt("Ammo_" + type.ToString());
+        }
+        return ammo;
+    }
+
 }

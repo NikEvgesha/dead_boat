@@ -23,11 +23,13 @@ public class SpecialShopPoint : MonoBehaviour
     private void Start()
     {
         _shop.ItemPurchased += OnItemPurchase;
+        _touchPanel.PointerDown += OpenShop;
     }
 
     private void OnDisable()
     {
         _shop.ItemPurchased -= OnItemPurchase;
+        _touchPanel.PointerDown -= OpenShop;
     }
 
     private void OnTriggerEnter(Collider other)

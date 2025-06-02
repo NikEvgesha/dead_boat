@@ -30,7 +30,7 @@ public class HealingBottleController : MonoBehaviour
         _usableItem.Active -= SetActiveUse;
         _usableItem.Use -= StartDrinking;
         _usableItem.StopUse -= StopDrinking;
-        ControlUI.Instance.ShowUseButton(false);
+        //ControlUI.Instance.ShowUseButton(false);
     }
 
     private void Start()
@@ -42,6 +42,7 @@ public class HealingBottleController : MonoBehaviour
     private void SetActiveUse(bool active)
     {
         ControlUI.Instance.ShowUseButton(active);
+        ControlUI.Instance.ShowReloadButton(false);
         if (active)
         {
             _animator.enabled = true;

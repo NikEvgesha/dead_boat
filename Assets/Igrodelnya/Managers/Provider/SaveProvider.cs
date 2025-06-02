@@ -56,6 +56,8 @@ public abstract class SaveProvider : MonoBehaviour
 
     public abstract void ResetAttachedItems();
 
+    public abstract void SaveAmmo(WeaponType type, int amount);
+    public abstract int LoadAmmo(WeaponType type);
 
     public abstract void SetSave(bool save);
 

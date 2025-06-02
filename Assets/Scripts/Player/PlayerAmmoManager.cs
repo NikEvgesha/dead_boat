@@ -36,15 +36,19 @@ public class PlayerAmmoManager : MonoBehaviour
         // Инициализируем словарь
         _ammo = new Dictionary<WeaponType, int>();
         // Заполняем начальными значениями
+        
+    }
+
+    private void Start()
+    {
+        _ammo[WeaponType.Pistol] = SaveManager.Instance.LoadAmmo(WeaponType.Pistol);
+        _ammo[WeaponType.Rifle] = SaveManager.Instance.LoadAmmo(WeaponType.Rifle);
+        _ammo[WeaponType.Shotgun] = SaveManager.Instance.LoadAmmo(WeaponType.Shotgun);
+
         foreach (var entry in _startingAmmo)
         {
-            _ammo[entry.Type] = entry.StartingCount;
-        }
-        // На всякий случай для типов без стартового задания — 0
-        foreach (WeaponType wt in Enum.GetValues(typeof(WeaponType)))
-        {
-            if (!_ammo.ContainsKey(wt))
-                _ammo[wt] = 0;
+            if (_ammo[entry.Type] == 0)
+                _ammo[entry.Type] = entry.StartingCount;
         }
     }
 
@@ -66,6 +70,10 @@ public class PlayerAmmoManager : MonoBehaviour
             _ammo[weapon] = 0;
         _ammo[weapon] += amount;
         NewAmmo?.Invoke();
+        if (LoadingManager.Instance.CurrentLocation == Location.Lobby)
+        {
+            Save();
+        }
     }
 
     /// <summary>
@@ -81,5 +89,22 @@ public class PlayerAmmoManager : MonoBehaviour
             return true;
         }
         return false;
+    }
+
+
+    public void Save() {
+        foreach (WeaponType type in _ammo.Keys)
+        {
+            SaveManager.Instance.SaveAmmo(type, _ammo[type]);
+        }
+        
+    }
+
+    public void ResetAmmo() {
+        foreach (var entry in _startingAmmo)
+        {
+            _ammo[entry.Type] = entry.StartingCount;
+        }
+        Save();
     }
 }

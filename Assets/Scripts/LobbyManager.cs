@@ -32,14 +32,14 @@ public class LobbyManager : MonoBehaviour
     {
         PlayerMovement.Instance.Teleport(_playerSpawnPoint);
         Inventory.Instance.SetLoadedInventory();
-        SaveManager.Instance.SaveGameProgress(-1, Inventory.Instance.GetItems());
+        //SaveManager.Instance.SaveGameProgress(-1, Inventory.Instance.GetItems());
         //PlayerManager.Instance.gameObject.transform.position = _playerSpawnPoint.position;
     }
 
 
     public void StartGame()
     {
-        ControlManager.Instance.CursorActive = false;
+        //ControlManager.Instance.CursorActive = false;
         LoadingManager.Instance.LoadLocation(Location.Game);
     }
 }

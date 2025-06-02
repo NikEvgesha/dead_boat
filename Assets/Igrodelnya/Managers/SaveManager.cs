@@ -163,6 +163,14 @@ public class SaveManager : MonoBehaviour
         return saveProvider.LoadFuel();
     }
 
+    public void SaveAmmo(WeaponType type, int amount) {
+        saveProvider.SaveAmmo(type, amount);
+    }
+
+    public int LoadAmmo(WeaponType type) {
+        return saveProvider.LoadAmmo(type);
+    }
+
 /*    public void SaveAttachedItem(string id)
     {
         saveProvider.SaveAttachedItem(id);

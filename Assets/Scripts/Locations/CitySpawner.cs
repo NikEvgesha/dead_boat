@@ -31,9 +31,25 @@ public class CitySpawner : MonoBehaviour
     private int spawnCount = 0;
     private List<GameObject> spawnedCities = new List<GameObject>();
 
+    public int Cities => _citys;
+
     private void Awake()
     {
         InitBoardController();
+
+        float playDistance = GameManager.Instance.PlayDistance;
+        _citys = 0;
+        while (playDistance > baseSpawnDistance)
+        {
+            playDistance = playDistance - baseSpawnDistance + (additionalDistanceIncrement * _citys);
+            _citys++;
+        }
+        // Спавним стартовый город сразу в (0, 0, 0)
+        //SpawnCityAt(new Vector3(0f, 0f, 0f));
+        spawnCount = 1;  // стартовый город учтен
+
+        // Устанавливаем порог спавна для следующего города
+        nextSpawnDistance = baseSpawnDistance;
     }
 
     private void InitBoardController()
@@ -44,7 +60,7 @@ public class CitySpawner : MonoBehaviour
             Debug.LogError("boardController не найден");
     }
 
-    void Start()
+/*    void Start()
     {
         float playDistance = GameManager.Instance.PlayDistance;
         _citys = 0;
@@ -59,7 +75,7 @@ public class CitySpawner : MonoBehaviour
 
         // Устанавливаем порог спавна для следующего города
         nextSpawnDistance = baseSpawnDistance;
-    }
+    }*/
 
     void Update()
     {

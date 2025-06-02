@@ -83,8 +83,8 @@ public class RangedWeaponController : MonoBehaviour
         AmmoUI.UseGun?.Invoke(_active);
         _usableItem.Active -= SetActiveUse;
         _usableItem.Use -= UseUpdate;
-        ControlUI.Instance.ShowAttackButton(_active);
-        ControlUI.Instance.ShowReloadButton(_active);
+        //ControlUI.Instance.ShowAttackButton(_active);
+        //ControlUI.Instance.ShowReloadButton(_active);
     }
 
     private void Update()
