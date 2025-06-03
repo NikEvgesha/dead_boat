@@ -76,7 +76,7 @@ public class InventoryUI : MonoBehaviour
     {
         if (PlayerInput.Instance.Inventory)
         {
-            ToggleOpen();
+            ControlManager.Instance.CursorActive = !ControlManager.Instance.CursorActive;
         }
     }
 

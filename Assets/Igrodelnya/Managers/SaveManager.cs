@@ -175,6 +175,7 @@ public class SaveManager : MonoBehaviour
     {
         int wins = saveProvider.LoadWins();
         saveProvider.SaveWins(wins+1);
+        LeaderboardManager.Instance.SaveScore(LBName.wins.ToString(), wins+1);
     }
 
 /*    public void SaveAttachedItem(string id)
