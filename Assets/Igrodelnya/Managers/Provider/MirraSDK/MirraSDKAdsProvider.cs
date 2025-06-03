@@ -37,14 +37,11 @@ public class MirraSDKAdsProvider : AdsProvider
         // Используем упрощённый InvokeRewarded с одним коллбэком onClose
         MirraSDK.Ads.InvokeRewarded(
             rewardTag: rewardId,
-            onClose: (success) =>
+            onSuccess: () =>
             {
-                if (success)
-                    Debug.Log($"MirraSDK: Rewarded ad succeeded (tag = {rewardId})");
-                else
-                    Debug.LogWarning($"MirraSDK: Rewarded ad closed without reward (tag = {rewardId})");
+               Debug.Log($"MirraSDK: Rewarded ad succeeded (tag = {rewardId})");
                 
-                onComplete?.Invoke(success);
+                onComplete?.Invoke(true);
             }
         );
     }

@@ -65,6 +65,7 @@ public class GameLoader : MonoBehaviour
             loadingProgress = Mathf.Clamp01(_asyncOperation.progress / 0.95f);
             yield return true;
         }
+        yield return new WaitForSeconds(1);
         _loadingImage.SetActive(false);
         OnSceneLoaded?.Invoke();
     }
