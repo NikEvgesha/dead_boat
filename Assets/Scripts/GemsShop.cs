@@ -65,6 +65,16 @@ public class GemsShop : MonoBehaviour
     {
         // TODO: purchase
 
-        CurrencyManager.Instance.AddCurrency(packData.CurrencyType, packData.Amount);
+        PurchasesManager.Instance.BuyPurchase(
+            packData.CurrencyType.ToString() + "_" + packData.Amount,
+            (success) =>
+            {
+                if (success)
+                {
+                    CurrencyManager.Instance.AddCurrency(packData.CurrencyType, packData.Amount);
+                }
+            });
+
+        
     }
 }

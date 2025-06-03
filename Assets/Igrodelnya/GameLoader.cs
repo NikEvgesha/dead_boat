@@ -67,6 +67,7 @@ public class GameLoader : MonoBehaviour
         }
         yield return new WaitForSeconds(1);
         _loadingImage.SetActive(false);
+        AdsManager.Instance.ShowInterstitialAd();
         OnSceneLoaded?.Invoke();
     }
 
