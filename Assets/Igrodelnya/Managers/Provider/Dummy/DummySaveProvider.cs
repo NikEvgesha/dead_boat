@@ -144,4 +144,13 @@ public class DummySaveProvider : SaveProvider
     public override int LoadAmmo(WeaponType type) {
         return 0;
     }
+
+    public override void SaveWins(int wins)
+    {
+
+    }
+    public override int LoadWins()
+    {
+        return 0;
+    }
 }

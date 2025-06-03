@@ -10,6 +10,8 @@ public class ControlManager : MonoBehaviour
     private bool _cursorActive;
     private bool _moveActive = true;
     public bool UseTouchControl { get { return _useTouchControls; } private set { } }
+
+    private int _activeWindows = 0;
     public bool CursorActive
     {
         get
@@ -24,9 +26,20 @@ public class ControlManager : MonoBehaviour
         {
             if (_useTouchControls)
                 return;
+
+            if (value)
+            {
+                _activeWindows++;
+            }
+            else
+            {
+                _activeWindows = _activeWindows > 0 ? _activeWindows - 1 : 0 ;
+                if (_activeWindows > 0) return;
+            }
+
             if (_provider && _provider.IsInitialized())
             {
-                _cursorActive = value;
+                    _cursorActive = value;
                 _provider.SetCursorLockState(value ? CursorLockMode.None : CursorLockMode.Locked);
                 _provider.SetCursorVisible(value);
             } 

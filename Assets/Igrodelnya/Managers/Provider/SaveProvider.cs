@@ -61,4 +61,7 @@ public abstract class SaveProvider : MonoBehaviour
 
     public abstract void SetSave(bool save);
 
+    public abstract void SaveWins(int wins);
+    public abstract int LoadWins();
+
 }

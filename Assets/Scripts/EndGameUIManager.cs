@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement;
 using System.Collections;
 using System;
 
@@ -58,6 +57,8 @@ public class EndGameUIManager : MonoBehaviour
     private void ShowEndGameUIAction(EndGameState state)
     {
         ShowEndGameUI(state);
+        if (state == EndGameState.Win)
+            SaveManager.Instance.SaveWin();
     }
         /// <summary>
         /// Метод для отображения UI в конце игры.
@@ -124,6 +125,9 @@ public class EndGameUIManager : MonoBehaviour
             distanceText.text = string.Format(tagText, distance);
             playAgainButton.gameObject.SetActive(true);
             // Текст таймера для победы/поражения
+
+            GameManager.Instance.AddReward();
+
             tagText = LocalizationManager.Instance.LocalizationData.GetTranslation("Game/AutoLeft", LocalizationManager.Instance.CurrentLanguage);
             timerMessageText.text = string.Format(tagText, Mathf.Ceil(timerRemaining));
             StartCoroutine(WinLoseStateTimer());
@@ -198,25 +202,27 @@ public class EndGameUIManager : MonoBehaviour
     // Метод, привязанный к кнопке возрождения
     public void OnReviveButtonClicked()
     {
-        if (currentState == EndGameState.Faint)
-        {
-            // При обмороке возрождение за монеты
-            bool coinsDeducted = DeductCoinsForRevive();
-            if (coinsDeducted)
-            {
-                RevivePlayer();
-            }
-            else
-            {
-                Debug.Log("Недостаточно монет для возрождения!");
-                // Здесь можно вывести сообщение об ошибке
-            }
-        }
-        else if (currentState == EndGameState.Lose)
-        {
-            // При поражении: показать рекламу перед возрождением
-            ShowAdAndRevive();
-        }
+        /*        if (currentState == EndGameState.Faint)
+                {
+                    // При обмороке возрождение за монеты
+                    bool coinsDeducted = DeductCoinsForRevive();
+                    if (coinsDeducted)
+                    {
+                        RevivePlayer();
+                    }
+                    else
+                    {
+                        Debug.Log("Недостаточно монет для возрождения!");
+                        // Здесь можно вывести сообщение об ошибке
+                    }
+                }
+                else if (currentState == EndGameState.Lose)
+                {
+                    // При поражении: показать рекламу перед возрождением
+                    ShowAdAndRevive();
+                }*/
+
+        ShowAdAndRevive();
 
     }
 
@@ -259,6 +265,13 @@ public class EndGameUIManager : MonoBehaviour
         Debug.Log("Показ рекламы для возрождения");
         // Реализуйте здесь вызов показа рекламы.
         // После завершения рекламы вызовите RevivePlayer()
-        RevivePlayer();
+        AdsManager.Instance.ShowRewardedAd(
+            "revive",
+            (success) =>
+            {
+                if (success)
+                    RevivePlayer();
+            });
+        
     }
 }

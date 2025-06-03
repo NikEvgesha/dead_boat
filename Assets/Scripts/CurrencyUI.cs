@@ -5,6 +5,9 @@ public class CurrencyUI : MonoBehaviour
 {
     [SerializeField] private Text _currencyAmount;
     [SerializeField] private CurrencyType _type;
+    [SerializeField] private UIMoneyChangeAnimation _diffObj;
+
+    private int _currentAmount = 0;
 
     private void Start()
     {
@@ -17,6 +20,7 @@ public class CurrencyUI : MonoBehaviour
         if (CurrencyManager.Instance)
         {
             CurrencyManager.Instance.CurrencyChanged += OnCurrencyChanged;
+
             OnCurrencyChanged(_type, CurrencyManager.Instance.GetBalance(_type));
         }
     }
@@ -31,7 +35,20 @@ public class CurrencyUI : MonoBehaviour
     {
         if (type == _type)
         {
+            int difference = newAmount - _currentAmount;
+            if (difference != 0)
+            {
+                ShowDifference(difference);
+            }
+
+            _currentAmount = newAmount;
             _currencyAmount.text = newAmount.ToString();
         }
+    }
+
+    private void ShowDifference(int diff)
+    {
+        UIMoneyChangeAnimation animation = Instantiate(_diffObj, transform);
+        animation.Config(diff.ToString(), diff > 0);
     }
 }

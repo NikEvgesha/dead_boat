@@ -10,6 +10,7 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] private PlayerStatsManager _player;
     [SerializeField] private Transform _playerSpawnPoint;
+    [SerializeField] private int _reward;
     public PlayerStatsManager Player { get { return _player; } }
 
     public bool isEndGame = false;
@@ -86,5 +87,11 @@ public class GameManager : MonoBehaviour
         SaveManager.Instance.SaveGameProgress(-1, Inventory.Instance.GetItems());
         _ammoManager.ResetAmmo();
         LoadingManager.Instance.LoadLocation(location);
+    }
+
+
+    public void AddReward()
+    {
+        CurrencyManager.Instance.AddCurrency(CurrencyType.Gems, _reward);
     }
 }

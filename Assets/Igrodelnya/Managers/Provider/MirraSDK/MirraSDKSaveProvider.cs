@@ -292,4 +292,20 @@ public class MirraSDKSaveProvider : SaveProvider
         return ammo;
     }
 
+    public override void SaveWins(int wins)
+    {
+        if (!isInitialize) return;
+        Changed = true;
+        MirraSDK.Data.SetInt("Wins", wins);
+    }
+    public override int LoadWins()
+    {
+        int wins = 0;
+        if (isInitialize)
+        {
+            wins = MirraSDK.Data.GetInt("Wins");
+        }
+        return wins;
+    }
+
 }

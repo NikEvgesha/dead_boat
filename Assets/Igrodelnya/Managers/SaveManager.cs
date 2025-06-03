@@ -171,6 +171,12 @@ public class SaveManager : MonoBehaviour
         return saveProvider.LoadAmmo(type);
     }
 
+    public void SaveWin()
+    {
+        int wins = saveProvider.LoadWins();
+        saveProvider.SaveWins(wins+1);
+    }
+
 /*    public void SaveAttachedItem(string id)
     {
         saveProvider.SaveAttachedItem(id);
@@ -193,10 +199,10 @@ public class SaveManager : MonoBehaviour
         saveProvider.SaveAllAttachedItems(current);
     }*/
 
-/*    public void SaveInventory()
-    {
-        saveProvider.SaveInventory(Inventory.Instance.GetInventoryList());
-    }*/
+    /*    public void SaveInventory()
+        {
+            saveProvider.SaveInventory(Inventory.Instance.GetInventoryList());
+        }*/
 
     // Остальные методы аналогично делегируют работу провайдеру...
 }

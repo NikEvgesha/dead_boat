@@ -30,7 +30,6 @@ public class Leaderboard : MonoBehaviour
 
     public void DisplayTable(LBData scoreTable)
     {
-        _lbTitle.text = scoreTable.LBName.ToString();
         if (scoreTable.Records != null)
         {
             for (int i = 0; i < scoreTable.Records.Count; i++)
