@@ -19,6 +19,7 @@ public class StorePoint : MonoBehaviour
     [SerializeField] private Image _buyProgress;
     [SerializeField] private Image _currencyIcon;
     [SerializeField] private Image _noMoney;
+    [SerializeField] private Text _buyText;
     private bool _isNoMoney;
 
 
@@ -107,6 +108,7 @@ public class StorePoint : MonoBehaviour
         {
             _BuyInfoCanvas.SetActive(true);
             _active = true;
+            CheckMoney();
         }
     }
 
@@ -123,6 +125,15 @@ public class StorePoint : MonoBehaviour
         }
     }
 
+    private void CheckMoney()
+    {
+        bool enoughMoney = CurrencyManager.Instance.CheckEnoughCurrency(currencyType, price);
+
+        _buyText.gameObject.SetActive(enoughMoney);
+        _noMoney.gameObject.SetActive(!enoughMoney);
+        _isNoMoney = !enoughMoney;
+    }
+
 
     private void Update()
     {
@@ -132,11 +143,11 @@ public class StorePoint : MonoBehaviour
         {
             TryBuy();
         }
-        if (_isNoMoney && !PlayerInput.Instance.InteractionHold)
+/*        if (_isNoMoney && !PlayerInput.Instance.InteractionHold)
         {
             _isNoMoney = false;
             _noMoney.gameObject.SetActive(_isNoMoney);
-        }
+        }*/
     }
 
     private void TryBuy()
@@ -145,21 +156,21 @@ public class StorePoint : MonoBehaviour
         _itemPrefab.CheckTags();
         bool isAmmo = _itemPrefab.HaveTag(ItemTag.Ammo);
         bool isUsable = _itemPrefab.Usable;
-        if (enoughMoney && (isAmmo || Inventory.Instance.CheckSpace(isUsable)))
+        if (/*enoughMoney &&*/ (isAmmo || Inventory.Instance.CheckSpace(isUsable)))
         {
             _buyInProgress = true;
             _progress = 0;
-            StartCoroutine(BuyProcess());
+            StartCoroutine(BuyProcess(enoughMoney));
         }
-        else if (!enoughMoney)
+/*        else if (!enoughMoney)
         {
-            _isNoMoney = true;
-            _noMoney.gameObject.SetActive(_isNoMoney);
-        }
+            *//*_isNoMoney = true;
+            _noMoney.gameObject.SetActive(_isNoMoney);*//*
+        }*/
     }
 
 
-    private IEnumerator BuyProcess()
+    private IEnumerator BuyProcess(bool enoughMoney)
     {
         while ((_buyTouchPanel.Hold || PlayerInput.Instance.InteractionHold) && _progress < 1f)
         {
@@ -170,22 +181,41 @@ public class StorePoint : MonoBehaviour
 
         if (_progress >= 1f)
         {
-            CurrencyManager.Instance.RemoveCurrency(currencyType, price);
-            PickableItem item = Instantiate(_itemPrefab, _buyPoint);
-            if (LoadingManager.Instance.CurrentLocation == Location.Lobby)
+            if (enoughMoney)
             {
-                Inventory.Instance.AddItem(item);
-                if (!item.HaveTag(ItemTag.Ammo))
-                    SaveManager.Instance.SaveLobbyItem(item.Data.Name);
-                    
+                CurrencyManager.Instance.RemoveCurrency(currencyType, price);
+                GiveItem();
+            } else
+            {
+                AdsManager.Instance.ShowRewardedAd(
+                    "buyItem",
+                    (success) =>
+                    {
+                        if (success)
+                            GiveItem();
+                    });
             }
-            BuyItem?.Invoke();
+
+                
             //if (_audioSource)
                 //_audioSource.Play();
         }
         _progress = 0;
         _buyProgress.fillAmount = _progress;
-        _buyInProgress = false; 
+        _buyInProgress = false;
+        CheckMoney();
 
+    }
+
+    private void GiveItem() {
+        PickableItem item = Instantiate(_itemPrefab, _buyPoint);
+        if (LoadingManager.Instance.CurrentLocation == Location.Lobby)
+        {
+            Inventory.Instance.AddItem(item);
+            if (!item.HaveTag(ItemTag.Ammo))
+                SaveManager.Instance.SaveLobbyItem(item.Data.Name);
+
+        }
+        BuyItem?.Invoke();
     }
 }

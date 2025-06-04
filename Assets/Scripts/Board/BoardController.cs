@@ -28,7 +28,15 @@ public class BoardController : MonoBehaviour
 
     [Header("Настройки водителя")]
     [Tooltip("Находится ли игрок на водительском месте")]
-    public bool playerOnSeat = false;
+    private bool playerOnSeat = false;
+
+    public bool PlayerOnSeat {
+        get {return playerOnSeat;}
+        set {
+            NoFuel?.Invoke(currentFuel <= 0);
+            playerOnSeat = value;
+        }
+        }
 
     [SerializeField] private int _levels = 10;
     private int _level = 1;
@@ -64,6 +72,7 @@ public class BoardController : MonoBehaviour
     public Action<float> SwitchSpeed;
     public Action<float,float> SwitchFuel;
     public Action EndGame;
+    public Action<bool> NoFuel;
     [SerializeField] private AudioSource _audioSource;
     [SerializeField] private int _rewardForWin = 20;
 
@@ -220,8 +229,12 @@ public class BoardController : MonoBehaviour
     void ConsumeFuel(float amount)
     {
         currentFuel -= amount;
-        if (currentFuel < 0)
+        if (currentFuel <= 0)
+        {
             currentFuel = 0;
+            NoFuel?.Invoke(true);
+        }
+            
 
         SwitchFuel?.Invoke(currentFuel, _maxFuel);
     }
@@ -234,19 +247,22 @@ public class BoardController : MonoBehaviour
         {
             currentFuel = _maxFuel;
         }
+        if (currentFuel > 0) NoFuel?.Invoke(false);
         SwitchFuel?.Invoke(currentFuel, _maxFuel);
     }
 
     // Внешний метод для установки режима водителя
     public void SetPlayerOnSeat(bool onSeat)
     {
-        playerOnSeat = onSeat;
+        PlayerOnSeat = onSeat;
         if (onSeat)
         {
             // При входе обнуляем ввод и запускаем таймер игнорирования остаточного ввода,
             // чтобы избежать резкого ускорения
             ignoreInputTime = ignoreInputDuration;
             inputValue = 0;
+            NoFuel?.Invoke(currentFuel <= 0);
+
         }
     }
 

@@ -57,8 +57,6 @@ public class EndGameUIManager : MonoBehaviour
     private void ShowEndGameUIAction(EndGameState state)
     {
         ShowEndGameUI(state);
-        if (state == EndGameState.Win)
-            SaveManager.Instance.SaveWin();
     }
         /// <summary>
         /// Метод для отображения UI в конце игры.
@@ -124,6 +122,7 @@ public class EndGameUIManager : MonoBehaviour
             string tagText = LocalizationManager.Instance.LocalizationData.GetTranslation("Game/Traveled", LocalizationManager.Instance.CurrentLanguage);
             distanceText.text = string.Format(tagText, distance);
             playAgainButton.gameObject.SetActive(true);
+            SaveManager.Instance.SaveWin();
             // Текст таймера для победы/поражения
 
             GameManager.Instance.AddReward();

@@ -29,6 +29,7 @@ public class CurrencyManager : MonoBehaviour
 
     public Action<CurrencyType, int> CurrencyChanged;
     public Action NoGems;
+    public Action NoCoins;
     public Action<bool> ShowGems;
     public static CurrencyManager Instance { get { return _instance; } }
 
@@ -107,8 +108,10 @@ public class CurrencyManager : MonoBehaviour
         if (type == CurrencyType.Gems)
         {
             NoGems?.Invoke();
+        } else if (type == CurrencyType.Coins)
+        {
+            NoCoins?.Invoke();
         }
-        // TODO: show hint
         return false;
     }
 

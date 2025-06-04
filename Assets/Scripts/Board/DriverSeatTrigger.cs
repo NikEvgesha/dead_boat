@@ -65,7 +65,7 @@ public class DriverSeatTrigger : MonoBehaviour
         //playerCharacter.transform.SetParent(driverSeatTransform);
 
         // Активируем управление поездом
-        trainController.playerOnSeat = true;
+        trainController.PlayerOnSeat = true;
         isDriving = true;
     }
 
@@ -92,7 +92,7 @@ public class DriverSeatTrigger : MonoBehaviour
         //playerCharacter.transform.rotation = originalPlayerRotation;
 
         // Деактивируем управление поездом
-        trainController.playerOnSeat = false;
+        trainController.PlayerOnSeat = false;
         isDriving = false;
     }
 }
