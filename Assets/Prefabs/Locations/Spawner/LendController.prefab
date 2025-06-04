@@ -30,7 +30,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 6240350080781633417}
+  - {fileID: 7827189979821457863}
   - {fileID: 2957314948753256703}
   - {fileID: 3975006101652548263}
   - {fileID: 6744165658559592758}
@@ -53,12 +53,11 @@ MonoBehaviour:
   - groundSegments:
     - {fileID: 3975006101652548263}
     - {fileID: 2957314948753256703}
+    - {fileID: 7827189979821457863}
     isFinalLocation: 0
-    currentSegmentIndex: 0
   - groundSegments:
     - {fileID: 6744165658559592758}
     isFinalLocation: 1
-    currentSegmentIndex: 0
   segmentLength: 500
   player: {fileID: 0}
   transitionDistance: 99500
@@ -271,7 +270,7 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3338584895201297648, guid: e59c908a15481ff41ae473c0424dca9d, type: 3}
   m_PrefabInstance: {fileID: 1837195673401290327}
   m_PrefabAsset: {fileID: 0}
---- !u!1001 &8705216272610395001
+--- !u!1001 &4812881901858850103
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -323,13 +322,9 @@ PrefabInstance:
       propertyPath: m_Name
       value: Land (1)
       objectReference: {fileID: 0}
-    - target: {fileID: 3423858955735557046, guid: e59c908a15481ff41ae473c0424dca9d, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 4227322484643141207, guid: e59c908a15481ff41ae473c0424dca9d, type: 3}
       propertyPath: m_VersionIndex
-      value: 4850
+      value: 5563
       objectReference: {fileID: 0}
     - target: {fileID: 4227322484643141207, guid: e59c908a15481ff41ae473c0424dca9d, type: 3}
       propertyPath: m_SelectedEdges.Array.size
@@ -341,17 +336,17 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8191088602021077645, guid: e59c908a15481ff41ae473c0424dca9d, type: 3}
       propertyPath: m_VersionIndex
-      value: 4917
+      value: 4995
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: e59c908a15481ff41ae473c0424dca9d, type: 3}
---- !u!4 &6240350080781633417 stripped
+--- !u!4 &7827189979821457863 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3338584895201297648, guid: e59c908a15481ff41ae473c0424dca9d, type: 3}
-  m_PrefabInstance: {fileID: 8705216272610395001}
+  m_PrefabInstance: {fileID: 4812881901858850103}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &9171421314730160113
 PrefabInstance:
