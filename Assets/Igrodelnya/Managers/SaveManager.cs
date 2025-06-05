@@ -136,9 +136,10 @@ public class SaveManager : MonoBehaviour
     }
 
 
-    public void SaveGameProgress(int distance = -1, List<PickableItem> items = null)
+    public void SaveGameProgress(int distance = -1, List<PickableItem> items = null, int lvlId = -1)
     { 
         saveProvider.SaveDistance(distance);
+        saveProvider.SaveLevelId(lvlId);
         if (items != null)
             saveProvider.SaveInventory(items);
 
@@ -151,6 +152,10 @@ public class SaveManager : MonoBehaviour
     public (int, List<string>) LoadGameProgress()
     {
         return (saveProvider.LoadDistance(), saveProvider.LoadInventory());
+    }
+
+    public int LoadLevelId() {
+        return saveProvider.LoadLevelId();
     }
 
 

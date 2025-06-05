@@ -12,6 +12,10 @@ public struct TouchControls
     public OnScreenButton reloadButton;
     public OnScreenButton attackButton;
     public OnScreenButton useButton;
+    public OnScreenButton rotateXButton;
+    public OnScreenButton rotateYButton;
+
+
     public OnScreenJoystick moveJoystick;
     public CameraTouchController cameraTouchController;
 }
@@ -23,6 +27,7 @@ public struct DesktopHints
     public GameObject pickUp;
     public GameObject putToInventory;
     public GameObject attach;
+    public GameObject rotate;
 }
 public class ControlUI : MonoBehaviour
 {
@@ -152,5 +157,19 @@ public class ControlUI : MonoBehaviour
             _touchControls.useButton.gameObject.SetActive(visible);
         //else
         //_descktopHints.reload.SetActive(visible);
+    }
+
+    public void ShowRotateButtons(bool visible)
+    {
+        if (_isQuitting)
+            return;
+        if (_isMobile)
+        {
+            _touchControls.rotateXButton.gameObject.SetActive(visible);
+            _touchControls.rotateYButton.gameObject.SetActive(visible);
+        } else
+        {
+            _descktopHints.rotate.gameObject.SetActive(visible);
+        }
     }
 }

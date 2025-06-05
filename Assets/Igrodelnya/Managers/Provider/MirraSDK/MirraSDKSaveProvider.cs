@@ -308,4 +308,20 @@ public class MirraSDKSaveProvider : SaveProvider
         return wins;
     }
 
+
+    public override void SaveLevelId(int id)
+    {
+        if (!isInitialize) return;
+        Changed = true;
+        MirraSDK.Data.SetInt("LevelId", id);
+    }
+
+    public override int LoadLevelId()
+    {
+        if (!isInitialize) return -1;
+
+        int id = MirraSDK.Data.GetInt("LevelId", -1);
+        return id;
+    }
+
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 [DefaultExecutionOrder(-1)]
 public class GameManager : MonoBehaviour
 {
@@ -60,8 +61,9 @@ public class GameManager : MonoBehaviour
             GameResume?.Invoke(loadedData.Item1);
         } else
         {
+            string scene = SceneManager.GetActiveScene().name;
             Inventory.Instance.SetLoadedInventory();
-            SaveManager.Instance.SaveGameProgress(0, Inventory.Instance.GetInventoryList());
+            SaveManager.Instance.SaveGameProgress(0, Inventory.Instance.GetInventoryList(), LevelManager.Instance.GetLevelId(scene));
         }
         _ammoManager.Save();
         GameStart?.Invoke();

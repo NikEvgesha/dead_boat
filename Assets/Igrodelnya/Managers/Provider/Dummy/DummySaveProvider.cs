@@ -153,4 +153,14 @@ public class DummySaveProvider : SaveProvider
     {
         return 0;
     }
+
+    public override void SaveLevelId(int id)
+    {
+
+    }
+
+    public override int LoadLevelId()
+    {
+        return -1;
+    }
 }

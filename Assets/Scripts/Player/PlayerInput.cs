@@ -87,6 +87,23 @@ public class PlayerInput : MonoBehaviour
         private set { }
     }
 
+    public bool RotationY
+    {
+        get
+        {
+            return _rotationY;
+        }
+        private set { }
+    }
+
+    public bool RotationX {
+        get
+        {
+            return _rotationX;
+        }
+        private set { }
+    }
+
     public bool Attach => _attach;
     public bool Inventory => _inventory;
 
@@ -104,6 +121,8 @@ public class PlayerInput : MonoBehaviour
     private bool _reload;
     private bool _attack;
     private bool _healing;
+    private bool _rotationX;
+    private bool _rotationY;
 
 
     private void Awake()
@@ -148,6 +167,8 @@ public class PlayerInput : MonoBehaviour
             _attack = _touchControls.attackButton.IsHolded;
             _healing = _touchControls.useButton.IsHolded;
             _reload = _touchControls.reloadButton.IsTriggered;
+            _rotationX = _touchControls.rotateXButton.IsHolded;
+            _rotationY = _touchControls.rotateYButton.IsHolded;
         }
         else
         {
@@ -158,6 +179,8 @@ public class PlayerInput : MonoBehaviour
             _attach = Input.GetKeyDown(KeyCode.Z);
             _inventory = Input.GetKeyDown(KeyCode.B);
             _reload = Input.GetKeyDown(KeyCode.R);
+            _rotationY = _interactionHold;
+            _rotationX = Input.GetKey(KeyCode.Q);
             if (!ControlManager.Instance.CursorActive)
             {
                 _pickUp = Input.GetMouseButtonDown(0);

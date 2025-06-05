@@ -42,11 +42,18 @@ public class LoadingManager : MonoBehaviour
     }
     private void StartGame()
     {
+        
         bool haveSave = SaveManager.Instance.LoadGameProgress().Item1 >= 0;
         if (SaveManager.Instance.IsNewPlayer || haveSave)
         {
-            GameLoader.Instance.LoadNextScene(_gameScene, true);
-            _location = Location.Game;
+            if (!haveSave)
+                GameLoader.Instance.LoadNextScene(_gameScene, true);
+            else
+            {
+                int lvlId = SaveManager.Instance.LoadLevelId();
+                GameLoader.Instance.LoadNextScene(LevelManager.Instance.GetLevel(lvlId).Scene, true);
+            }
+                _location = Location.Game;
             SaveManager.Instance.SetSave(true);
         }
         else

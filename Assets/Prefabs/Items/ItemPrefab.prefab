@@ -296,7 +296,6 @@ MonoBehaviour:
   _visualObj: {fileID: 8675954116097452673}
   _sellPoint: {fileID: 0}
   _lerpSpeed: 25
-  _maxSpeed: 25
   _damping: 0.3
   _stopDistance: 0.05
   _maxDistance: 6
@@ -304,6 +303,8 @@ MonoBehaviour:
   _dragOrigin: 0
   _dropVelocityMultiplier: 0.4
   _kinematicDistance: 30
+  _rotationSpeed: 100
+  _collider: {fileID: 0}
 --- !u!114 &8183783568018153755
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -332,8 +333,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   outlineMode: 0
-  outlineColor: {r: 1, g: 0, b: 0, a: 1}
-  outlineWidth: 10
+  outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  outlineWidth: 6
   precomputeOutline: 1
   bakeKeys:
   - {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
@@ -424,6 +425,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   fuelValue: 100
+  InFire: 0
 --- !u!114 &5841671705070704806
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -449,7 +451,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 087026c8ff9531741ac7ed544ef2c72d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  price: 20
+  CoinPrice: 0
+  GemPrice: 0
 --- !u!135 &6325844226534851711
 SphereCollider:
   m_ObjectHideFlags: 0

@@ -11,6 +11,8 @@ public class LevelManager : MonoBehaviour
     private static LevelManager _instance;
     public static LevelManager Instance { get { return _instance; } }
 
+    private LevelData _currentLevel;
+
 
     private void Awake()
     {
@@ -44,6 +46,34 @@ public class LevelManager : MonoBehaviour
         }
 
             _mapUI.Init(_levels.Levels);
+    }
+
+    public int GetLevelId(LevelData lvl)
+    {
+        return _levels.Levels.IndexOf(lvl);
+    }
+
+    public int GetLevelId(string sceneName)
+    {
+        for (int i = 0; i < _levels.Levels.Count; i++)
+        {
+            if (_levels.Levels[i].Scene == sceneName)
+            {
+                return i;
+            }
+        }
+        return 0;
+        
+    }
+
+    public LevelData GetLevel(int id)
+    {
+        return _levels.Levels[id];
+    }
+
+    public LevelData GetLevel(string sceneName)
+    {
+        return _levels.Levels.Find(x => x.Scene == sceneName);
     }
 
 

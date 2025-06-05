@@ -22,6 +22,7 @@ public class PickableItem : MonoBehaviour
     [SerializeField] private float _dragOrigin = 1f;
     [SerializeField] private float _dropVelocityMultiplier = 2f;
     [SerializeField] private float _kinematicDistance = 30f;
+    [SerializeField] private float _rotationSpeed = 40f;
 
     private ItemStatus _status = ItemStatus.Free;
     public ItemStatus Status => _status;
@@ -131,6 +132,9 @@ public class PickableItem : MonoBehaviour
         _attacher.CanAttach += CanAttachChange;
 
         _status = ItemStatus.Grabbed;
+        ControlUI.Instance.ShowRotateButtons(Grabbed);
+        _outline.OutlineColor = Color.yellow;
+
         PickUpItem?.Invoke();
     }
 
@@ -153,7 +157,8 @@ public class PickableItem : MonoBehaviour
         _rb.drag = _dragOrigin;
         _rb.angularDrag = 0.5f;
         _attacher.CanAttach -= CanAttachChange;
-
+        ControlUI.Instance.ShowRotateButtons(Grabbed);
+        _outline.OutlineColor = Color.white;
         _status = ItemStatus.Free;
     }
 
@@ -206,6 +211,8 @@ public class PickableItem : MonoBehaviour
     {
         if (_status == ItemStatus.Grabbed && _itemPoint != null)
         {
+
+
             Vector3 targetPosition = _itemPoint.position;
             Vector3 positionDelta = targetPosition - transform.position;
 
@@ -214,6 +221,7 @@ public class PickableItem : MonoBehaviour
             if (distance > _maxDistance)
             {
                 Grabbed = false;
+                CheckRotation();
                 return;
             }
 
@@ -222,6 +230,7 @@ public class PickableItem : MonoBehaviour
                 transform.position = targetPosition;
                 _rb.velocity = Vector3.zero;
                 _velocity = Vector3.zero;
+                CheckRotation();
                 return;
             }
 
@@ -231,8 +240,26 @@ public class PickableItem : MonoBehaviour
             float distanceDamping = Mathf.Clamp01(distance);
             _rb.velocity = Vector3.Lerp(_rb.velocity, _velocity * distanceDamping, Time.fixedDeltaTime * _lerpSpeed);
 
+            //
+            CheckRotation();
+
+
+
+
         }
 
+    }
+
+
+    private void CheckRotation() {
+        if (PlayerInput.Instance.RotationY)
+        {
+            transform.RotateAround(transform.position, Vector3.up, Time.fixedDeltaTime * _rotationSpeed);
+        }
+        if (PlayerInput.Instance.RotationX)
+        {
+            transform.RotateAround(transform.position, Vector3.right, Time.fixedDeltaTime * _rotationSpeed);
+        }
     }
 
 
@@ -313,12 +340,12 @@ public class PickableItem : MonoBehaviour
             SetKinematic(true);
             _status = ItemStatus.Attached;
             _useKinematicCheck = false;
-
-/*            if (transform.parent != null && transform.parent.TryGetComponent<BoardController>(out BoardController board))
-            {
-                SaveManager.Instance.SaveAttachedItem(Data.Name);
-                SaveManager.Instance.SaveInventory();
-            }*/
+            _outline.OutlineColor = Color.red;
+            /*            if (transform.parent != null && transform.parent.TryGetComponent<BoardController>(out BoardController board))
+                        {
+                            SaveManager.Instance.SaveAttachedItem(Data.Name);
+                            SaveManager.Instance.SaveInventory();
+                        }*/
 
             return true;
         } else if (!attach && _status == ItemStatus.Attached)
@@ -329,14 +356,15 @@ public class PickableItem : MonoBehaviour
             //Drop();
             _status = ItemStatus.Free;
 
-/*            if (transform.parent != null && transform.parent.TryGetComponent<BoardController>(out BoardController board))
-            {
-                SaveManager.Instance.DeleteAttachedItem(Data.Name);
-            }*/
-
+            /*            if (transform.parent != null && transform.parent.TryGetComponent<BoardController>(out BoardController board))
+                        {
+                            SaveManager.Instance.DeleteAttachedItem(Data.Name);
+                        }*/
+            _outline.OutlineColor = Color.white;
             return true;
         }
-        return false;
+
+            return false;
     }
 
 
