@@ -27,6 +27,8 @@ public class SellPoint : MonoBehaviour
                 case StoreType.Items:
                     if (other.TryGetComponent<SellableItem>(out SellableItem sellable))
                     {
+                        ItemTag tag = item.Tags.Contains(ItemTag.Valuable) ? ItemTag.Valuable : ItemTag.Trash;
+                        GameEvents.OnItemCollected?.Invoke(tag);
                         selled = true;
                         cost = sellable.GetReward();
                     }
@@ -35,6 +37,7 @@ public class SellPoint : MonoBehaviour
                 case StoreType.Enemies:
                     if (other.TryGetComponent<EnemyReward>(out EnemyReward rewarded))
                     {
+                        GameEvents.OnItemCollected?.Invoke(ItemTag.Reward);
                         selled = true;
                         cost = rewarded.GetReward();
                     }

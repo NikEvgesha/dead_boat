@@ -12,6 +12,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private PlayerStatsManager _player;
     [SerializeField] private Transform _playerSpawnPoint;
     [SerializeField] private int _reward;
+    [SerializeField] private GameObject _startQuest;
     public PlayerStatsManager Player { get { return _player; } }
 
     public bool isEndGame = false;
@@ -70,7 +71,14 @@ public class GameManager : MonoBehaviour
 
         SaveManager.Instance.ResetLobbyItems();
 
-        
+        StartQuest();
+    }
+    private void StartQuest()
+    {
+        if (_startQuest != null)
+            QuestManager.Instance.StartQuest();
+        else
+            Debug.LogWarning("Не найден prefab Quest_Kill5Rats_Prefab");
     }
 
     public void EndGame(bool lobby)

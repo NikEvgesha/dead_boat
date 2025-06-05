@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using static UnityEditor.Progress;
 
 public class StorePoint : MonoBehaviour
 {
@@ -196,9 +197,15 @@ public class StorePoint : MonoBehaviour
                     });
             }
 
-                
+            ItemTag tag =
+                _itemPrefab.HaveTag(ItemTag.Medicine) ? ItemTag.Medicine:
+                _itemPrefab.HaveTag(ItemTag.Ammo)?ItemTag.Ammo :
+                _itemPrefab.HaveTag(ItemTag.Weapon) ? ItemTag.Weapon :
+                _itemPrefab.HaveTag(ItemTag.Fuel) ? ItemTag.Fuel : ItemTag.Trash;
+            GameEvents.OnItemCollected?.Invoke(tag);
+
             //if (_audioSource)
-                //_audioSource.Play();
+            //_audioSource.Play();
         }
         _progress = 0;
         _buyProgress.fillAmount = _progress;

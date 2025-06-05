@@ -66,7 +66,7 @@ public class BoardController : MonoBehaviour
     private bool _endGame = false;
     private bool _endTutorial = false;
 
-    private int _nextSavePoint = 10000;
+    //private int _nextSavePoint = 10000;
 
     public Action<float> SwitchDistance;
     public Action<float> SwitchSpeed;
@@ -74,7 +74,7 @@ public class BoardController : MonoBehaviour
     public Action EndGame;
     public Action<bool> NoFuel;
     [SerializeField] private AudioSource _audioSource;
-    [SerializeField] private int _rewardForWin = 20;
+    //[SerializeField] private int _rewardForWin = 20;
 
     private void Awake()
     {

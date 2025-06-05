@@ -10,6 +10,7 @@ using UnityEngine.UI;
 public abstract class EnemyCore : MonoBehaviour
 {
     [Header("UI и звук")]
+    [SerializeField] protected EnemyType enemyType;
     [SerializeField] protected Scrollbar hpBar;
     [SerializeField] protected AudioClip audioDie;
     [SerializeField] protected AudioClip audioDamage;
@@ -79,6 +80,7 @@ public abstract class EnemyCore : MonoBehaviour
             hpBar.gameObject.SetActive(false);
 
         PlayDeathSound();
+        GameEvents.OnEnemyKilled?.Invoke(enemyType);
         Death?.Invoke();
     }
 

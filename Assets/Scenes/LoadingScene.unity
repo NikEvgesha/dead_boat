@@ -130,6 +130,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 344658833910852246, guid: cbfdae7112d83784ca2595d872fddfe8, type: 3}
+      propertyPath: questDefinition
+      value: 
+      objectReference: {fileID: 11400000, guid: dd6009af91ffd704093697239df8295a, type: 2}
     - target: {fileID: 1153543112897120196, guid: cbfdae7112d83784ca2595d872fddfe8, type: 3}
       propertyPath: m_AnchorMax.x
       value: 0
@@ -141,6 +145,10 @@ PrefabInstance:
     - target: {fileID: 1153543112897120196, guid: cbfdae7112d83784ca2595d872fddfe8, type: 3}
       propertyPath: m_SizeDelta.x
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3303770045963704725, guid: cbfdae7112d83784ca2595d872fddfe8, type: 3}
+      propertyPath: requiredCount
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 5604248641665588619, guid: cbfdae7112d83784ca2595d872fddfe8, type: 3}
       propertyPath: m_Enabled
@@ -283,7 +291,8 @@ PrefabInstance:
       value: LoadingCollection
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 8030175752249031376, guid: cbfdae7112d83784ca2595d872fddfe8, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: cbfdae7112d83784ca2595d872fddfe8, type: 3}
