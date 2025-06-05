@@ -5,54 +5,62 @@ using System;
 public class LocationSpawner : MonoBehaviour
 {
     [Header("Настройки спавна")]
-    public BoardController boardController;           // Ссылка на компонент BoardController с TotalDistanceTraveled
-    public LocationSpawnCollection locationCollection;  // Ссылка на ScriptableObject с вариантами объектов для спавна
-    public float minDistance = 100f;                    // Минимальное расстояние до следующего объекта
-    public float maxDistance = 200f;                    // Максимальное расстояние до следующего объекта
-    public float spawnThreshold = 20f;                  // Порог спавна впереди (например, поезда)
+    public BoardController boardController;              // Ссылка на компонент BoardController с TotalDistanceTraveled (лодка)
+    public Transform player;                             // Ссылка на Transform игрока
+    public LocationSpawnCollection locationCollection;   // ScriptableObject с вариантами объектов для спавна
+    public float minDistance = 100f;                     // Минимальное расстояние до следующего объекта
+    public float maxDistance = 200f;                     // Максимальное расстояние до следующего объекта
+    public float spawnThreshold = 20f;                   // Насколько впереди игрок должен быть для спавна
 
     [Header("Настройки позиции")]
-    public float spawnX = 10f;                          // Фиксированная позиция по X (например, берег)
-    public float spawnY = 0f;                           // Фиксированная позиция по Y (уровень земли)
-    // Координата Z рассчитывается динамически
+    public float spawnX = 10f;                           // Фиксированная позиция по X (например, берег)
+    public float spawnY = 0f;                            // Фиксированная позиция по Y (уровень земли)
+    // Z рассчитывается динамически
 
     [Header("Оптимизация")]
-    public float removalDistance = 200f;                // Расстояние позади поезда, после которого объект удаляется
+    public float removalDistance = 200f;                 // Удалять, если позади лодки больше этого
 
-    private float _stopSpawnDistance = 100000f;
-
-    private float lastSpawnZ;                           // Координата Z последнего созданного объекта
+    private float _stopSpawnDistance = 100000f;          // Границы, пока лодка не доедет до конца уровня
+    private float lastSpawnZ;                            // Z-координата последнего созданного объекта
     private List<LocationContentSpawner> spawnedLocations = new List<LocationContentSpawner>();
 
     public static Action Change;
 
     void Start()
     {
+        // Если не назначена, пытаемся найти на сцене
         if (boardController == null)
             boardController = FindObjectOfType<BoardController>();
         if (boardController == null)
             Debug.LogError("BoardController не найден");
 
+        if (player == null)
+            player = GameObject.FindWithTag("Player")?.transform;
+        if (player == null)
+            Debug.LogError("Player (игрок) не назначен и не найден по тэгу 'Player'");
+
+        // Определяем максимальную дистанцию спавна (по лодке)
         _stopSpawnDistance = GameManager.Instance.PlayDistance - spawnThreshold;
-        // Инициализируем lastSpawnZ значением текущего пройденного расстояния,
-        // чтобы объекты спавнились впереди поезда
-        lastSpawnZ = boardController.TotalDistanceTraveled;
+
+        // Инициализируем lastSpawnZ положением игрока по Z, чтобы спавн шел от него
+        lastSpawnZ = player.position.z;
     }
 
     void Update()
     {
-        // Если поезд приближается к точке спавна нового объекта, создаём его
-        if (boardController.TotalDistanceTraveled + spawnThreshold > lastSpawnZ && lastSpawnZ < _stopSpawnDistance )
+        // 1) Спавн новых локаций, когда игрок продвинулся вперед
+        if (player.position.z + spawnThreshold > lastSpawnZ && lastSpawnZ < _stopSpawnDistance)
         {
             SpawnLocation();
         }
 
-        // Оптимизация: удаляем объекты, которые находятся далеко позади поезда
+        // 2) Удаляем уже созданные локации по положению лодки
         for (int i = spawnedLocations.Count - 1; i >= 0; i--)
         {
+            // Если этот объект позади лодки больше, чем removalDistance, уничтожаем
             if (spawnedLocations[i].transform.position.z < boardController.TotalDistanceTraveled - removalDistance)
             {
-                Destroy(spawnedLocations[i]);
+                Destroy(spawnedLocations[i].gameObject);
                 spawnedLocations.RemoveAt(i);
             }
         }
@@ -61,22 +69,23 @@ public class LocationSpawner : MonoBehaviour
     void SpawnLocation()
     {
         Change?.Invoke();
+
         // Вычисляем случайное расстояние до следующего объекта и обновляем lastSpawnZ
         float distance = UnityEngine.Random.Range(minDistance, maxDistance);
         lastSpawnZ += distance;
 
-        // Рассчитываем позицию спавна: фиксированные spawnX, spawnY, динамический Z
+        // Фиксируем позицию спавна: spawnX, spawnY и динамический Z = lastSpawnZ
         Vector3 spawnPosition = new Vector3(spawnX, spawnY, lastSpawnZ);
 
-        // Выбираем случайный префаб из коллекции с учетом шансов
-        if (locationCollection != null) //&& locationCollection.spawnItems.Count > 0)
+        // Берём случайный префаб из коллекции
+        if (locationCollection != null)
         {
             LocationContentSpawner chosenPrefab = locationCollection.GetRandomSpawnPrefab(lastSpawnZ);
             if (chosenPrefab != null)
             {
                 LocationContentSpawner spawnedObj = Instantiate(chosenPrefab, spawnPosition, Quaternion.identity);
                 spawnedLocations.Add(spawnedObj);
-                spawnedObj.transform.SetParent(this.gameObject.transform);
+                spawnedObj.transform.SetParent(this.transform);
                 spawnedObj.SetLevel(boardController.GetLevel());
             }
             else
@@ -86,7 +95,7 @@ public class LocationSpawner : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("Location Collection не назначена или не содержит элементов!");
+            Debug.LogWarning("Location Collection не назначена или пуста!");
         }
     }
 }

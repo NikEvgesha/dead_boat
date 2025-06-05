@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Linq;
 
 public class LendController : MonoBehaviour
 {
@@ -11,8 +12,8 @@ public class LendController : MonoBehaviour
         [Tooltip("Флаг: является ли эта локация последней (после неё ничего не будет)")]
         public bool isFinalLocation;
 
-        // Индекс для циклического перемещения сегментов именно этой локации
-        [HideInInspector] public int currentSegmentIndex = 0;
+        // Пока не нужен: индексы для циклического передвижения
+        // [HideInInspector] public int currentSegmentIndex = 0;
     }
 
     [Header("Настройки локаций")]
@@ -29,7 +30,6 @@ public class LendController : MonoBehaviour
     [Tooltip("Расстояние, после которого происходит смена локации")]
     public float transitionDistance = 300f;
 
-
     private float _stopSpawnDistance = 100000f;
 
     // Текущий индекс локации
@@ -45,14 +45,15 @@ public class LendController : MonoBehaviour
     {
         InitBoardController();
     }
+
     private void Start()
     {
         _stopSpawnDistance = GameManager.Instance.PlayDistance;
         transitionDistance = _stopSpawnDistance - segmentLength;
-
         nextTransitionDistance = transitionDistance; // первый порог перехода
         InitializeLocations();
     }
+
     // Инициализация локаций: включаем только первую, остальные отключаются
     private void InitializeLocations()
     {
@@ -87,7 +88,7 @@ public class LendController : MonoBehaviour
     private void InitBoardController()
     {
         if (player == null)
-            player = FindObjectOfType<BoardController>()?.transform;
+            player = FindObjectOfType<PlayerStatsManager>()?.transform;
         if (player == null)
             Debug.LogError("BoardController не найден");
     }
@@ -111,17 +112,42 @@ public class LendController : MonoBehaviour
         var activeLocation = locations[currentLocationIndex];
         Transform[] activeSegments = activeLocation.groundSegments;
 
-        // Если локация не финальная – перемещаем сегменты циклически
+        // Если локация не финальная – перемещаем сегменты циклически (вперед и назад)
         if (!activeLocation.isFinalLocation)
         {
-            if (player.position.z > activeSegments[activeLocation.currentSegmentIndex].position.z + segmentLength)
+            // Ищем самый «низкий» (минимальный Z) и самый «верхний» (максимальный Z) сегмент
+            Transform lowestSeg = activeSegments[0];
+            Transform highestSeg = activeSegments[0];
+            foreach (Transform seg in activeSegments)
             {
-                // При перемещении увеличиваем позицию конца пути
-                lastSegmentZ += segmentLength;
-                Vector3 newPos = activeSegments[activeLocation.currentSegmentIndex].position;
-                newPos.z = lastSegmentZ;
-                activeSegments[activeLocation.currentSegmentIndex].position = newPos;
-                activeLocation.currentSegmentIndex = (activeLocation.currentSegmentIndex + 1) % activeSegments.Length;
+                if (seg.position.z < lowestSeg.position.z)
+                    lowestSeg = seg;
+                if (seg.position.z > highestSeg.position.z)
+                    highestSeg = seg;
+            }
+
+            // Движемся вперёд: если игрок прошёл нижний сегмент дальше, чем на length
+            if (player.position.z > lowestSeg.position.z + segmentLength)
+            {
+                float newZ = highestSeg.position.z + segmentLength;
+                Vector3 newPos = lowestSeg.position;
+                newPos.z = newZ;
+                lowestSeg.position = newPos;
+
+                // Обновляем lastSegmentZ (максимальное Z) при необходимости
+                if (newZ > lastSegmentZ)
+                    lastSegmentZ = newZ;
+            }
+            // Движемся назад: если игрок ушёл ниже нижнего сегмента более, чем на length
+            else if (player.position.z < lowestSeg.position.z - 10)
+            {
+                float newZ = lowestSeg.position.z - segmentLength;
+                Vector3 newPos = highestSeg.position;
+                newPos.z = newZ;
+                highestSeg.position = newPos;
+
+                // При движении назад логика lastSegmentZ не так критична,
+                // но, если нужно, можно вычислять минимальный Z аналогично lastSegmentZ
             }
         }
         else // Финальная локация – не перемещаем сегменты циклически
@@ -148,7 +174,7 @@ public class LendController : MonoBehaviour
         }
         // Обновляем значение конца пути до конца новой локации
         lastSegmentZ = startZ + (newSegments.Length - 1) * segmentLength;
-        locations[currentLocationIndex].currentSegmentIndex = 0;
+        //currentSegmentIndex = 0; // больше не нужен
     }
 
     // Определяет конечную позицию финальной локации (самый дальний сегмент + segmentLength)

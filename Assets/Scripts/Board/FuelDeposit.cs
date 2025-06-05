@@ -11,6 +11,8 @@ public class FuelDeposit : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         FuelItem fuelItem = other.GetComponent<FuelItem>();
+        if (fuelItem == null)
+            fuelItem = other.GetComponentInParent<FuelItem>();
         if (fuelItem != null)
         {
             if (fuelItem.InFire)
@@ -23,7 +25,7 @@ public class FuelDeposit : MonoBehaviour
             Debug.Log("Добавлено топлива: " + fuelItem.fuelValue);
             // Удаляем объект после его использования
             AddFuel?.Invoke();
-            Destroy(other.gameObject);
+            Destroy(fuelItem.gameObject);
         }
     }
 }
