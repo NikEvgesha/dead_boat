@@ -55,6 +55,7 @@ public class TentacleBoss : TriggerBossFight
 
         if (hpBar)
             hpBar.gameObject.SetActive(false);
+        GameEvents.OnEnemyKilled(EnemyType.Boss);
         yield return new WaitForSeconds(1);
         EndGameUIManager.EndGame(EndGameState.Win);
     }

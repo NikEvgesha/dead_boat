@@ -170,6 +170,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3170936268398154914}
   - component: {fileID: 160226192733062634}
+  - component: {fileID: 1888311337403542680}
   m_Layer: 9
   m_Name: PointCenter (1)
   m_TagString: Location
@@ -214,6 +215,19 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 27.5, y: 11.16, z: 27.58}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &1888311337403542680
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1983912396586677924}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe1c5472f4a952642a2524b78d2d7ebf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _interactType: 0
 --- !u!1 &2051224851050719757
 GameObject:
   m_ObjectHideFlags: 0
@@ -465,14 +479,13 @@ MonoBehaviour:
   - spawnTransform: {fileID: 5428222805433373107}
     allowedType: 0
     allowedSize: 0
-  enemyPrefab: {fileID: 7518567881013586689, guid: 200718ddd62da0b459336e78f7e78f56, type: 3}
+  _enemyPrefabs: []
   enemySpawnPoints:
   - {fileID: 4856264151361118434}
   - {fileID: 2147148826295568336}
   - {fileID: 2335436675718721682}
   - {fileID: 4808694728288072709}
   - {fileID: 7208010009198979376}
-  enemySpawnChance: 1
 --- !u!114 &4100652207707754170
 MonoBehaviour:
   m_ObjectHideFlags: 0

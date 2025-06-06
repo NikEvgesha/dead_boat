@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 public class QuestUIItem : MonoBehaviour
@@ -8,6 +9,7 @@ public class QuestUIItem : MonoBehaviour
     public Slider progressBar;
     public Button claimButton;
     public Text claimButtonText;
+    public GameObject hint;
 
     private QuestInstance boundQuest;
 
@@ -53,19 +55,23 @@ public class QuestUIItem : MonoBehaviour
 
     private void OnProgressChanged(float normalized)
     {
+        if (!hint.activeSelf && normalized > 0)
+            hint.SetActive(true);
+
         // Обновляем шкалу, если кнопка «Забрать» ещё скрыта
-        if (!claimButton.gameObject.activeSelf && progressBar != null)
+        if (progressBar != null)
             progressBar.value = normalized;
     }
 
     private void OnReadyToClaim()
     {
         // Скрываем полоску прогресса и показываем кнопку «Забрать награду»
-        if (progressBar != null)
-            progressBar.gameObject.SetActive(false);
+        //if (progressBar != null)
+        //progressBar.gameObject.SetActive(false);
+        OnProgressChanged(1);
 
         claimButton.gameObject.SetActive(true);
-        claimButtonText.text = "Забрать награду";
+        //claimButtonText.text = "Забрать награду";
     }
 
     private void OnBoundQuestDestroyed(QuestInstance _)
