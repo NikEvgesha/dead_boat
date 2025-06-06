@@ -1,6 +1,7 @@
 using UnityEngine;
 using MirraGames.SDK;
-using System.Collections.Generic;  // доступ к MirraSDK.Data
+using System.Collections.Generic;
+using System;  // доступ к MirraSDK.Data
 
 [System.Serializable]
 public class ListSaver
@@ -322,6 +323,25 @@ public class MirraSDKSaveProvider : SaveProvider
 
         int id = MirraSDK.Data.GetInt("LevelId", 0);
         return id;
+    }
+
+    public override void SaveRouletteDate(DateTime date)
+    {
+        if (!isInitialize) return;
+        Changed = true;
+        MirraSDK.Data.SetString("RouletteLastDate", date.ToString());
+    }
+
+    public override DateTime LoadRouletteDate()
+    {
+        if (!isInitialize) return DateTime.Today.AddDays(-1);
+
+        string date = MirraSDK.Data.GetString("RouletteLastDate");
+        if (date.Length == 0)
+        {
+            return DateTime.Today.AddDays(-1);
+        }
+        return DateTime.Parse(date);
     }
 
 }

@@ -19,10 +19,11 @@ public class StorePoint : MonoBehaviour
     [SerializeField] private Text _name;
     [SerializeField] private Image _buyProgress;
     [SerializeField] private Image _currencyIcon;
-    [SerializeField] private Image _noMoney;
+    [SerializeField] private Image _adImage;
+    //[SerializeField] private GameObject _noMoney;
     [SerializeField] private Text _buyText;
     private bool _isNoMoney;
-
+    private bool _inLobby;
 
     [SerializeField] private bool _staticItem;
 
@@ -48,6 +49,7 @@ public class StorePoint : MonoBehaviour
     }
     public void InitPoint(bool inLobby, ItemStore store, PickableItem prefab = null)
     {
+        _inLobby = inLobby;
         if (prefab != null)
             _itemPrefab = prefab;
         if (_itemPrefab.TryGetComponent<StoreItem>(out _storeItem))
@@ -69,6 +71,7 @@ public class StorePoint : MonoBehaviour
             {
                 currencyType = CurrencyType.Gems;
                 price = _storeItem.GemPrice;
+                _adImage.gameObject.SetActive(false);
             } else
             {
                 currencyType = CurrencyType.Coins;
@@ -128,11 +131,15 @@ public class StorePoint : MonoBehaviour
 
     private void CheckMoney()
     {
-        bool enoughMoney = CurrencyManager.Instance.CheckEnoughCurrency(currencyType, price);
+        bool enoughMoney = CurrencyManager.Instance.CheckEnoughCurrency(currencyType, price, false);
 
-        _buyText.gameObject.SetActive(enoughMoney);
-        _noMoney.gameObject.SetActive(!enoughMoney);
-        _isNoMoney = !enoughMoney;
+        if (!_inLobby)
+        {
+            _adImage.gameObject.SetActive(!enoughMoney);
+            _buyText.gameObject.SetActive(enoughMoney);
+        }
+
+            _isNoMoney = !enoughMoney;
     }
 
 
@@ -153,11 +160,11 @@ public class StorePoint : MonoBehaviour
 
     private void TryBuy()
     {
-        bool enoughMoney = CurrencyManager.Instance.CheckEnoughCurrency(currencyType, price);
+        bool enoughMoney = CurrencyManager.Instance.CheckEnoughCurrency(currencyType, price, _inLobby);
         _itemPrefab.CheckTags();
         bool isAmmo = _itemPrefab.HaveTag(ItemTag.Ammo);
         bool isUsable = _itemPrefab.Usable;
-        if (/*enoughMoney &&*/ (isAmmo || Inventory.Instance.CheckSpace(isUsable)))
+        if ((!_inLobby || enoughMoney) && (isAmmo || Inventory.Instance.CheckSpace(isUsable)))
         {
             _buyInProgress = true;
             _progress = 0;

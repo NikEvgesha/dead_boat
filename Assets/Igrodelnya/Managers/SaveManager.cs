@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using MirraGames.SDK;
+using System;
 
 public class SaveManager : MonoBehaviour
 {
@@ -181,6 +182,16 @@ public class SaveManager : MonoBehaviour
         int wins = saveProvider.LoadWins();
         saveProvider.SaveWins(wins+1);
         LeaderboardManager.Instance.SaveScore(LBName.wins.ToString(), wins+1);
+    }
+
+    public void SaveRouletteDate(DateTime date)
+    {
+        saveProvider.SaveRouletteDate(date);
+    }
+
+    public DateTime LoadRouletteDate()
+    {
+        return saveProvider.LoadRouletteDate();
     }
 
 /*    public void SaveAttachedItem(string id)

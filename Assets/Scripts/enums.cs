@@ -190,3 +190,9 @@ public enum InteractType
     Location,
     City
 }
+
+public enum RouletteRewardType
+{
+    Gems,
+    Item
+}

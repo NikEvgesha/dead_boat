@@ -1,4 +1,5 @@
 using MirraGames.SDK;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -162,5 +163,14 @@ public class DummySaveProvider : SaveProvider
     public override int LoadLevelId()
     {
         return -1;
+    }
+
+    public override void SaveRouletteDate(DateTime date)
+    {
+    }
+
+    public override DateTime LoadRouletteDate()
+    {
+        return DateTime.Today.AddDays(-1);
     }
 }

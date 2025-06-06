@@ -134,9 +134,12 @@ public class ControlUI : MonoBehaviour
         if (_isQuitting)
             return;
         if (_isMobile)
+        {
+            _touchControls.useButton.gameObject.SetActive(!visible);
             _touchControls.attackButton.gameObject.SetActive(visible);
+        }
         //else
-            //_descktopHints.attack.SetActive(visible);
+        //_descktopHints.attack.SetActive(visible);
     }
 
     public void ShowReloadButton(bool visible)
@@ -154,7 +157,11 @@ public class ControlUI : MonoBehaviour
         if (_isQuitting)
             return;
         if (_isMobile)
+        {
             _touchControls.useButton.gameObject.SetActive(visible);
+            _touchControls.attackButton.gameObject.SetActive(!visible);
+        }
+            
         //else
         //_descktopHints.reload.SetActive(visible);
     }

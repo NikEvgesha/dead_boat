@@ -98,7 +98,7 @@ public class CurrencyManager : MonoBehaviour
         return _balance[type];
     }
 
-    public bool CheckEnoughCurrency(CurrencyType type, int amount)
+    public bool CheckEnoughCurrency(CurrencyType type, int amount, bool showNoGemsShop = true)
     {
         if (amount <= _balance[type])
         {
@@ -107,7 +107,8 @@ public class CurrencyManager : MonoBehaviour
 
         if (type == CurrencyType.Gems)
         {
-            NoGems?.Invoke();
+            if (showNoGemsShop)
+                NoGems?.Invoke();
         } else if (type == CurrencyType.Coins)
         {
             NoCoins?.Invoke();

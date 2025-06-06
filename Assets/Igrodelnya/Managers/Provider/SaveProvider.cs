@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -67,5 +68,9 @@ public abstract class SaveProvider : MonoBehaviour
     public abstract void SaveLevelId(int id);
 
     public abstract int LoadLevelId();
+
+    public abstract void SaveRouletteDate(DateTime date);
+
+    public abstract DateTime LoadRouletteDate();
 
 }
