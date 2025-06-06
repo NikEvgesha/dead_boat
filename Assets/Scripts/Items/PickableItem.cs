@@ -293,7 +293,10 @@ public class PickableItem : MonoBehaviour
         {
             _tags.Add(ItemTag.Reward);
         }
-
+        if (GetComponentInChildren<RangedWeaponController>() || GetComponentInChildren<MeleWeapon>())
+        {
+            _tags.Add(ItemTag.Weapon);
+        }
     }
 
     public void SetKinematic(bool kinematic)

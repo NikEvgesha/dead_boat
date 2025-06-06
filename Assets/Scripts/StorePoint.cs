@@ -197,12 +197,6 @@ public class StorePoint : MonoBehaviour
                     });
             }
 
-            ItemTag tag =
-                _itemPrefab.HaveTag(ItemTag.Medicine) ? ItemTag.Medicine:
-                _itemPrefab.HaveTag(ItemTag.Ammo)?ItemTag.Ammo :
-                _itemPrefab.HaveTag(ItemTag.Weapon) ? ItemTag.Weapon :
-                _itemPrefab.HaveTag(ItemTag.Fuel) ? ItemTag.Fuel : ItemTag.Trash;
-            GameEvents.OnItemCollected?.Invoke(tag);
 
             //if (_audioSource)
             //_audioSource.Play();
@@ -216,6 +210,7 @@ public class StorePoint : MonoBehaviour
 
     private void GiveItem() {
         PickableItem item = Instantiate(_itemPrefab, _buyPoint);
+        item.CheckTags();
         if (LoadingManager.Instance.CurrentLocation == Location.Lobby)
         {
             Inventory.Instance.AddItem(item);
@@ -223,6 +218,13 @@ public class StorePoint : MonoBehaviour
                 SaveManager.Instance.SaveLobbyItem(item.Data.Name);
 
         }
+
+        ItemTag tag =
+            item.HaveTag(ItemTag.Medicine) ? ItemTag.Medicine :
+            item.HaveTag(ItemTag.Ammo) ? ItemTag.Ammo :
+            item.HaveTag(ItemTag.Weapon) ? ItemTag.Weapon :
+            item.HaveTag(ItemTag.Fuel) ? ItemTag.Fuel : ItemTag.Trash;
+        GameEvents.OnItemCollected?.Invoke(tag);
         BuyItem?.Invoke();
     }
 }

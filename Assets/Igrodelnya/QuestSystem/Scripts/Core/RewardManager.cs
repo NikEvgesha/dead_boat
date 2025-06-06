@@ -29,6 +29,7 @@ public class RewardManager : MonoBehaviour
         // Пример:
         if (rewardData.coins > 0)
         {
+            
             // Ваш код: добавить монеты
             Debug.Log($"[RewardManager] Игрок получил {rewardData.coins} монет.");
         }

@@ -1,27 +1,31 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class QuestInstance : MonoBehaviour
 {
     [Header("Ссылка на данные квеста (ScriptableObject)")]
     public QuestDefinition questDefinition;
 
-    // Состояние:
-    private bool isCompleted = false;       // true, когда все условия выполнены
-    private bool isClaimed = false;       // true, когда награда забрана
+    // Состояние
+    private bool isCompleted = false;    // все условия выполнены, ждем ClaimReward
+    private bool isClaimed = false;    // награда уже забрана
 
-    // Собранные Condition-компоненты (IQuestCondition)
+    // Все компоненты, реализующие IQuestCondition
     private List<IQuestCondition> conditions = new List<IQuestCondition>();
 
-    // Событие «квест готов к получению награды»
+    // Когда все условия выполнены: UI должен показать кнопку «Забрать»
     public event System.Action OnReadyToClaim;
 
-    // Событие «игрок нажал кнопку забрать награду»
+    // Когда игрок нажал «Забрать»  QuestManager должен удалить сам QuestInstance
     public event System.Action OnQuestClaimed;
+
+    // Когда QuestInstance уничтожен (например, вручную Destroy)
+    public event System.Action<QuestInstance> OnDestroyed;
 
     private void Awake()
     {
-        // Собираем все компоненты условия на этом GameObject (и потомках)
+        // Собираем все IQuestCondition в этом GameObject и его потомках
         var all = GetComponentsInChildren<MonoBehaviour>();
         foreach (var mb in all)
         {
@@ -32,20 +36,18 @@ public class QuestInstance : MonoBehaviour
             }
         }
 
-        // Регистрируемся в QuestManager
-        QuestManager.Instance.RegisterQuest(this);
-
-        // Если условия уже выполнены (например, игрок сделал их раньше),
-        // сразу же помечаем квест как «готов получить награду»
+        // Сразу проверяем: может ли квест уже считаться выполненным?
+        // (если условия выполнялись до момента Spawn'а)
         CheckImmediateCompletion();
     }
 
     private void Update()
     {
+        // Если уже выполнено или награда забрана — никаких проверок не делаем
         if (isCompleted || isClaimed)
             return;
 
-        // Если ещё не выполнены все условия, проверяем каждую секунду/кадр
+        // Проверяем каждое условие
         bool allTrue = true;
         foreach (var cond in conditions)
         {
@@ -58,30 +60,30 @@ public class QuestInstance : MonoBehaviour
 
         if (allTrue)
         {
-            // Помечаем: все условия достигнуты  квест завершён (но не выдали награду)
             isCompleted = true;
-            // Отпишем все условия, чтобы не получать лишние события после готовности
+            // Отписываем все условия
             foreach (var cond in conditions)
                 cond.Dispose();
 
-            // Оповещаем UI: «квест можно забрать»
+            // Оповещаем UI: «квест готов к получению»
             OnReadyToClaim?.Invoke();
         }
         else
         {
-            // Пока условия не все выполнены, можно оповестить UI о прогрессе
+            // Если условия ещё не все выполнены, можно обновлять прогресс в UI
             float progress = CalculateNormalizedProgress();
             OnProgressChanged?.Invoke(progress);
         }
     }
 
     /// <summary>
-    /// Если все условия (IQuestCondition) до этого момента уже выполнялись,
-    /// сразу вызываем OnReadyToClaim, чтобы UI показал кнопку «забрать» сразу.
+    /// Если все условия были выполнены до того, как этот объект появился,
+    /// сразу вызываем OnReadyToClaim().
     /// </summary>
     private void CheckImmediateCompletion()
     {
-        if (isCompleted || isClaimed) return;
+        if (isCompleted || isClaimed)
+            return;
 
         bool allTrue = true;
         foreach (var cond in conditions)
@@ -102,7 +104,9 @@ public class QuestInstance : MonoBehaviour
         }
     }
 
-    // Метод для UI, чтобы получить текущий прогресс (0..1).
+    /// <summary>
+    /// Для UI: возвращаем текущий прогресс (0..1).
+    /// </summary>
     public float GetCurrentProgress()
     {
         return CalculateNormalizedProgress();
@@ -118,9 +122,12 @@ public class QuestInstance : MonoBehaviour
     }
 
     /// <summary>
-    /// Вызывается по клику кнопки «Забрать награду».
-    /// Здесь выдаём игроку награду, запускаем UnityEvent onQuestCompleted,
-    /// и оповещаем об окончательном закрытии квеста.
+    /// Публичный геттер, чтобы QuestManager знал, выполнен ли квест до показа UI.
+    /// </summary>
+    public bool IsCompleted => isCompleted;
+
+    /// <summary>
+    /// Вызывается, когда в UI нажали кнопку «Забрать награду».
     /// </summary>
     public void ClaimReward()
     {
@@ -131,30 +138,19 @@ public class QuestInstance : MonoBehaviour
 
         // Выдать награду
         RewardManager.Instance.GiveReward(questDefinition.reward);
-        // Дополнительный UnityEvent (например, открыть дверь и т. д.)
+        // UnityEvent для любых дополнительных действий (открыть дверь и т.п.)
         questDefinition.onQuestCompleted?.Invoke();
 
-        // Оповестить, что квест окончательно «забран»
+        // Оповещаем менеджер: «квест окончательно забран»
         OnQuestClaimed?.Invoke();
-
-        // Удалить/деактивировать квест из сцены
-        QuestManager.Instance.UnregisterQuest(this);
-        Destroy(gameObject);
     }
 
-    // Событие прогресса, которое UI может слушать (от 0 до 1)
-    public event System.Action<float> OnProgressChanged;
-
-    // Для отладки в редакторе
-    private void OnDrawGizmos()
+    private void OnDestroy()
     {
-#if UNITY_EDITOR
-        if (!Application.isPlaying && questDefinition != null)
-        {
-            var loc = LocalizationManager.Instance;
-            string label = questDefinition.questId.ToString(); // или questDefinition.questId.ToString()
-            UnityEditor.Handles.Label(transform.position + Vector3.up * 1.5f, label);
-        }
-#endif
+        // Уведомляем, что QuestInstance удалён
+        OnDestroyed?.Invoke(this);
     }
+
+    // Событие, чтобы UI обновлялся при каждом изменении прогресса
+    public event System.Action<float> OnProgressChanged;
 }

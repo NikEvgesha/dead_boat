@@ -71,7 +71,7 @@ public class GameManager : MonoBehaviour
 
         SaveManager.Instance.ResetLobbyItems();
 
-        StartQuest();
+        //StartQuest();
     }
     private void StartQuest()
     {

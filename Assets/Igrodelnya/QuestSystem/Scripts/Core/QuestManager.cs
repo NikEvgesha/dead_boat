@@ -5,24 +5,28 @@ public class QuestManager : MonoBehaviour
 {
     public static QuestManager Instance { get; private set; }
 
-    [Header("Список квестов (в порядке)")]
-    [Tooltip("Перетащите сюда ваши префабы Quest_Kill5Rats, Quest_BuyCoal и т. д. " +
-             "Они будут запускаться строго по порядку.")]
+    [Header("Список квестов (префабы) в порядке выполнения")]
+    [Tooltip("В Inspector перетащите: Quest_SellGoldBar_Prefab, Quest_BuyCoal_Prefab, Quest_LeaveTown_Prefab, Quest_Kill5AnyMobs_Prefab и т.д.")]
     public List<GameObject> questPrefabs = new List<GameObject>();
 
-    [Header("UI")]
-    public Transform questsUIContainer;   // Контейнер для QuestUIItem
-    public GameObject questUIItemPrefab;  // Prefab QuestUIItem (UI-строка)
+    [Header("UI (список квестов)")]
+    [Tooltip("Panel или пустой контейнер с LayoutGroup — куда мы будем инстанцировать QuestUIItem")]
+    public Transform questsUIContainer;
+    [Tooltip("Prefab одного QuestUIItem")]
+    public GameObject questUIItemPrefab;
 
-    private int currentIndex = 0;          // индекс в questPrefabs, который сейчас активен
-    private QuestInstance currentQuest;    // ссылка на вновь созданный QuestInstance
+    // Все заспавненные QuestInstance (условия у них слушают события сквозь всю игру)
+    private List<QuestInstance> allQuests = new List<QuestInstance>();
 
+    private int currentIndex = 0;        // индекс первого невыполненного квеста
+    private QuestUIItem currentUIItem;   // UI-элемент для текущего квеста
+    private bool isStart;
     private void Awake()
     {
         if (Instance == null)
         {
             Instance = this;
-            //DontDestroyOnLoad(gameObject); // если нужно
+            //DontDestroyOnLoad(gameObject);
         }
         else
         {
@@ -30,89 +34,130 @@ public class QuestManager : MonoBehaviour
             return;
         }
     }
-
     private void Start()
     {
-        // Запускаем «очередной» квест на старте уровня
-        
+        StartQuest();
     }
     public void StartQuest()
     {
-        StartNextQuest();
+        if (isStart)
+            return;
+        isStart = true;
+        // 1) Спавним сразу все QuestInstance (но UI ещё не создаём)
+        for (int i = 0; i < questPrefabs.Count; i++)
+        {
+            GameObject prefab = questPrefabs[i];
+            if (prefab == null)
+            {
+                Debug.LogError($"[QuestManager] questPrefabs[{i}] == null!");
+                allQuests.Add(null);
+                continue;
+            }
+
+            // Создаём экземпляр квеста
+            GameObject obj = Instantiate(prefab, Vector3.zero, Quaternion.identity);
+            QuestInstance qi = obj.GetComponent<QuestInstance>();
+            if (qi == null)
+            {
+                Debug.LogError($"[QuestManager] {prefab.name} не содержит QuestInstance!");
+                Destroy(obj);
+                allQuests.Add(null);
+                continue;
+            }
+
+            allQuests.Add(qi);
+
+            // Подписываемся на Destroy этого QuestInstance, чтобы очистить список
+            qi.OnDestroyed += OnQuestInstanceDestroyed;
+        }
+
+        // 2) Показываем первый невыполненный квест в UI
+        ShowCurrentQuest();
     }
+
     /// <summary>
-    /// Создаёт новый QuestInstance из prefab questPrefabs[currentIndex].
-    /// Если таких нет — просто ничего не делает (все квесты пройдены).
+    /// Показывает текущий (allQuests[currentIndex]) квест в UI.
+    /// Если квест уже выполнен  сразу покажет кнопку «Забрать», иначе — прогресс-бар.
+    /// Если currentIndex вне диапазона  скрывает questsUIContainer (нет активных).
     /// </summary>
-    private void StartNextQuest()
+    private void ShowCurrentQuest()
     {
-        // Если мы вышли за пределы списка, значит квестов больше нет
-        if (currentIndex < 0 || currentIndex >= questPrefabs.Count)
+        // Сначала уничтожаем предыдущий UI-элемент (если есть)
+        if (currentUIItem != null)
         {
-            currentQuest = null;
+            Destroy(currentUIItem.gameObject);
+            currentUIItem = null;
+        }
+
+        // Проверяем, если список закончился
+        if (currentIndex < 0 || currentIndex >= allQuests.Count)
+        {
+            if (questsUIContainer != null)
+                questsUIContainer.gameObject.SetActive(false);
             return;
         }
 
-        // Инстанциируем следующий prefab
-        GameObject prefab = questPrefabs[currentIndex];
-        if (prefab == null)
+        // Включаем контейнер UI, т.к. есть квест
+        if (questsUIContainer != null)
+            questsUIContainer.gameObject.SetActive(true);
+
+        // Берём QuestInstance
+        QuestInstance q = allQuests[currentIndex];
+        if (q == null)
         {
-            Debug.LogError($"[QuestManager] questPrefabs[{currentIndex}] == null!");
+            Debug.LogError($"[QuestManager] allQuests[{currentIndex}] == null!");
             return;
         }
 
-        // Создаём копию в сцене
-        GameObject qGO = Instantiate(prefab, Vector3.zero, Quaternion.identity);
-        currentQuest = qGO.GetComponent<QuestInstance>();
-        if (currentQuest == null)
-        {
-            Debug.LogWarning("Ошибка: prefab не содержит QuestInstance!");
-            return;
-        }
-
-        // Регистрируем UI для этого нового квеста
+        // Создаём UI-элемент
         if (questUIItemPrefab != null && questsUIContainer != null)
         {
-            var uiGO = Instantiate(questUIItemPrefab, questsUIContainer);
-            var uiItem = uiGO.GetComponent<QuestUIItem>();
-            uiItem.Bind(currentQuest);
+            GameObject uiGO = Instantiate(questUIItemPrefab, questsUIContainer);
+            currentUIItem = uiGO.GetComponent<QuestUIItem>();
+            currentUIItem.Bind(q);
+
+            // Подписываемся: когда на этом квесте нажмут «Забрать»
+            q.OnQuestClaimed += OnQuestClaimed;
         }
-
-        // Подписываемся: когда игрок заберёт награду (ClaimReward),
-        // запустить следующий квест:
-        currentQuest.OnQuestClaimed += OnCurrentQuestClaimed;
-    }
-
-    /// <summary>
-    /// Вызывается, когда текущий квест был окончательно «забран» (награда получена).
-    /// Отключаем подписки, удаляем UI и запускаем следующий в списке.
-    /// </summary>
-    private void OnCurrentQuestClaimed()
-    {
-        if (currentQuest != null)
+        else
         {
-            currentQuest.OnQuestClaimed -= OnCurrentQuestClaimed;
+            Debug.LogWarning("[QuestManager] questUIItemPrefab или questsUIContainer == null!");
+        }
+    }
+
+    /// <summary>
+    /// Вызывается, когда игрок нажал «Забрать награду» в текущем квесте.
+    /// Удаляем сам QuestInstance и его UI, переходим к следующему квесту.
+    /// </summary>
+    private void OnQuestClaimed()
+    {
+        QuestInstance prevQuest = allQuests[currentIndex];
+        if (prevQuest != null)
+        {
+            // Отпишемся от события
+            prevQuest.OnQuestClaimed -= OnQuestClaimed;
+            // Удалим объект из сцены
+            Destroy(prevQuest.gameObject);
+            allQuests[currentIndex] = null;
         }
 
-        // Переходим к следующему квесту в очереди
+        // Сдвигаем индекс к следующему квесту
         currentIndex++;
-        StartNextQuest();
+        ShowCurrentQuest();
     }
 
     /// <summary>
-    /// Регистрирует новый QuestInstance, чтобы QuestUIItem в Awake/Start его подхватил.
-    /// (теперь это почти не нужно, так как мы сами создаём UI вручную)
+    /// Если кто-то в коде Destroy’ит QuestInstance «вне очереди»,
+    /// очищаем ссылку в allQuests.
     /// </summary>
-    public void RegisterQuest(QuestInstance quest)
+    private void OnQuestInstanceDestroyed(QuestInstance qi)
     {
-        // Если хотим регистрировать «прочие» квесты, можно оставить пустым
+        int idx = allQuests.IndexOf(qi);
+        if (idx >= 0)
+            allQuests[idx] = null;
     }
 
-    /// <summary>
-    /// Отменить регистрацию/закрыть квест (мы сами его уничтожаем по ClaimReward).
-    /// </summary>
-    public void UnregisterQuest(QuestInstance quest)
-    {
-        // Сюда можно добавить логику, если нужно еще что-то делать при завершении.
-    }
+    // Эти методы оставлены пустыми, потому что мы больше не используем их
+    public void RegisterQuest(QuestInstance quest) { }
+    public void UnregisterQuest(QuestInstance quest) { }
 }

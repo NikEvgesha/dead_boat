@@ -318,9 +318,9 @@ public class MirraSDKSaveProvider : SaveProvider
 
     public override int LoadLevelId()
     {
-        if (!isInitialize) return -1;
+        if (!isInitialize) return 0;
 
-        int id = MirraSDK.Data.GetInt("LevelId", -1);
+        int id = MirraSDK.Data.GetInt("LevelId", 0);
         return id;
     }
 

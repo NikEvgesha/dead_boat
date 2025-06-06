@@ -1,56 +1,66 @@
 using UnityEngine;
 using UnityEngine.UI;
-
 public class QuestUIItem : MonoBehaviour
 {
-    [Header("Ссылки на UI-элементы")]
+    [Header("Ссылки на UI-элементы (заполните через Inspector)")]
     public Text titleText;
     public Text descriptionText;
     public Slider progressBar;
-    public Button claimButton;      // Кнопка «Забрать награду»
-    public Text claimButtonText; // Текст на кнопке (например, "Забрать")
+    public Button claimButton;
+    public Text claimButtonText;
 
     private QuestInstance boundQuest;
 
     /// <summary>
-    /// Привязываем QuestInstance и сразу заполняем UI.
+    /// Вызывается сразу после Instantiate(prefab) — привязываем QuestInstance
+    /// и настраиваем UI.
     /// </summary>
     public void Bind(QuestInstance quest)
     {
         boundQuest = quest;
 
-        // Заполнить заголовок/описание (локализовано через QuestDefinition)
+        // Установим локализованный текст (из QuestDefinition)
         titleText.text = quest.questDefinition.Title;
         if (descriptionText != null)
             descriptionText.text = quest.questDefinition.Description;
 
-        // Прячем кнопку «Забрать» до тех пор, пока квест не станет готов
+        // Прячем кнопку «Забрать» до готовности квеста
         claimButton.gameObject.SetActive(false);
 
-        // Сразу отрисовать прогресс 
-        float p = quest.GetCurrentProgress();
+        // Устанавливаем первоначальный прогресс
+        float p = boundQuest.GetCurrentProgress();
         if (progressBar != null)
             progressBar.value = p;
 
-        // Подписываемся на прогресс
-        quest.OnProgressChanged += OnProgressChanged;
-        // Подписываемся на «квест готов к получению»
-        quest.OnReadyToClaim += OnReadyToClaim;
+        // Подписываемся на события QuestInstance
+        boundQuest.OnProgressChanged += OnProgressChanged;
+        boundQuest.OnReadyToClaim += OnReadyToClaim;
+        boundQuest.OnQuestClaimed += OnBoundQuestDestroyed;
+        boundQuest.OnDestroyed += OnBoundQuestDestroyed;
 
-        // Навешиваем событие на кнопку «Забрать»
-        claimButton.onClick.AddListener(OnClaimButtonClicked);
+        // Навешиваем клик на кнопку «Забрать»
+        claimButton.onClick.AddListener(() =>
+        {
+            boundQuest.ClaimReward();
+        });
+
+        // Если квест уже завершён (IsCompleted) к этому моменту — сразу показать «Забрать»
+        if (boundQuest.IsCompleted)
+        {
+            OnReadyToClaim();
+        }
     }
 
     private void OnProgressChanged(float normalized)
     {
-        // Если ещё не готов к получению  показываем прогресс-бар
-        if (progressBar != null && !claimButton.gameObject.activeSelf)
+        // Обновляем шкалу, если кнопка «Забрать» ещё скрыта
+        if (!claimButton.gameObject.activeSelf && progressBar != null)
             progressBar.value = normalized;
     }
 
     private void OnReadyToClaim()
     {
-        // Скрываем прогресс-бар и показываем кнопку «Забрать»
+        // Скрываем полоску прогресса и показываем кнопку «Забрать награду»
         if (progressBar != null)
             progressBar.gameObject.SetActive(false);
 
@@ -58,10 +68,15 @@ public class QuestUIItem : MonoBehaviour
         claimButtonText.text = "Забрать награду";
     }
 
-    private void OnClaimButtonClicked()
+    private void OnBoundQuestDestroyed(QuestInstance _)
     {
-        // Когда игрок нажал «Забрать», вызываем ClaimReward у QuestInstance
-        boundQuest.ClaimReward();
+        // Когда QuestInstance удаляется (Destroy) или ClaimReward  уничтожаем UI
+        Destroy(gameObject);
+    }
+    private void OnBoundQuestDestroyed()
+    {
+        // Когда QuestInstance удаляется (Destroy) или ClaimReward  уничтожаем UI
+        Destroy(gameObject);
     }
 
     private void OnDestroy()
@@ -70,7 +85,9 @@ public class QuestUIItem : MonoBehaviour
         {
             boundQuest.OnProgressChanged -= OnProgressChanged;
             boundQuest.OnReadyToClaim -= OnReadyToClaim;
-            claimButton.onClick.RemoveAllListeners();
+            boundQuest.OnQuestClaimed -= OnBoundQuestDestroyed;
+            boundQuest.OnDestroyed -= OnBoundQuestDestroyed;
         }
+        claimButton.onClick.RemoveAllListeners();
     }
 }

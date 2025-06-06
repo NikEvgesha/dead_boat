@@ -28,7 +28,7 @@ public class QuestDefinition : ScriptableObject
         get
         {
             if (titleKey == QuestKeyTypeTitle.None) return string.Empty;
-            return LocalizationManager.Instance.LocalizationData.GetTranslation(LocalizationKeyType.Quest.ToString(), LocalizationManager.Instance.CurrentLanguage, titleKey.ToString());;
+            return LocalizationManager.Instance.LocalizationData.GetTranslation(titleKey.ToString(), LocalizationManager.Instance.CurrentLanguage, LocalizationKeyType.Quest.ToString());;
         }
     }
 
@@ -40,7 +40,7 @@ public class QuestDefinition : ScriptableObject
         get
         {
             if (descriptionKey == QuestKeyTypeDescription.None) return string.Empty;
-            return LocalizationManager.Instance.LocalizationData.GetTranslation(LocalizationKeyType.Quest.ToString(), LocalizationManager.Instance.CurrentLanguage, titleKey.ToString());;
+            return LocalizationManager.Instance.LocalizationData.GetTranslation(descriptionKey.ToString(), LocalizationManager.Instance.CurrentLanguage, LocalizationKeyType.Quest.ToString()); ;
         }
     }
 
