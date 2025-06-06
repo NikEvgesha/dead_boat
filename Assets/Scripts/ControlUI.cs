@@ -76,6 +76,17 @@ public class ControlUI : MonoBehaviour
         return _touchControls;
     }
 
+    public void HideItemHints()
+    {
+        if (_isQuitting)
+            return;
+        if (!_isMobile)
+        {
+            _descktopHints.putToInventory.SetActive(false);
+            _descktopHints.attach.SetActive(false);
+            _descktopHints.rotate.SetActive(false);
+        }
+    }
 
     public void ShowPickUpButton(bool visible)
     {

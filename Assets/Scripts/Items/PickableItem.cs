@@ -76,6 +76,7 @@ public class PickableItem : MonoBehaviour
     private void OnDisable()
     {
         StopAllCoroutines();
+        ControlUI.Instance.HideItemHints();
     }
 
     public void CheckComponents()
@@ -376,7 +377,7 @@ public class PickableItem : MonoBehaviour
         switch (_status)
         {
             case ItemStatus.Free:
-                ControlUI.Instance.ShowAttachButton(_attacher.InAttachZone);
+                ControlUI.Instance.ShowAttachButton(focus && _attacher.InAttachZone);
                 ControlUI.Instance.ShowPickUpButton(focus);
                 ControlUI.Instance.ShowPutToInventoryButton(focus);
                 break;

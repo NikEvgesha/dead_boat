@@ -50,12 +50,12 @@ public class Roulette : MonoBehaviour
     private int _targetId;
     private bool _spinning;
     private float _spinProgress;
-    private int _tillNextDay;
+    private TimeSpan _tillNextDay;
     private bool _freeAvailable;
     private float _targetAngle;
     private float _currentAngle;
     private float _currentSpinTime;
-
+    private DateTime _lastSpinTime; 
 
     private void Awake()
     {
@@ -177,8 +177,8 @@ public class Roulette : MonoBehaviour
 
     private void CheckFreeSpinAvailable()
     {
-        DateTime lastSpinDate = SaveManager.Instance.LoadRouletteDate();
-        _freeAvailable = lastSpinDate != MirraSDK.Time.CurrentDate;
+        _lastSpinTime = SaveManager.Instance.LoadRouletteDate();
+        _freeAvailable = _lastSpinTime.Date != MirraSDK.Time.CurrentDate.Date;
         SwitchFreePlayButton(_freeAvailable);
 
     }
@@ -200,26 +200,27 @@ public class Roulette : MonoBehaviour
 
     private void SetTime()
     {
-
-        _tillNextDay = 9999; // TODO
+        DateTime now = DateTime.Now;
+        DateTime nextDay = now.Date.AddDays(1);
+        _tillNextDay = nextDay - now;
         _freePlayTimeText.text = String.Format(
             "{0}:{1}:{2}",
-            (_tillNextDay / 24 / 60).ToString("D2"),
-            (_tillNextDay % 24 / 60).ToString("D2"),
-            (_tillNextDay % 60).ToString("D2")
+            (_tillNextDay.Hours).ToString("D2"),
+            (_tillNextDay.Minutes).ToString("D2"),
+            (_tillNextDay.Seconds).ToString("D2")
         );
     }
 
     private IEnumerator FreeSpinTimer()
     {
-        while (_tillNextDay > 0)
+        while (_tillNextDay.TotalSeconds > 0)
         {
-            _tillNextDay -= 1;
+            _tillNextDay -= TimeSpan.FromSeconds(1);
             _freePlayTimeText.text = String.Format(
                 "{0}:{1}:{2}",
-                (_tillNextDay / 24 / 60).ToString("D2"),
-                (_tillNextDay % 24 / 60).ToString("D2"),
-                (_tillNextDay % 60).ToString("D2")
+                (_tillNextDay.Hours).ToString("D2"),
+                (_tillNextDay.Minutes).ToString("D2"),
+                (_tillNextDay.Seconds).ToString("D2")
             );
             yield return new WaitForSeconds(1);
         }

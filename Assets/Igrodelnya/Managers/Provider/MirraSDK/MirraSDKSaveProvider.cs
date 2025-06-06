@@ -329,7 +329,8 @@ public class MirraSDKSaveProvider : SaveProvider
     {
         if (!isInitialize) return;
         Changed = true;
-        MirraSDK.Data.SetString("RouletteLastDate", date.ToString());
+        MirraSDK.Data.SetString("RouletteLastDate", date.Date.ToString());
+        Debug.Log("Date saved: " + date.ToString());
     }
 
     public override DateTime LoadRouletteDate()
@@ -337,6 +338,7 @@ public class MirraSDKSaveProvider : SaveProvider
         if (!isInitialize) return DateTime.Today.AddDays(-1);
 
         string date = MirraSDK.Data.GetString("RouletteLastDate");
+        Debug.Log("Date loaded: " + date);
         if (date.Length == 0)
         {
             return DateTime.Today.AddDays(-1);
