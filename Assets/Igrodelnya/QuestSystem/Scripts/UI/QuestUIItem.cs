@@ -1,17 +1,39 @@
+using System.Collections;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 public class QuestUIItem : MonoBehaviour
 {
     [Header("Ссылки на UI-элементы (заполните через Inspector)")]
-    public Text titleText;
-    public Text descriptionText;
-    public Slider progressBar;
-    public Button claimButton;
-    public Text claimButtonText;
-    public GameObject hint;
+    [SerializeField] private Text _titleText;
+    [SerializeField] private Text _descriptionText;
+    [SerializeField] private Slider _progressBar;
+    [SerializeField] private Button _claimButton;
+    [SerializeField] private Text _claimButtonText;
+    [SerializeField] private GameObject _hint;
+    [SerializeField] private GameObject _body;
 
-    private QuestInstance boundQuest;
+
+    [Header("Параметры для анимации")]
+    [SerializeField] private float _maxAnimScale;
+    [SerializeField] private float _minAnimScale;
+    [SerializeField] private float _speedScale;
+    [SerializeField] private float _speedPos;
+    [SerializeField] private float _startAnimPos = 100;
+    [SerializeField] private float _finishAnimPos = 0;
+
+
+
+    private float _animScale = 1;
+    private float _animPos = 1;
+    private bool _start = false;
+
+    private QuestInstance _boundQuest;
+
+    private void OnEnable()
+    {
+        StartCoroutine(StartAnimation());
+    }
 
     /// <summary>
     /// Вызывается сразу после Instantiate(prefab) — привязываем QuestInstance
@@ -19,35 +41,35 @@ public class QuestUIItem : MonoBehaviour
     /// </summary>
     public void Bind(QuestInstance quest)
     {
-        boundQuest = quest;
+        _boundQuest = quest;
 
         // Установим локализованный текст (из QuestDefinition)
-        titleText.text = quest.questDefinition.Title;
-        if (descriptionText != null)
-            descriptionText.text = quest.questDefinition.Description;
+        _titleText.text = quest.questDefinition.Title;
+        if (_descriptionText != null)
+            _descriptionText.text = quest.questDefinition.Description;
 
         // Прячем кнопку «Забрать» до готовности квеста
-        claimButton.gameObject.SetActive(false);
+        _claimButton.gameObject.SetActive(false);
 
         // Устанавливаем первоначальный прогресс
-        float p = boundQuest.GetCurrentProgress();
-        if (progressBar != null)
-            progressBar.value = p;
+        float p = _boundQuest.GetCurrentProgress();
+        if (_progressBar != null)
+            _progressBar.value = p;
 
         // Подписываемся на события QuestInstance
-        boundQuest.OnProgressChanged += OnProgressChanged;
-        boundQuest.OnReadyToClaim += OnReadyToClaim;
-        boundQuest.OnQuestClaimed += OnBoundQuestDestroyed;
-        boundQuest.OnDestroyed += OnBoundQuestDestroyed;
+        _boundQuest.OnProgressChanged += OnProgressChanged;
+        _boundQuest.OnReadyToClaim += OnReadyToClaim;
+        _boundQuest.OnQuestClaimed += OnBoundQuestDestroyed;
+        _boundQuest.OnDestroyed += OnBoundQuestDestroyed;
 
         // Навешиваем клик на кнопку «Забрать»
-        claimButton.onClick.AddListener(() =>
+        _claimButton.onClick.AddListener(() =>
         {
-            boundQuest.ClaimReward();
+            //boundQuest.ClaimReward();
         });
 
         // Если квест уже завершён (IsCompleted) к этому моменту — сразу показать «Забрать»
-        if (boundQuest.IsCompleted)
+        if (_boundQuest.IsCompleted)
         {
             OnReadyToClaim();
         }
@@ -55,12 +77,12 @@ public class QuestUIItem : MonoBehaviour
 
     private void OnProgressChanged(float normalized)
     {
-        if (!hint.activeSelf && normalized > 0)
-            hint.SetActive(true);
+        if (!_hint.activeSelf && normalized > 0)
+            _hint.SetActive(true);
 
         // Обновляем шкалу, если кнопка «Забрать» ещё скрыта
-        if (progressBar != null)
-            progressBar.value = normalized;
+        if (_progressBar != null)
+            _progressBar.value = normalized;
     }
 
     private void OnReadyToClaim()
@@ -69,8 +91,10 @@ public class QuestUIItem : MonoBehaviour
         //if (progressBar != null)
         //progressBar.gameObject.SetActive(false);
         OnProgressChanged(1);
+        StartCoroutine(EndAnimation());
+        //  claimButton.gameObject.SetActive(true);
 
-        claimButton.gameObject.SetActive(true);
+        //_boundQuest.ClaimReward();
         //claimButtonText.text = "Забрать награду";
     }
 
@@ -87,13 +111,48 @@ public class QuestUIItem : MonoBehaviour
 
     private void OnDestroy()
     {
-        if (boundQuest != null)
+        if (_boundQuest != null)
         {
-            boundQuest.OnProgressChanged -= OnProgressChanged;
-            boundQuest.OnReadyToClaim -= OnReadyToClaim;
-            boundQuest.OnQuestClaimed -= OnBoundQuestDestroyed;
-            boundQuest.OnDestroyed -= OnBoundQuestDestroyed;
+            _boundQuest.OnProgressChanged -= OnProgressChanged;
+            _boundQuest.OnReadyToClaim -= OnReadyToClaim;
+            _boundQuest.OnQuestClaimed -= OnBoundQuestDestroyed;
+            _boundQuest.OnDestroyed -= OnBoundQuestDestroyed;
         }
-        claimButton.onClick.RemoveAllListeners();
+        _claimButton.onClick.RemoveAllListeners();
+    }
+    private IEnumerator EndAnimation()
+    {
+        while (!_start)
+        {
+            yield return null;
+        }
+        _animScale = transform.localScale.x;
+        while (_animScale < _maxAnimScale)
+        {
+            _animScale += Time.deltaTime * _speedScale;
+            transform.localScale = Vector3.one * _animScale;
+            yield return null;
+        }
+        while (_animScale > _minAnimScale)
+        {
+            _animScale -= Time.deltaTime * _speedScale;
+            transform.localScale = Vector3.one * _animScale;
+            yield return null;
+        }
+
+        _boundQuest.ClaimReward();
+    }
+    private IEnumerator StartAnimation()
+    {
+        _animPos = _body.transform.localPosition.y + _startAnimPos;
+        while (_animPos > _finishAnimPos)
+        {
+
+            _animPos -= Time.deltaTime * _speedPos;
+            _body.transform.localPosition = Vector3.up * _animPos;
+            yield return null;
+        }
+        _body.transform.localPosition = Vector3.zero;
+        _start = true;
     }
 }
