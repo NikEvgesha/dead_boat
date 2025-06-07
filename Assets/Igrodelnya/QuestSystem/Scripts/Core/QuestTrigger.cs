@@ -6,6 +6,6 @@ public class QuestTrigger : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         if (other.GetComponent<PlayerStatsManager>())
-            GameEvents.OnNPCInteracted(_interactType);
+            GameEvents.OnNPCInteracted?.Invoke(_interactType);
     }
 }
