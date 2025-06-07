@@ -127,7 +127,7 @@ public class Roulette : MonoBehaviour
     {
         _adButton.interactable = false;
         _gemsButton.interactable = false;
-        SaveManager.Instance.SaveRouletteDate(MirraSDK.Time.CurrentDate);
+        SaveManager.Instance.SaveRouletteDate(MirraSDK.Time.CurrentDate.ToUniversalTime());
 
         _targetId = _rewards.IndexOf(GetRandomReward());
 
@@ -178,7 +178,7 @@ public class Roulette : MonoBehaviour
     private void CheckFreeSpinAvailable()
     {
         _lastSpinTime = SaveManager.Instance.LoadRouletteDate();
-        _freeAvailable = _lastSpinTime.Date != MirraSDK.Time.CurrentDate.Date;
+        _freeAvailable = _lastSpinTime.Date != MirraSDK.Time.CurrentDate.ToUniversalTime().Date;
         SwitchFreePlayButton(_freeAvailable);
 
     }
@@ -200,7 +200,7 @@ public class Roulette : MonoBehaviour
 
     private void SetTime()
     {
-        DateTime now = DateTime.Now;
+        DateTime now = MirraSDK.Time.CurrentDate.ToUniversalTime();
         DateTime nextDay = now.Date.AddDays(1);
         _tillNextDay = nextDay - now;
         _freePlayTimeText.text = String.Format(

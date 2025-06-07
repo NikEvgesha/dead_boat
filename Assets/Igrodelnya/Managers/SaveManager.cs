@@ -194,27 +194,27 @@ public class SaveManager : MonoBehaviour
         return saveProvider.LoadRouletteDate();
     }
 
-/*    public void SaveAttachedItem(string id)
-    {
-        saveProvider.SaveAttachedItem(id);
-    }
+    /*    public void SaveAttachedItem(string id)
+        {
+            saveProvider.SaveAttachedItem(id);
+        }
 
-    public List<string> LoadAttachedItems()
-    {
-        return saveProvider.LoadAttachedItems();
-    }
+        public List<string> LoadAttachedItems()
+        {
+            return saveProvider.LoadAttachedItems();
+        }
 
-    public void ResetAttachedItems()
-    {
-        saveProvider.ResetAttachedItems();
-    }
+        public void ResetAttachedItems()
+        {
+            saveProvider.ResetAttachedItems();
+        }
 
-    public void DeleteAttachedItem(string id)
-    {
-        List<string> current = saveProvider.LoadAttachedItems();
-        current.Remove(id);
-        saveProvider.SaveAllAttachedItems(current);
-    }*/
+        public void DeleteAttachedItem(string id)
+        {
+            List<string> current = saveProvider.LoadAttachedItems();
+            current.Remove(id);
+            saveProvider.SaveAllAttachedItems(current);
+        }*/
 
     /*    public void SaveInventory()
         {
