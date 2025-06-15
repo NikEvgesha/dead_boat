@@ -1,3 +1,4 @@
+using System;
 using TouchControlsKit;
 using UnityEngine;
 
@@ -107,6 +108,8 @@ public class PlayerInput : MonoBehaviour
     public bool Attach => _attach;
     public bool Inventory => _inventory;
 
+    public bool Pause => _pause;
+
 
     private bool _jump;
     private bool _sprint;
@@ -123,7 +126,23 @@ public class PlayerInput : MonoBehaviour
     private bool _healing;
     private bool _rotationX;
     private bool _rotationY;
+    private bool _pause;
 
+
+    public Action AJump;
+    public Action ASprint;
+    public Action AInteraction;
+    public Action AInteractionHold;
+    public Action APickUp;
+    public Action AForcePickUp;
+    public Action AInTrain;
+    public Action AAttach;
+    public Action AInventory;
+    public Action AUseItem;
+    public Action AReload;
+    public Action AAttack;
+    public Action AHealing;
+    public Action APause;
 
     private void Awake()
     {
@@ -150,11 +169,11 @@ public class PlayerInput : MonoBehaviour
 
     private void CheckControls()
     {
-        if (Input.GetKeyDown(KeyCode.Tab))
+       /* if (Input.GetKeyDown(KeyCode.Tab))
         {
             //ShowCursor(!IsCursorVisible);
             ControlManager.Instance.CursorActive = !ControlManager.Instance.CursorActive;
-        }
+        }*/
 
         if (ControlManager.Instance.UseTouchControl)
         {
@@ -177,10 +196,11 @@ public class PlayerInput : MonoBehaviour
             _interactionHold = Input.GetKey(KeyCode.E);
             _sprint = Input.GetKey(KeyCode.LeftShift);
             _attach = Input.GetKeyDown(KeyCode.Z);
-            _inventory = Input.GetKeyDown(KeyCode.B);
+            _inventory = Input.GetKeyDown(KeyCode.Tab);
             _reload = Input.GetKeyDown(KeyCode.R);
             _rotationY = _interactionHold;
             _rotationX = Input.GetKey(KeyCode.Q);
+            _pause = Input.GetKeyDown(KeyCode.P);
             if (!ControlManager.Instance.CursorActive)
             {
                 _pickUp = Input.GetMouseButtonDown(0);
@@ -189,10 +209,24 @@ public class PlayerInput : MonoBehaviour
                 _healing = _attack;
             }
         }
+        if (_jump) AJump?.Invoke();
+        if (_sprint) ASprint?.Invoke();
+        if (_interaction) AInteraction?.Invoke();
+        if (_interactionHold) AInteractionHold?.Invoke();
+        if (_pickUp) APickUp?.Invoke();
+        if (_forcePickUp) AForcePickUp?.Invoke();
+        if (_inTrain) AInTrain?.Invoke();
+        if (_attach) AAttach?.Invoke();
+        if (_inventory) AInventory?.Invoke();
+        if (_useItem) AUseItem?.Invoke();
+        if (_reload) AReload?.Invoke();
+        if (_attack) AAttack?.Invoke();
+        if (_healing) AHealing?.Invoke();
+        if (_pause) APause?.Invoke();
 
-        // _useItem = _pickUp; //Переработать смысл кнопки
+    // _useItem = _pickUp; //Переработать смысл кнопки
 
-    }
+}
 
     private void UpdateMovement()
     {

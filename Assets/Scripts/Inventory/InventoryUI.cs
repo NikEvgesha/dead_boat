@@ -39,8 +39,9 @@ public class InventoryUI : MonoBehaviour
             Destroy(gameObject);
             return;
         }
-
+        
         _instance = this;
+        PlayerInput.Instance.AInventory += ToggleOpen;
     }
 
     private void Start()
@@ -74,10 +75,10 @@ public class InventoryUI : MonoBehaviour
 
     private void Update()
     {
-        if (PlayerInput.Instance.Inventory)
+        /*if (PlayerInput.Instance.Inventory)
         {
             ControlManager.Instance.CursorActive = !ControlManager.Instance.CursorActive;
-        }
+        }*/
     }
 
 
@@ -87,16 +88,16 @@ public class InventoryUI : MonoBehaviour
         {
             _panel.SetActive(true);
             _isOpen = true;
-            //if (!ControlManager.Instance.UseTouchControl)
-            //    ControlManager.Instance.CursorActive = true;
+            if (!ControlManager.Instance.UseTouchControl)
+                ControlManager.Instance.CursorActive = true;
             for (int i = 0; i < _quickPanelCapacity; i++)
             {
                 _quickSlots[i].gameObject.SetActive(true);
             }
         } else
         {
-            //if (!ControlManager.Instance.UseTouchControl)
-            //    ControlManager.Instance.CursorActive = false;
+            if (!ControlManager.Instance.UseTouchControl)
+                ControlManager.Instance.CursorActive = false;
             for (int i = 0; i < _quickPanelCapacity; i++)
             {
                 if (_quickSlots[i].Empty)
