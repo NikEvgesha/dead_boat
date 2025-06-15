@@ -184,8 +184,10 @@ public class PlayerMovement : MonoBehaviour
         _isStart = false;
         _waitStart = _lagStart;
         transform.position = position.position;
+        //transform.position += transform.forward * 1000;
         //transform.rotation = position.rotation;
         StartCoroutine(WaitForTeleport());
+
     }
 
     private IEnumerator WaitForTeleport()

@@ -59,21 +59,23 @@ public class DecorationSpawner : MonoBehaviour
 
     IEnumerator SimulateInitialSpawns()
     {
+        while (!boardController.StartSpawn)
+            yield return null;
         // Определяем стартовую точку как текущую позицию минус simulateTravelDistance
-        float simulatedStartDistance = boardController.TotalDistanceTraveled - simulateTravelDistance;
+        float simulatedStartDistance = boardController.StartDistanceTraveled - simulateTravelDistance;
         // Начинаем спавнить с первого интервала после simulatedStartDistance
         float currentSimulatedDistance = simulatedStartDistance + spawnInterval;
-
         // Создаем объекты так, как будто мы уже проехали от simulatedStartDistance до текущей позиции
-        while (currentSimulatedDistance <= boardController.TotalDistanceTraveled)
+        while (currentSimulatedDistance <= boardController.StartDistanceTraveled)
         {
+
             SpawnDecoration(currentSimulatedDistance);
             currentSimulatedDistance += spawnInterval;
             // Разбиваем создание объектов по кадрам
             yield return null;
         }
         // Устанавливаем порог следующего спавна для будущего
-        nextSpawnDistance = boardController.TotalDistanceTraveled + spawnInterval;
+        nextSpawnDistance = boardController.StartDistanceTraveled + spawnInterval;
     }
 
     void Update()

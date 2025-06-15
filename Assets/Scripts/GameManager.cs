@@ -48,7 +48,7 @@ public class GameManager : MonoBehaviour
         if (_player == null)
         {
             _player = PlayerManager.Instance.GetComponent<PlayerStatsManager>();
-            PlayerMovement.Instance.Teleport(_playerSpawnPoint);
+            //PlayerMovement.Instance.Teleport(_playerSpawnPoint);
         }
         _ammoManager = _player.GetComponent<PlayerAmmoManager>();
 

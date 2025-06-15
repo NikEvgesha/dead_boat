@@ -1,7 +1,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.AI;
+using UnityEngine.UIElements;
+using static UnityEditor.PlayerSettings;
 
 public class BoardController : MonoBehaviour
 {
@@ -60,6 +64,8 @@ public class BoardController : MonoBehaviour
 
     // Общая пройденная дистанция (в метрах)
     public float TotalDistanceTraveled = 0f;
+    public float StartDistanceTraveled = 10000f;
+    public bool StartSpawn;
 
     [SerializeField] private float _endTutorialDistance = 50f;
 
@@ -74,6 +80,7 @@ public class BoardController : MonoBehaviour
     public Action EndGame;
     public Action<bool> NoFuel;
     [SerializeField] private AudioSource _audioSource;
+    [SerializeField] private bool _test = false;
     //[SerializeField] private int _rewardForWin = 20;
 
     private void Awake()
@@ -86,8 +93,39 @@ public class BoardController : MonoBehaviour
         {
             rb.isKinematic = true;
         }
+        if (_test)
+        {
+            StartCoroutine(SetSavePosition(StartDistanceTraveled));
+            /*
+            transform.position += transform.forward * 1000;
+            TotalDistanceTraveled += 1000;
+            PlayerMovement.Instance.Teleport(transform);    
+            */
+        }
     }
+    private IEnumerator SetSavePosition(float pos)
+    {
+        float startPos = pos > 1000 ? pos - 1000 : pos;
+        Vector3 oldPos = transform.position + transform.forward * startPos;
+        TotalDistanceTraveled = startPos;
+        Vector3 newPos = transform.position + transform.forward * pos;
+        float time = 0;
+        StartSpawn = true;
+        while (time < 1)
+        {
+            time += Time.deltaTime;
 
+            if (time > 1)
+                time = 1;
+
+            transform.position = Vector3.Lerp(oldPos, newPos, time);
+            TotalDistanceTraveled = time * pos;
+            PlayerMovement.Instance.Teleport(transform);
+
+            yield return null;
+        }
+
+    }
 /*    private void OnDisable()
     {
         if (GameManager.Instance != null)
