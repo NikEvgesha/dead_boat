@@ -57,7 +57,10 @@ public class GemsShop : MonoBehaviour
         _shopCanvas.gameObject.SetActive(_isOpen);
         ControlManager.Instance.CursorActive = _isOpen;
         if (_isOpen)
+        {
             CurrencyManager.Instance.ShowGems?.Invoke(true);
+            PlayerInput.Instance.AOpenWindow?.Invoke(this);
+        }
     }
 
 

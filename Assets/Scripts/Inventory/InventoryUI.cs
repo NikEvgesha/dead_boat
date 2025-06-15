@@ -42,6 +42,7 @@ public class InventoryUI : MonoBehaviour
         
         _instance = this;
         PlayerInput.Instance.AInventory += ToggleOpen;
+        PlayerInput.Instance.AOpenWindow += Close;
     }
 
     private void Start()
@@ -107,7 +108,14 @@ public class InventoryUI : MonoBehaviour
             _isOpen = false;
         }
     }
-    public void ToggleOpen( bool itOpen)
+    public void Close(MonoBehaviour ui)
+    {
+        if (_isOpen)
+        {
+            ToggleOpen();
+        }
+    }
+    /*public void ToggleOpen( bool itOpen)
     {
         if (itOpen)
         {
@@ -131,7 +139,7 @@ public class InventoryUI : MonoBehaviour
             _panel.SetActive(false);
             _isOpen = false;
         }
-    }
+    }*/
 
 
     public void OnItemDrag(bool dragging)

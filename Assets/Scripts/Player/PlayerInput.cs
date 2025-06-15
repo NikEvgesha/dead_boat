@@ -143,6 +143,7 @@ public class PlayerInput : MonoBehaviour
     public Action AAttack;
     public Action AHealing;
     public Action APause;
+    public Action<MonoBehaviour> AOpenWindow;
 
     private void Awake()
     {

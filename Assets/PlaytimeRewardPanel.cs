@@ -31,13 +31,28 @@ public class PlaytimeRewardPanel : MonoBehaviour
             slot.Init(reward);
         }
     }
-
+    private void OnEnable()
+    {
+        PlayerInput.Instance.AOpenWindow += Close;
+    }
+    private void OnDisable()
+    {
+        PlayerInput.Instance.AOpenWindow -= Close;
+    }
     public void ToggleOpen()
     {
         _isOpen = !_isOpen;
         _panel.SetActive(_isOpen);
-    }
+        ControlManager.Instance.CursorActive = _isOpen;
 
+        if (_isOpen)
+            PlayerInput.Instance.AOpenWindow?.Invoke(this);
+    }
+    public void Close(MonoBehaviour ui)
+    {
+        if (ui!= this && _isOpen)
+            ToggleOpen();
+    }
     private void ToggleButtonVisibility(Location location)
     {
         _button.SetActive(location == Location.Lobby);

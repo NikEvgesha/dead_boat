@@ -3,8 +3,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.Mathematics;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -76,20 +74,32 @@ public class Roulette : MonoBehaviour
         CheckFreeSpinAvailable();
     }
 
+    private void OnEnable()
+    {
+        PlayerInput.Instance.AOpenWindow += Close;
+    }
     private void OnDisable()
     {
         LoadingManager.Instance.LocationChanged -= ToggleButtonVisibility;
+        PlayerInput.Instance.AOpenWindow -= Close;
     }
-
     public void ToggleOpen()
     {
         _isOpen = !_isOpen;
         _ui.SetActive(_isOpen);
+        ControlManager.Instance.CursorActive = _isOpen;
+
         if (!_isOpen)
             StopAllCoroutines();
+        else
+            PlayerInput.Instance.AOpenWindow?.Invoke(this);
     }
 
-
+    public void Close(MonoBehaviour ui)
+    {
+        if (ui != this && _isOpen)
+            ToggleOpen();
+    }
     private void ToggleButtonVisibility(Location location)
     {
         _button.SetActive(location == Location.Lobby);

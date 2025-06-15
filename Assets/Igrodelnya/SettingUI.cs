@@ -19,6 +19,10 @@ public class SettingUI : MonoBehaviour
         _panel.SetActive(_isOpen);
         //_exitButton.SetActive(_isOpen);
         PauseManager.Instance.SetPause(_isOpen, false);
+        
+        if (_isOpen)
+            PlayerInput.Instance.AOpenWindow?.Invoke(this);
+        
     }
     private void Start()
     {
