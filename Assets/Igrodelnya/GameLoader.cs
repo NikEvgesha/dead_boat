@@ -45,8 +45,10 @@ public class GameLoader : MonoBehaviour
 
         if (asyncMode)
         {
+            AdsManager.Instance.ShowInterstitialAd();
             _loadingImage.SetActive(true);
             StartCoroutine("SceneLoad", _currentSceneName);
+            //AdsManager.Instance.ShowInterstitialAd();
         } else
         {
             SceneManager.LoadScene(_currentSceneName);
@@ -67,7 +69,7 @@ public class GameLoader : MonoBehaviour
         }
         yield return new WaitForSeconds(1);
         _loadingImage.SetActive(false);
-        AdsManager.Instance.ShowInterstitialAd();
+        //AdsManager.Instance.ShowInterstitialAd();
         OnSceneLoaded?.Invoke();
     }
 

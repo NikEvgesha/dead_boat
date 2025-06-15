@@ -39,7 +39,7 @@ public class LobbyManager : MonoBehaviour
 
     public void StartGame()
     {
-        //ControlManager.Instance.CursorActive = false;
+        ControlManager.Instance.CursorActive = false;
         LoadingManager.Instance.LoadLocation(Location.Game);
     }
 }

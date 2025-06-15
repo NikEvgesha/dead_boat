@@ -47,7 +47,7 @@ public class LevelMapElement : MonoBehaviour
     {
         if (_levelData.Unlocked)
         {
-            //ControlManager.Instance.CursorActive = false;
+            ControlManager.Instance.CursorActive = false;
             LoadingManager.Instance.LoadLocation(Location.Game, _levelData.Scene);
         }
     }
