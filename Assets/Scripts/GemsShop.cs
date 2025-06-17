@@ -1,5 +1,7 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
 public class GemsShop : MonoBehaviour
 {
@@ -47,7 +49,10 @@ public class GemsShop : MonoBehaviour
         foreach (CurrencyPackData item in _items)
         {
             GemsShopSlot slot = _grid.SpawnObject<GemsShopSlot>(_slotPrefab.gameObject);
-           slot.Init(item, this);
+            PurchaseData data = PurchasesManager.Instance.GetPurchaseData(item.CurrencyType.ToString() + "_" + item.Amount);
+            slot.Init(item, data, this);
+            if (data.CurrencyImageURL != null && data.CurrencyImageURL != "")
+                StartCoroutine(DownloadImage(data.CurrencyImageURL, slot));
         }
     }
 
@@ -64,12 +69,12 @@ public class GemsShop : MonoBehaviour
     }
 
 
-    public void TryBuy(CurrencyPackData packData)
+    public void TryBuy(PurchaseData purchaseData, CurrencyPackData packData)
     {
         // TODO: purchase
 
         PurchasesManager.Instance.BuyPurchase(
-            packData.CurrencyType.ToString() + "_" + packData.Amount,
+            purchaseData.Id,
             (success) =>
             {
                 if (success)
@@ -79,5 +84,23 @@ public class GemsShop : MonoBehaviour
             });
 
         
+    }
+
+
+    IEnumerator DownloadImage(string imageUrl, GemsShopSlot slot)
+    {
+        UnityWebRequest request = UnityWebRequestTexture.GetTexture(imageUrl);
+        yield return request.SendWebRequest();
+
+        if (request.result == UnityWebRequest.Result.Success)
+        {
+            Texture2D texture = DownloadHandlerTexture.GetContent(request);
+            Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+            slot.InitImage(sprite);
+        }
+        else
+        {
+            Debug.LogError("Ошибка загрузки: " + request.error);
+        }
     }
 }

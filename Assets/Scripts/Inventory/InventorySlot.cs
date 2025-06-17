@@ -19,11 +19,15 @@ public class InventorySlot : MonoBehaviour, IDragHandler, IBeginDragHandler, IEn
 
     [SerializeField] private InventoryIcon _container;
     [SerializeField] private Transform _slot;
+    [SerializeField] private Image _interactionIcon;
 
 
     private Transform _newParent;
     private Transform _currentParent;
     private bool _isQuickSlot;
+    private bool _isOverInteractionPoint;
+    private Transform _lastInteractionPoint;
+    private bool _isDragging;
     protected PickableItem _item;
     public PickableItem CurrentItem { get { return _item; } }
     public bool Empty => (_item == null);
@@ -47,6 +51,7 @@ public class InventorySlot : MonoBehaviour, IDragHandler, IBeginDragHandler, IEn
         }
 
         //_icon.enabled = true;
+        _interactionIcon.gameObject.SetActive(false);
         _item = item;
         _item.SetSlot(this);
         _container.gameObject.SetActive(true);
@@ -117,15 +122,48 @@ public class InventorySlot : MonoBehaviour, IDragHandler, IBeginDragHandler, IEn
         _newParent = transform;
         _container.transform.SetParent(InventoryUI.Instance.gameObject.transform, true);
         InventoryUI.Instance.OnItemDrag(true);
+        _isDragging = true;
     }
 
     public void OnDrag(PointerEventData eventData)
     {
         _container.transform.position = Input.mousePosition;
+
+
+        Ray ray = Camera.main.ScreenPointToRay(eventData.position);
+        RaycastHit hit;
+
+        if (Physics.Raycast(ray, out hit, 3f))
+        {
+            InteractionAreaIndicator indicator = hit.collider.GetComponent<InteractionAreaIndicator>();
+
+            if (indicator != null && (
+                (indicator.Type == InteractionArea.Fuel && _item.IsFuel) || 
+                (indicator.Type == InteractionArea.Sell && _item.IsSellable) ||
+                (indicator.Type == InteractionArea.Reward && _item.IsRewarded)))
+            {
+                _isOverInteractionPoint = true;
+                _interactionIcon.gameObject.SetActive(true);
+                _interactionIcon.sprite = indicator.GetIcon();
+                _lastInteractionPoint = indicator.GetInteractionPoint();
+            }
+            else
+            {
+                _isOverInteractionPoint = false;
+                _interactionIcon.gameObject.SetActive(false);
+            }
+        }
+        else
+        {
+            _isOverInteractionPoint = false;
+            _interactionIcon.gameObject.SetActive(false);
+        }
+
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
+        _isDragging = false;
         _icon.raycastTarget = true;
         ActivateElements(true);
         if (_newParent == null)
@@ -148,12 +186,16 @@ public class InventorySlot : MonoBehaviour, IDragHandler, IBeginDragHandler, IEn
 
     public void DropOut()
     {
-        Inventory.Instance.DropOutItem(_item, this);
+        if (_isOverInteractionPoint)
+            Inventory.Instance.DropOutItem(_item, this, _lastInteractionPoint);
+        else
+            Inventory.Instance.DropOutItem(_item, this);
     }
 
 
     public void OnPointerClick(PointerEventData eventData)
     {
+        if (_isDragging) return;
         if (!QuickSlot)
             DropOut();
         else //if (ControlManager.Instance.UseTouchControl)
@@ -168,7 +210,7 @@ public class InventorySlot : MonoBehaviour, IDragHandler, IBeginDragHandler, IEn
     {
         InventorySlot slot = eventData.pointerDrag.GetComponent<InventorySlot>();
 
-        if (slot == null || (!slot.Empty && !slot.CurrentItem.Usable)) return;
+        if (slot == null || (!slot.Empty && !slot.CurrentItem.Usable) || slot._item == this._item) return;
 
         Inventory.Instance.TrySwitch(slot, this);
 

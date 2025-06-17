@@ -204,7 +204,7 @@ public class PlayerInput : MonoBehaviour
             _pause = Input.GetKeyDown(KeyCode.P);
             if (!ControlManager.Instance.CursorActive)
             {
-                _pickUp = Input.GetMouseButtonDown(0);
+                _pickUp = Input.GetMouseButtonDown(1);
                 //_useItem = Input.GetMouseButtonDown(0);
                 _attack = Input.GetMouseButton(0);
                 _healing = _attack;

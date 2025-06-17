@@ -55,6 +55,13 @@ public class PickableItem : MonoBehaviour
     public Action PickUpItem;
     public Action PutItemToInventory;
 
+    private bool _isFuel;
+    private bool _isSellable;
+    private bool _isRewarded;
+
+    public bool IsFuel => _isFuel;
+    public bool IsSellable => _isSellable;
+    public bool IsRewarded => _isRewarded;
    
 
     private void OnEnable()
@@ -63,6 +70,10 @@ public class PickableItem : MonoBehaviour
         _infoUI.SetInfoText(Data.Name, _tags);
         if (_player != null)
             StartCoroutine(KinematicCheck());
+
+        _isFuel = HaveTag(ItemTag.Fuel);
+        _isSellable = HaveTag(ItemTag.Valuable) || HaveTag(ItemTag.Trash);
+        _isRewarded = HaveTag(ItemTag.Reward);
     }
 
     private void Start()

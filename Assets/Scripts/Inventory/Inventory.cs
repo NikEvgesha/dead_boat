@@ -142,7 +142,7 @@ public class Inventory : MonoBehaviour
     }
 
 
-    public void DropOutItem(PickableItem item, InventorySlot slot)
+    public void DropOutItem(PickableItem item, InventorySlot slot, Transform dropoutPoint = null)
     {
         if (item == null || LoadingManager.Instance.CurrentLocation == Location.Lobby) return;
         if (_quickPanelItems.Contains(item)) {
@@ -157,8 +157,10 @@ public class Inventory : MonoBehaviour
             InventoryUI.Instance.UpdateCapacity(_bagItems.Count, _capacity);
             slot.InitSlot(null);
         }
-        
-        item.DropOutFromInventory(_dropOutPoint);
+        if (dropoutPoint == null)
+            item.DropOutFromInventory(_dropOutPoint);
+        else
+            item.DropOutFromInventory(dropoutPoint);
         item.gameObject.SetActive(true);
 
 

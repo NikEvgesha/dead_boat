@@ -196,3 +196,10 @@ public enum RouletteRewardType
     Gems,
     Item
 }
+
+public enum InteractionArea
+{
+    Fuel,
+    Sell,
+    Reward
+}

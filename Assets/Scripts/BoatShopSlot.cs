@@ -8,7 +8,7 @@ public class BoatShopSlot : SpecialShopSlot
     {
         if (itemData.TryGetComponent<StoreItem>(out StoreItem item))
         {
-            base.Init(itemData.Data, item.GemPrice, CurrencyType.Gems);
+            base.Init(itemData.Data, item.GemPrice.ToString(), CurrencyType.Gems);
             _itemData = itemData;
             _shop = shop;
         }

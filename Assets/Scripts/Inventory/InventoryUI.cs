@@ -39,7 +39,7 @@ public class InventoryUI : MonoBehaviour
             Destroy(gameObject);
             return;
         }
-        
+
         _instance = this;
         PlayerInput.Instance.AInventory += ToggleOpen;
         PlayerInput.Instance.AOpenWindow += Close;
@@ -71,7 +71,7 @@ public class InventoryUI : MonoBehaviour
             }
             _initialized = true;
         }
-        
+
     }
 
     private void Update()
@@ -95,7 +95,8 @@ public class InventoryUI : MonoBehaviour
             {
                 _quickSlots[i].gameObject.SetActive(true);
             }
-        } else
+        }
+        else
         {
             if (!ControlManager.Instance.UseTouchControl)
                 ControlManager.Instance.CursorActive = false;
@@ -188,7 +189,8 @@ public class InventoryUI : MonoBehaviour
                     return;
                 }
             }
-        } else
+        }
+        else
         {
             if (id < _quickPanelCapacity)
             {
@@ -196,7 +198,7 @@ public class InventoryUI : MonoBehaviour
                 _quickSlots[id].InitSlot(item);
             }
         }
-        
+
     }
 
 
@@ -219,28 +221,28 @@ public class InventoryUI : MonoBehaviour
         return null;
     }
 
-/*    private void Update()
-    {
-        if (Inventory.Instance.ActiveItem == null) return;
-
-        float scroll = Input.GetAxisRaw("Mouse ScrollWheel");
-        if (scroll != 0)
+    /*    private void Update()
         {
-            int id = _activeItemID;
-            if (scroll < 0)
-            {
+            if (Inventory.Instance.ActiveItem == null) return;
 
-                SwitchActiveItem(_quickPanelItems[(_activeItemID + 1) % _quickPanelItems.Count]);
-            }
-            else
+            float scroll = Input.GetAxisRaw("Mouse ScrollWheel");
+            if (scroll != 0)
             {
-                int newId = (_activeItemID - 1) >= 0 ? _activeItemID - 1 : _quickPanelItems.Count - 1;
-                SwitchActiveItem(_quickPanelItems[newId]);
-            }
+                int id = _activeItemID;
+                if (scroll < 0)
+                {
+
+                    SwitchActiveItem(_quickPanelItems[(_activeItemID + 1) % _quickPanelItems.Count]);
+                }
+                else
+                {
+                    int newId = (_activeItemID - 1) >= 0 ? _activeItemID - 1 : _quickPanelItems.Count - 1;
+                    SwitchActiveItem(_quickPanelItems[newId]);
+                }
+                }
             }
         }
-    }
-*/
+    */
 
 
     public PickableItem GetNextUsable(PickableItem current)
@@ -315,5 +317,4 @@ public class InventoryUI : MonoBehaviour
     {
         _buttonAnimation.SetTrigger("NoSpace");
     }
-
 }
