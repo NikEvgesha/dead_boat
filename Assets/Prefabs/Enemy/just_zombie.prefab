@@ -1450,6 +1450,7 @@ MonoBehaviour:
   _dragOrigin: 1
   _dropVelocityMultiplier: 2
   _kinematicDistance: 30
+  _rotationSpeed: 40
   _collider: {fileID: 0}
 --- !u!114 &5081534716621832195
 MonoBehaviour:
@@ -1792,9 +1793,21 @@ PrefabInstance:
       value: 25
       objectReference: {fileID: 0}
     - target: {fileID: 451260270057983084, guid: 200718ddd62da0b459336e78f7e78f56, type: 3}
+      propertyPath: audioHit
+      value: 
+      objectReference: {fileID: 8300000, guid: 511e652f918795842a0ff090a3b711d7, type: 3}
+    - target: {fileID: 451260270057983084, guid: 200718ddd62da0b459336e78f7e78f56, type: 3}
       propertyPath: mobLevel
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 451260270057983084, guid: 200718ddd62da0b459336e78f7e78f56, type: 3}
+      propertyPath: audioDamage
+      value: 
+      objectReference: {fileID: 8300000, guid: db712e5bca9528148964933cd0a9d93b, type: 3}
+    - target: {fileID: 451260270057983084, guid: 200718ddd62da0b459336e78f7e78f56, type: 3}
+      propertyPath: audioSourceEnemy
+      value: 
+      objectReference: {fileID: 109399941067520247}
     - target: {fileID: 451260270057983084, guid: 200718ddd62da0b459336e78f7e78f56, type: 3}
       propertyPath: _audioSourceEnemy
       value: 
