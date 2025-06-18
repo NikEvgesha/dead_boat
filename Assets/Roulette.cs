@@ -25,6 +25,7 @@ public class Roulette : MonoBehaviour
 
     [SerializeField] private GameObject _ui;
     [SerializeField] private GameObject _button;
+    [SerializeField] private GameObject _indicator;
 
     [SerializeField] private GameObject _wheel;
     [SerializeField] private Transform _rewardsParent;
@@ -41,7 +42,7 @@ public class Roulette : MonoBehaviour
 
 
 
-
+    private List<RouletteReward> _availableRewards = new();
     private List<RouletteSlot> _slots;
     private float _rotateAngle;
     private bool _isOpen;
@@ -53,7 +54,10 @@ public class Roulette : MonoBehaviour
     private float _targetAngle;
     private float _currentAngle;
     private float _currentSpinTime;
-    private DateTime _lastSpinTime; 
+    private DateTime _lastSpinTime;
+    private IEnumerator _spinCoroutine;
+    private IEnumerator _timerCoroutine;
+
 
     private void Awake()
     {
@@ -71,7 +75,15 @@ public class Roulette : MonoBehaviour
             _slots[i].transform.RotateAround(_wheel.transform.position, Vector3.forward, -i * _rotateAngle);
 
         }
+        _lastSpinTime = SaveManager.Instance.LoadRouletteDate();
         CheckFreeSpinAvailable();
+        if (!_freeAvailable)
+        {
+            SetTime();
+            UpdateTime();
+            _timerCoroutine = Timer();
+            StartCoroutine(_timerCoroutine);
+        }
     }
 
     private void OnEnable()
@@ -83,16 +95,44 @@ public class Roulette : MonoBehaviour
         LoadingManager.Instance.LocationChanged -= ToggleButtonVisibility;
         PlayerInput.Instance.AOpenWindow -= Close;
     }
+
+    private IEnumerator Timer()
+    {
+        UpdateTime();
+        while (_tillNextDay.TotalSeconds > 0)
+        {
+            _tillNextDay -= TimeSpan.FromSeconds(1);
+            if (_isOpen)
+                UpdateTime();
+            yield return new WaitForSecondsRealtime(1);
+        }
+        CheckFreeSpinAvailable();
+        _timerCoroutine = null;
+    }
+
     public void ToggleOpen()
     {
         _isOpen = !_isOpen;
-        _ui.SetActive(_isOpen);
         ControlManager.Instance.CursorActive = _isOpen;
-
         if (!_isOpen)
-            StopAllCoroutines();
-        else
+        {
+            if (_spinning)
+            {
+                StopCoroutine(_spinCoroutine);
+                _adButton.interactable = true;
+                _gemsButton.interactable = true;
+                _freeAvailable = true;
+                SwitchFreePlayButton(true);
+                
+            }
+            _ui.SetActive(_isOpen);
+
+        } else {
+            _ui.SetActive(_isOpen);
             PlayerInput.Instance.AOpenWindow?.Invoke(this);
+            SwitchFreePlayButton(_freeAvailable);
+        }
+        
     }
 
     public void Close(MonoBehaviour ui)
@@ -111,6 +151,14 @@ public class Roulette : MonoBehaviour
         {
             StartSpin();
             SwitchFreePlayButton(false);
+            _lastSpinTime = MirraSDK.Time.CurrentDate.ToUniversalTime();
+            SaveManager.Instance.SaveRouletteDate(_lastSpinTime);
+            SetTime();
+            if (_timerCoroutine == null)
+            {
+                _timerCoroutine = Timer();
+                StartCoroutine(Timer());
+            }
         } else
         {
             AdsManager.Instance.ShowRewardedAd(
@@ -137,26 +185,21 @@ public class Roulette : MonoBehaviour
     {
         _adButton.interactable = false;
         _gemsButton.interactable = false;
-        SaveManager.Instance.SaveRouletteDate(MirraSDK.Time.CurrentDate.ToUniversalTime());
-
+        
         _targetId = _rewards.IndexOf(GetRandomReward());
 
-        if (_rewards[_targetId].rewardType == RouletteRewardType.Gems)
+/*        if (_rewards[_targetId].rewardType == RouletteRewardType.Gems)
         {
             Debug.Log("roulette reward: " + _rewards[_targetId].amount + " gems");
         } else
         {
             Debug.Log("roulette reward: " + _rewards[_targetId].item.Data.Name);
-        }
-
-
-
+        }*/
         _targetAngle = _targetId * _rotateAngle + 360 * UnityEngine.Random.Range(3, 6)+ UnityEngine.Random.Range(-_rotateAngle/4, _rotateAngle/4);
-        Debug.Log("target angle: " + _targetId * _rotateAngle);
 
-        _wheel.transform.rotation = Quaternion.Euler(Vector3.zero); 
-        StartCoroutine(Spin());
-        Debug.Log("Spin");
+        _wheel.transform.rotation = Quaternion.Euler(Vector3.zero);
+        _spinCoroutine = Spin();
+        StartCoroutine(_spinCoroutine);
     }
 
     private RouletteReward GetRandomReward()
@@ -187,10 +230,8 @@ public class Roulette : MonoBehaviour
 
     private void CheckFreeSpinAvailable()
     {
-        _lastSpinTime = SaveManager.Instance.LoadRouletteDate();
         _freeAvailable = _lastSpinTime.Date != MirraSDK.Time.CurrentDate.ToUniversalTime().Date;
         SwitchFreePlayButton(_freeAvailable);
-
     }
 
     private void SwitchFreePlayButton(bool free)
@@ -199,12 +240,19 @@ public class Roulette : MonoBehaviour
         _adIcon.SetActive(!free);
         _unavailableText.SetActive(!free);
         _freeAvailable = free;
+        _indicator.SetActive(free);
 
         if (!free)
         {
-            SetTime();
-            StartCoroutine(FreeSpinTimer());
+            UpdateTime();
         }
+
+/*
+        if (!free)
+        {
+            //SetTime();
+            //StartCoroutine(FreeSpinTimer());
+        }*/
         
     }
 
@@ -213,6 +261,11 @@ public class Roulette : MonoBehaviour
         DateTime now = MirraSDK.Time.CurrentDate.ToUniversalTime();
         DateTime nextDay = now.Date.AddDays(1);
         _tillNextDay = nextDay - now;
+        
+    }
+
+    private void UpdateTime()
+    {
         _freePlayTimeText.text = String.Format(
             "{0}:{1}:{2}",
             (_tillNextDay.Hours).ToString("D2"),
@@ -221,11 +274,10 @@ public class Roulette : MonoBehaviour
         );
     }
 
-    private IEnumerator FreeSpinTimer()
+/*    private IEnumerator FreeSpinTimer()
     {
         while (_tillNextDay.TotalSeconds > 0)
         {
-            _tillNextDay -= TimeSpan.FromSeconds(1);
             _freePlayTimeText.text = String.Format(
                 "{0}:{1}:{2}",
                 (_tillNextDay.Hours).ToString("D2"),
@@ -234,8 +286,8 @@ public class Roulette : MonoBehaviour
             );
             yield return new WaitForSeconds(1);
         }
-        SwitchFreePlayButton(true);
-    }
+        CheckFreeSpinAvailable();
+    }*/
 
     private IEnumerator Spin()
     {
@@ -266,9 +318,11 @@ public class Roulette : MonoBehaviour
             yield return null;
         }
 
+        _spinning = false;
         GiveReward();
         _adButton.interactable = true;
         _gemsButton.interactable = true;
+        _spinCoroutine = null;
     }
 
     private void GiveReward()
