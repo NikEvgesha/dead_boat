@@ -203,3 +203,27 @@ public enum InteractionArea
     Sell,
     Reward
 }
+public enum SaveKey
+{
+    MusicVolume,
+    SoundVolume,
+    Score_,
+    LevelUnlock_,
+    LevelWin_,
+    Gems,
+    Save,
+    LobbyItems,
+    Distance,
+    InventoryList,
+    Boardlist,
+    Fuel,
+    AttachedItems,
+    Ammo_,
+    Wins,
+    LevelId,
+    RouletteLastDate,
+    Health,
+    Coins,
+
+
+}

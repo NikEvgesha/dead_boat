@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using MirraGames.SDK;
 using System;
+using Unity.VisualScripting;
 
 public class SaveManager : MonoBehaviour
 {
@@ -43,7 +44,6 @@ public class SaveManager : MonoBehaviour
             saveProvider.SaveProgress();
         }
     }
-
 
     public void SetSave(bool haveSave)
     {
@@ -147,12 +147,44 @@ public class SaveManager : MonoBehaviour
         Debug.Log("Progress Saved");
        
     }
-
+    public void SaveBoardItem(List<PickableItem> items = null)
+    {
+        if (items != null)
+            saveProvider.SaveBoardItem(items);
+    }
+    public void SavePlayerStats(int coin, float hp)
+    {
+        saveProvider.SavePlayerStats(coin, hp);
+    }
+    public void SaveGameCoin(int coin)
+    {
+        saveProvider.SaveGameCoin(coin);
+    }
+    public void SavePlayerHealth(float health)
+    {
+        saveProvider.SavePlayerHealth(health);
+    }
+    public int LoadGameCoin()
+    {
+        return saveProvider.LoadGameCoin();
+    }
+    public float LoadPlayerHealth()
+    {
+        return saveProvider.LoadPlayerHealth();
+    }
+    public (int, float) LoadPlayerStats()
+    {
+        return saveProvider.LoadPlayerStats();
+    }
     public void ResetGameProgress() => SaveGameProgress();
 
     public (int, List<string>) LoadGameProgress()
     {
         return (saveProvider.LoadDistance(), saveProvider.LoadInventory());
+    }
+    public List<SavedItem> LoadBoardItem()
+    {
+        return saveProvider.LoadBoardItem();
     }
 
     public int LoadLevelId() {

@@ -44,8 +44,16 @@ public abstract class SaveProvider : MonoBehaviour
 
     public abstract void SaveDistance(int distance);
     public abstract void SaveInventory(List<PickableItem> items);
-
+    public abstract void SaveBoardItem(List<PickableItem> items);
+    public abstract void SavePlayerStats(int coin, float hp);
+    public abstract void SaveGameCoin(int coin);
+    public abstract void SavePlayerHealth(float health);
+    public abstract int LoadGameCoin();
+    public abstract float LoadPlayerHealth();
+    //патроны
+    public abstract (int, float) LoadPlayerStats();
     public abstract List<string> LoadInventory();
+    public abstract List<SavedItem> LoadBoardItem();
     public abstract int LoadDistance();
 
     public abstract void SaveFuel(int fuel);

@@ -51,7 +51,10 @@ public class LoadingManager : MonoBehaviour
             else
             {
                 int lvlId = SaveManager.Instance.LoadLevelId();
-                GameLoader.Instance.LoadNextScene(LevelManager.Instance.GetLevel(lvlId).Scene, true);
+                if (lvlId >= 0)
+                    GameLoader.Instance.LoadNextScene(LevelManager.Instance.GetLevel(lvlId).Scene, true);
+                else
+                    GameLoader.Instance.LoadNextScene(_lobbyScene, true);
             }
                 _location = Location.Game;
             SaveManager.Instance.SetSave(true);

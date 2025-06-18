@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-
 public class PickableItem : MonoBehaviour
 {
     //[SerializeField] private float _lerpSpeed = 15;
@@ -62,8 +61,8 @@ public class PickableItem : MonoBehaviour
     public bool IsFuel => _isFuel;
     public bool IsSellable => _isSellable;
     public bool IsRewarded => _isRewarded;
-   
 
+    private SavedItem _savedItem = new SavedItem();
     private void OnEnable()
     {
         CheckComponents();
@@ -429,6 +428,36 @@ public class PickableItem : MonoBehaviour
     public bool HaveTag(ItemTag tag)
     {
         return _tags.Contains(tag);
+    }
+    public void CheckSaveItem()
+    {
+        _savedItem.prefabName = _itemData.name;
+        _savedItem.status = _status;
+        _savedItem.position = transform.position;
+        _savedItem.rotation = transform.rotation;
+        //SaveManager.Instance.SaveItem();
+    }
+    public SavedItem GetSavedItem()
+    {
+        return _savedItem;
+    }
+    public void SetLoadItem(SavedItem item)
+    {
+        transform.SetPositionAndRotation(item.position, item.rotation);
+        if (item.status == ItemStatus.Attached)
+        {
+            _attached = true;
+            Drop();
+            SetKinematic(true);
+            _status = ItemStatus.Attached;
+            _useKinematicCheck = false;
+            _outline.OutlineColor = Color.red;
+        }
+        else
+        {
+            _status = item.status;
+            transform.position += Vector3.up * 5;
+        }
     }
 
 }

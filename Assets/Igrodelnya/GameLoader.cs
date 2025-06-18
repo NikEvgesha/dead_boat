@@ -67,7 +67,18 @@ public class GameLoader : MonoBehaviour
             loadingProgress = Mathf.Clamp01(_asyncOperation.progress / 0.95f);
             yield return true;
         }
-        yield return new WaitForSeconds(1);
+        BoardController board = FindAnyObjectByType<BoardController>();
+        if (board != null)
+        {
+            while (!board.StartGame)
+            {
+                yield return null;
+            }
+        }
+        else
+        {
+            yield return new WaitForSeconds(1);
+        }
         _loadingImage.SetActive(false);
         //AdsManager.Instance.ShowInterstitialAd();
         OnSceneLoaded?.Invoke();

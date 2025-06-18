@@ -1,11 +1,8 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
+using UnityEditor.SearchService;
 using UnityEngine;
-using UnityEngine.AI;
-using UnityEngine.UIElements;
-using static UnityEditor.PlayerSettings;
+using UnityEngine.SceneManagement;
 
 public class BoardController : MonoBehaviour
 {
@@ -64,14 +61,17 @@ public class BoardController : MonoBehaviour
 
     // Общая пройденная дистанция (в метрах)
     public float TotalDistanceTraveled = 0f;
-    public float StartDistanceTraveled = 10000f;
+    private float _preTotalDistanceTraveled = 0f;
+    public float SaveDistanceTraveled = 10000f;
     public bool StartSpawn;
 
     [SerializeField] private float _endTutorialDistance = 50f;
 
     private bool _endGame = false;
     private bool _endTutorial = false;
-
+    public bool StartGame;
+    private string _sceneName;
+    private int _levelID;
     //private int _nextSavePoint = 10000;
 
     public Action<float> SwitchDistance;
@@ -85,6 +85,8 @@ public class BoardController : MonoBehaviour
 
     private void Awake()
     {
+        _sceneName = SceneManager.GetActiveScene().name;
+        _levelID = LevelManager.Instance.GetLevelId(_sceneName);
         // Если на объекте есть Rigidbody, переводим его в кинематический режим,
         // чтобы не зависеть от гравитации и столкновений
         //GameManager.Instance.GameResume += SetStartDistance;
@@ -93,15 +95,15 @@ public class BoardController : MonoBehaviour
         {
             rb.isKinematic = true;
         }
-        if (_test)
-        {
-            StartCoroutine(SetSavePosition(StartDistanceTraveled));
-            /*
-            transform.position += transform.forward * 1000;
-            TotalDistanceTraveled += 1000;
-            PlayerMovement.Instance.Teleport(transform);    
-            */
-        }
+        float saveDustance = SaveManager.Instance.LoadGameProgress().Item1;
+        SaveDistanceTraveled = saveDustance >= 0 ? saveDustance : 0;
+        StartCoroutine(SetSavePosition(SaveDistanceTraveled));
+        /*
+        transform.position += transform.forward * 1000;
+        TotalDistanceTraveled += 1000;
+        PlayerMovement.Instance.Teleport(transform);    
+        */
+        
     }
     private IEnumerator SetSavePosition(float pos)
     {
@@ -124,7 +126,8 @@ public class BoardController : MonoBehaviour
 
             yield return null;
         }
-
+        StartGame = true;
+        StartPlay();
     }
 /*    private void OnDisable()
     {
@@ -133,8 +136,9 @@ public class BoardController : MonoBehaviour
             GameManager.Instance.GameResume -= SetStartDistance;
         }
     }*/
-    private void Start()
+    private void StartPlay()
     {
+        currentFuel = SaveManager.Instance.LoadFuel();
         _endPoint = GameManager.Instance.PlayDistance;
         _levelDistance = _endPoint / _levels;
         StartCoroutine(UpdateUiDistance());
@@ -159,11 +163,16 @@ public class BoardController : MonoBehaviour
             }
             _level = (int)Math.Ceiling(TotalDistanceTraveled / _levelDistance);
             SwitchDistance?.Invoke(TotalDistanceTraveled);
+            SaveProgress();
             yield return new WaitForSeconds(1);
         }
         yield return null;
     }
-
+    private void SaveProgress()
+    {
+        SaveManager.Instance.SaveGameProgress((int)TotalDistanceTraveled, Inventory.Instance.GetItems(), _levelID);
+        SaveManager.Instance.SaveFuel((int)currentFuel);
+    }
 /*    private IEnumerator CheckProgressSave()
     {
         while (this.enabled)
@@ -205,7 +214,7 @@ public class BoardController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (_endGame)
+        if (_endGame || !StartGame)
             return;
         float speed = currentSpeed;
         // Если таймер игнорирования ввода активен, обнуляем ввод

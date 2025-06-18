@@ -8,7 +8,19 @@ public class ListSaver
 {
     public List<string> list = new();
 }
-
+[Serializable]
+public class SavedItem //Положение, статус, 
+{
+    public string prefabName;
+    public Vector3 position;
+    public Quaternion rotation;
+    public ItemStatus status;
+}
+[System.Serializable]
+public class SavedItems
+{
+    public List<SavedItem> list = new();
+}
 public class MirraSDKSaveProvider : SaveProvider
 {
     private bool isInitialize;
@@ -27,16 +39,16 @@ public class MirraSDKSaveProvider : SaveProvider
         if (!isInitialize)
             return new float[] { 0.5f, 0.5f }; ;
         // Достаём значения, с дефолтом 0.5f
-        float music = MirraSDK.Data.GetFloat("MusicVolume", 0.5f);
-        float sound = MirraSDK.Data.GetFloat("SoundVolume", 0.5f);
+        float music = MirraSDK.Data.GetFloat(SaveKey.MusicVolume.ToString(), 0.5f);
+        float sound = MirraSDK.Data.GetFloat(SaveKey.SoundVolume.ToString(), 0.5f);
         return new float[] { music, sound };
     }
 
     public override void SaveVolume(float musicVolume, float soundVolume)
     {
         if (!isInitialize) return;
-        MirraSDK.Data.SetFloat("MusicVolume", musicVolume);
-        MirraSDK.Data.SetFloat("SoundVolume", soundVolume);
+        MirraSDK.Data.SetFloat(SaveKey.MusicVolume.ToString(), musicVolume);
+        MirraSDK.Data.SetFloat(SaveKey.SoundVolume.ToString(), soundVolume);
         Changed = true;
     }
 
@@ -44,7 +56,7 @@ public class MirraSDKSaveProvider : SaveProvider
     {
         if (!isInitialize) return;
         // Ключ «Score_1», «Score_2» и т.д.
-        MirraSDK.Data.SetFloat($"Score_{levelId}", score);
+        MirraSDK.Data.SetFloat($"{SaveKey.Score_}{levelId}", score);
         Changed = true;
     }
 
@@ -52,20 +64,20 @@ public class MirraSDKSaveProvider : SaveProvider
     {
         if (!isInitialize)
             return 0f;
-        return MirraSDK.Data.GetFloat($"Score_{levelId}", 0f);
+        return MirraSDK.Data.GetFloat($"{SaveKey.Score_}{levelId}", 0f);
     }
 
     public override void SaveLevelUnlock(int id, bool unlocked)
     {
         if (!isInitialize) return;
-        MirraSDK.Data.SetBool($"LevelUnlock_{id}", unlocked);
+        MirraSDK.Data.SetBool($"{SaveKey.LevelUnlock_}{id}", unlocked);
         Changed = true;
     }
 
     public override void SaveLevelWin(int id, bool win)
     {
         if (!isInitialize) return;
-        MirraSDK.Data.SetBool($"LevelWin_{id}", win);
+        MirraSDK.Data.SetBool($"{SaveKey.LevelWin_}{id}", win);
         Changed = true;
     }
 
@@ -73,14 +85,14 @@ public class MirraSDKSaveProvider : SaveProvider
     {
         if (!isInitialize) return;
         Changed = true;
-        MirraSDK.Data.SetInt("Gems", amount);
+        MirraSDK.Data.SetInt(SaveKey.Gems.ToString(), amount);
     }
 
     public override int LoadGems()
     {
         if (!isInitialize)
             return 0;
-        return MirraSDK.Data.GetInt("Gems", 0);
+        return MirraSDK.Data.GetInt(SaveKey.Gems.ToString(), 0);
     }
 
     public override void SaveProgress()
@@ -98,7 +110,7 @@ public class MirraSDKSaveProvider : SaveProvider
     {
         if (!isInitialize) return false;
         // Есть ли хоть что-то из основных ключей?
-        return MirraSDK.Data.GetBool("Save", false);
+        return MirraSDK.Data.GetBool(SaveKey.Save.ToString(), false);
     }
 
 
@@ -154,18 +166,18 @@ public class MirraSDKSaveProvider : SaveProvider
     {
         if (!isInitialize) return;
         Changed = true;
-        ListSaver items = MirraSDK.Data.GetObject<ListSaver>("LobbyItems", new ListSaver());
+        ListSaver items = MirraSDK.Data.GetObject<ListSaver>(SaveKey.LobbyItems.ToString(), new ListSaver());
         items.list.Add(id);
-        MirraSDK.Data.SetObject("LobbyItems", items);
+        MirraSDK.Data.SetObject(SaveKey.LobbyItems.ToString(), items);
 
-        ListSaver NewItems = MirraSDK.Data.GetObject<ListSaver>("LobbyItems", new ListSaver());
+        ListSaver NewItems = MirraSDK.Data.GetObject<ListSaver>(SaveKey.LobbyItems.ToString(), new ListSaver());
     }
     public override List<string> LoadLobbyItems()
     {
         ListSaver items = new();
         if (isInitialize)
         {
-            items = MirraSDK.Data.GetObject<ListSaver>("LobbyItems", new ListSaver());
+            items = MirraSDK.Data.GetObject<ListSaver>(SaveKey.LobbyItems.ToString(), new ListSaver());
         }
         return items.list;
     }
@@ -174,14 +186,14 @@ public class MirraSDKSaveProvider : SaveProvider
     {
         if (!isInitialize) return;
         Changed = true;
-        MirraSDK.Data.SetObject("LobbyItems", new ListSaver());
+        MirraSDK.Data.SetObject(SaveKey.LobbyItems.ToString(), new ListSaver());
     }
 
 
     public override void SaveDistance(int distance) {
         if (!isInitialize) return;
         Changed = true;
-        MirraSDK.Data.SetInt("Distance", distance);
+        MirraSDK.Data.SetInt(SaveKey.Distance.ToString(), distance);
     }
     public override void SaveInventory(List<PickableItem> items) {
         if (!isInitialize) return;
@@ -194,15 +206,80 @@ public class MirraSDKSaveProvider : SaveProvider
             listSaver.list.Add(item.Data.Name);
         }
 
-        MirraSDK.Data.SetObject<ListSaver>("InventoryList", listSaver);
+        MirraSDK.Data.SetObject<ListSaver>(SaveKey.InventoryList.ToString(), listSaver);
     }
+    public override void SaveBoardItem(List<PickableItem> items)
+    {
+        if (!isInitialize) return;
+        Changed = true;
 
+        SavedItems listSaver = new();
+
+        foreach (PickableItem item in items)
+        {
+            listSaver.list.Add(item.GetSavedItem());
+        }
+        
+        MirraSDK.Data.SetObject<SavedItems>(SaveKey.Boardlist.ToString(), listSaver);
+    }
+    public override void SavePlayerStats(int coin, float health)
+    {
+        if (!isInitialize) return;
+        Changed = true;
+        MirraSDK.Data.SetInt(SaveKey.Coins.ToString(), coin);
+        MirraSDK.Data.SetFloat(SaveKey.Health.ToString(), health);
+    }
+    public override void SaveGameCoin(int coin)
+    {
+        if (!isInitialize) return;
+        Changed = true;
+        MirraSDK.Data.SetInt(SaveKey.Coins.ToString(), coin);
+    }
+    public override void SavePlayerHealth(float health)
+    {
+        if (!isInitialize) return;
+        Changed = true;
+        MirraSDK.Data.SetFloat(SaveKey.Health.ToString(), health);
+    }
+    public override int LoadGameCoin()
+    {
+        if (isInitialize)
+        {
+            return MirraSDK.Data.GetInt(SaveKey.Coins.ToString());
+        }
+        return 0;
+    }
+    public override float LoadPlayerHealth()
+    {
+        if (isInitialize)
+        {
+            return MirraSDK.Data.GetFloat(SaveKey.Health.ToString());
+        }
+        return 100;
+    }
+    public override (int, float) LoadPlayerStats()
+    {
+        if (isInitialize)
+        {
+            return (MirraSDK.Data.GetInt(SaveKey.Coins.ToString()), MirraSDK.Data.GetFloat(SaveKey.Health.ToString()));
+        }
+        return (0, 0);
+    }
     public override List<string> LoadInventory()
     {
         ListSaver items = new();
         if (isInitialize)
         {
-            items = MirraSDK.Data.GetObject<ListSaver>("InventoryList", new ListSaver());
+            items = MirraSDK.Data.GetObject<ListSaver>(SaveKey.InventoryList.ToString(), new ListSaver());
+        }
+        return items.list;
+    }
+    public override List<SavedItem> LoadBoardItem()
+    {
+        SavedItems items = new();
+        if (isInitialize)
+        {
+            items = MirraSDK.Data.GetObject<SavedItems>(SaveKey.Boardlist.ToString(), new SavedItems());
         }
         return items.list;
     }
@@ -210,7 +287,7 @@ public class MirraSDKSaveProvider : SaveProvider
     {
         if (isInitialize)
         {
-            return MirraSDK.Data.GetInt("Distance", -1);
+            return MirraSDK.Data.GetInt(SaveKey.Distance.ToString(), -1);
         }
         return -1;
     }
@@ -219,13 +296,13 @@ public class MirraSDKSaveProvider : SaveProvider
     {
         if (!isInitialize) return;
         Changed = true;
-        MirraSDK.Data.SetInt("Fuel", fuel);
+        MirraSDK.Data.SetInt(SaveKey.Fuel.ToString(), fuel);
     }
     public override int LoadFuel()
     {
         if (isInitialize)
         {
-            return MirraSDK.Data.GetInt("Fuel");
+            return MirraSDK.Data.GetInt(SaveKey.Fuel.ToString());
         }
         return 0;
     }
@@ -234,12 +311,12 @@ public class MirraSDKSaveProvider : SaveProvider
     {
         if (!isInitialize) return;
         Changed = true;
-        ListSaver items = MirraSDK.Data.GetObject<ListSaver>("AttachedItems", new ListSaver());
+        ListSaver items = MirraSDK.Data.GetObject<ListSaver>(SaveKey.AttachedItems.ToString(), new ListSaver());
         items.list.Add(id);
-        MirraSDK.Data.SetObject("AttachedItems", items);
+        MirraSDK.Data.SetObject(SaveKey.AttachedItems.ToString(), items);
         Debug.Log("attached: " + id);
 
-        ListSaver NewItems = MirraSDK.Data.GetObject<ListSaver>("AttachedItems", new ListSaver());
+        ListSaver NewItems = MirraSDK.Data.GetObject<ListSaver>(SaveKey.AttachedItems.ToString(), new ListSaver());
 
         Debug.Log("total attached: " + NewItems.list.Count);
     }
@@ -248,7 +325,7 @@ public class MirraSDKSaveProvider : SaveProvider
         ListSaver items = new();
         if (isInitialize)
         {
-            items = MirraSDK.Data.GetObject<ListSaver>("AttachedItems", new ListSaver());
+            items = MirraSDK.Data.GetObject<ListSaver>(SaveKey.AttachedItems.ToString(), new ListSaver());
         }
 
         Debug.Log("attached items loaded: " + items.list.Count);
@@ -259,14 +336,14 @@ public class MirraSDKSaveProvider : SaveProvider
     {
         if (!isInitialize) return;
         Changed = true;
-        MirraSDK.Data.SetObject("AttachedItems", new ListSaver());
+        MirraSDK.Data.SetObject(SaveKey.AttachedItems.ToString(), new ListSaver());
     }
 
     public override void SaveAllAttachedItems(List<string> items)
     {
         if (!isInitialize) return;
         Changed = true;
-        MirraSDK.Data.SetObject("AttachedItems", items);
+        MirraSDK.Data.SetObject(SaveKey.AttachedItems.ToString(), items);
     }
 
 
@@ -274,21 +351,21 @@ public class MirraSDKSaveProvider : SaveProvider
     {
         if (!isInitialize) return;
         Changed = true;
-        MirraSDK.Data.SetBool("Save", save);
+        MirraSDK.Data.SetBool(SaveKey.Save.ToString(), save);
     }
 
     public override void SaveAmmo(WeaponType type, int amount) 
     {
         if (!isInitialize) return;
         Changed = true;
-        MirraSDK.Data.SetInt("Ammo_" + type.ToString(), amount);
+        MirraSDK.Data.SetInt(SaveKey.Ammo_.ToString() + type.ToString(), amount);
     }
     public override int LoadAmmo(WeaponType type)
     {
         int ammo = 0;
         if (isInitialize)
         {
-            ammo = MirraSDK.Data.GetInt("Ammo_" + type.ToString());
+            ammo = MirraSDK.Data.GetInt(SaveKey.Ammo_.ToString() + type.ToString());
         }
         return ammo;
     }
@@ -297,14 +374,14 @@ public class MirraSDKSaveProvider : SaveProvider
     {
         if (!isInitialize) return;
         Changed = true;
-        MirraSDK.Data.SetInt("Wins", wins);
+        MirraSDK.Data.SetInt(SaveKey.Wins.ToString(), wins);
     }
     public override int LoadWins()
     {
         int wins = 0;
         if (isInitialize)
         {
-            wins = MirraSDK.Data.GetInt("Wins");
+            wins = MirraSDK.Data.GetInt(SaveKey.Wins.ToString());
         }
         return wins;
     }
@@ -314,14 +391,14 @@ public class MirraSDKSaveProvider : SaveProvider
     {
         if (!isInitialize) return;
         Changed = true;
-        MirraSDK.Data.SetInt("LevelId", id);
+        MirraSDK.Data.SetInt(SaveKey.LevelId.ToString(), id);
     }
 
     public override int LoadLevelId()
     {
         if (!isInitialize) return 0;
 
-        int id = MirraSDK.Data.GetInt("LevelId", 0);
+        int id = MirraSDK.Data.GetInt(SaveKey.LevelId.ToString(), 0);
         return id;
     }
 
@@ -329,7 +406,7 @@ public class MirraSDKSaveProvider : SaveProvider
     {
         if (!isInitialize) return;
         Changed = true;
-        MirraSDK.Data.SetString("RouletteLastDate", date.Date.ToString());
+        MirraSDK.Data.SetString(SaveKey.RouletteLastDate.ToString(), date.Date.ToString());
         Debug.Log("Date saved: " + date.ToString());
     }
 
@@ -337,7 +414,7 @@ public class MirraSDKSaveProvider : SaveProvider
     {
         if (!isInitialize) return DateTime.Today.AddDays(-1);
 
-        string date = MirraSDK.Data.GetString("RouletteLastDate");
+        string date = MirraSDK.Data.GetString(SaveKey.RouletteLastDate.ToString());
         Debug.Log("Date loaded: " + date);
         if (date.Length == 0)
         {

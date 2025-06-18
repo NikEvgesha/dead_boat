@@ -70,10 +70,11 @@ public class PlayerAmmoManager : MonoBehaviour
             _ammo[weapon] = 0;
         _ammo[weapon] += amount;
         NewAmmo?.Invoke();
-        if (LoadingManager.Instance.CurrentLocation == Location.Lobby)
+        Save();
+        /*if (LoadingManager.Instance.CurrentLocation == Location.Lobby)
         {
             Save();
-        }
+        }*/
     }
 
     /// <summary>
@@ -86,6 +87,8 @@ public class PlayerAmmoManager : MonoBehaviour
         if (GetAmmo(weapon) >= amount)
         {
             _ammo[weapon] -= amount;
+
+            Save();
             return true;
         }
         return false;

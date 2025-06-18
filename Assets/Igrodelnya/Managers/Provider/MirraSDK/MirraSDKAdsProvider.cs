@@ -59,12 +59,12 @@ public class MirraSDKAdsProvider : AdsProvider
             onOpen: () =>
             {
                 Debug.Log("MirraSDK: Interstitial ad opened");
-                ControlManager.Instance.CursorActive = true;
+                //ControlManager.Instance.CursorActive = true;
             },
             onClose: (success) =>
             {
                 Debug.Log("MirraSDK: Interstitial ad closed");
-                ControlManager.Instance.CursorActive = false;
+                //ControlManager.Instance.CursorActive = false;
             }
         );
     }

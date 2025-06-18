@@ -12,11 +12,11 @@ public class PlayerStatBar : MonoBehaviour
     private PlayerStatsManager _player;
 
 
-
     private void Start()
     {
         _player = PlayerManager.Instance.StatsManager;
         _player.StatChanged += OnStatChange;
+        _player.AddHealth(0);
     }
 
     private void OnDisable()

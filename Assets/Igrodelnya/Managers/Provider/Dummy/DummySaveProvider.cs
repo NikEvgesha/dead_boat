@@ -101,9 +101,35 @@ public class DummySaveProvider : SaveProvider
 
     public override void SaveDistance(int distance) { }
     public override void SaveInventory(List<PickableItem> items) { }
+    public override void SaveBoardItem(List<PickableItem> items) { }
+    public override void SavePlayerStats(int coin, float hp) { }
+    public override void SaveGameCoin(int coin)
+    {
+        throw new NotImplementedException();
+    }
+    public override void SavePlayerHealth(float health)
+    {
+        throw new NotImplementedException();
+    }
+    public override int LoadGameCoin()
+    {
+        throw new NotImplementedException();
+    }
+    public override float LoadPlayerHealth()
+    {
+        throw new NotImplementedException();
+    }
+    public override (int, float) LoadPlayerStats()
+    {
+        return (0, 0);
+    }
 
     public override List<string> LoadInventory() {
         return new List<string>();
+    }
+    public override List<SavedItem> LoadBoardItem()
+    {
+        return new List<SavedItem>();
     }
     public override int LoadDistance() {
         return 0;

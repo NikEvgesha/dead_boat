@@ -59,6 +59,8 @@ public class PlayerStatsManager : MonoBehaviour
                 NoHealth?.Invoke();
             }
             StatChanged?.Invoke(PlayerStat.Health, _health, _maxHealth);
+            SaveManager.Instance.SavePlayerHealth(_health);
+
         }
     }
 
@@ -86,6 +88,11 @@ public class PlayerStatsManager : MonoBehaviour
         };
         _stamina = _maxStamina;
         _health = _maxHealth;
+        
+    }
+    private void Start()
+    {
+        LoadHealth(SaveManager.Instance.LoadPlayerHealth());
     }
 
     private void FixedUpdate()
@@ -136,5 +143,9 @@ public class PlayerStatsManager : MonoBehaviour
         Health = _maxHealth;
         _isDead = false;
     }
-
+    public void LoadHealth(float hp)
+    {
+        if(hp != 0) 
+            Health = hp;
+    }
 }

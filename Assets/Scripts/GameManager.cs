@@ -56,6 +56,7 @@ public class GameManager : MonoBehaviour
 
         Debug.Log(String.Format("LOADED DATA: {0},  {1} items", loadedData.Item1, loadedData.Item2.Count));
 
+        //Inventory.Instance.ResetInventory();
         if (loadedData.Item1 >= 0)
         {
             Inventory.Instance.SetLoadedInventory(loadedData.Item2);
@@ -95,6 +96,8 @@ public class GameManager : MonoBehaviour
         PlayerInput.Instance.SitTrain(false);
         //SaveManager.Instance.ResetAttachedItems();
         SaveManager.Instance.SaveGameProgress(-1, Inventory.Instance.GetItems());
+        SaveManager.Instance.SaveBoardItem(new List<PickableItem>());
+        SaveManager.Instance.SaveFuel(0);
         _ammoManager.ResetAmmo();
         LoadingManager.Instance.LoadLocation(location);
     }
