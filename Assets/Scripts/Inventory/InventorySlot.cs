@@ -16,6 +16,7 @@ public class InventorySlot : MonoBehaviour, IDragHandler, IBeginDragHandler, IEn
     [SerializeField] private Text _price;
 
     [SerializeField] private GameObject _activeMarker;
+    [SerializeField] private Text _activeSlotIndex;
 
     [SerializeField] private InventoryIcon _container;
     [SerializeField] private Transform _slot;
@@ -36,9 +37,18 @@ public class InventorySlot : MonoBehaviour, IDragHandler, IBeginDragHandler, IEn
     public int ID { get; set; }
 
 
+    public void SetIndex(int id)
+    {
+        if (id > 0)
+        {
+            _activeSlotIndex.text = id.ToString();
+        }
+    }
+
     public virtual void InitSlot(PickableItem item)
     {
         _slot = _slot == null ? transform : _slot;
+
         if (item == null)
         {
             UpdateParent();
@@ -49,6 +59,7 @@ public class InventorySlot : MonoBehaviour, IDragHandler, IBeginDragHandler, IEn
                 gameObject.SetActive(false);
             return;
         }
+
 
         //_icon.enabled = true;
         _interactionIcon.gameObject.SetActive(false);

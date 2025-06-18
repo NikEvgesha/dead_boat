@@ -57,6 +57,7 @@ public class InventoryUI : MonoBehaviour
                 slot.QuickSlot = true;
                 _quickSlots.Add(slot);
                 slot.InitSlot(null);
+                slot.SetIndex(i + 1);
                 slot.ID = i;
             }
 

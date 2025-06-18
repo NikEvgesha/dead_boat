@@ -35,6 +35,7 @@ public class ActiveItemManager : MonoBehaviour
     }
     private void Update()
     {
+        if (ControlManager.Instance.CursorActive) return;
         float scroll = Input.GetAxisRaw("Mouse ScrollWheel");
         if (scroll != 0)
         {
