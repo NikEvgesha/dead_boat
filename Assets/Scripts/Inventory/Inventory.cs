@@ -16,15 +16,15 @@ public class Inventory : MonoBehaviour
     private static Inventory _instance;
     public static Inventory Instance { get { return _instance; } }
 
-    private List<PickableItem> _bagItems = new();
-    private List<PickableItem> _quickPanelItems = new();
+    private List<PickableItem> _bagItems;
+    private List<PickableItem> _quickPanelItems;
     private StarterPackManager _starterPack;
 
 
     public Action<PickableItem> ItemDropOut;
 
-    public int QuickPanelCapacity { get { return _quickSlotsCapacity; } }
-    public int BagCapacity { get { return _capacity; } }
+    public int QuickPanelCapacity => _quickSlotsCapacity;
+    public int BagCapacity => _capacity;
 
     public Action<PickableItem> ItemActivation;
 
@@ -32,15 +32,18 @@ public class Inventory : MonoBehaviour
 
     void Awake()
     {
-        if (_instance != null)
+        if (_instance != null && _instance != this)
         {
             Destroy(gameObject);
             return;
         }
-
         _instance = this;
         _activeItemManager = GetComponent<ActiveItemManager>();
         _starterPack = GetComponent<StarterPackManager>();
+
+
+        _bagItems = new List<PickableItem>(_capacity);
+        _quickPanelItems = new List<PickableItem>(_quickSlotsCapacity);
     }
 
     private void Start()
@@ -52,14 +55,27 @@ public class Inventory : MonoBehaviour
     }
 
 
-/*    private IEnumerator SaveInventory()
-    {
-        while (this.enabled && LoadingManager.Instance.CurrentLocation == Location.Game)
+    /*    private IEnumerator SaveInventory()
         {
-            yield return new WaitForSeconds(1);
-            SaveManager.Instance.SaveInventory();
+            while (this.enabled && LoadingManager.Instance.CurrentLocation == Location.Game)
+            {
+                yield return new WaitForSeconds(1);
+                SaveManager.Instance.SaveInventory();
+            }
+        }*/
+
+    private void Update()
+    {
+        for (int i = 0; i < _quickSlotsCapacity; i++)
+        {
+            if (Input.GetKeyDown(KeyCode.Alpha1 + i))
+            {
+                PickableItem item = InventoryUI.Instance.GetUsable(i);
+                if (item != null)
+                    _activeItemManager.SwitchActiveItem(item);
+            }
         }
-    }*/
+    }
 
     private IEnumerator AddStarterPack()
     {

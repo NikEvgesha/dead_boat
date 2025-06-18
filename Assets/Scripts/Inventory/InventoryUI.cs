@@ -45,6 +45,15 @@ public class InventoryUI : MonoBehaviour
         PlayerInput.Instance.AOpenWindow += Close;
     }
 
+    void OnDestroy()
+    {
+        if (_instance == this)
+        {
+            PlayerInput.Instance.AInventory -= ToggleOpen;
+            PlayerInput.Instance.AOpenWindow -= Close;
+        }
+    }
+
     private void Start()
     {
         if (!_initialized)
@@ -205,7 +214,8 @@ public class InventoryUI : MonoBehaviour
 
     public void UpdateCapacity(int occupied, int total)
     {
-        _capacityText.text = occupied + "/" + total;
+        string capacity = $"{occupied}/{total}";
+        _capacityText.text = capacity;
         _capacityButtonText.text = _capacityText.text;
     }
 
@@ -291,6 +301,11 @@ public class InventoryUI : MonoBehaviour
         return prev;
     }
 
+    public PickableItem GetUsable(int idx)
+    {
+        if (idx < 0 || idx > _quickPanelCapacity || _quickSlots[idx].Empty) return null;
+        return _quickSlots[idx].CurrentItem;
+    }
 
     public void SetActiveItem(PickableItem item)
     {
