@@ -163,8 +163,9 @@ public class SaveManager : MonoBehaviour
     }
     public void SaveBoardItem(List<PickableItem> items = null)
     {
-        if (items != null)
-            saveProvider.SaveBoardItem(items);
+            if (items != null)
+                saveProvider.SaveBoardItem(items);
+        //Debug.Log(items.Count);
     }
     public void SavePlayerStats(int coin, float hp)
     {

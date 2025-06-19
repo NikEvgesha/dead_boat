@@ -46,6 +46,9 @@ public class TrainMagnet : MonoBehaviour
             {
                 item.CheckSaveItem();
             }
+
+            if (GameManager.Instance.isEndGame)
+                continue;
             SaveManager.Instance.SaveBoardItem(_items);
         }
     }
