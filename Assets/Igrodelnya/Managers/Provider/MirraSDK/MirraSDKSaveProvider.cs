@@ -66,7 +66,28 @@ public class MirraSDKSaveProvider : SaveProvider
             return 0f;
         return MirraSDK.Data.GetFloat($"{SaveKey.Score_}{levelId}", 0f);
     }
-
+    public override void SaveTutorialProgress(bool endTutorial)
+    {
+        if (!isInitialize) return;
+        MirraSDK.Data.SetBool(SaveKey.EndTutorial.ToString(), endTutorial);
+        Changed = true;
+    }
+    public override void SaveQuestProgress(int step)
+    {
+        if (!isInitialize) return;
+        MirraSDK.Data.SetInt(SaveKey.QuestProgress.ToString(), step);
+        Changed = true;
+    }
+    public override int LoadQuestProgress()
+    {
+        if (!isInitialize) return 0;
+        return MirraSDK.Data.GetInt(SaveKey.QuestProgress.ToString(), 0);
+    }
+    public override bool GetTutorialProgress()
+    {
+        if (!isInitialize) return false;
+        return MirraSDK.Data.GetBool(SaveKey.EndTutorial.ToString(), false);
+    }
     public override void SaveLevelUnlock(int id, bool unlocked)
     {
         if (!isInitialize) return;

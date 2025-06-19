@@ -170,6 +170,8 @@ public class BoardController : MonoBehaviour
     }
     private void SaveProgress()
     {
+        if (GameManager.Instance.isEndGame)
+            return;
         SaveManager.Instance.SaveGameProgress((int)TotalDistanceTraveled, Inventory.Instance.GetItems(), _levelID);
         SaveManager.Instance.SaveFuel((int)currentFuel);
     }

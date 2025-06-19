@@ -14,7 +14,10 @@ public abstract class SaveProvider : MonoBehaviour
     // Методы для работы со счётом
     public abstract void SaveScore(float score, int levelId);
     public abstract float LoadScore(int levelId);
-
+    public abstract bool GetTutorialProgress();
+    public abstract void SaveTutorialProgress(bool endTutorial);
+    public abstract void SaveQuestProgress(int step);
+    public abstract int LoadQuestProgress();
     // Прочие методы (например, сохранение статуса уровней)
     public abstract void SaveLevelUnlock(int id, bool unlocked);
     public abstract void SaveLevelWin(int id, bool win);

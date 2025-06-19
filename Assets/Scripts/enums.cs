@@ -224,6 +224,8 @@ public enum SaveKey
     RouletteLastDate,
     Health,
     Coins,
+    EndTutorial,
+    QuestProgress,
 
 
 }

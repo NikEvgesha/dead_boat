@@ -36,6 +36,7 @@ public class QuestManager : MonoBehaviour
     }
     private void Start()
     {
+        currentIndex = SaveManager.Instance.LoadQuestProgress();
         StartQuest();
     }
     public void StartQuest()
@@ -44,7 +45,7 @@ public class QuestManager : MonoBehaviour
             return;
         isStart = true;
         // 1) Спавним сразу все QuestInstance (но UI ещё не создаём)
-        for (int i = 0; i < questPrefabs.Count; i++)
+        for (int i = currentIndex; i < questPrefabs.Count; i++)
         {
             GameObject prefab = questPrefabs[i];
             if (prefab == null)
@@ -143,6 +144,9 @@ public class QuestManager : MonoBehaviour
 
         // Сдвигаем индекс к следующему квесту
         currentIndex++;
+        if (GameManager.Instance.isEndGame)
+            return;
+        SaveManager.Instance.SaveQuestProgress(currentIndex);
         ShowCurrentQuest();
     }
 

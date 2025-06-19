@@ -38,6 +38,10 @@ public class DummySaveProvider : SaveProvider
     }
     public override void SaveScore(float score, int levelId) { }
     public override float LoadScore(int levelId) => 0;
+    public override bool GetTutorialProgress() => false;
+    public override void SaveTutorialProgress(bool endTutorial) { }
+    public override void SaveQuestProgress(int step) { }
+    public override int LoadQuestProgress() => 0;
     public override void SaveLevelUnlock(int id, bool unlocked) { }
     public override void SaveLevelWin(int id, bool win) { }
     public override void SaveProgress() { }

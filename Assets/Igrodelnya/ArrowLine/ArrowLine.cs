@@ -16,7 +16,6 @@ public class ArrowLine : MonoBehaviour
     private Transform _endTransform;
     private void Awake()
     {
-
         lr = GetComponent<LineRenderer>();
         if (lr == null)
         {
@@ -26,6 +25,7 @@ public class ArrowLine : MonoBehaviour
         // Создаём копию материала, чтобы не изменять sharedMaterial
         lr.material = new Material(lr.material);
         lineMaterial = lr.material;
+        ActiveArrowLine(false);
     }
 
     private void Update()

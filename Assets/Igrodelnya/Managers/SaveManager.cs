@@ -55,7 +55,14 @@ public class SaveManager : MonoBehaviour
     {
         return saveProvider.LoadVolume();
     }
-
+    public void SaveQuestProgress(int step = 0)
+    {
+        saveProvider.SaveQuestProgress(step);
+    }
+    public int LoadQuestProgress() 
+    {
+        return saveProvider.LoadQuestProgress();
+    }
     public void SaveMusicVolume(float volume)
     {
         var volumes = saveProvider.LoadVolume();
@@ -78,7 +85,14 @@ public class SaveManager : MonoBehaviour
         return saveProvider.LoadScore(levelId);
     }
 
-
+    public bool GetTutorialProgress()
+    {
+        return saveProvider.GetTutorialProgress();
+    }
+    public void SaveTutorialProgress(bool endTutorial)
+    {
+        saveProvider.SaveTutorialProgress(endTutorial);
+    }
     public void SaveGems(int amount)
     {
         saveProvider.SaveGems(amount);
