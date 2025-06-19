@@ -94,11 +94,14 @@ public class EndGameUIManager : MonoBehaviour
             timerSlider.gameObject.SetActive(false);
             _panel.gameObject.SetActive(false);
         } 
-        else
+        else 
         {
-            ControlManager.Instance.MoveActive = false; 
-            ControlManager.Instance.CursorActive = true;
-            _panel.gameObject.SetActive(true);
+            if (state != EndGameState.Lose)
+            {
+                ControlManager.Instance.MoveActive = false;
+                ControlManager.Instance.CursorActive = true;
+                _panel.gameObject.SetActive(true);
+            }
             lobbyButton.gameObject.SetActive(true);
             timerSlider.gameObject.SetActive(true);
         }
@@ -120,7 +123,7 @@ public class EndGameUIManager : MonoBehaviour
             distanceObject.SetActive(true);
             timerMessageText.gameObject.SetActive(true);
             string tagText = LocalizationManager.Instance.LocalizationData.GetTranslation("Game/Traveled", LocalizationManager.Instance.CurrentLanguage);
-            distanceText.text = string.Format(tagText, distance);
+            distanceText.text = string.Format(tagText, GameManager.Instance.CurrentDistance);
             playAgainButton.gameObject.SetActive(true);
             SaveManager.Instance.SaveWin();
             // Текст таймера для победы/поражения
@@ -139,7 +142,7 @@ public class EndGameUIManager : MonoBehaviour
             titleTextLose.gameObject.SetActive(true);
             distanceObject.SetActive(true);
             string tagText = LocalizationManager.Instance.LocalizationData.GetTranslation("Game/Traveled", LocalizationManager.Instance.CurrentLanguage);
-            distanceText.text = string.Format(tagText, distance);
+            distanceText.text = string.Format(tagText, GameManager.Instance.CurrentDistance);
             playAgainButton.gameObject.SetActive(true);
             reviveButton.gameObject.SetActive(true);
             tagText = LocalizationManager.Instance.LocalizationData.GetTranslation("Game/AutoLeft", LocalizationManager.Instance.CurrentLanguage);

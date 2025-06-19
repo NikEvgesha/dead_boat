@@ -30,7 +30,7 @@ public class LobbyManager : MonoBehaviour
 
     private void Start()
     {
-        SaveManager.Instance.SaveGameProgress(0, Inventory.Instance.GetItems());
+        SaveManager.Instance.SaveGameProgress(-1, Inventory.Instance.GetItems());
         PlayerMovement.Instance.Teleport(_playerSpawnPoint);
         Inventory.Instance.SetLoadedInventory();
         //SaveManager.Instance.SaveGameProgress(-1, Inventory.Instance.GetItems());

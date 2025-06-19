@@ -327,6 +327,7 @@ public class InventoryUI : MonoBehaviour
         {
             _mainSlots[i].InitSlot(null);
         }
+        UpdateCapacity(0, _bagCapacity);
     }
 
     public void DisplayNoSpaceHint()

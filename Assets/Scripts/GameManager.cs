@@ -23,8 +23,18 @@ public class GameManager : MonoBehaviour
     [Header("Дистанция всей игры")]
     public float PlayDistance = 100000f;
 
+    public int CurrentDistance { 
+        get 
+        {
+            if (_board != null)
+                return (int)_board.TotalDistanceTraveled;
+            return 0;
+        } 
+    }
+
     private bool _pause;
     private PlayerAmmoManager _ammoManager;
+    private BoardController _board;
 
     private void Awake()
     {
@@ -73,6 +83,11 @@ public class GameManager : MonoBehaviour
         SaveManager.Instance.ResetLobbyItems();
 
         //StartQuest();
+    }
+
+    public void SetBoard(BoardController board)
+    {
+        _board = board;
     }
     private void StartQuest()
     {

@@ -105,6 +105,11 @@ public class BoardController : MonoBehaviour
         */
         
     }
+
+    private void Start()
+    {
+        GameManager.Instance.SetBoard(this);
+    }
     private IEnumerator SetSavePosition(float pos)
     {
         float startPos = pos > 1000 ? pos - 1000 : pos;

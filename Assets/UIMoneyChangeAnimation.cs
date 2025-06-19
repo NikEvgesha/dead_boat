@@ -13,8 +13,9 @@ public class UIMoneyChangeAnimation : MonoBehaviour
     }
     public void Config(string text, bool isPositive)
     {
-        text = isPositive ? "+" + text : text;
-        _animator.SetTrigger(isPositive ? "Add" : "Remove");
+           text = isPositive ? "+" + text : text;
+        if (_animator != null)
+            _animator.SetTrigger(isPositive ? "Add" : "Remove");
         _text.text = text;
 
     }

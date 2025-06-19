@@ -89,6 +89,10 @@ public class Inventory : MonoBehaviour
         _bagItems.Clear();
         _quickPanelItems.Clear();
         InventoryUI.Instance.Reset();
+        while (transform.childCount > 0)
+        {
+            DestroyImmediate(transform.GetChild(0).gameObject);
+        }
         SetStartItems(_starterPack.GetStartItems());
     }
 
@@ -106,6 +110,7 @@ public class Inventory : MonoBehaviour
     public bool AddItem(PickableItem item)
     {
         bool added = false;
+        if (item.Attached) return false;
 
         if (item.GetComponent<AmmoItem>() != null)
         {
