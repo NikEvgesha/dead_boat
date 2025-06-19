@@ -1304,7 +1304,7 @@ Rigidbody:
   m_ImplicitTensor: 1
   m_UseGravity: 1
   m_IsKinematic: 0
-  m_Interpolate: 0
+  m_Interpolate: 1
   m_Constraints: 0
   m_CollisionDetection: 0
 --- !u!114 &6584746634673654286
@@ -1323,7 +1323,6 @@ MonoBehaviour:
   _visualObj: {fileID: 5864329779458934667}
   _sellPoint: {fileID: 0}
   _lerpSpeed: 25
-  _maxSpeed: 25
   _damping: 0.1
   _stopDistance: 0.05
   _maxDistance: 8
@@ -1331,6 +1330,7 @@ MonoBehaviour:
   _dragOrigin: 1
   _dropVelocityMultiplier: 2
   _kinematicDistance: 30
+  _rotationSpeed: 40
   _collider: {fileID: 0}
 --- !u!114 &6732235121948628414
 MonoBehaviour:
@@ -1344,7 +1344,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3ed1795ad5456ac47b8f9bf79d32cb0e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  fuelValue: 5
+  fuelValue: 1
+  InFire: 0
 --- !u!114 &4674969955249332997
 MonoBehaviour:
   m_ObjectHideFlags: 0
