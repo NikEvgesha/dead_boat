@@ -36,6 +36,8 @@ public class BankStorePoint : MonoBehaviour
         if (_purchaseData.CurrencyImageURL != null && _purchaseData.CurrencyImageURL != "")
             StartCoroutine(DownloadImage(_purchaseData.CurrencyImageURL));
 
+        _price.text = _purchaseData.Price;
+
         _buyTouchPanel.PointerDown += TryBuy;
 
     }
