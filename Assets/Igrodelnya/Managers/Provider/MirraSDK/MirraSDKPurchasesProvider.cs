@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
-using MirraGames.SDK;  // пространство имён SDK
+using MirraGames.SDK;
+using MirraGames.SDK.Common;  // пространство имён SDK
 
 //#if MIRRA_SDK_ENABLED
 public class MirraSDKPurchaseProvider : PurchasesProvider
@@ -86,7 +87,7 @@ public class MirraSDKPurchaseProvider : PurchasesProvider
             return null;
         }
 
-        var data = MirraSDK.Payments.GetProductData(purchaseId);
+        ProductData data = MirraSDK.Payments.GetProductData(purchaseId);
         if (data == null)
         {
             Debug.LogError($"MirraSDK: No product data for ID «{purchaseId}»");
@@ -98,7 +99,7 @@ public class MirraSDKPurchaseProvider : PurchasesProvider
             "",
             "",
             data.PriceInteger.ToString(),
-            ""
+            data.Currency
         );  // :contentReference[oaicite:4]{index=4}
     }
 

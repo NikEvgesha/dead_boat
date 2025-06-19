@@ -1,8 +1,11 @@
 
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GemsShopSlot : SpecialShopSlot
 {
+    [SerializeField] private Text _currencyText;
+
     CurrencyPackData _packData;
     PurchaseData _purchaseData;
     private GemsShop _shop;
@@ -12,6 +15,8 @@ public class GemsShopSlot : SpecialShopSlot
         _packData = packData;
         _purchaseData = purchaseData;
         _shop = shop;
+        _currencyIcon.gameObject.SetActive(false);
+        _currencyText.text = _purchaseData.CurrencyImageURL;
     }
 
     public override void OnClick()

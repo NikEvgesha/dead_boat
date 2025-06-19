@@ -11,7 +11,8 @@ public class BankStorePoint : MonoBehaviour
 
     [SerializeField] private Text _name;
     [SerializeField] private Text _price;
-    [SerializeField] private Image _currencyIcon;
+    //[SerializeField] private Image _currencyIcon;
+    [SerializeField] private Text _currencyText;
     [SerializeField] private Image _buyProgress;
     [SerializeField] private BuyTouchHandler _buyTouchPanel;
 
@@ -33,10 +34,11 @@ public class BankStorePoint : MonoBehaviour
         else
             _name.text = LocalizationManager.Instance.LocalizationData.GetTranslation(_packData.Data.Name, LocalizationManager.Instance.CurrentLanguage, LocalizationKeyType.Item.ToString());
 
-        if (_purchaseData.CurrencyImageURL != null && _purchaseData.CurrencyImageURL != "")
-            StartCoroutine(DownloadImage(_purchaseData.CurrencyImageURL));
+        //if (_purchaseData.CurrencyImageURL != null && _purchaseData.CurrencyImageURL != "")
+        //    StartCoroutine(DownloadImage(_purchaseData.CurrencyImageURL));
 
         _price.text = _purchaseData.Price;
+        _currencyText.text = _purchaseData.CurrencyImageURL;
 
         _buyTouchPanel.PointerDown += TryBuy;
 
@@ -111,20 +113,20 @@ public class BankStorePoint : MonoBehaviour
     }
 
 
-    IEnumerator DownloadImage(string imageUrl)
-    {
-        UnityWebRequest request = UnityWebRequestTexture.GetTexture(imageUrl);
-        yield return request.SendWebRequest();
+    //IEnumerator DownloadImage(string imageUrl)
+    //{
+    //    UnityWebRequest request = UnityWebRequestTexture.GetTexture(imageUrl);
+    //    yield return request.SendWebRequest();
 
-        if (request.result == UnityWebRequest.Result.Success)
-        {
-            Texture2D texture = DownloadHandlerTexture.GetContent(request);
-            Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
-            _currencyIcon.sprite = sprite;
-        }
-        else
-        {
-            Debug.LogError("Ошибка загрузки: " + request.error);
-        }
-    }
+    //    if (request.result == UnityWebRequest.Result.Success)
+    //    {
+    //        Texture2D texture = DownloadHandlerTexture.GetContent(request);
+    //        Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+    //        _currencyIcon.sprite = sprite;
+    //    }
+    //    else
+    //    {
+    //        Debug.LogError("Ошибка загрузки: " + request.error);
+    //    }
+    //}
 }

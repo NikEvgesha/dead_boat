@@ -51,8 +51,8 @@ public class GemsShop : MonoBehaviour
             GemsShopSlot slot = _grid.SpawnObject<GemsShopSlot>(_slotPrefab.gameObject);
             PurchaseData data = PurchasesManager.Instance.GetPurchaseData(item.CurrencyType.ToString() + "_" + item.Amount);
             slot.Init(item, data, this);
-            if (data.CurrencyImageURL != null && data.CurrencyImageURL != "")
-                StartCoroutine(DownloadImage(data.CurrencyImageURL, slot));
+            //if (data.CurrencyImageURL != null && data.CurrencyImageURL != "")
+            //    StartCoroutine(DownloadImage(data.CurrencyImageURL, slot));
         }
     }
 
@@ -87,7 +87,7 @@ public class GemsShop : MonoBehaviour
     }
 
 
-    IEnumerator DownloadImage(string imageUrl, GemsShopSlot slot)
+/*    IEnumerator DownloadImage(string imageUrl, GemsShopSlot slot)
     {
         UnityWebRequest request = UnityWebRequestTexture.GetTexture(imageUrl);
         yield return request.SendWebRequest();
@@ -102,5 +102,5 @@ public class GemsShop : MonoBehaviour
         {
             Debug.LogError("Ошибка загрузки: " + request.error);
         }
-    }
+    }*/
 }
