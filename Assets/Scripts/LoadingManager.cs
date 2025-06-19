@@ -46,6 +46,7 @@ public class LoadingManager : MonoBehaviour
         bool haveSave = SaveManager.Instance.LoadGameProgress().Item1 >= 0;
         if (SaveManager.Instance.IsNewPlayer || haveSave)
         {
+            _location = Location.Game;
             if (!haveSave)
                 GameLoader.Instance.LoadNextScene(_gameScene, true);
             else
@@ -54,9 +55,13 @@ public class LoadingManager : MonoBehaviour
                 if (lvlId >= 0)
                     GameLoader.Instance.LoadNextScene(LevelManager.Instance.GetLevel(lvlId).Scene, true);
                 else
+                {
+                    _location = Location.Lobby;
                     GameLoader.Instance.LoadNextScene(_lobbyScene, true);
+                }    
+                    
             }
-                _location = Location.Game;
+           
             SaveManager.Instance.SetSave(true);
         }
         else

@@ -85,6 +85,10 @@ public class ControlUI : MonoBehaviour
             _descktopHints.putToInventory.SetActive(false);
             _descktopHints.attach.SetActive(false);
             _descktopHints.rotate.SetActive(false);
+        } else
+        {
+            _touchControls.rotateXButton.gameObject.SetActive(false);
+            _touchControls.rotateYButton.gameObject.SetActive(false);
         }
     }
 

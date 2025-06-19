@@ -1,4 +1,6 @@
+using MirraGames.SDK;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -16,10 +18,15 @@ public class PlaytimeRewardPanel : MonoBehaviour
     [SerializeField] private PlaytimeRewardSlot _slotPrefab;
     [SerializeField] private GameObject _panel;
     [SerializeField] private GameObject _button;
+    [SerializeField] private GameObject _indicator;
 
     private bool _isOpen = false;
     private List<PlaytimeRewardSlot> _slots = new();
 
+    private List<PlaytimeReward> _availableRewards;
+    private IEnumerator _timerCoroutine;
+    private DateTime _lastRewardTime;
+    
 
     private void Start()
     {
@@ -28,9 +35,35 @@ public class PlaytimeRewardPanel : MonoBehaviour
         {
             PlaytimeRewardSlot slot = _grid.SpawnObject<PlaytimeRewardSlot>(_slotPrefab.gameObject);
             _slots.Add(slot);
-            slot.Init(reward);
+            slot.Init(reward, this);
+        }
+        _lastRewardTime = MirraSDK.Time.CurrentDate.ToUniversalTime().Add(TimeSpan.FromMinutes(_rewards[_rewards.Count - 1].playtimeMinutes));
+        _availableRewards = new();
+        _timerCoroutine = RewardTimer();
+        StartCoroutine(_timerCoroutine);
+    }
+
+    private IEnumerator RewardTimer()
+    {
+        int i = 0;
+        while (MirraSDK.Time.CurrentDate.ToUniversalTime() < _lastRewardTime && i < _rewards.Count)
+        {
+            yield return new WaitForSecondsRealtime(_rewards[i].playtimeMinutes * 60);
+            _availableRewards.Add(_rewards[i]);
+            i++;
+            _indicator.SetActive(true);
         }
     }
+
+
+    public void OnRewardCollect(PlaytimeReward reward)
+    {
+        _availableRewards.Remove(reward);
+        if (_availableRewards.Count == 0)
+            _indicator.SetActive(false);
+    }
+
+
     private void OnEnable()
     {
         PlayerInput.Instance.AOpenWindow += Close;
@@ -38,6 +71,7 @@ public class PlaytimeRewardPanel : MonoBehaviour
     private void OnDisable()
     {
         PlayerInput.Instance.AOpenWindow -= Close;
+        StopAllCoroutines();
     }
     public void ToggleOpen()
     {

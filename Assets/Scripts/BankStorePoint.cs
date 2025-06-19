@@ -28,13 +28,22 @@ public class BankStorePoint : MonoBehaviour
         Instantiate(_packData.Model, _sellPoint);
         _purchaseData = PurchasesManager.Instance.GetPurchaseData(_packData.CurrencyType.ToString() + "_" + _packData.Amount);
 
-        //_name.text = LocalizationManager.Instance.LocalizationData.GetTranslation(_packData.Data.Name, LocalizationManager.Instance.CurrentLanguage, LocalizationKeyType.Item.ToString());
-        _name.text = _purchaseData.Title;
-        _price.text = _purchaseData.Price;
+        if (_purchaseData.Title != null && _purchaseData.Title != "")
+            _name.text = _purchaseData.Title;
+        else
+            _name.text = LocalizationManager.Instance.LocalizationData.GetTranslation(_packData.Data.Name, LocalizationManager.Instance.CurrentLanguage, LocalizationKeyType.Item.ToString());
+
         if (_purchaseData.CurrencyImageURL != null && _purchaseData.CurrencyImageURL != "")
             StartCoroutine(DownloadImage(_purchaseData.CurrencyImageURL));
 
+        _buyTouchPanel.PointerDown += TryBuy;
 
+    }
+
+    private void OnDisable()
+    {
+        if (_buyTouchPanel != null)
+            _buyTouchPanel.PointerDown -= TryBuy;
     }
 
 

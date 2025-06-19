@@ -18,9 +18,11 @@ public class PlaytimeRewardSlot : MonoBehaviour
     private int _secondsLeft;
     private TimeSpan _rewardTime;
     private bool _claimed = false;
+    private PlaytimeRewardPanel _panel;
 
-    public void Init(PlaytimeReward reward)
+    public void Init(PlaytimeReward reward, PlaytimeRewardPanel panel)
     {
+        _panel = panel;
         _reward = reward;
         _amountText.text = _reward.amount.ToString();
         _rewardTime = MirraSDK.Time.CurrentDate.ToUniversalTime().TimeOfDay + TimeSpan.FromMinutes(_reward.playtimeMinutes);
@@ -85,5 +87,6 @@ public class PlaytimeRewardSlot : MonoBehaviour
         CurrencyManager.Instance.AddCurrency(CurrencyType.Gems, _reward.amount);
         _claimed = true;
         SwitchButtonElements(true);
+        _panel.OnRewardCollect(_reward);
     }
 }
