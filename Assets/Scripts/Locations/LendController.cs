@@ -1,10 +1,11 @@
 using UnityEngine;
+using System.Collections.Generic;
 using System.Linq;
 
 public class LendController : MonoBehaviour
 {
     [System.Serializable]
-    public class LocationGroundSegments
+    public class Location
     {
         [Tooltip("Куски земли для этой локации")]
         public Transform[] groundSegments;
@@ -12,13 +13,13 @@ public class LendController : MonoBehaviour
         [Tooltip("Флаг: является ли эта локация последней (после неё ничего не будет)")]
         public bool isFinalLocation;
 
-        // Пока не нужен: индексы для циклического передвижения
-        // [HideInInspector] public int currentSegmentIndex = 0;
+        [HideInInspector] public LinkedList<Transform> segmentsQueue;
+        [Tooltip("Расстояние до смены локаци (если предпоследняя то будет до конца)")]
+        public float totalLength;
     }
 
     [Header("Настройки локаций")]
-    [Tooltip("Список групп сегментов для разных локаций")]
-    public LocationGroundSegments[] locations;
+    public Location[] locations;
 
     [Tooltip("Длина каждого куска земли (по оси Z)")]
     public float segmentLength = 100f;
@@ -26,166 +27,160 @@ public class LendController : MonoBehaviour
     [Tooltip("Ссылка на трансформ игрока или лодки")]
     public Transform player;
 
-    [Header("Настройки перехода")]
-    [Tooltip("Расстояние, после которого происходит смена локации")]
-    public float transitionDistance = 300f;
-
-    private float _stopSpawnDistance = 100000f;
-
-    // Текущий индекс локации
     private int currentLocationIndex = 0;
-
-    // Порог для следующего перехода
-    private float nextTransitionDistance;
-
-    // Переменная для хранения последней позиции по оси Z уже выстроенного пути
-    private float lastSegmentZ;
+    private List<float> switchThresholds = new List<float>();
+    private float lastEndZ = 0f;
 
     private void Awake()
-    {
-        InitBoardController();
-    }
-
-    private void Start()
-    {
-        _stopSpawnDistance = GameManager.Instance.PlayDistance;
-        transitionDistance = _stopSpawnDistance - segmentLength;
-        nextTransitionDistance = transitionDistance; // первый порог перехода
-        InitializeLocations();
-    }
-
-    // Инициализация локаций: включаем только первую, остальные отключаются
-    private void InitializeLocations()
-    {
-        for (int i = 0; i < locations.Length; i++)
-        {
-            bool active = (i == currentLocationIndex);
-            foreach (Transform segment in locations[i].groundSegments)
-            {
-                segment.gameObject.SetActive(active);
-            }
-        }
-        // Вычисляем начальное значение lastSegmentZ из активных сегментов первой локации
-        lastSegmentZ = CalculateLastSegmentZ();
-    }
-
-    // Находит максимальную позицию Z среди активных сегментов
-    private float CalculateLastSegmentZ()
-    {
-        float maxZ = float.MinValue;
-        foreach (var location in locations)
-        {
-            foreach (var segment in location.groundSegments)
-            {
-                if (segment.gameObject.activeSelf && segment.position.z > maxZ)
-                    maxZ = segment.position.z;
-            }
-        }
-        return maxZ;
-    }
-
-    // Если player не задан, ищем компонент BoardController
-    private void InitBoardController()
     {
         if (player == null)
             player = FindObjectOfType<PlayerStatsManager>()?.transform;
         if (player == null)
-            Debug.LogError("BoardController не найден");
+            Debug.LogError("Player transform not found");
     }
 
-    void Update()
+    private void Start()
     {
-        // Переход на новую локацию, если игрок прошёл порог и следующая локация существует
-        if (player.position.z > nextTransitionDistance && currentLocationIndex < locations.Length - 1)
+        float cumulative = 0f;
+
+        for (int i = 0; i < locations.Length; i++)
         {
-            currentLocationIndex++;
-            // Включаем сегменты новой локации
-            foreach (Transform segment in locations[currentLocationIndex].groundSegments)
+            var loc = locations[i];
+            //loc.totalLength = loc.groundSegments.Length * segmentLength;
+            if (i == locations.Length - 2)
             {
-                segment.gameObject.SetActive(true);
+                loc.totalLength = GameManager.Instance.PlayDistance - loc.groundSegments.Count() * (segmentLength-1);
             }
-            nextTransitionDistance += transitionDistance;
-            // Располагаем сегменты новой локации так, чтобы они продолжали путь предыдущих
-            PositionNewLocationSegments();
+            cumulative += loc.totalLength;
+            switchThresholds.Add(cumulative);
+
+            // Инициализируем очередь и активируем только первую локацию
+            loc.segmentsQueue = new LinkedList<Transform>(loc.groundSegments);
+            bool active = (i == 0);
+            foreach (var seg in loc.groundSegments)
+                seg.gameObject.SetActive(active);
+
+            // Позиционируем сегменты подряд, начиная с 0 или предыдущего порога
+            float startZ = (i == 0) ? 0f : switchThresholds[i - 1];
+            for (int j = 0; j < loc.groundSegments.Length; j++)
+            {
+                var seg = loc.groundSegments[j];
+                var pos = seg.position;
+                pos.z = startZ + j * segmentLength;
+                seg.position = pos;
+            }
+
+            // После первой локации устанавливаем lastEndZ
+            if (i == 0)
+                lastEndZ = switchThresholds[0] - segmentLength;
+
+
+        }
+    }
+
+    private void Update()
+    {
+        float playerZ = player.position.z;
+
+        // Переход вперёд
+        if (currentLocationIndex < locations.Length - 1 && playerZ > switchThresholds[currentLocationIndex])
+        {
+            SwitchLocation(currentLocationIndex + 1);
+        }
+        // Переход назад
+        else if (currentLocationIndex > 0 && playerZ < switchThresholds[currentLocationIndex - 1])
+        {
+            SwitchLocation(currentLocationIndex - 1);
         }
 
-        var activeLocation = locations[currentLocationIndex];
-        Transform[] activeSegments = activeLocation.groundSegments;
+        var activeLoc = locations[currentLocationIndex];
+        var queue = activeLoc.segmentsQueue;
 
-        // Если локация не финальная – перемещаем сегменты циклически (вперед и назад)
-        if (!activeLocation.isFinalLocation)
+        if (!activeLoc.isFinalLocation)
         {
-            // Ищем самый «низкий» (минимальный Z) и самый «верхний» (максимальный Z) сегмент
-            Transform lowestSeg = activeSegments[0];
-            Transform highestSeg = activeSegments[0];
-            foreach (Transform seg in activeSegments)
+            // Вперёд
+            while (playerZ > queue.First.Value.position.z + segmentLength)
             {
-                if (seg.position.z < lowestSeg.position.z)
-                    lowestSeg = seg;
-                if (seg.position.z > highestSeg.position.z)
-                    highestSeg = seg;
+                var seg = queue.First.Value;
+                queue.RemoveFirst();
+                float newZ = queue.Last.Value.position.z + segmentLength;
+                var p = seg.position; p.z = newZ; seg.position = p;
+                queue.AddLast(seg);
+                lastEndZ = newZ;
             }
-
-            // Движемся вперёд: если игрок прошёл нижний сегмент дальше, чем на length
-            if (player.position.z > lowestSeg.position.z + segmentLength)
+            // Назад
+            while (playerZ < queue.First.Value.position.z - 1)
             {
-                float newZ = highestSeg.position.z + segmentLength;
-                Vector3 newPos = lowestSeg.position;
-                newPos.z = newZ;
-                lowestSeg.position = newPos;
-
-                // Обновляем lastSegmentZ (максимальное Z) при необходимости
-                if (newZ > lastSegmentZ)
-                    lastSegmentZ = newZ;
-            }
-            // Движемся назад: если игрок ушёл ниже нижнего сегмента более, чем на length
-            else if (player.position.z < lowestSeg.position.z - 10)
-            {
-                float newZ = lowestSeg.position.z - segmentLength;
-                Vector3 newPos = highestSeg.position;
-                newPos.z = newZ;
-                highestSeg.position = newPos;
-
-                // При движении назад логика lastSegmentZ не так критична,
-                // но, если нужно, можно вычислять минимальный Z аналогично lastSegmentZ
+                var seg = queue.Last.Value;
+                queue.RemoveLast();
+                float newZ = queue.First.Value.position.z - segmentLength;
+                var p = seg.position; p.z = newZ; seg.position = p;
+                queue.AddFirst(seg);
+                // при движении назад lastEndZ не меняем
             }
         }
-        else // Финальная локация – не перемещаем сегменты циклически
+        else
         {
-            float finalEndZ = GetFinalEndPosition(activeSegments);
-            if (player.position.z > finalEndZ)
+            // Финальная локация
+            if (playerZ > lastEndZ)
             {
-                // Можно вызвать событие завершения уровня, если требуется
                 // OnLevelComplete();
             }
         }
     }
 
-    // Позиционирует сегменты новой локации так, чтобы они шли после уже выстроенного пути
-    private void PositionNewLocationSegments()
+    private void SwitchLocation(int newIndex)
     {
-        float startZ = lastSegmentZ + segmentLength;
-        Transform[] newSegments = locations[currentLocationIndex].groundSegments;
-        for (int i = 0; i < newSegments.Length; i++)
-        {
-            Vector3 pos = newSegments[i].position;
-            pos.z = startZ + i * segmentLength;
-            newSegments[i].position = pos;
-        }
-        // Обновляем значение конца пути до конца новой локации
-        lastSegmentZ = startZ + (newSegments.Length - 1) * segmentLength;
-        //currentSegmentIndex = 0; // больше не нужен
-    }
+        bool forward = newIndex > currentLocationIndex;
 
-    // Определяет конечную позицию финальной локации (самый дальний сегмент + segmentLength)
-    private float GetFinalEndPosition(Transform[] segments)
-    {
-        float maxZ = float.MinValue;
-        foreach (Transform segment in segments)
+        if (forward)
         {
-            if (segment.position.z > maxZ)
-                maxZ = segment.position.z;
+            // активируем новую локацию без деактивации старой
+            var newLoc = locations[newIndex];
+            foreach (var seg in newLoc.groundSegments)
+                seg.gameObject.SetActive(true);
+
+            // позиционируем сегменты сразу после lastEndZ
+            for (int j = 0; j < newLoc.groundSegments.Length; j++)
+            {
+                var seg = newLoc.groundSegments[j];
+                var pos = seg.position;
+                pos.z = lastEndZ + segmentLength * (j + 1);
+                seg.position = pos;
+            }
+
+            // инициализируем очередь по возрастающему Z
+            newLoc.segmentsQueue = new LinkedList<Transform>(
+                newLoc.groundSegments.OrderBy(s => s.position.z));
+
+            // обновляем lastEndZ
+            lastEndZ += newLoc.totalLength;
+            currentLocationIndex = newIndex;
         }
-        return maxZ + segmentLength;
+        else // backward
+        {
+            // деактивируем все локации впереди текущей
+            for (int i = newIndex + 1; i < locations.Length; i++)
+                foreach (var seg in locations[i].groundSegments)
+                    seg.gameObject.SetActive(false);
+
+            // переключаемся
+            currentLocationIndex = newIndex;
+            var newLoc = locations[currentLocationIndex];
+            foreach (var seg in newLoc.groundSegments)
+                seg.gameObject.SetActive(true);
+
+            // создаём очередь по текущему положению
+            var sorted = newLoc.groundSegments.OrderBy(s => s.position.z);
+            newLoc.segmentsQueue = new LinkedList<Transform>(sorted);
+
+            // пересчитываем lastEndZ среди всех активных сегментов
+            float maxZ = float.MinValue;
+            for (int i = 0; i <= currentLocationIndex; i++)
+                foreach (var seg in locations[i].groundSegments)
+                    if (seg.gameObject.activeSelf)
+                        maxZ = Mathf.Max(maxZ, seg.position.z);
+            lastEndZ = maxZ;
+        }
     }
 }
