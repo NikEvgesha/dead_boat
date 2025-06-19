@@ -145,8 +145,9 @@ public class QuestManager : MonoBehaviour
         // Сдвигаем индекс к следующему квесту
         if (GameManager.Instance.isEndGame)
             return;
-        currentIndex++;
+
         SaveManager.Instance.SaveQuestProgress(currentIndex);
+        currentIndex++;
         ShowCurrentQuest();
     }
 
