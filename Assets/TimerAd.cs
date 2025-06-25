@@ -1,13 +1,15 @@
+using MirraGames.SDK;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class TimerAd : MonoBehaviour
 {
-    [SerializeField] private float _adsInterval;
     [SerializeField] private float _noDamageInterval;
     [SerializeField] private GameObject _adPanel;
     [SerializeField] private Text _secondsRemainText;
+
+    private int _adsInterval = 60;
     private PlayerStatsManager _playerStats;
     private bool _timerReady;
     private bool _canShowAd = true;
@@ -16,6 +18,7 @@ public class TimerAd : MonoBehaviour
     {
         _playerStats = PlayerManager.Instance.StatsManager;
         _playerStats.StatChanged += OnPlayerStatChange;
+        _adsInterval = MirraSDK.Flags.GetInt("AdsInterval", 60);
         StartCoroutine(AdTimer());
     }
 

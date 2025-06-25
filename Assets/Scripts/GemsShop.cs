@@ -75,8 +75,8 @@ public class GemsShop : MonoBehaviour
 
     public void TryBuy(PurchaseData purchaseData, CurrencyPackData packData)
     {
-        // TODO: purchase
 
+        PauseManager.Instance.SetPause(true, true);
         PurchasesManager.Instance.BuyPurchase(
             purchaseData.Id,
             (success) =>
@@ -85,6 +85,7 @@ public class GemsShop : MonoBehaviour
                 {
                     CurrencyManager.Instance.AddCurrency(packData.CurrencyType, packData.Amount);
                 }
+                PauseManager.Instance.SetPause(false, true);
             });
 
         
