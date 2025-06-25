@@ -66,11 +66,11 @@ public class ZombieController : LevelledEnemy
     bool CanHitPlayer()
     {
         RaycastHit rayHit;
-        Vector3 from = transform.position + Vector3.up * 1.5f;
-        Vector3 to = target.position + Vector3.up * 1.5f;
+        Vector3 from = transform.position + Vector3.up * attackRange;
+        Vector3 to = target.position + Vector3.up * attackRange;
         if (Physics.Linecast(from, to, out rayHit))
         {
-            return rayHit.transform == target;
+            return rayHit.transform == target || rayHit.transform.GetComponentInParent<PlayerStatsManager>();
         }
         return false;
     }

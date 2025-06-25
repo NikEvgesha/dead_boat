@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 /// <summary>
@@ -11,6 +10,13 @@ public class PauseManager : MonoBehaviour
 
     private static PauseManager _instance;
     public static PauseManager Instance => _instance;
+
+    private bool _isInitialize;
+    public bool IsInitialize
+    {
+        get { return _isInitialize; }
+        set {}
+    }
 
     public bool IsPaused => _provider != null && _provider.IsPaused;
     private void Awake()
@@ -26,7 +32,7 @@ public class PauseManager : MonoBehaviour
             if (_provider == null)
                 Debug.LogError("PauseManager: не назначен PauseProvider!");
 
-            _provider?.Initialize();
+            
             _provider.OnPauseChanged += OnProviderPauseChanged;
         }
         else
@@ -34,7 +40,11 @@ public class PauseManager : MonoBehaviour
             Destroy(gameObject);
         }
     }
-
+    public void StartInitialize()
+    {
+        _isInitialize = true;
+        _provider?.Initialize();
+    }
     private void OnProviderPauseChanged(bool isPaused)
     {
         // «десь можно доп. логику по смене UI и т.п.

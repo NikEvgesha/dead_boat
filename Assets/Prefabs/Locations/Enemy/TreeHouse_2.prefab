@@ -52,6 +52,54 @@ MonoBehaviour:
   m_Bidirectional: 1
   m_AutoUpdatePosition: 0
   m_Area: 0
+--- !u!1 &6038879905205025529
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5337448919671807445}
+  - component: {fileID: 5724151241311245468}
+  m_Layer: 6
+  m_Name: GameObject
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5337448919671807445
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6038879905205025529}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.000000037748954, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 2.2300026, y: -0.05, z: 0.63999844}
+  m_LocalScale: {x: 1.2652, y: 1.2652, z: 1.5372181}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3496832663295642883}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!208 &5724151241311245468
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6038879905205025529}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 5, y: 0.5, z: 5}
+  m_MoveThreshold: 0.1
+  m_Carve: 1
+  m_CarveOnlyStationary: 1
+  m_Center: {x: -5.83, y: 0, z: 0.56}
+  m_TimeToStationary: 0.5
 --- !u!1001 &2055422071545928097
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -423,7 +471,7 @@ PrefabInstance:
     - target: {fileID: 4704107755523471575, guid: 317df06dddf6f5147b9df7b5f624351a, type: 3}
       propertyPath: _enemyPrefabs.Array.data[1]
       value: 
-      objectReference: {fileID: 6512769847435685629, guid: 4e7ad2cfad7d5e14fa6f9683a74d5553, type: 3}
+      objectReference: {fileID: 6512769847435685629, guid: c5a2348bdb3fd9346af542e9a0d1dd0b, type: 3}
     - target: {fileID: 4704107755523471575, guid: 317df06dddf6f5147b9df7b5f624351a, type: 3}
       propertyPath: _enemyPrefabs.Array.data[2]
       value: 
@@ -617,6 +665,9 @@ PrefabInstance:
       addedObject: {fileID: 2846882763810537218}
     - targetCorrespondingSourceObject: {fileID: 3170936268398154914, guid: 317df06dddf6f5147b9df7b5f624351a, type: 3}
       insertIndex: -1
+      addedObject: {fileID: 5337448919671807445}
+    - targetCorrespondingSourceObject: {fileID: 3170936268398154914, guid: 317df06dddf6f5147b9df7b5f624351a, type: 3}
+      insertIndex: -1
       addedObject: {fileID: 2967409914016418187}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 317df06dddf6f5147b9df7b5f624351a, type: 3}
@@ -705,9 +756,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 861f71c9737f43144990ccff30dec041, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4470718592199759026}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 861f71c9737f43144990ccff30dec041, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 5882227017908095440}
   m_SourcePrefab: {fileID: 100100000, guid: 861f71c9737f43144990ccff30dec041, type: 3}
 --- !u!1 &2478540229038543665 stripped
 GameObject:
@@ -736,22 +784,6 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 310199271894583712, guid: 861f71c9737f43144990ccff30dec041, type: 3}
---- !u!208 &5882227017908095440
-NavMeshObstacle:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2478540229038543665}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Shape: 1
-  m_Extents: {x: 5, y: 0.5, z: 5}
-  m_MoveThreshold: 0.1
-  m_Carve: 1
-  m_CarveOnlyStationary: 1
-  m_Center: {x: -5.83, y: 0, z: 0.56}
-  m_TimeToStationary: 0.5
 --- !u!4 &2967409914016418187 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 861f71c9737f43144990ccff30dec041, type: 3}

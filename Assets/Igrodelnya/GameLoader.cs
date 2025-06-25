@@ -75,10 +75,10 @@ public class GameLoader : MonoBehaviour
                 yield return null;
             }
         }
-        else
-        {
-            yield return new WaitForSeconds(1);
-        }
+
+        if (!PauseManager.Instance.IsInitialize)
+            PauseManager.Instance.StartInitialize();
+
         _loadingImage.SetActive(false);
         //AdsManager.Instance.ShowInterstitialAd();
         OnSceneLoaded?.Invoke();
