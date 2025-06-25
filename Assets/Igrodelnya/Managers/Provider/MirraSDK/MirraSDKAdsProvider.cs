@@ -54,6 +54,8 @@ public class MirraSDKAdsProvider : AdsProvider
             return;
         }
 
+
+        //PauseManager.Instance.SetPause(true, true);
         // Правильные имена параметров: onOpen и onClose
         MirraSDK.Ads.InvokeInterstitial(
             onOpen: () =>
@@ -64,6 +66,7 @@ public class MirraSDKAdsProvider : AdsProvider
             onClose: (success) =>
             {
                 Debug.Log("MirraSDK: Interstitial ad closed");
+                //PauseManager.Instance.SetPause(false, true);
                 //ControlManager.Instance.CursorActive = false;
             }
         );

@@ -20,8 +20,9 @@ public class DistanceProgressChecker : AchievementProgressChecker
         int currentValue = (int)value;
         if (_value != currentValue)
         {
+            AchievementManager.Instance.UpdateData(AchievementType.TotalDistance, currentValue - _value);
             _value = currentValue;
-            AchievementManager.Instance.UpdateData(_achievementType, _value);
+            AchievementManager.Instance.UpdateData(AchievementType.Distance, _value);
         }
     }
 }

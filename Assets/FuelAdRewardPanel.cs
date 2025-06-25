@@ -38,7 +38,14 @@ public class FuelAdRewardPanel : MonoBehaviour
     private void Update()
     {
         if (!_isOpen || _activationInProgress) return;
-        if (_isOpen && PlayerInput.Instance.InteractionHold)
+
+        if (!_board.PlayerOnSeat && _isOpen)
+        {
+            ShowPanel(false);
+            return;
+        }
+
+        if (_isOpen && _board.PlayerOnSeat && PlayerInput.Instance.InteractionHold)
         {
             StartActivation();
         }

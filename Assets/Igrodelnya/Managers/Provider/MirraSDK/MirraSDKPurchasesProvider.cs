@@ -63,16 +63,24 @@ public class MirraSDKPurchaseProvider : PurchasesProvider
 
             foreach (var id in restoreData.PendingProducts)
             {
+
+                restoreData.RestoreProduct(id, onProductRestore: () => {
+
+                    GemsShop.Instance.OnPurchaseRestore(id);
+                    Debug.Log($"Товар '{id}' восстановлен");
+
+                });
+
                 // Delegate Method: SupplyProduct(string, Action onSuccess, bool incrementSupply)
-                MirraSDK.Payments.SupplyProduct(
-                    id,
-                    () =>
-                    {
-                        Debug.Log($"MirraSDK: Supplied product: {id}");
-                        //Shop.Instance.OnRestorePurchases(id);
-                    },
-                    true
-                );  // :contentReference[oaicite:2]{index=2}
+                /*                MirraSDK.Payments.SupplyProduct(
+                                    id,
+                                    () =>
+                                    {
+                                        Debug.Log($"MirraSDK: Supplied product: {id}");
+                                        //Shop.Instance.OnRestorePurchases(id);
+                                    },
+                                    true
+                                );*/  // :contentReference[oaicite:2]{index=2}
             }
         });  // :contentReference[oaicite:3]{index=3}
 

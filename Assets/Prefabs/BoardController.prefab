@@ -1132,7 +1132,7 @@ MonoBehaviour:
   _loadedItemsSpawnPoint: {fileID: 825915091990714664}
   ignoreInputDuration: 0.5
   TotalDistanceTraveled: 0
-  StartDistanceTraveled: 0
+  SaveDistanceTraveled: 10000
   StartSpawn: 0
   _endTutorialDistance: 50
   StartGame: 0
@@ -2272,6 +2272,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5c9a9e9392b099846b70e73e27b02dd7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _items: []
 --- !u!1 &6970697618499947232
 GameObject:
   m_ObjectHideFlags: 0
@@ -4165,6 +4166,10 @@ PrefabInstance:
     - target: {fileID: 5865354445565412046, guid: c4fa7d260b91b7e4ebc027d2c407e721, type: 3}
       propertyPath: m_VersionIndex
       value: 7226
+      objectReference: {fileID: 0}
+    - target: {fileID: 6879608323841790196, guid: c4fa7d260b91b7e4ebc027d2c407e721, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7770535665489359980, guid: c4fa7d260b91b7e4ebc027d2c407e721, type: 3}
       propertyPath: trainController

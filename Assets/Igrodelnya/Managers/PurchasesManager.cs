@@ -60,10 +60,13 @@ public class PurchasesManager : MonoBehaviour
 
         provider.Initialize();
     }
-    private void Start()
+    
+
+    public void RestorePurchases()
     {
-        provider.ConsumePendingPurchases(); // Обрабатываем необработанные покупки при старте
+        provider.ConsumePendingPurchases();
     }
+
     // Вызов покупки
     public void BuyPurchase(string purchaseId, Action<bool> onComplete)
     {

@@ -1,7 +1,5 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Networking;
 
 public class GemsShop : MonoBehaviour
 {
@@ -10,6 +8,8 @@ public class GemsShop : MonoBehaviour
     [SerializeField] private DynamicGridSpawner _grid;
     [SerializeField] private GemsShopSlot _slotPrefab;
 
+
+    private Dictionary<PurchaseData, CurrencyPackData> _purchaseData;
     private bool _isOpen;
     public bool Opened => _isOpen;
 
@@ -34,8 +34,11 @@ public class GemsShop : MonoBehaviour
 
     private void Start()
     {
+        _purchaseData = new Dictionary<PurchaseData, CurrencyPackData>();
         InitSlots();
         CurrencyManager.Instance.NoGems += ToggleOpen;
+
+        PurchasesManager.Instance.RestorePurchases();
     }
 
     private void OnDisable()
@@ -50,6 +53,7 @@ public class GemsShop : MonoBehaviour
         {
             GemsShopSlot slot = _grid.SpawnObject<GemsShopSlot>(_slotPrefab.gameObject);
             PurchaseData data = PurchasesManager.Instance.GetPurchaseData(item.CurrencyType.ToString() + "_" + item.Amount);
+            _purchaseData.Add(data, item);
             slot.Init(item, data, this);
             //if (data.CurrencyImageURL != null && data.CurrencyImageURL != "")
             //    StartCoroutine(DownloadImage(data.CurrencyImageURL, slot));
@@ -84,6 +88,18 @@ public class GemsShop : MonoBehaviour
             });
 
         
+    }
+
+    public void OnPurchaseRestore(string id)
+    {
+        foreach (PurchaseData purchase in _purchaseData.Keys)
+        {
+            if (purchase.Id == id)
+            {
+                CurrencyManager.Instance.AddCurrency(_purchaseData[purchase].CurrencyType, _purchaseData[purchase].Amount);
+                break;
+            }
+        }
     }
 
 
