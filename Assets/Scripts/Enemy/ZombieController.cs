@@ -52,10 +52,28 @@ public class ZombieController : LevelledEnemy
         if (isDead || target == null) return;
         float dist = Vector3.Distance(transform.position, target.position);
         if (!CheckSee(dist)) return;
-        agent.SetDestination(target.position);
+        Vector3 navTarget = GetNavMeshTarget(target.position);
+        agent.SetDestination(navTarget);
         HandleAttack(dist);
     }
-
+    Vector3 GetNavMeshTarget(Vector3 worldPos)
+    {
+        NavMeshHit hit;
+        if (NavMesh.SamplePosition(worldPos, out hit, 2f, NavMesh.AllAreas))
+            return hit.position;
+        return worldPos;
+    }
+    bool CanHitPlayer()
+    {
+        RaycastHit rayHit;
+        Vector3 from = transform.position + Vector3.up * 1.5f;
+        Vector3 to = target.position + Vector3.up * 1.5f;
+        if (Physics.Linecast(from, to, out rayHit))
+        {
+            return rayHit.transform == target;
+        }
+        return false;
+    }
     bool CheckSee(float dist)
     {
         if (dist > chaseDistance)
@@ -74,7 +92,7 @@ public class ZombieController : LevelledEnemy
 
     void HandleAttack(float dist)
     {
-        if (dist <= attackRange)
+        if (dist <= attackRange && CanHitPlayer())
         {
             agent.isStopped = true;
             animator.SetFloat("Speed", 0);
