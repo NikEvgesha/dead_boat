@@ -193,6 +193,8 @@ public class InventorySlot : MonoBehaviour, IDragHandler, IBeginDragHandler, IEn
             UpdateParent();
         }
         InventoryUI.Instance.OnItemDrag(false);
+        _isOverInteractionPoint = false;
+        _lastInteractionPoint = null;
     }
 
     public void UpdateParent()
@@ -203,7 +205,7 @@ public class InventorySlot : MonoBehaviour, IDragHandler, IBeginDragHandler, IEn
 
     public void DropOut()
     {
-        if (_isOverInteractionPoint)
+        if (_isOverInteractionPoint && _lastInteractionPoint != null)
             Inventory.Instance.DropOutItem(_item, this, _lastInteractionPoint);
         else
             Inventory.Instance.DropOutItem(_item, this);
