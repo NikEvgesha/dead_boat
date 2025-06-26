@@ -11,6 +11,10 @@ public abstract class SaveProvider : MonoBehaviour
     public abstract float[] LoadVolume();
     public abstract void SaveVolume(float musicVolume, float soundVolume);
 
+    public abstract void SaveSensivity(float sens);
+
+    public abstract float LoadSensivity();
+
     // Ìועמהû הכÿ נאבמעû סמ סק¸עמל
     public abstract void SaveScore(float score, int levelId);
     public abstract float LoadScore(int levelId);

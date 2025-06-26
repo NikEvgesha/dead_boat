@@ -207,6 +207,7 @@ public enum SaveKey
 {
     MusicVolume,
     SoundVolume,
+    Sensivity,
     Score_,
     LevelUnlock_,
     LevelWin_,

@@ -36,6 +36,20 @@ public class DummySaveProvider : SaveProvider
         PlayerPrefs.SetFloat("MusicVolume", musicVolume);
         PlayerPrefs.SetFloat("SoundVolume", soundVolume);
     }
+
+    public override void SaveSensivity(float sens) {
+        PlayerPrefs.SetFloat("Sensivity", sens);
+    }
+
+    public override float LoadSensivity()
+    {
+        float sens = 0.5f;
+        if (PlayerPrefs.HasKey("Sensivity"))
+        {
+            sens = PlayerPrefs.GetFloat("Sensivity");
+        }
+        return sens;
+    }
     public override void SaveScore(float score, int levelId) { }
     public override float LoadScore(int levelId) => 0;
     public override bool GetTutorialProgress() => false;

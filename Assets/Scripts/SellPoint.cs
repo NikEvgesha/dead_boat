@@ -10,6 +10,7 @@ public class SellPoint : MonoBehaviour
     [SerializeField] private AudioSource _audioSource;
 
     private MoneyBag _moneyBag;
+    private PickableItem _lastItem;
 
     public Action<StoreType> SellItem;
     // TODO: spawn money bag
@@ -17,9 +18,10 @@ public class SellPoint : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-
         if (other.TryGetComponent<PickableItem>(out PickableItem item))
         {
+            if (item == _lastItem) return;
+            _lastItem = item;
             bool selled = false;
             int cost = 0;
             switch (_type)

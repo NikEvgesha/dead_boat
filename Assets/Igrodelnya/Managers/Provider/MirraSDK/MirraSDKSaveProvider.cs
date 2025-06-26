@@ -37,7 +37,7 @@ public class MirraSDKSaveProvider : SaveProvider
     public override float[] LoadVolume()
     {
         if (!isInitialize)
-            return new float[] { 0.5f, 0.5f }; ;
+            return new float[] { 0.5f, 0.5f };
         // Достаём значения, с дефолтом 0.5f
         float music = MirraSDK.Data.GetFloat(SaveKey.MusicVolume.ToString(), 0.5f);
         float sound = MirraSDK.Data.GetFloat(SaveKey.SoundVolume.ToString(), 0.5f);
@@ -50,6 +50,22 @@ public class MirraSDKSaveProvider : SaveProvider
         MirraSDK.Data.SetFloat(SaveKey.MusicVolume.ToString(), musicVolume);
         MirraSDK.Data.SetFloat(SaveKey.SoundVolume.ToString(), soundVolume);
         Changed = true;
+    }
+
+
+    public override void SaveSensivity(float sens)
+    {
+        if (!isInitialize) return;
+        MirraSDK.Data.SetFloat(SaveKey.Sensivity.ToString(), sens);
+        Changed = true;
+    }
+
+    public override float LoadSensivity()
+    {
+        if (!isInitialize)
+            return 0.5f;
+        float sens = MirraSDK.Data.GetFloat(SaveKey.Sensivity.ToString(), 0.5f);
+        return sens;
     }
 
     public override void SaveScore(float score, int levelId)

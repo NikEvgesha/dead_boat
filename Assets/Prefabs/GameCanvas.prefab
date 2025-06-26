@@ -2380,6 +2380,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _UIWindow: {fileID: 6766629087494063834}
   _exitButton: {fileID: 0}
+  IsReady: 0
+  Sensivity: 0
 --- !u!114 &9069714268455346924
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2394,6 +2396,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _musicVolume: {fileID: 3901148683018297597}
   _soundVolume: {fileID: 4797793939696515429}
+  _sensivity: {fileID: 1836908084823218575}
   _panel: {fileID: 6766629087494063834}
   _exitButton: {fileID: 4497681190356213220}
   _lobbyButtons: {fileID: 3019849191153564938}
@@ -5260,9 +5263,9 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: SoundManager, Assembly-CSharp
-        m_MethodName: set_SoundVolume
+      - m_Target: {fileID: 2163655367996715266}
+        m_TargetAssemblyTypeName: Settings, Assembly-CSharp
+        m_MethodName: SoundVolume
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -13138,9 +13141,9 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: SoundManager, Assembly-CSharp
-        m_MethodName: set_SoundVolume
+      - m_Target: {fileID: 2163655367996715266}
+        m_TargetAssemblyTypeName: Settings, Assembly-CSharp
+        m_MethodName: MusicVolume
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

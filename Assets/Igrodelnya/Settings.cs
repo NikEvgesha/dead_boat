@@ -1,4 +1,6 @@
-﻿using System;
+﻿using MirraGames.SDK;
+using System;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class Settings : MonoBehaviour
@@ -11,6 +13,11 @@ public class Settings : MonoBehaviour
     //[SerializeField] private Toggle _joystickToggle;
     [SerializeField] private GameObject _UIWindow;
     [SerializeField] private GameObject _exitButton;
+
+    public bool IsReady;
+    public Action Ready;
+
+    public float Sensivity;
 
     //private bool _isOpen;
 
@@ -36,6 +43,23 @@ public class Settings : MonoBehaviour
         //GameManager.Instance.LevelInProgress -= OnLevelSwitch;
     }
 
+    private void Start()
+    {
+        
+        MirraSDK.WaitForProviders(static () => {
+            Settings.instance.OnGameStart();
+            // Методы SDK не должны вызывать вылет или NullReferenceException,
+            // делегат будет вызван только когда все провайдеры имеют статус IsInitialized.
+        });
+    }
+
+    private void OnGameStart()
+    {
+        Sensitivity(SaveManager.Instance.LoadSensivity());
+        IsReady = true;
+        Ready?.Invoke();
+    }
+
     private void OnLevelSwitch(bool inProgress)
     {
         if (_exitButton != null)
@@ -56,9 +80,13 @@ public class Settings : MonoBehaviour
             Destroy(gameObject);
         }
     }
+
+   
     public void Sensitivity(float sens)
     {
+        Sensivity = sens;
         ChangeMouseSensitivity?.Invoke(sens);
+        SaveManager.Instance.SaveSensivity(sens);
     }
 
     public void SoundVolume(float volume)

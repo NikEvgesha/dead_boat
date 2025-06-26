@@ -5,6 +5,7 @@ public class SettingUI : MonoBehaviour
 {
     [SerializeField] private Scrollbar _musicVolume;
     [SerializeField] private Scrollbar _soundVolume;
+    [SerializeField] private Scrollbar _sensivity;
     [SerializeField] private GameObject _panel;
     [SerializeField] private GameObject _exitButton;
     [SerializeField] private GameObject _lobbyButtons;
@@ -34,7 +35,16 @@ public class SettingUI : MonoBehaviour
         {
             SoundManager.Instance.Ready += SetValues;
         }
-            
+
+        if (Settings.instance.IsReady)
+        {
+            SetSensivity();
+        }
+        else
+        {
+            Settings.instance.Ready += SetSensivity;
+        }
+
     }
 
     private void OnDisable()
@@ -47,5 +57,10 @@ public class SettingUI : MonoBehaviour
     {
         _musicVolume.value = SoundManager.Instance.MusicVolume;
         _soundVolume.value = SoundManager.Instance.SoundVolume;
+    }
+
+    private void SetSensivity()
+    {
+        _sensivity.value = Settings.instance.Sensivity;
     }
 }

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using MirraGames.SDK;
 using System;
 using Unity.VisualScripting;
+using UnityEditor.VersionControl;
 
 public class SaveManager : MonoBehaviour
 {
@@ -73,6 +74,17 @@ public class SaveManager : MonoBehaviour
     {
         var volumes = saveProvider.LoadVolume();
         saveProvider.SaveVolume(volumes[0], volume);
+    }
+
+
+    public void SaveSensivity(float sens)
+    {
+        saveProvider.SaveSensivity(sens);
+    }
+
+    public float LoadSensivity()
+    {
+        return saveProvider.LoadSensivity();
     }
 
     public void SaveScore(float score, int levelId)
