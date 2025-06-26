@@ -62,6 +62,8 @@ public class TutorialManager : MonoBehaviour
     }
     public void QuickStopTutorial()
     {
+        if (SaveManager.Instance.GetTutorialProgress())
+            return;
         if (_currentIndex >= _tutorialSteps.Count)
             return;
         _tutorialSteps[_currentIndex].StepEnd -= StepEnd;

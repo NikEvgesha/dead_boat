@@ -158,7 +158,7 @@ public class SaveManager : MonoBehaviour
         if (items != null)
             saveProvider.SaveInventory(items);
 
-        Debug.Log("Progress Saved");
+        //Debug.Log("Progress Saved");
        
     }
     public void SaveBoardItem(List<PickableItem> items = null)

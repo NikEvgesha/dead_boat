@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEditor.Progress;
 
 public class QuestManager : MonoBehaviour
 {
@@ -8,6 +9,7 @@ public class QuestManager : MonoBehaviour
     [Header("Список квестов (префабы) в порядке выполнения")]
     [Tooltip("В Inspector перетащите: Quest_SellGoldBar_Prefab, Quest_BuyCoal_Prefab, Quest_LeaveTown_Prefab, Quest_Kill5AnyMobs_Prefab и т.д.")]
     public List<GameObject> questPrefabs = new List<GameObject>();
+    public List<GameObject> tutorialQuestPrefabs = new List<GameObject>();
 
     [Header("UI (список квестов)")]
     [Tooltip("Panel или пустой контейнер с LayoutGroup — куда мы будем инстанцировать QuestUIItem")]
