@@ -252,6 +252,23 @@ public class SaveManager : MonoBehaviour
     {
         return saveProvider.LoadRouletteDate();
     }
+    public void SavePlayerFixPos(float posZ)
+    {
+        saveProvider.SavePlayerFixPos(posZ);
+    }
+
+    public float LoadPlayerFixPos()
+    {
+        return saveProvider.LoadPlayerFixPos();
+    }
+    public void SaveBoardFixPos(float posZ)
+    {
+        saveProvider.SaveBoardFixPos(posZ);
+    }
+    public float LoadBoardFixPos()
+    {
+        return saveProvider.LoadBoardFixPos();
+    }
 
     /*    public void SaveAttachedItem(string id)
         {

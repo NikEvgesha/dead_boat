@@ -227,6 +227,8 @@ public enum SaveKey
     Coins,
     EndTutorial,
     QuestProgress,
+    PlayerFixPos,
+    BoardFixPos
 
 
 }

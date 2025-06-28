@@ -217,4 +217,16 @@ public class DummySaveProvider : SaveProvider
     {
         return DateTime.Today.AddDays(-1);
     }
+    public override void SavePlayerFixPos(float posZ) {}
+    public override float LoadPlayerFixPos()
+    {
+        return 0f;
+    }
+    public override void SaveBoardFixPos(float posZ)
+    {
+    }
+    public override float LoadBoardFixPos()
+    {
+        return 0f;
+    }
 }

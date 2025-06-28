@@ -38,7 +38,7 @@ public class CitySpawner : MonoBehaviour
         InitBoardController();
 
         float playDistance = GameManager.Instance.PlayDistance;
-        _citys = 0;
+        _citys = 1;
         while (playDistance > baseSpawnDistance)
         {
             playDistance = playDistance - baseSpawnDistance + (additionalDistanceIncrement * _citys);
@@ -98,7 +98,7 @@ public class CitySpawner : MonoBehaviour
                 spawnedCities.RemoveAt(i);
                 continue;
             }
-            if (spawnedCities[i].transform.position.z < boardController.TotalDistanceTraveled - removalDistance)
+            if (spawnedCities[i].transform.position.z < boardController.TotalDistanceTraveled - FixCoordinate.Instance.BoardAddPos - removalDistance)
             {
                 Destroy(spawnedCities[i]);
                 spawnedCities.RemoveAt(i);
@@ -109,7 +109,7 @@ public class CitySpawner : MonoBehaviour
     void SpawnCity()
     {
         // Город появляется вдоль оси Z с фиксированными координатами X и Y.
-        Vector3 spawnPosition = new Vector3(0f, 0f, nextSpawnDistance);
+        Vector3 spawnPosition = new Vector3(0f, 0f, nextSpawnDistance - FixCoordinate.Instance.BoardAddPos);
         SpawnCityAt(spawnPosition);
     }
 

@@ -5,6 +5,7 @@ using UnityEngine.SceneManagement;
 
 public class BoardController : MonoBehaviour
 {
+    public static BoardController Instance { get; private set; }
     [Header("Настройки поезда")]
     [Tooltip("Текущее количество топлива")]
     public float currentFuel = 100f;
@@ -81,11 +82,18 @@ public class BoardController : MonoBehaviour
     [SerializeField] private AudioSource _audioSource;
     [SerializeField] private bool _test = false;
     //[SerializeField] private int _rewardForWin = 20;
-
+    public bool WaitFixUpdate;
     private void Awake()
     {
-        _sceneName = SceneManager.GetActiveScene().name;
-        _levelID = LevelManager.Instance.GetLevelId(_sceneName);
+        if (Instance ==null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(this.gameObject);
+        }
+
         // Если на объекте есть Rigidbody, переводим его в кинематический режим,
         // чтобы не зависеть от гравитации и столкновений
         //GameManager.Instance.GameResume += SetStartDistance;
@@ -94,9 +102,6 @@ public class BoardController : MonoBehaviour
         {
             rb.isKinematic = true;
         }
-        float saveDustance = SaveManager.Instance.LoadGameProgress().Item1;
-        SaveDistanceTraveled = saveDustance >= 0 ? saveDustance : 0;
-        StartCoroutine(SetSavePosition(SaveDistanceTraveled));
         /*
         transform.position += transform.forward * 1000;
         TotalDistanceTraveled += 1000;
@@ -107,13 +112,19 @@ public class BoardController : MonoBehaviour
 
     private void Start()
     {
+        _sceneName = SceneManager.GetActiveScene().name;
+        _levelID = LevelManager.Instance.GetLevelId(_sceneName);
+
         GameManager.Instance.SetBoard(this);
+        float saveDustance = SaveManager.Instance.LoadGameProgress().Item1;
+        SaveDistanceTraveled = saveDustance >= 0 ? saveDustance - FixCoordinate.Instance.BoardAddPos : 0;
+        StartCoroutine(SetSavePosition(SaveDistanceTraveled));
     }
     private IEnumerator SetSavePosition(float pos)
     {
-        float startPos = pos > 1000 ? pos - 1000 : pos;
+        float startPos = pos > 1000 ? pos - 1600 : pos;
         Vector3 oldPos = transform.position + transform.forward * startPos;
-        TotalDistanceTraveled = startPos;
+        TotalDistanceTraveled = startPos + FixCoordinate.Instance.BoardAddPos;
         Vector3 newPos = transform.position + transform.forward * pos;
         float time = 0;
         StartSpawn = true;
@@ -125,7 +136,7 @@ public class BoardController : MonoBehaviour
                 time = 1;
 
             transform.position = Vector3.Lerp(oldPos, newPos, time);
-            TotalDistanceTraveled = time * pos;
+            TotalDistanceTraveled = time * pos + FixCoordinate.Instance.BoardAddPos;
             PlayerMovement.Instance.Teleport(transform);
 
             yield return null;
@@ -277,6 +288,11 @@ public class BoardController : MonoBehaviour
 
         if (_audioSource)
             _audioSource.volume = (currentSpeed / 2) / maxSpeed;
+        if (WaitFixUpdate && currentSpeed <= 0)
+        {
+            WaitFixUpdate = false;
+            FixCoordinate.Instance.FixPosition();
+        }
     }
     // Метод для расхода топлива
     void ConsumeFuel(float amount)

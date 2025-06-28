@@ -95,4 +95,11 @@ public class DriverSeatTrigger : MonoBehaviour
         trainController.PlayerOnSeat = false;
         isDriving = false;
     }
+    public void FixPosition()
+    {
+        if (isDriving)
+        {
+            EnterDrivingMode();
+        }
+    }
 }
