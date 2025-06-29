@@ -48,6 +48,7 @@ public class CurrencyUI : MonoBehaviour
 
     private void ShowDifference(int diff)
     {
+        if (!gameObject.activeInHierarchy) return;
         UIMoneyChangeAnimation animation = Instantiate(_diffObj, transform);
         animation.Config(diff.ToString(), diff > 0);
     }

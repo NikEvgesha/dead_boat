@@ -8,25 +8,69 @@ public class TimerAd : MonoBehaviour
     [SerializeField] private float _noDamageInterval;
     [SerializeField] private GameObject _adPanel;
     [SerializeField] private Text _secondsRemainText;
+    [SerializeField] private BoardController _boardController;
 
     private int _adsInterval = 60;
     private PlayerStatsManager _playerStats;
     private bool _timerReady;
     private bool _canShowAd = true;
     private IEnumerator _damageTimer;
+    private IEnumerator _adTimer;
     private void Start()
     {
         _playerStats = PlayerManager.Instance.StatsManager;
         _playerStats.StatChanged += OnPlayerStatChange;
+        LoadingManager.Instance.LocationChanged += OnLocationChanged;
         _adsInterval = MirraSDK.Flags.GetInt("AdsInterval", 60);
-        StartCoroutine(AdTimer());
+        _adTimer = AdTimer();
+        StartCoroutine(_adTimer);
     }
 
     private void OnDisable()
     {
         _playerStats.StatChanged -= OnPlayerStatChange;
+        if (_boardController != null)
+        {
+            _boardController.EndGame -= OnEndGame;
+        }
+        LoadingManager.Instance.LocationChanged -= OnLocationChanged;
     }
 
+
+    private IEnumerator BoardAwait()
+    {
+        while (GameManager.Instance == null || GameManager.Instance.Board == null)
+        {
+            yield return null;
+        }
+        _boardController = GameManager.Instance.Board;
+        _boardController.EndGame += OnEndGame;
+    }
+
+
+    private void OnEndGame()
+    {
+        _canShowAd = false;
+        StopAllCoroutines();
+    }
+
+    private void OnLocationChanged(Location location)
+    {
+        if (_boardController != null)
+        {
+            _boardController.EndGame -= OnEndGame;
+            _boardController = null;
+        }
+        if (location == Location.Game)
+        {
+            StartCoroutine(BoardAwait());
+        }
+        StopAllCoroutines();
+        _canShowAd = true;
+        _adTimer = AdTimer();
+        StartCoroutine(_adTimer);
+
+    }
 
     private void OnPlayerStatChange(PlayerStat stat, float current, float max)
     {

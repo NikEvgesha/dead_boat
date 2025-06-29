@@ -22,7 +22,7 @@ public class GameProgressBar : MonoBehaviour
         _currentDistance = 0;
         _board = FindObjectOfType<BoardController>();
         _citySpawner = FindObjectOfType<CitySpawner>();
-        _cityAmount = _citySpawner.Cities+1;
+        _cityAmount = _citySpawner.Cities;
 
         for (int i = 0; i < _cityAmount; i++) {
             Instantiate(_castlePointPrefab, _castlePointsParent);

@@ -32,6 +32,9 @@ public class GameManager : MonoBehaviour
         } 
     }
 
+
+    public BoardController Board => _board;
+
     private bool _pause;
     private PlayerAmmoManager _ammoManager;
     private BoardController _board;

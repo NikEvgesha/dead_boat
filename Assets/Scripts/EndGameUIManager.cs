@@ -118,6 +118,7 @@ public class EndGameUIManager : MonoBehaviour
         else if (state == EndGameState.Win)
         {
             // Состояние победы: показываем заголовок, дистанцию, кнопку "Сыграть снова"
+            CurrencyManager.Instance.ShowGems?.Invoke(true);
             titleObject.SetActive(true);
             titleTextWin.gameObject.SetActive(true); 
             distanceObject.SetActive(true);
