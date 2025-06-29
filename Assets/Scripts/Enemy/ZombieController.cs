@@ -66,14 +66,22 @@ public class ZombieController : LevelledEnemy
     bool CanHitPlayer()
     {
         RaycastHit rayHit;
-        Vector3 from = transform.position + Vector3.up * attackRange;
-        Vector3 to = target.position + Vector3.up * attackRange;
-        if (Physics.Linecast(from, to, out rayHit))
+        // ƒелим расчЄт на две части: 
+        // 1) точка старта чуть выше центра (например, уровень груди или головы)
+        float heightOffset = 1.5f;
+        Vector3 origin = transform.position + Vector3.up * heightOffset;
+        // 2) направленный вектор на игрока
+        Vector3 dirToPlayer = (target.position + Vector3.up * heightOffset - origin).normalized;
+        // ѕроводим луч в направлении игрока на рассто€ние attackRange
+        if (Physics.Raycast(origin, dirToPlayer, out rayHit, attackRange))
         {
-            return rayHit.transform == target || rayHit.transform.GetComponentInParent<PlayerStatsManager>();
+            // ≈сли первый попавшийс€ коллайдер Ч сам игрок (или его менеджер статистик)
+            return rayHit.transform == target
+                || rayHit.transform.GetComponentInParent<PlayerStatsManager>() != null;
         }
         return false;
     }
+
     bool CheckSee(float dist)
     {
         if (dist > chaseDistance)

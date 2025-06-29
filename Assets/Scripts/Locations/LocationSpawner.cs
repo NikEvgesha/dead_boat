@@ -50,7 +50,7 @@ public class LocationSpawner : MonoBehaviour
     void Update()
     {
         // 1) Спавн новых локаций, когда игрок продвинулся вперед
-        if (_player.zPositionFix + spawnThreshold > lastSpawnZ && lastSpawnZ < _stopSpawnDistance-FixCoordinate.Instance.PlayerAddPos)
+        if (_player.zPositionFix + spawnThreshold > lastSpawnZ && lastSpawnZ < _stopSpawnDistance)
         {
             SpawnLocation();
         }
