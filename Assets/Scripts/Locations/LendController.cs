@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using System.Collections;
 
 public class LendController : MonoBehaviour
 {
@@ -25,17 +26,18 @@ public class LendController : MonoBehaviour
     public float segmentLength = 100f;
 
     [Tooltip("Ссылка на трансформ игрока или лодки")]
-    public Transform player;
+    public PlayerMovement _player;
 
     private int currentLocationIndex = 0;
     private List<float> switchThresholds = new List<float>();
     private float lastEndZ = 0f;
+    private bool isStart; 
 
     private void Awake()
     {
-        if (player == null)
-            player = FindObjectOfType<PlayerStatsManager>()?.transform;
-        if (player == null)
+        if (_player == null)
+            _player = FindObjectOfType<PlayerMovement>();
+        if (_player == null)
             Debug.LogError("Player transform not found");
     }
 
@@ -49,7 +51,7 @@ public class LendController : MonoBehaviour
             //loc.totalLength = loc.groundSegments.Length * segmentLength;
             if (i == locations.Length - 2)
             {
-                loc.totalLength = GameManager.Instance.PlayDistance - loc.groundSegments.Count() * (segmentLength-1);
+                loc.totalLength = GameManager.Instance.PlayDistance - (loc.groundSegments.Count()-1) * (segmentLength);
             }
             cumulative += loc.totalLength;
             switchThresholds.Add(cumulative);
@@ -74,16 +76,39 @@ public class LendController : MonoBehaviour
             if (i == 0)
                 lastEndZ = switchThresholds[0] - segmentLength;
 
-
+            StartCoroutine(StartSettings());
+            //isStart = true;
         }
+    }
+    private IEnumerator StartSettings()
+    {
+        if (FixCoordinate.Instance.PlayerAddPos > 0)
+        {
+            float fantomPos = _player.zPositionFix - segmentLength * locations[0].groundSegments.Count();
+            while (fantomPos < _player.zPositionFix)
+            {
+                Movelocation(fantomPos);
+                fantomPos += Time.deltaTime * ((segmentLength * locations[0].groundSegments.Count()) / 1.2f);
+                //Debug.Log(fantomPos);
+                yield return null;
+            }
+        }
+        isStart = true;
     }
 
     private void Update()
     {
-        float playerZ = player.position.z;
+        if (!isStart)
+            return;
+        Movelocation();
+    }
+    private void Movelocation(float playerZ = 0)
+    {
+        if (playerZ == 0)
+            playerZ = _player.zPositionFix;
 
         // Переход вперёд
-        if (currentLocationIndex < locations.Length - 1 && playerZ > switchThresholds[currentLocationIndex])
+        if (currentLocationIndex < locations.Length - 1 && playerZ >= switchThresholds[currentLocationIndex])
         {
             SwitchLocation(currentLocationIndex + 1);
         }
@@ -99,7 +124,7 @@ public class LendController : MonoBehaviour
         if (!activeLoc.isFinalLocation)
         {
             // Вперёд
-            while (playerZ > queue.First.Value.position.z + segmentLength)
+            while (playerZ - FixCoordinate.Instance.PlayerAddPos > queue.First.Value.position.z + segmentLength + 100)
             {
                 var seg = queue.First.Value;
                 queue.RemoveFirst();
@@ -109,7 +134,7 @@ public class LendController : MonoBehaviour
                 lastEndZ = newZ;
             }
             // Назад
-            while (playerZ < queue.First.Value.position.z - 1)
+            while (playerZ - FixCoordinate.Instance.PlayerAddPos < queue.First.Value.position.z - 1 + 100)
             {
                 var seg = queue.Last.Value;
                 queue.RemoveLast();
@@ -145,7 +170,7 @@ public class LendController : MonoBehaviour
             {
                 var seg = newLoc.groundSegments[j];
                 var pos = seg.position;
-                pos.z = lastEndZ + segmentLength * (j + 1);
+                pos.z = locations[currentLocationIndex].segmentsQueue.Last.Value.position.z + segmentLength * (j + 1);
                 seg.position = pos;
             }
 

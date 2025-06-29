@@ -22,6 +22,14 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private bool _onPlatform;
     [SerializeField] private bool _isGrounded;
 
+    public float zPositionFix
+    {
+        get
+        {
+            return transform.position.z + FixCoordinate.Instance.PlayerAddPos;
+        }
+    }
+
     private PlayerStatsManager _playerStats;
     private CharacterController _controller;
     private Rigidbody _rb;
@@ -41,6 +49,8 @@ public class PlayerMovement : MonoBehaviour
     private float _waitStart = 1f;
     private float _lagStart = 0.1f;
     private bool _isStart;
+
+    public float TotalDistanceTraveled = 0f;
 
     private void Awake()
     {

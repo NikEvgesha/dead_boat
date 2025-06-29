@@ -87,5 +87,8 @@ public abstract class SaveProvider : MonoBehaviour
     public abstract void SaveRouletteDate(DateTime date);
 
     public abstract DateTime LoadRouletteDate();
-
+    public abstract void SavePlayerFixPos(float posZ);
+    public abstract float LoadPlayerFixPos();
+    public abstract void SaveBoardFixPos(float posZ);
+    public abstract float LoadBoardFixPos();
 }

@@ -55,12 +55,13 @@ MonoBehaviour:
     - {fileID: 2957314948753256703}
     - {fileID: 7827189979821457863}
     isFinalLocation: 0
+    totalLength: 0
   - groundSegments:
     - {fileID: 6744165658559592758}
     isFinalLocation: 1
+    totalLength: 0
   segmentLength: 500
-  player: {fileID: 0}
-  transitionDistance: 99500
+  _player: {fileID: 0}
 --- !u!1 &3841722582703001504
 GameObject:
   m_ObjectHideFlags: 0
@@ -363,6 +364,10 @@ PrefabInstance:
     - target: {fileID: 565964269538503080, guid: 82d56de0c3dc8014ca7638567c417445, type: 3}
       propertyPath: m_Name
       value: Water
+      objectReference: {fileID: 0}
+    - target: {fileID: 565964269538503080, guid: 82d56de0c3dc8014ca7638567c417445, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1125343949526041774, guid: 82d56de0c3dc8014ca7638567c417445, type: 3}
       propertyPath: m_VersionIndex

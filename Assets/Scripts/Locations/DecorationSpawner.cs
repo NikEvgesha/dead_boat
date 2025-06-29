@@ -37,11 +37,12 @@ public class DecorationSpawner : MonoBehaviour
 
     [Header("Simulation")]
     [Tooltip("Расстояние, которое симулируется как уже проеханное (назад от текущей позиции), для начального спавна")]
-    public float simulateTravelDistance = 500f;
+    public float simulateTravelDistance = 600f;
 
     private float _stopSpawnDistance = 100000f;
 
     private List<GameObject> spawnedDecorations = new List<GameObject>();
+    private List<float> _zPositions = new List<float>();
 
     void Start()
     {
@@ -52,21 +53,23 @@ public class DecorationSpawner : MonoBehaviour
             Debug.LogError("boardController не найден");
         if (player == null)
             player = boardController?.transform;
-        _stopSpawnDistance = GameManager.Instance.PlayDistance - (2*spawnAreaOffset.y + spawnAreaSize.y);
         // Запускаем корутину для симуляции начального спавна
         StartCoroutine(SimulateInitialSpawns());
+        StartCoroutine(RemovalDistanceUpdate());
     }
 
     IEnumerator SimulateInitialSpawns()
     {
         while (!boardController.StartSpawn)
             yield return null;
+
+        _stopSpawnDistance = GameManager.Instance.PlayDistance - (2 * spawnAreaOffset.y + spawnAreaSize.y);
         // Определяем стартовую точку как текущую позицию минус simulateTravelDistance
         float simulatedStartDistance = boardController.SaveDistanceTraveled - simulateTravelDistance;
         // Начинаем спавнить с первого интервала после simulatedStartDistance
         float currentSimulatedDistance = simulatedStartDistance + spawnInterval;
         // Создаем объекты так, как будто мы уже проехали от simulatedStartDistance до текущей позиции
-        while (currentSimulatedDistance <= boardController.SaveDistanceTraveled)
+        while (currentSimulatedDistance <= boardController.SaveDistanceTraveled && currentSimulatedDistance < _stopSpawnDistance-FixCoordinate.Instance.BoardAddPos)
         {
 
             SpawnDecoration(currentSimulatedDistance);
@@ -75,7 +78,7 @@ public class DecorationSpawner : MonoBehaviour
             yield return null;
         }
         // Устанавливаем порог следующего спавна для будущего
-        nextSpawnDistance = boardController.SaveDistanceTraveled + spawnInterval;
+        nextSpawnDistance = boardController.SaveDistanceTraveled + spawnInterval + FixCoordinate.Instance.BoardAddPos;
     }
 
     void Update()
@@ -83,26 +86,35 @@ public class DecorationSpawner : MonoBehaviour
         // Если фактическое пройденное расстояние достигло порога спавна, создаем декорацию
         if (boardController.TotalDistanceTraveled >= nextSpawnDistance && nextSpawnDistance < _stopSpawnDistance)
         {
-            SpawnDecoration(nextSpawnDistance);
+            SpawnDecoration(nextSpawnDistance- FixCoordinate.Instance.BoardAddPos);
             nextSpawnDistance += spawnInterval;
         }
 
-        // Удаляем декорации, которые находятся позади игрока более чем на removalDistance
-        for (int i = spawnedDecorations.Count - 1; i >= 0; i--)
+        
+    }
+    private IEnumerator RemovalDistanceUpdate()
+    {
+        while (enabled)
         {
-            if (spawnedDecorations[i] == null)
+            // Удаляем декорации, которые находятся позади игрока более чем на removalDistance
+            for (int i = spawnedDecorations.Count - 1; i >= 0; i--)
             {
-                spawnedDecorations.RemoveAt(i);
-                continue;
+                if (spawnedDecorations[i] == null)
+                {
+                    spawnedDecorations.RemoveAt(i);
+                    _zPositions.RemoveAt(i);
+                    continue;
+                }
+                if (_zPositions[i]  < boardController.TotalDistanceTraveled - removalDistance)
+                {
+                    Destroy(spawnedDecorations[i]);
+                    spawnedDecorations.RemoveAt(i);
+                    _zPositions.RemoveAt(i);
+                }
             }
-            if (spawnedDecorations[i].transform.position.z < boardController.TotalDistanceTraveled - removalDistance)
-            {
-                Destroy(spawnedDecorations[i]);
-                spawnedDecorations.RemoveAt(i);
-            }
+            yield return new WaitForSeconds(1);
         }
     }
-
     /// <summary>
     /// Создает декорацию, рассчитывая зону спавна относительно переданной базовой координаты (baseZ).
     /// </summary>
@@ -134,6 +146,7 @@ public class DecorationSpawner : MonoBehaviour
             Vector3 spawnPosition = new Vector3(spawnPoint2D.x, 0f, spawnPoint2D.y);
             GameObject decoration = Instantiate(decorationPrefab, spawnPosition, Quaternion.identity);
             spawnedDecorations.Add(decoration);
+            _zPositions.Add(spawnPosition.z + FixCoordinate.Instance.BoardAddPos);
             decoration.transform.SetParent(this.gameObject.transform);
         }
         else
@@ -165,7 +178,7 @@ public class DecorationSpawner : MonoBehaviour
     private void OnDrawGizmos()
     {
         Vector3 playerPos = (player != null) ? player.position : Vector3.zero;
-        float boardZ = (boardController != null) ? boardController.TotalDistanceTraveled : 0f;
+        float boardZ = (boardController != null) ? boardController.TotalDistanceTraveled - FixCoordinate.Instance.BoardAddPos : 0f;
 
         // Отрисовка области спавна, исходя из текущего boardZ
         Vector2 spawnOrigin = new Vector2(playerPos.x + spawnAreaOffset.x, boardZ + spawnAreaOffset.y);

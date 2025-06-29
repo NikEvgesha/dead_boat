@@ -1,12 +1,13 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System;
+using UnityEngine.UIElements;
 
 public class LocationSpawner : MonoBehaviour
 {
     [Header("Настройки спавна")]
-    public BoardController boardController;              // Ссылка на компонент BoardController с TotalDistanceTraveled (лодка)
-    public Transform player;                             // Ссылка на Transform игрока
+    public BoardController _boardController;              // Ссылка на компонент BoardController с TotalDistanceTraveled (лодка)
+    public PlayerMovement _player;                             // Ссылка на Transform игрока
     public LocationSpawnCollection locationCollection;   // ScriptableObject с вариантами объектов для спавна
     public float minDistance = 100f;                     // Минимальное расстояние до следующего объекта
     public float maxDistance = 200f;                     // Максимальное расстояние до следующего объекта
@@ -29,27 +30,27 @@ public class LocationSpawner : MonoBehaviour
     void Start()
     {
         // Если не назначена, пытаемся найти на сцене
-        if (boardController == null)
-            boardController = FindObjectOfType<BoardController>();
-        if (boardController == null)
+        if (_boardController == null)
+            _boardController = FindObjectOfType<BoardController>();
+        if (_boardController == null)
             Debug.LogError("BoardController не найден");
 
-        if (player == null)
-            player = GameObject.FindWithTag("Player")?.transform;
-        if (player == null)
+        if (_player == null)
+            _player = FindObjectOfType<PlayerMovement>(); ;
+        if (_player == null)
             Debug.LogError("Player (игрок) не назначен и не найден по тэгу 'Player'");
 
         // Определяем максимальную дистанцию спавна (по лодке)
         _stopSpawnDistance = GameManager.Instance.PlayDistance - spawnThreshold;
 
         // Инициализируем lastSpawnZ положением игрока по Z, чтобы спавн шел от него
-        lastSpawnZ = player.position.z;
+        lastSpawnZ = _player.zPositionFix;
     }
 
     void Update()
     {
         // 1) Спавн новых локаций, когда игрок продвинулся вперед
-        if (player.position.z + spawnThreshold > lastSpawnZ && lastSpawnZ < _stopSpawnDistance)
+        if (_player.zPositionFix + spawnThreshold > lastSpawnZ && lastSpawnZ < _stopSpawnDistance)
         {
             SpawnLocation();
         }
@@ -58,7 +59,7 @@ public class LocationSpawner : MonoBehaviour
         for (int i = spawnedLocations.Count - 1; i >= 0; i--)
         {
             // Если этот объект позади лодки больше, чем removalDistance, уничтожаем
-            if (spawnedLocations[i].transform.position.z < boardController.TotalDistanceTraveled - removalDistance)
+            if (spawnedLocations[i].ZPosition < _boardController.TotalDistanceTraveled - removalDistance)
             {
                 Destroy(spawnedLocations[i].gameObject);
                 spawnedLocations.RemoveAt(i);
@@ -75,7 +76,7 @@ public class LocationSpawner : MonoBehaviour
         lastSpawnZ += distance;
 
         // Фиксируем позицию спавна: spawnX, spawnY и динамический Z = lastSpawnZ
-        Vector3 spawnPosition = new Vector3(spawnX, spawnY, lastSpawnZ);
+        Vector3 spawnPosition = new Vector3(spawnX, spawnY, lastSpawnZ - FixCoordinate.Instance.PlayerAddPos);
 
         // Берём случайный префаб из коллекции
         if (locationCollection != null)
@@ -84,9 +85,10 @@ public class LocationSpawner : MonoBehaviour
             if (chosenPrefab != null)
             {
                 LocationContentSpawner spawnedObj = Instantiate(chosenPrefab, spawnPosition, Quaternion.identity);
+                spawnedObj.ZPosition = spawnPosition.z + FixCoordinate.Instance.BoardAddPos;
                 spawnedLocations.Add(spawnedObj);
                 spawnedObj.transform.SetParent(this.transform);
-                spawnedObj.SetLevel(boardController.GetLevel());
+                spawnedObj.SetLevel(_boardController.GetLevel());
             }
             else
             {

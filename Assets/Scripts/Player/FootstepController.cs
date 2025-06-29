@@ -41,9 +41,21 @@ public class FootstepController : MonoBehaviour
             if (PlayerInput.Instance.InTrain())
                 return;
         // считаем, сколько метров прошли с прошлого кадра
-        float delta = Vector3.Distance(transform.position, lastPosition);
+        /*if (PlayerInput.Instance.InTrain())
+        {
+            float delta = Vector3.Distance(transform.localPosition, lastPosition);
+            lastPosition = transform.localPosition;
+        }
+        else
+        {
+            float delta = Vector3.Distance(transform.position, lastPosition);
+
+            lastPosition = transform.position;
+        }
+*/
+        float delta = Vector3.Distance(transform.localPosition, lastPosition);
+        lastPosition = transform.localPosition;
         accumulatedDistance += delta;
-        lastPosition = transform.position;
 
         // если на земле и прошли достаточно
         if (controller.isGrounded && accumulatedDistance >= stepDistance)

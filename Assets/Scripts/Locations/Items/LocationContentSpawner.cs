@@ -17,6 +17,8 @@ public class LocationContentSpawner : MonoBehaviour
     [Tooltip("Список точек для спавна врагов")]
     public List<Transform> enemySpawnPoints;
 
+    public float ZPosition;
+
     private int _level = 1;
     /*[Tooltip("Вероятность спавна врагов (от 0 до 1)")]
     [Range(0f, 1f)]

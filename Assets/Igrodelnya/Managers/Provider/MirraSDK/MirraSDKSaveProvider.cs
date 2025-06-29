@@ -459,5 +459,29 @@ public class MirraSDKSaveProvider : SaveProvider
         }
         return DateTime.Parse(date);
     }
+    public override void SavePlayerFixPos(float posZ)
+    {
+        if (!isInitialize) return;
+        Changed = true;
+        MirraSDK.Data.SetFloat(SaveKey.PlayerFixPos.ToString(), posZ);
+    }
+    public override float LoadPlayerFixPos()
+    {
+        if (!isInitialize)
+            return 0f;
+        return MirraSDK.Data.GetFloat(SaveKey.PlayerFixPos.ToString(), 0f);
+    }
+    public override void SaveBoardFixPos(float posZ)
+    {
+        if (!isInitialize) return;
+        Changed = true;
+        MirraSDK.Data.SetFloat(SaveKey.BoardFixPos.ToString(), posZ);
+    }
+    public override float LoadBoardFixPos()
+    {
+        if (!isInitialize)
+            return 0f;
+        return MirraSDK.Data.GetFloat(SaveKey.BoardFixPos.ToString(), 0f);
+    }
 
 }
