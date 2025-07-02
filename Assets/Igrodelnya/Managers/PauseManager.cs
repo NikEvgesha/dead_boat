@@ -40,6 +40,13 @@ public class PauseManager : MonoBehaviour
             Destroy(gameObject);
         }
     }
+
+
+    private void Start()
+    {
+        AdsManager.Instance.AdClosed += OnAdClosed;
+    }
+
     public void StartInitialize()
     {
         _isInitialize = true;
@@ -60,7 +67,14 @@ public class PauseManager : MonoBehaviour
 
     private void OnDestroy()
     {
+        AdsManager.Instance.AdClosed -= OnAdClosed;
         if (_provider != null)
             _provider.OnPauseChanged -= OnProviderPauseChanged;
     }
+
+    private void OnAdClosed()
+    {
+        SetPause(false, true);
+    }
+
 }

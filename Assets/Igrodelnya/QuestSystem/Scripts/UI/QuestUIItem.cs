@@ -35,10 +35,27 @@ public class QuestUIItem : MonoBehaviour
         StartCoroutine(StartAnimation());
     }
 
+    private void Start()
+    {
+        LocalizationManager.Instance.OnLanguageChanged += UpdateLanguage;
+    }
+
+    private void OnDisable()
+    {
+        LocalizationManager.Instance.OnLanguageChanged -= UpdateLanguage;
+    }
+    private void UpdateLanguage(string lang)
+    {
+        _titleText.text = _boundQuest.questDefinition.Title;
+        if (_descriptionText != null)
+            _descriptionText.text = _boundQuest.questDefinition.Description;
+    }
+
     /// <summary>
     /// Вызывается сразу после Instantiate(prefab) — привязываем QuestInstance
     /// и настраиваем UI.
     /// </summary>
+    /// 
     public void Bind(QuestInstance quest)
     {
         _boundQuest = quest;

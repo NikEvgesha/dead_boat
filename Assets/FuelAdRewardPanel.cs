@@ -8,7 +8,8 @@ public class FuelAdRewardPanel : MonoBehaviour
     [SerializeField] private GameObject _panel;
     [SerializeField] private Image _fillImg;
     [SerializeField] private BuyTouchHandler _touchPanel;
-    [SerializeField] private FuelItem _rewardItem;
+    //[SerializeField] private FuelItem _rewardItem;
+    [SerializeField] private float _fuelReward;
     [SerializeField] private AudioSource _audioSource;
 
     private BoardController _board;
@@ -75,7 +76,7 @@ public class FuelAdRewardPanel : MonoBehaviour
                     {
                         if (success)
                         {
-                            _board.AddFuel(_rewardItem.fuelValue);
+                            _board.AddFuel(_fuelReward);
                             _audioSource.Play();
                         }
                             

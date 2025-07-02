@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using static UnityEditor.Progress;
 
 [RequireComponent(typeof(Image))]
 public class InventorySlot : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragHandler, IPointerClickHandler, IDropHandler
@@ -37,6 +38,18 @@ public class InventorySlot : MonoBehaviour, IDragHandler, IBeginDragHandler, IEn
     public int ID { get; set; }
 
 
+    private void OnEnable()
+    {
+        if (_item != null)
+        {
+            _name.text = LocalizationManager.Instance.LocalizationData.GetTranslation(_item.Data.Name, LocalizationManager.Instance.CurrentLanguage, LocalizationKeyType.Item.ToString());
+            if (_item.gameObject.GetComponent<FuelItem>() != null)
+            {
+                _tag.text = LocalizationManager.Instance.LocalizationData.GetTranslation(ItemTag.Fuel.ToString(), LocalizationManager.Instance.CurrentLanguage, LocalizationKeyType.Tag.ToString());
+            }
+        }
+       
+    }
     public void SetIndex(int id)
     {
         if (id > 0)

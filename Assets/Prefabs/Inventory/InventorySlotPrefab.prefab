@@ -176,6 +176,7 @@ MonoBehaviour:
   _tag: {fileID: 5614206032786386745}
   _price: {fileID: 2849318221531609237}
   _activeMarker: {fileID: 0}
+  _activeSlotIndex: {fileID: 0}
   _container: {fileID: 7567280694535948809}
   _slot: {fileID: 0}
   _interactionIcon: {fileID: 5793239916327441004}
@@ -447,7 +448,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 14.422775}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6406218146995659027
 CanvasRenderer:
@@ -497,6 +498,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2360675389447111097}
   - component: {fileID: 7567280694535948809}
+  - component: {fileID: 5726254725288743639}
   m_Layer: 5
   m_Name: Container
   m_TagString: Untagged
@@ -523,7 +525,7 @@ RectTransform:
   m_AnchorMin: {x: 0.024154592, y: 0.15951245}
   m_AnchorMax: {x: 0.3296617, y: 0.84627813}
   m_AnchoredPosition: {x: -0.00030517578, y: -0.000022888184}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 14.422788}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &7567280694535948809
 MonoBehaviour:
@@ -537,3 +539,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 21230be40e8b8854f8de2cae9b686b8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &5726254725288743639
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8878587564404800265}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 86710e43de46f6f4bac7c8e50813a599, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_AspectMode: 2
+  m_AspectRatio: 1

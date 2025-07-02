@@ -23,6 +23,8 @@ public class AdsManager : MonoBehaviour
 
     [SerializeField] private List<AdsProvider> adsProviders = new List<AdsProvider>(); // Список активных провайдеров
 
+    public Action AdClosed;
+
     void Awake()
     {
         if (_instance != null && _instance != this)
@@ -35,6 +37,28 @@ public class AdsManager : MonoBehaviour
 
         // Инициализация всех провайдеров
         InitializeProviders();
+    }
+
+
+    private void Start()
+    {
+        foreach (var provider in adsProviders)
+        {
+            provider.AdClosed += OnAdClosed;
+        }
+    }
+
+    private void OnDisable()
+    {
+        foreach (var provider in adsProviders)
+        {
+            provider.AdClosed -= OnAdClosed;
+        }
+    }
+
+    private void OnAdClosed()
+    {
+        AdClosed?.Invoke();
     }
 
     private void InitializeProviders()

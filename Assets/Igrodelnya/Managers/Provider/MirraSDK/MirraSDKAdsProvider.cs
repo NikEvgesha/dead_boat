@@ -66,6 +66,7 @@ public class MirraSDKAdsProvider : AdsProvider
             onClose: (success) =>
             {
                 Debug.Log("MirraSDK: Interstitial ad closed");
+                AdClosed?.Invoke();
                 //PauseManager.Instance.SetPause(false, true);
                 //ControlManager.Instance.CursorActive = false;
             }
