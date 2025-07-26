@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class MeleWeapon : MonoBehaviour
 {
-    [SerializeField] private UsableItem _usableItem;
+    [SerializeField] private ActivateItem _usableItem;
     [SerializeField] private Animator _animator;
     [SerializeField] private BoxCollider _damageArea;
     [SerializeField] private int _damage;

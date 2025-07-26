@@ -6,6 +6,8 @@ public class PlayerStatBar : MonoBehaviour
     [SerializeField] private PlayerStat _stat;
     [SerializeField] private Image _bar;
     [SerializeField] private GameObject _barObj;
+    [SerializeField] private Text _progressText;
+    [SerializeField] private Text _levelText;
 
     private bool _barActive = false;
 
@@ -17,6 +19,11 @@ public class PlayerStatBar : MonoBehaviour
         _player = PlayerManager.Instance.StatsManager;
         _player.StatChanged += OnStatChange;
         _player.AddHealth(0);
+        if (_levelText) 
+        {
+            _player.Experience().ChangeLevel.AddListener(OnChangeLevel);
+            _player.AddExp(0);
+        }
     }
 
     private void OnDisable()
@@ -27,26 +34,31 @@ public class PlayerStatBar : MonoBehaviour
     private void OnStatChange(PlayerStat stat, float amount, float max)
     {
         if (stat != _stat) return;
+        /*
+                if (amount >= max && _barActive)
+                {
+                    _barObj.SetActive(false);
+                    _barActive = false;
+                    return;
+                }
 
-        if (amount >= max && _barActive)
-        {
-            _barObj.SetActive(false);
-            _barActive = false;
-            return;
-        }
 
-
-        if (amount < max && !_barActive)
-        {
-            _barObj.SetActive(true);
-            _barActive = true;
-        }
-
+                if (amount < max && !_barActive)
+                {
+                    _barObj.SetActive(true);
+                    _barActive = true;
+                }
+        */
+        if(_progressText)
+            _progressText.text = amount + "/"+ max;
         _bar.fillAmount = amount/max;
 
         
 
     }
-
+    private void OnChangeLevel(int level)
+    {
+        _levelText.text = level.ToString();
+    }
 
 }

@@ -185,17 +185,25 @@ public class SaveManager : MonoBehaviour
     {
         saveProvider.SaveGameCoin(coin);
     }
-    public void SavePlayerHealth(float health)
-    {
-        saveProvider.SavePlayerHealth(health);
-    }
     public int LoadGameCoin()
     {
         return saveProvider.LoadGameCoin();
     }
+    public void SavePlayerHealth(float health)
+    {
+        saveProvider.SavePlayerHealth(health);
+    }
     public float LoadPlayerHealth()
     {
         return saveProvider.LoadPlayerHealth();
+    }
+    public void SavePlayerExperience(float exp , int level)
+    {
+        saveProvider.SavePlayerExperience(exp, level);
+    }
+    public (float,int) LoadPlayerExperience()
+    {
+        return saveProvider.LoadPlayerExperience();
     }
     public (int, float) LoadPlayerStats()
     {

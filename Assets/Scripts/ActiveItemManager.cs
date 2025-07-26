@@ -51,9 +51,9 @@ public class ActiveItemManager : MonoBehaviour
     }
 
 
-    public UsableItem GetActiveUsable()
+    public ActivateItem GetActiveUsable()
     {
-        if (_activeItem != null && _activeItem.TryGetComponent<UsableItem>(out UsableItem usable))
+        if (_activeItem != null && _activeItem.TryGetComponent<ActivateItem>(out ActivateItem usable))
         {
             return usable;
         }

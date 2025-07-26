@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-public class UsableItem : MonoBehaviour
+public class ActivateItem : MonoBehaviour
 {
 
     private bool _isActive = false;

@@ -20,7 +20,8 @@ public enum CurrencyType
 public enum PlayerStat
 {
     Health,
-    Stamina
+    Stamina,
+    Exp,
 }
 
 
@@ -224,11 +225,15 @@ public enum SaveKey
     LevelId,
     RouletteLastDate,
     Health,
+    Exp,
+    Level,
     Coins,
     EndTutorial,
     QuestProgress,
     PlayerFixPos,
-    BoardFixPos
+    BoardFixPos,
+
+
 
 
 }

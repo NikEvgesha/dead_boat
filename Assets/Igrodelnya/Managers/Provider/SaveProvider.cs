@@ -55,6 +55,8 @@ public abstract class SaveProvider : MonoBehaviour
     public abstract void SavePlayerStats(int coin, float hp);
     public abstract void SaveGameCoin(int coin);
     public abstract void SavePlayerHealth(float health);
+    public abstract void SavePlayerExperience(float exp, int level);
+    public abstract (float, int) LoadPlayerExperience();
     public abstract int LoadGameCoin();
     public abstract float LoadPlayerHealth();
     //патроны

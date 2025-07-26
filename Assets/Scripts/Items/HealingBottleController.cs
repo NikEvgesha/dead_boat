@@ -4,7 +4,7 @@ using UnityEngine;
 public class HealingBottleController : MonoBehaviour
 {
     [Header("Настройки бутылки эликсира")]
-    [SerializeField] private UsableItem _usableItem;       // Система использования (без StopUse)
+    [SerializeField] private ActivateItem _usableItem;       // Система использования (без StopUse)
     [SerializeField] private Animator _animator;           // Аниматор для анимаций питья
     [SerializeField] private float healingPerSecond = 5f;    // Сколько здоровья восстанавливается в секунду
     [SerializeField] private float maxDrinkTime = 3f;        // Максимальное время питья (бутылка полностью выпита за это время)

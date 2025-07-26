@@ -290,7 +290,7 @@ public class PickableItem : MonoBehaviour
                 _tags.Add(ItemTag.Valuable);
         }
 
-        if (gameObject.TryGetComponent<UsableItem>(out UsableItem usableItem))
+        if (gameObject.TryGetComponent<ActivateItem>(out ActivateItem usableItem))
         {
             _usable = true;
         }

@@ -5,7 +5,7 @@ public class RangedWeaponController : MonoBehaviour
 {
 
     [Header("Настройки оружия")]
-    [SerializeField] private UsableItem _usableItem;
+    [SerializeField] private ActivateItem _usableItem;
     [SerializeField] private WeaponType weaponType = WeaponType.Pistol;
     [SerializeField] private float damage = 10f;
     [SerializeField] private float range = 100f;

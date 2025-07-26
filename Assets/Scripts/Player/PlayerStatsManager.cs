@@ -1,6 +1,55 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
+
+[Serializable]
+public struct Experience
+{
+    public int CurrentLevel;
+    public List<float> LevelsExpToUp;
+    public float ExpToUp
+    {
+        get 
+        {
+            return LevelsExpToUp[Mathf.Min(CurrentLevel, LevelsExpToUp.Count - 1)];
+        }
+    }
+    private float _exp;
+    public float Exp
+    {
+        get
+        {
+            return _exp;
+        }
+        set
+        {
+            if (value - _exp < 0) return;
+
+            if (value - _exp == 0)
+            {
+                ChangeExp?.Invoke(value);
+                ChangeLevel?.Invoke(CurrentLevel); 
+                return;
+            }
+            if (ExpToUp <= value)
+            {
+                _exp = value - ExpToUp;
+                CurrentLevel++;
+                ChangeLevel?.Invoke(CurrentLevel);
+            }
+            else
+            {
+                _exp = value;
+            }
+            SaveManager.Instance.SavePlayerExperience(_exp, CurrentLevel);
+            ChangeExp?.Invoke(value);
+        }
+    }
+   [HideInInspector] public UnityEvent<float> ChangeExp;
+   [HideInInspector] public UnityEvent<int> ChangeLevel;
+
+}
 
 [RequireComponent(typeof(PlayerMovement))]
 public class PlayerStatsManager : MonoBehaviour
@@ -9,6 +58,7 @@ public class PlayerStatsManager : MonoBehaviour
 
     [SerializeField] private float _maxStamina = 100f;
     [SerializeField] private float _maxHealth = 100f;
+    [SerializeField] private Experience _experience = new();
     [SerializeField] private float _staminaConsumptionRate = 1f;
     [SerializeField] private float _staminaRestoreRate = 5f;
     [SerializeField] private Animator _animator;
@@ -24,7 +74,6 @@ public class PlayerStatsManager : MonoBehaviour
     public Action NoHealth;
     public Action<PlayerStat, float, float> StatChanged;
 
-
     public float Stamina
     {
         get
@@ -33,13 +82,13 @@ public class PlayerStatsManager : MonoBehaviour
         }
         private set
         {
-            _stamina = Mathf.Clamp(value, 0, _maxStamina);
-
+            //_stamina = Mathf.Clamp(value, 0, _maxStamina);
+            _stamina = _maxStamina;
             if (_stamina == 0)
             {
                 NoStamina?.Invoke();
             }
-            StatChanged?.Invoke(PlayerStat.Stamina, _stamina, _maxStamina);
+            //StatChanged?.Invoke(PlayerStat.Stamina, _stamina, _maxStamina);
 
         }
     }
@@ -63,8 +112,19 @@ public class PlayerStatsManager : MonoBehaviour
 
         }
     }
-
-
+    public void AddExp(float exp)
+    {
+        _experience.Exp += exp;
+    }
+    public Experience Experience()
+    {
+        return _experience;
+    }
+    public void ChangeExp(float exp)
+    {
+        StatChanged?.Invoke(PlayerStat.Exp, exp, _experience.ExpToUp);
+    }
+         
     private void Awake()
     {
         if (Instance == null)
@@ -86,13 +146,14 @@ public class PlayerStatsManager : MonoBehaviour
             { PlayerStat.Health, _maxHealth},
             { PlayerStat.Stamina, _maxStamina}
         };
+        _experience.ChangeExp.AddListener(ChangeExp);
         _stamina = _maxStamina;
-        _health = _maxHealth;
-        
+        _health = _maxHealth; 
     }
     private void Start()
     {
         LoadHealth(SaveManager.Instance.LoadPlayerHealth());
+        LoadExp(SaveManager.Instance.LoadPlayerExperience().Item1, SaveManager.Instance.LoadPlayerExperience().Item2);
     }
 
     private void FixedUpdate()
@@ -147,5 +208,10 @@ public class PlayerStatsManager : MonoBehaviour
     {
         if(hp != 0) 
             Health = hp;
+    }
+    public void LoadExp(float exp, int Level)
+    {
+        _experience.CurrentLevel = Level;
+        _experience.Exp = exp;
     }
 }

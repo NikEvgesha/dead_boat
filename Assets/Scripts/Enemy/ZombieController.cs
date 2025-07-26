@@ -5,15 +5,19 @@ using UnityEngine.AI;
 [RequireComponent(typeof(NavMeshAgent), typeof(Animator))]
 public class ZombieController : LevelledEnemy
 {
+    [SerializeField] private float Exp = 10;
     [Header("Таргетинг и дистанции")]
-    public Transform target;
-    public float detectionDistance = 30f;
-    public float chaseDistance = 50f;
+    [SerializeField] private Transform target;
+    [SerializeField] private float detectionDistance = 30f;
+    [SerializeField] private float chaseDistance = 50f;
 
     [Header("Атака")]
-    public float attackRange = 2f;
-    public float attackCooldown = 1.5f;
-    public int attackDamage = 5;
+    [SerializeField] private float attackRange = 2f;
+    [SerializeField] private float attackCooldown = 1.5f;
+    [SerializeField] private int attackDamage = 5;
+    [SerializeField] private float _hitRadius;
+    [SerializeField] private LayerMask _hitLayers;
+    [SerializeField] private Vector3 _PointHit;
 
     private NavMeshAgent agent;
     private Animator animator;
@@ -121,9 +125,19 @@ public class ZombieController : LevelledEnemy
     {
         transform.LookAt(player.transform);
         animator.SetTrigger("Attack");
-        player.TakeDamage(attackDamage);
+        Collider[] hits = Physics.OverlapSphere(this.transform.position + (Vector3.forward * _PointHit.x) + (Vector3.up * _PointHit.y), _hitRadius, _hitLayers);
+        foreach (var hit in hits)
+        {
+            var health = hit.GetComponent<PlayerStatsManager>();
+            if (health != null)
+                health.TakeDamage(attackDamage);
+            if (audioSource && audioHit)
+                audioSource.PlayOneShot(audioHit);
+        }
+        //player.TakeDamage(attackDamage);
+        /*
         if (audioSource && audioHit)
-            audioSource.PlayOneShot(audioHit);
+            audioSource.PlayOneShot(audioHit);*/
     }
 
     public override void TakeDamage(int damage)
@@ -134,6 +148,7 @@ public class ZombieController : LevelledEnemy
 
     protected override void Die()
     {
+        player.AddExp(Exp);
         if (ragdoll)
         {
             ragdoll.EnableRagdoll();
@@ -159,5 +174,11 @@ public class ZombieController : LevelledEnemy
         }
         Debug.LogWarning($"{name} не нашёл NavMesh");
         return false;
+    }
+
+    void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.green;
+        Gizmos.DrawSphere(transform.position+(Vector3.forward*_PointHit.x) + (Vector3.up * _PointHit.z), _hitRadius);
     }
 }

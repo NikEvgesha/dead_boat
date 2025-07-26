@@ -371,6 +371,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _maxStamina: 100
   _maxHealth: 100
+  _experience:
+    CurrentLevel: 0
+    LevelsExpToUp:
+    - 100
+    - 250
+    - 400
+    - 800
+    - 1350
+    - 2700
+    - 3500
+    - 4400
+    - 5500
+    - 6800
+    - 10000
+    ChangeExp:
+      m_PersistentCalls:
+        m_Calls: []
+    ChangeLevel:
+      m_PersistentCalls:
+        m_Calls: []
   _staminaConsumptionRate: 20
   _staminaRestoreRate: 100
   _animator: {fileID: 8882623210509082541}
