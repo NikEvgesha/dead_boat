@@ -111,6 +111,11 @@ public class MirraSDKPurchaseProvider : PurchasesProvider
         );  // :contentReference[oaicite:4]{index=4}
     }
 
+    public override bool PurchasesAvailable()
+    {
+        return (MirraSDK.Platform.Current != MirraGames.SDK.Common.PlatformType.CrazyGames);
+    }
+
     private void OnDestroy()
     {
         // Никаких глобальных событий не подписывали, всё в делегатах.

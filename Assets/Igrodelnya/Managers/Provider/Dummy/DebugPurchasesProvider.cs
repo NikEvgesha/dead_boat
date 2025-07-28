@@ -25,4 +25,9 @@ public class DebugPurchasesProvider : PurchasesProvider
     {
         return new PurchaseData(purchaseId, "Test Item", "A debug purchase", "1.99 USD", "");
     }
+
+    public override bool PurchasesAvailable()
+    {
+        return true;
+    }
 }

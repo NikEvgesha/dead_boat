@@ -80,10 +80,12 @@ public class LoadingManager : MonoBehaviour
     {
         CurrentLocation = _location;
         LocationChanged?.Invoke(CurrentLocation);
+        MirraSDK.Analytics.GameplayStart();
     }
 
     public void LoadLocation(Location location, string sceneName = null)
     {
+        MirraSDK.Analytics.GameplayStop();
         if (location == Location.Game)
         {
             GameLoader.Instance.LoadNextScene(sceneName != null ? sceneName : _gameScene, true);

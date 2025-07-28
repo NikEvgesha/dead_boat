@@ -1,5 +1,7 @@
+using MirraGames.SDK;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GemsShop : MonoBehaviour
 {
@@ -7,10 +9,15 @@ public class GemsShop : MonoBehaviour
     [SerializeField] private GameObject _shopCanvas;
     [SerializeField] private DynamicGridSpawner _grid;
     [SerializeField] private GemsShopSlot _slotPrefab;
+    [SerializeField] private GameObject _rewardCanvas;
+    [SerializeField] private int _adReward;
+    [SerializeField] private Text _rewardAmount;
 
 
     private Dictionary<PurchaseData, CurrencyPackData> _purchaseData;
     private bool _isOpen;
+    private bool _inAppAvailable;
+    private bool _rewardEarned;
     public bool Opened => _isOpen;
 
     private static GemsShop _instance;
@@ -35,10 +42,19 @@ public class GemsShop : MonoBehaviour
     private void Start()
     {
         _purchaseData = new Dictionary<PurchaseData, CurrencyPackData>();
-        InitSlots();
+        _inAppAvailable = PurchasesManager.Instance.PurchasesAvailable();
+        if (_inAppAvailable)
+        {
+            InitSlots();
+            PurchasesManager.Instance.RestorePurchases();
+        }
+            
         CurrencyManager.Instance.NoGems += ToggleOpen;
 
-        PurchasesManager.Instance.RestorePurchases();
+   
+        
+
+        _rewardAmount.text = _adReward.ToString();
     }
 
     private void OnDisable()
@@ -63,10 +79,20 @@ public class GemsShop : MonoBehaviour
     public void ToggleOpen()
     {
         _isOpen = !_isOpen;
-        _shopCanvas.gameObject.SetActive(_isOpen);
+
+        if (!_inAppAvailable)
+        {
+            _rewardCanvas.gameObject.SetActive(_isOpen);
+        } else
+        {
+            _shopCanvas.gameObject.SetActive(_isOpen);
+        }
+
+            
         ControlManager.Instance.CursorActive = _isOpen;
         if (_isOpen)
         {
+            _rewardEarned = false;
             CurrencyManager.Instance.ShowGems?.Invoke(true);
             PlayerInput.Instance.AOpenWindow?.Invoke(this);
         }
@@ -101,6 +127,21 @@ public class GemsShop : MonoBehaviour
                 break;
             }
         }
+    }
+
+    public void OnRewardButtonCLick()
+    {
+        AdsManager.Instance.ShowRewardedAd(
+                "RouletteSpin",
+                (success) =>
+                {
+                    if (success)
+                    {
+                        CurrencyManager.Instance.AddCurrency(CurrencyType.Gems, _adReward);
+                        _rewardEarned = true;
+                        ToggleOpen();
+                    }
+                });
     }
 
 

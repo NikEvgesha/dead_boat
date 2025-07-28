@@ -1,6 +1,5 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.Networking;
 using UnityEngine.UI;
 
 public class BankStorePoint : MonoBehaviour
@@ -27,20 +26,25 @@ public class BankStorePoint : MonoBehaviour
         if (_packData == null) return;
 
         Instantiate(_packData.Model, _sellPoint);
-        _purchaseData = PurchasesManager.Instance.GetPurchaseData(_packData.CurrencyType.ToString() + "_" + _packData.Amount);
 
-        if (_purchaseData.Title != null && _purchaseData.Title != "")
-            _name.text = _purchaseData.Title;
-        else
-            _name.text = LocalizationManager.Instance.LocalizationData.GetTranslation(_packData.Data.Name, LocalizationManager.Instance.CurrentLanguage, LocalizationKeyType.Item.ToString());
+        if (PurchasesManager.Instance.PurchasesAvailable())
+        {
+            _purchaseData = PurchasesManager.Instance.GetPurchaseData(_packData.CurrencyType.ToString() + "_" + _packData.Amount);
 
-        //if (_purchaseData.CurrencyImageURL != null && _purchaseData.CurrencyImageURL != "")
-        //    StartCoroutine(DownloadImage(_purchaseData.CurrencyImageURL));
+            if (_purchaseData.Title != null && _purchaseData.Title != "")
+                _name.text = _purchaseData.Title;
+            else
+                _name.text = LocalizationManager.Instance.LocalizationData.GetTranslation(_packData.Data.Name, LocalizationManager.Instance.CurrentLanguage, LocalizationKeyType.Item.ToString());
 
-        _price.text = _purchaseData.Price;
-        _currencyText.text = _purchaseData.CurrencyImageURL;
+            //if (_purchaseData.CurrencyImageURL != null && _purchaseData.CurrencyImageURL != "")
+            //    StartCoroutine(DownloadImage(_purchaseData.CurrencyImageURL));
 
-        _buyTouchPanel.PointerDown += TryBuy;
+            _price.text = _purchaseData.Price;
+            _currencyText.text = _purchaseData.CurrencyImageURL;
+
+            _buyTouchPanel.PointerDown += TryBuy;
+        }
+        
 
     }
 

@@ -99,4 +99,9 @@ public class PurchasesManager : MonoBehaviour
         provider.Initialize();
         provider.ConsumePendingPurchases();
     }
+
+    public bool PurchasesAvailable()
+    {
+        return provider.PurchasesAvailable();
+    }
 }
