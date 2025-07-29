@@ -7,9 +7,29 @@ public class RangedWeaponController : MonoBehaviour
     [Header("Настройки оружия")]
     [SerializeField] private ActivateItem _usableItem;
     [SerializeField] private WeaponType weaponType = WeaponType.Pistol;
-    [SerializeField] private float damage = 10f;
+    [SerializeField] private float _damage = 10f;
+    public float Damage
+    {
+        get
+        {
+
+            if (LevelStatManager.Instance)
+                return _damage * LevelStatManager.Instance.Stats.RangeDamage;
+            return _damage;
+        }
+    }
     [SerializeField] private float range = 100f;
-    [SerializeField] private float fireRate = 0.5f;
+    [SerializeField] private float _attackSpeed = 0.5f;
+    public float AttackSpeed
+    {
+        get
+        {
+
+            if (LevelStatManager.Instance)
+                return _attackSpeed * LevelStatManager.Instance.Stats.RangeAttackSpeed;
+            return _attackSpeed;
+        }
+    }
     [SerializeField] private Camera fpsCam;
     [SerializeField] private Transform muzzleTransform;  // Точка появления пули (дула)
     [SerializeField] private ParticleSystem muzzleFlash;
@@ -29,7 +49,17 @@ public class RangedWeaponController : MonoBehaviour
     [SerializeField] private int maxAmmo = 10;
     [SerializeField] private int _currentAmmo = 10 ;
     //private int _reserveAmmo = 30;
-    [SerializeField] private float reloadTime = 2f;
+    [SerializeField] private float _reloadTime = 2f;
+    public float ReloadSpeed
+    {
+        get
+        {
+            if (LevelStatManager.Instance)
+                return _reloadTime * LevelStatManager.Instance.Stats.RangeReloadSpeed;
+            return _reloadTime;
+        }
+    }
+
     private bool _isReloading = false;
 
     [Header("Трейл пули")]
@@ -141,8 +171,11 @@ public class RangedWeaponController : MonoBehaviour
         {
             // Вызываем анимацию выстрела
             if (_animator != null)
+            {
+                _animator.speed = AttackSpeed / _attackSpeed;
                 _animator.SetTrigger("DoAttack");
-
+            }
+            
             Fire();
             _isShooting = true;
             CurrentAmmo--; // Расходуем один патрон на выстрел (даже для дробовика)
@@ -153,7 +186,7 @@ public class RangedWeaponController : MonoBehaviour
     // Сброс блокировки выстрела через fireRate
     private IEnumerator ResetShooting()
     {
-        yield return new WaitForSeconds(fireRate);
+        yield return new WaitForSeconds(_attackSpeed/AttackSpeed);
         _isShooting = false;
     }
 
@@ -165,12 +198,15 @@ public class RangedWeaponController : MonoBehaviour
             _isReloading = true;
 
             if (_animator != null)
+            {
+                _animator.speed = ReloadSpeed/_reloadTime;
                 _animator.SetTrigger("Reload");
+            }
             if (_audioSource)
                 if (_audioReload)
                     _audioSource.PlayOneShot(_audioReload);
             Debug.Log("Перезарядка...");
-            yield return new WaitForSeconds(reloadTime);
+            yield return new WaitForSeconds(_reloadTime/ReloadSpeed);
 
             int neededAmmo = maxAmmo - _currentAmmo;
             int ammoToReload = (ReserveAmmo >= neededAmmo) ? neededAmmo : ReserveAmmo;
@@ -231,7 +267,7 @@ public class RangedWeaponController : MonoBehaviour
             EnemyCore targetHealth = hit.transform.GetComponentInParent<EnemyCore>();
             if (targetHealth != null)
             {
-                targetHealth.TakeDamage((int)damage);
+                targetHealth.TakeDamage((int)Damage);
             }
             endPoint = hit.point;
 

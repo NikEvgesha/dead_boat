@@ -5,7 +5,7 @@ using UnityEngine.AI;
 [RequireComponent(typeof(NavMeshAgent), typeof(Animator))]
 public class ZombieController : LevelledEnemy
 {
-    [SerializeField] private float Exp = 10;
+    [SerializeField] private int Exp = 10;
     [Header("Таргетинг и дистанции")]
     [SerializeField] private Transform target;
     [SerializeField] private float detectionDistance = 30f;
@@ -148,7 +148,7 @@ public class ZombieController : LevelledEnemy
 
     protected override void Die()
     {
-        player.AddExp(Exp);
+        player.AddExp(Exp + (Exp*(mobLevel-1)));
         if (ragdoll)
         {
             ragdoll.EnableRagdoll();

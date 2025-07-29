@@ -285,11 +285,11 @@ public class MirraSDKSaveProvider : SaveProvider
         MirraSDK.Data.SetFloat(SaveKey.Exp.ToString(), exp);
         MirraSDK.Data.SetInt(SaveKey.Level.ToString(), level);
     }
-    public override (float, int) LoadPlayerExperience()
+    public override (int, int) LoadPlayerExperience()
     {
         if (isInitialize)
         {
-            return (MirraSDK.Data.GetFloat(SaveKey.Exp.ToString()), MirraSDK.Data.GetInt(SaveKey.Level.ToString()));
+            return (MirraSDK.Data.GetInt(SaveKey.Exp.ToString()), MirraSDK.Data.GetInt(SaveKey.Level.ToString()));
         }
         return (0, 0);
     }
@@ -497,6 +497,21 @@ public class MirraSDKSaveProvider : SaveProvider
         if (!isInitialize)
             return 0f;
         return MirraSDK.Data.GetFloat(SaveKey.BoardFixPos.ToString(), 0f);
+    }
+    public override void SaveLevelUpdate(Stats stats)
+    {
+        if (!isInitialize) return;
+        Changed = true;
+        MirraSDK.Data.SetObject(SaveKey.BoostType.ToString(), stats);
+    }
+    public override Stats LoadLevelUpdate()
+    {
+        Stats items = new();
+        if (isInitialize)
+        {
+            items = MirraSDK.Data.GetObject<Stats>(SaveKey.BoostType.ToString(), new Stats());
+        }
+        return items;
     }
 
 }

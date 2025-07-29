@@ -7,16 +7,16 @@ using UnityEngine.Events;
 public struct Experience
 {
     public int CurrentLevel;
-    public List<float> LevelsExpToUp;
-    public float ExpToUp
+    public List<int> LevelsExpToUp;
+    public int ExpToUp
     {
         get 
         {
             return LevelsExpToUp[Mathf.Min(CurrentLevel, LevelsExpToUp.Count - 1)];
         }
     }
-    private float _exp;
-    public float Exp
+    private int _exp;
+    public int Exp
     {
         get
         {
@@ -46,7 +46,7 @@ public struct Experience
             ChangeExp?.Invoke(value);
         }
     }
-   [HideInInspector] public UnityEvent<float> ChangeExp;
+   [HideInInspector] public UnityEvent<int> ChangeExp;
    [HideInInspector] public UnityEvent<int> ChangeLevel;
 
 }
@@ -73,7 +73,16 @@ public class PlayerStatsManager : MonoBehaviour
     public Action NoStamina;
     public Action NoHealth;
     public Action<PlayerStat, float, float> StatChanged;
+    public float MaxHealth
+    {
+        get {
 
+            if (LevelStatManager.Instance)
+                return _maxHealth + LevelStatManager.Instance.Stats.HP;
+
+            return _maxHealth; 
+        }
+    }
     public float Stamina
     {
         get
@@ -101,26 +110,28 @@ public class PlayerStatsManager : MonoBehaviour
         }
         private set
         {
-            _health = Mathf.Clamp(value, 0, _maxHealth);
+            _health = Mathf.Clamp(value, 0, MaxHealth);
 
             if (_health == 0)
             {
                 NoHealth?.Invoke();
             }
-            StatChanged?.Invoke(PlayerStat.Health, _health, _maxHealth);
+            StatChanged?.Invoke(PlayerStat.Health, _health, MaxHealth);
             SaveManager.Instance.SavePlayerHealth(_health);
 
         }
     }
-    public void AddExp(float exp)
+    public void AddExp(int exp)
     {
+        if (LevelStatManager.Instance)
+            exp = (int)(exp * LevelStatManager.Instance.Stats.MultExp);
         _experience.Exp += exp;
     }
     public Experience Experience()
     {
         return _experience;
     }
-    public void ChangeExp(float exp)
+    public void ChangeExp(int exp)
     {
         StatChanged?.Invoke(PlayerStat.Exp, exp, _experience.ExpToUp);
     }
@@ -143,12 +154,12 @@ public class PlayerStatsManager : MonoBehaviour
 
         _statsMax = new()
         {
-            { PlayerStat.Health, _maxHealth},
+            { PlayerStat.Health, MaxHealth},
             { PlayerStat.Stamina, _maxStamina}
         };
         _experience.ChangeExp.AddListener(ChangeExp);
         _stamina = _maxStamina;
-        _health = _maxHealth; 
+        _health = MaxHealth; 
     }
     private void Start()
     {
@@ -209,7 +220,7 @@ public class PlayerStatsManager : MonoBehaviour
         if(hp != 0) 
             Health = hp;
     }
-    public void LoadExp(float exp, int Level)
+    public void LoadExp(int exp, int Level)
     {
         _experience.CurrentLevel = Level;
         _experience.Exp = exp;

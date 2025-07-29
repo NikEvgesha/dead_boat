@@ -201,7 +201,7 @@ public class SaveManager : MonoBehaviour
     {
         saveProvider.SavePlayerExperience(exp, level);
     }
-    public (float,int) LoadPlayerExperience()
+    public (int, int) LoadPlayerExperience()
     {
         return saveProvider.LoadPlayerExperience();
     }
@@ -274,6 +274,14 @@ public class SaveManager : MonoBehaviour
     public float LoadBoardFixPos()
     {
         return saveProvider.LoadBoardFixPos();
+    }
+    public void SaveLevelUpdate(Stats stats)
+    {
+        saveProvider.SaveLevelUpdate(stats);
+    }
+    public Stats LoadLevelUpdate()
+    {
+        return saveProvider.LoadLevelUpdate();
     }
 
     /*    public void SaveAttachedItem(string id)

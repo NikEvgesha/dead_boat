@@ -8,6 +8,27 @@ public class MeleWeapon : MonoBehaviour
     [SerializeField] private Animator _animator;
     [SerializeField] private BoxCollider _damageArea;
     [SerializeField] private int _damage;
+    public int Damage 
+    {
+        get {
+
+            if (LevelStatManager.Instance)
+                return _damage * LevelStatManager.Instance.Stats.MeleDamage;
+            return _damage; 
+        }
+    }
+    [SerializeField] private float _attackSpeed = 1;
+
+    public float AttackSpeed
+    {
+        get
+        {
+
+            if (LevelStatManager.Instance)
+                return _attackSpeed * LevelStatManager.Instance.Stats.MeleAttackSpeed;
+            return _attackSpeed;
+        }
+    }
     [SerializeField] private AudioClip _audioHit;
     [SerializeField] private AudioClip _audioSwing;
     [SerializeField] private AudioSource _audioSource;
@@ -27,7 +48,7 @@ public class MeleWeapon : MonoBehaviour
                 return;
 
             _zombies.Add(zombie);
-            zombie.TakeDamage(_damage);
+            zombie.TakeDamage(Damage);
 
             if (_audioSource)
                 if (_audioHit)
@@ -67,6 +88,7 @@ public class MeleWeapon : MonoBehaviour
         // Генерируем случайное число 1, 2 или 3
         _damageArea.enabled = true;
         int randomAttack = Random.Range(1, 4);
+        _animator.speed = AttackSpeed;
         _animator.SetInteger("AttackIndex", randomAttack);
         _animator.SetTrigger("DoAttack");
         if(_audioSource)
@@ -78,7 +100,7 @@ public class MeleWeapon : MonoBehaviour
     private IEnumerator EndAnimation()
     {
 
-        yield return new WaitForSeconds(1);
+        yield return new WaitForSeconds(_attackSpeed/AttackSpeed);
 
         _damageArea.enabled = false;
         _use = false;

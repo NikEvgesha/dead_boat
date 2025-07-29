@@ -281,6 +281,7 @@ Transform:
   - {fileID: 6738448925353193142}
   - {fileID: 2171405174841529373}
   - {fileID: 2224543949419754172}
+  - {fileID: 2371059148212295687}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &5974196883455465897
@@ -329,6 +330,90 @@ MonoBehaviour:
   _lobbyScene: Lobby
   _gameScene: LevelForest
   CurrentLocation: 0
+--- !u!1 &2179559897282407903
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2371059148212295687}
+  - component: {fileID: 8838481171640047571}
+  m_Layer: 0
+  m_Name: LevelStatManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2371059148212295687
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2179559897282407903}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 1499.3591, y: 546.486, z: -346.27188}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4185805019874051651}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8838481171640047571
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2179559897282407903}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2ff572b250bbfaf41bb8dbf96fffbf2b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Stats:
+    HP: 0
+    MultExp: 1
+    MoveSpeedMult: 1
+    MoneyMultSale: 1
+    MaxFuel: 0
+    ConsumptionFuel: 1
+    AddMultFuel: 1
+    MaxSpeedBoard: 0
+    MeleDamage: 1
+    MeleAttackSpeed: 1
+    RangeDamage: 1
+    RangeAttackSpeed: 1
+    RangeReloadSpeed: 1
+  _boostItems:
+  - {fileID: 11400000, guid: dc156aad044e86d40a4e90c7f06cc66b, type: 2}
+  - {fileID: 11400000, guid: 26460ec326caf0847b93132de54f07af, type: 2}
+  - {fileID: 11400000, guid: f81b0eeae58704f4187a543221d0ee92, type: 2}
+  - {fileID: 11400000, guid: 7d5bd53ada634af41bd82474b22e41bc, type: 2}
+  - {fileID: 11400000, guid: 6e0d57b1e6aa0e4489c464789bfeec73, type: 2}
+  - {fileID: 11400000, guid: 74e35f5ea4ae74849ad65c64e1f22881, type: 2}
+  - {fileID: 11400000, guid: aadaaf3f8ac8f1e459d5c6f6eb4b4dd6, type: 2}
+  - {fileID: 11400000, guid: 9d15616ad06817a418f6a960e8967542, type: 2}
+  - {fileID: 11400000, guid: 1db33ff32e13ecb428cf4ec552109568, type: 2}
+  - {fileID: 11400000, guid: 4b304b79ceef4e24381c28dfc7124423, type: 2}
+  - {fileID: 11400000, guid: 95184ebafd0312f4a90133297d1a8555, type: 2}
+  - {fileID: 11400000, guid: 6f58db9034b402944a451067eeb572e3, type: 2}
+  _rarityChances:
+  - Rare: 1
+    Chance: 100
+  - Rare: 2
+    Chance: 60
+  - Rare: 3
+    Chance: 40
+  - Rare: 4
+    Chance: 20
+  - Rare: 5
+    Chance: 5
+  - Rare: 6
+    Chance: 1
 --- !u!1 &2228306846176892270
 GameObject:
   m_ObjectHideFlags: 0

@@ -22,6 +22,19 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private bool _onPlatform;
     [SerializeField] private bool _isGrounded;
 
+    public float MoveSpeed 
+    {
+        get 
+        { 
+            if (LevelStatManager.Instance)
+            {
+                return _moveSpeed + LevelStatManager.Instance.Stats.MoveSpeedMult;
+            }
+            return _moveSpeed; 
+        }
+        set { _moveSpeed = value; }
+    }
+
     public float zPositionFix
     {
         get
@@ -139,7 +152,7 @@ public class PlayerMovement : MonoBehaviour
         Vector3 moveDirection = transform.TransformDirection(movement);
         moveDirection.y = 0f;
 
-        Vector3 horizontalMovement = moveDirection * _moveSpeed;
+        Vector3 horizontalMovement = moveDirection * MoveSpeed;
 
         if (PlayerInput.Instance.Sprint && _playerStats.Stamina > 0)
         {

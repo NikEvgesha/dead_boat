@@ -56,7 +56,7 @@ public abstract class SaveProvider : MonoBehaviour
     public abstract void SaveGameCoin(int coin);
     public abstract void SavePlayerHealth(float health);
     public abstract void SavePlayerExperience(float exp, int level);
-    public abstract (float, int) LoadPlayerExperience();
+    public abstract (int, int) LoadPlayerExperience();
     public abstract int LoadGameCoin();
     public abstract float LoadPlayerHealth();
     //патроны
@@ -93,4 +93,6 @@ public abstract class SaveProvider : MonoBehaviour
     public abstract float LoadPlayerFixPos();
     public abstract void SaveBoardFixPos(float posZ);
     public abstract float LoadBoardFixPos();
+    public abstract void SaveLevelUpdate(Stats stats);
+    public abstract Stats LoadLevelUpdate();
 }

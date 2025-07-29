@@ -232,8 +232,43 @@ public enum SaveKey
     QuestProgress,
     PlayerFixPos,
     BoardFixPos,
+    BoostType,
 
+}
+public enum BoostType
+{
+    Boost,
+    HP,
+    MultExp,
+    MoveSpeedMult,
+    MoneyMultSale,
 
+    MaxFuel,
+    ConsumptionFuel,
+    AddMultFuel,
+    MaxSpeedBoard,
 
+    MeleDamage,
+    MeleAttackSpeed,
 
+    RangeDamage,
+    RangeAttackSpeed,
+    RangeReloadSpeed
+}
+public enum RareType
+{
+    RareType,
+    Common,
+    Uncommon,
+    Rare,
+    Epic,
+    Legendary,
+    Mythic,
+}
+public enum BoostUI
+{
+    BoostUI,
+    Title,
+    Useble,
+    Discription,
 }

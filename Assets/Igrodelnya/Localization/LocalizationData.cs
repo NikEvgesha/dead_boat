@@ -11,7 +11,10 @@ public class LocalizationData : ScriptableObject
     public List<string> Languages => languages;
     public List<LocalizationEntry> Entries => entries;
 
-
+    public string GetTranslation(string key)
+    {
+        return GetTranslation(key, LocalizationManager.Instance.CurrentLanguage);
+    }
     public string GetTranslation(string key, string language)
     {
         if (entries == null || languages == null)

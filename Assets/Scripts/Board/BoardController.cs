@@ -13,13 +13,53 @@ public class BoardController : MonoBehaviour
     [Tooltip("Максимальное количество топлива")]
     [SerializeField]
     private float _maxFuel = 1000f;
-
+    public float MaxFuel 
+    { 
+        get 
+        {
+            if (LevelStatManager.Instance)
+                return _maxFuel + LevelStatManager.Instance.Stats.MaxFuel;
+            return _maxFuel; 
+        }
+        set { _maxFuel = value; } 
+    }
     [Tooltip("Коэффициент расхода топлива – расход топлива пропорционален текущей скорости")]
-    public float fuelConsumptionRate = 0.1f;
+    [SerializeField] private float _fuelConsumptionRate = 0.1f;
+
+    public float FuelConsumptionRate 
+    { 
+        get
+        {
+            if (LevelStatManager.Instance)
+                return _fuelConsumptionRate * LevelStatManager.Instance.Stats.ConsumptionFuel;
+
+            return _fuelConsumptionRate;
+        }
+        set 
+        { 
+            _fuelConsumptionRate = value;
+        }
+    }
+
     [Tooltip("Ускорение поезда (м/с)")]
     public float acceleration = 5f;
     [Tooltip("Максимальная скорость поезда (м/с)")]
-    public float maxSpeed = 20f;
+    [SerializeField] private float _maxSpeed = 85f;
+
+    public float MaxSpeed
+    {
+        get
+        {
+            if (LevelStatManager.Instance)
+                return _maxSpeed + LevelStatManager.Instance.Stats.MaxSpeedBoard;
+
+            return _maxSpeed;
+        }
+        set
+        {
+            _maxSpeed = value;
+        }
+    }
 
     [Header("Параметры замедления")]
     [Tooltip("Замедление (фрикционное) поезда при отсутствии ввода ускорения (м/с)")]
@@ -247,8 +287,8 @@ public class BoardController : MonoBehaviour
             {
                 // Ускорение: увеличиваем скорость
                 currentSpeed += acceleration * inputValue * Time.fixedDeltaTime;
-                currentSpeed = Mathf.Clamp(currentSpeed, 0, maxSpeed);
-                float consumption = fuelConsumptionRate * Time.fixedDeltaTime;
+                currentSpeed = Mathf.Clamp(currentSpeed, 0, MaxSpeed);
+                float consumption = FuelConsumptionRate * Time.fixedDeltaTime;
                 ConsumeFuel(consumption);
             }
             else if (inputValue < 0)
@@ -287,7 +327,7 @@ public class BoardController : MonoBehaviour
         //SwitchDistance?.Invoke(TotalDistanceTraveled);
 
         if (_audioSource)
-            _audioSource.volume = (currentSpeed / 2) / maxSpeed;
+            _audioSource.volume = (currentSpeed / 2) / MaxSpeed;
         if (WaitFixUpdate && currentSpeed <= 0)
         {
             WaitFixUpdate = false;
@@ -311,6 +351,10 @@ public class BoardController : MonoBehaviour
     // Метод для добавления топлива
     public void AddFuel(float amount)
     {
+
+        if (LevelStatManager.Instance)
+            amount *= LevelStatManager.Instance.Stats.AddMultFuel;
+
         currentFuel += amount;
         if (currentFuel > _maxFuel)
         {

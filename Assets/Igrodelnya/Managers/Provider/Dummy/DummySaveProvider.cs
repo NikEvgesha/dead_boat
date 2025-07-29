@@ -133,7 +133,7 @@ public class DummySaveProvider : SaveProvider
     {
         throw new NotImplementedException();
     }
-    public override (float,int) LoadPlayerExperience()
+    public override (int, int) LoadPlayerExperience()
     {
         throw new NotImplementedException();
     }
@@ -236,5 +236,13 @@ public class DummySaveProvider : SaveProvider
     public override float LoadBoardFixPos()
     {
         return 0f;
+    }
+    public override void SaveLevelUpdate(Stats stats)
+    {
+        throw new NotImplementedException();
+    }
+    public override Stats LoadLevelUpdate()
+    {
+        return new Stats();
     }
 }
