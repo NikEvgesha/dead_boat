@@ -17,6 +17,9 @@ public class BoostItem : ScriptableObject
     [SerializeField] private List<RareReward> _Rare;
     [SerializeField] private float _chance = 1;
     [SerializeField] private Sprite _icon;
+    [SerializeField] private bool _percentage = false;
+
+    public bool Percentage { get { return _percentage; } }
 
     public List<RareReward> RareRewards { get { return _Rare; } }
 

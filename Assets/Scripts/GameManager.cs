@@ -118,6 +118,9 @@ public class GameManager : MonoBehaviour
         SaveManager.Instance.SaveFuel(0);
         SaveManager.Instance.SavePlayerFixPos(0);
         SaveManager.Instance.SaveBoardFixPos(0);
+        LevelStatManager.Instance.DeleteProgress();
+        PlayerStatsManager.Instance.ResetExp();
+        SaveManager.Instance.SavePlayerExperience(0, 0);
         //SaveManager.Instance.SaveQuestProgress();
         _ammoManager.ResetAmmo();
         LoadingManager.Instance.LoadLocation(location);

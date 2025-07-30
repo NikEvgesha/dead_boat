@@ -13,7 +13,7 @@ public class MeleWeapon : MonoBehaviour
         get {
 
             if (LevelStatManager.Instance)
-                return _damage * LevelStatManager.Instance.Stats.MeleDamage;
+                return _damage + LevelStatManager.Instance.Stats.MeleDamage;
             return _damage; 
         }
     }

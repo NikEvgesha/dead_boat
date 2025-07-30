@@ -271,4 +271,5 @@ public enum BoostUI
     Title,
     Useble,
     Discription,
+    Stats,
 }

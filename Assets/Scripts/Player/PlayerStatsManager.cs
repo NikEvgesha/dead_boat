@@ -37,17 +37,31 @@ public struct Experience
                 _exp = value - ExpToUp;
                 CurrentLevel++;
                 ChangeLevel?.Invoke(CurrentLevel);
+                NewLevel?.Invoke();
             }
             else
             {
                 _exp = value;
             }
             SaveManager.Instance.SavePlayerExperience(_exp, CurrentLevel);
-            ChangeExp?.Invoke(value);
+            ChangeExp?.Invoke(_exp);
         }
     }
-   [HideInInspector] public UnityEvent<int> ChangeExp;
+    public int ResExp
+    {
+        set
+        {
+            if (value != 0) return;
+            CurrentLevel = value;
+            _exp = value;
+            SaveManager.Instance.SavePlayerExperience(_exp, CurrentLevel);
+            ChangeExp?.Invoke(value);
+            ChangeLevel?.Invoke(value);
+        }
+    }
+    [HideInInspector] public UnityEvent<int> ChangeExp;
    [HideInInspector] public UnityEvent<int> ChangeLevel;
+    [HideInInspector] public UnityEvent NewLevel;
 
 }
 
@@ -62,6 +76,7 @@ public class PlayerStatsManager : MonoBehaviour
     [SerializeField] private float _staminaConsumptionRate = 1f;
     [SerializeField] private float _staminaRestoreRate = 5f;
     [SerializeField] private Animator _animator;
+    public bool InGame = true;
     private string _animatorTrigger = "Damage";
     private float _stamina;
     private float _health;
@@ -191,7 +206,7 @@ public class PlayerStatsManager : MonoBehaviour
     }
     public void TakeDamage( int damage)
     {
-        if(_isDead) 
+        if(_isDead || !InGame) 
             return;
 
         Health = _health - damage;
@@ -224,5 +239,9 @@ public class PlayerStatsManager : MonoBehaviour
     {
         _experience.CurrentLevel = Level;
         _experience.Exp = exp;
+    }
+    public void ResetExp()
+    {
+        _experience.ResExp = 0;
     }
 }

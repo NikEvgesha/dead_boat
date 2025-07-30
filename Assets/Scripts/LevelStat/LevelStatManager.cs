@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.VisualScripting.Antlr3.Runtime.Misc;
 using UnityEngine;
 
 [Serializable]
@@ -44,6 +43,26 @@ public struct Stats
 public class LevelStatManager : MonoBehaviour
 {
     public static LevelStatManager Instance;
+    public Stats StatsDefault = new Stats()
+    {
+        Save = true,
+        HP = 0,
+        MultExp = 1,
+        MoveSpeedMult = 1,
+        MoneyMultSale = 1,
+
+        MaxFuel = 0,
+        ConsumptionFuel = 1,
+        AddMultFuel = 1,
+        MaxSpeedBoard = 0,
+
+        MeleDamage = 0,
+        MeleAttackSpeed = 1,
+
+        RangeDamage = 0,
+        RangeAttackSpeed = 1,
+        RangeReloadSpeed = 1
+    };
     public Stats Stats = new Stats()
     {
         Save = true,
@@ -57,10 +76,10 @@ public class LevelStatManager : MonoBehaviour
         AddMultFuel = 1,
         MaxSpeedBoard = 0,
 
-        MeleDamage = 1,
+        MeleDamage = 0,
         MeleAttackSpeed = 1,
 
-        RangeDamage = 1,
+        RangeDamage = 0,
         RangeAttackSpeed = 1,
         RangeReloadSpeed = 1
 };
@@ -82,11 +101,15 @@ public class LevelStatManager : MonoBehaviour
     }
     private void Start()
     {
-        PlayerStatsManager.Instance.Experience().ChangeLevel.AddListener(NewLevel);
+        PlayerStatsManager.Instance.Experience().NewLevel.AddListener(NewLevel);
     }
-    private void NewLevel(int level)
+    private void NewLevel()
     {
         LevelUpUi.Instance.NewLevel(GetRandomBoostsWithRarity()); 
+    }
+    public void Refresh()
+    {
+        LevelUpUi.Instance.RefreshLevel(GetRandomBoostsWithRarity());
     }
     private void Subscriptions()
     {
@@ -213,5 +236,9 @@ public class LevelStatManager : MonoBehaviour
         // fallback на всякий случай
         return _rarityChances.Last().Rare;
     }
-
+    public void DeleteProgress()
+    {
+        Stats = StatsDefault;
+        SaveManager.Instance.SaveLevelUpdate(Stats);
+    }
 }

@@ -85,6 +85,8 @@ public class EndGameUIManager : MonoBehaviour
         timerMessageText.gameObject.SetActive(false);
         timerMessageTextFaint.gameObject.SetActive(false);
 
+        PlayerStatsManager.Instance.InGame = true;
+
         // Кнопка перехода в лобби показывается всегда
         if (state == EndGameState.None)
         {
@@ -130,6 +132,7 @@ public class EndGameUIManager : MonoBehaviour
             // Текст таймера для победы/поражения
 
             GameManager.Instance.AddReward();
+            PlayerStatsManager.Instance.InGame = false;
 
             tagText = LocalizationManager.Instance.LocalizationData.GetTranslation("Game/AutoLeft", LocalizationManager.Instance.CurrentLanguage);
             timerMessageText.text = string.Format(tagText, Mathf.Ceil(timerRemaining));
@@ -276,5 +279,9 @@ public class EndGameUIManager : MonoBehaviour
                     RevivePlayer();
             });
         
+    }
+    public EndGameState GetState()
+    {
+        return currentState;
     }
 }

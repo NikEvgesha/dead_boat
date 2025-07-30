@@ -14,7 +14,7 @@ public class RangedWeaponController : MonoBehaviour
         {
 
             if (LevelStatManager.Instance)
-                return _damage * LevelStatManager.Instance.Stats.RangeDamage;
+                return _damage + LevelStatManager.Instance.Stats.RangeDamage;
             return _damage;
         }
     }
