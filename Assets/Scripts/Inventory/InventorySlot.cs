@@ -244,7 +244,8 @@ public class InventorySlot : MonoBehaviour, IDragHandler, IBeginDragHandler, IEn
         if (slot == null || (!slot.Empty && !slot.CurrentItem.Usable) || slot._item == this._item) return;
 
         Inventory.Instance.TrySwitch(slot, this);
-        _activeSlotIndex.transform.SetAsLastSibling();
+        if (_activeSlotIndex != null)
+            _activeSlotIndex.transform.SetAsLastSibling();
     }
 
 

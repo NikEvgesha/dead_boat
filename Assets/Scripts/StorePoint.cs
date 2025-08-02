@@ -163,12 +163,13 @@ public class StorePoint : MonoBehaviour
         _itemPrefab.CheckTags();
         bool isAmmo = _itemPrefab.HaveTag(ItemTag.Ammo);
         bool isUsable = _itemPrefab.Usable;
-        if ((!_inLobby || enoughMoney) && (isAmmo || Inventory.Instance.CheckSpace(isUsable)))
+        if (!_inLobby || ( enoughMoney && (isAmmo || Inventory.Instance.CheckSpace(isUsable))))
         {
             _buyInProgress = true;
             _progress = 0;
             StartCoroutine(BuyProcess(enoughMoney));
         }
+
 /*        else if (!enoughMoney)
         {
             *//*_isNoMoney = true;

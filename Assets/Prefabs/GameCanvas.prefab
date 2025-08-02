@@ -1792,17 +1792,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _rewards:
-  - amount: 5
+  - amount: 1
     playtimeMinutes: 1
-  - amount: 10
+  - amount: 1
     playtimeMinutes: 5
-  - amount: 15
+  - amount: 1
     playtimeMinutes: 15
-  - amount: 20
+  - amount: 5
     playtimeMinutes: 30
-  - amount: 50
+  - amount: 5
     playtimeMinutes: 45
-  - amount: 100
+  - amount: 10
     playtimeMinutes: 60
   _grid: {fileID: 4505109307950484954}
   _slotPrefab: {fileID: 6254371890659564385, guid: 045cc300f3a25b04099d9bcb5252277b, type: 3}
@@ -3300,7 +3300,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1398258276886919115}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dd4151974eac4ae4ba8ed7bcb9cf28ae, type: 3}
   m_Name: 
@@ -25345,6 +25345,10 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: -0.85443497
       objectReference: {fileID: 0}
+    - target: {fileID: 4468200318841599111, guid: b04af0b2254bd0f488131916d97c8c30, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5106216522440651573, guid: b04af0b2254bd0f488131916d97c8c30, type: 3}
       propertyPath: m_AnchorMax.x
       value: 1
@@ -25520,6 +25524,10 @@ PrefabInstance:
     - target: {fileID: 9106842005550153100, guid: b04af0b2254bd0f488131916d97c8c30, type: 3}
       propertyPath: m_AnchorMax.y
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9106842005550153100, guid: b04af0b2254bd0f488131916d97c8c30, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
