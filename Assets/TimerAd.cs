@@ -18,6 +18,13 @@ public class TimerAd : MonoBehaviour
     private IEnumerator _adTimer;
     private void Start()
     {
+        if (!PurchasesManager.Instance.PurchasesAvailable())
+        {
+            this.enabled = false;
+            return;
+        }
+
+
         _playerStats = PlayerManager.Instance.StatsManager;
         _playerStats.StatChanged += OnPlayerStatChange;
         LoadingManager.Instance.LocationChanged += OnLocationChanged;
@@ -28,11 +35,10 @@ public class TimerAd : MonoBehaviour
 
     private void OnDisable()
     {
-        _playerStats.StatChanged -= OnPlayerStatChange;
+        if (_playerStats != null)
+            _playerStats.StatChanged -= OnPlayerStatChange;
         if (_boardController != null)
-        {
             _boardController.EndGame -= OnEndGame;
-        }
         LoadingManager.Instance.LocationChanged -= OnLocationChanged;
     }
 

@@ -12,6 +12,8 @@ public class GameLoader : MonoBehaviour
     private static GameLoader _instance;
     private AsyncOperation _asyncOperation;
 
+    private bool _startLoadingFinished = false;
+
     public static GameLoader Instance { get { return _instance; } }
     public Action OnSceneLoaded;
 
@@ -34,11 +36,15 @@ public class GameLoader : MonoBehaviour
     }
 
 
-    /*    private void Start()
+    private void Start()
+    {
+        //_currentSceneName = _gameOptions.LobbySceneName;
+        //SceneManager.LoadScene(_currentSceneName);
+        if (PurchasesManager.Instance.PurchasesAvailable())
         {
-            _currentSceneName = _gameOptions.LobbySceneName;
-            SceneManager.LoadScene(_currentSceneName);
-        }*/
+            _startLoadingFinished = true;
+        }
+    }
 
     public void LoadNextScene(string SceneName, bool asyncMode)
     {
@@ -46,7 +52,11 @@ public class GameLoader : MonoBehaviour
 
         if (asyncMode)
         {
-            AdsManager.Instance.ShowInterstitialAd();
+            if (_startLoadingFinished)
+                AdsManager.Instance.ShowInterstitialAd();
+            else
+                _startLoadingFinished = true;
+
             _loadingImage.SetActive(true);
             StartCoroutine("SceneLoad", _currentSceneName);
             //AdsManager.Instance.ShowInterstitialAd();

@@ -2,17 +2,16 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-/*[Serializable]
+[Serializable]
 public struct SpecialShopItem
 {
     public PickableItem item;
-    public int price;
-    public CurrencyType currencyType;
-}*/
+    public bool adReward;
+}
 
 public class BoatShop : MonoBehaviour
 {
-    [SerializeField] private List<PickableItem> _items;
+    [SerializeField] private List<SpecialShopItem> _items;
     [SerializeField] private Canvas _shopCanvas;
     [SerializeField] private DynamicGridSpawner _grid;
     [SerializeField] private BoatShopSlot _slotPrefab;
@@ -31,7 +30,7 @@ public class BoatShop : MonoBehaviour
 
     public void InitSlots()
     {
-        foreach (PickableItem item in _items)
+        foreach (SpecialShopItem item in _items)
         {
             BoatShopSlot slot = _grid.SpawnObject<BoatShopSlot>(_slotPrefab.gameObject);
             slot.Init(item, this);
@@ -47,13 +46,22 @@ public class BoatShop : MonoBehaviour
     }
 
 
-    public void TryBuy(PickableItem itemData)
+    public void TryBuy(SpecialShopItem itemData)
     {
-        if (itemData.TryGetComponent<StoreItem>(out StoreItem item))
+        if (itemData.adReward)
+        {
+            AdsManager.Instance.ShowRewardedAd(
+                   "buyItem",
+                   (success) =>
+                   {
+                       if (success)
+                           ItemPurchased?.Invoke(itemData.item);
+                   });
+        } else if (itemData.item.TryGetComponent<StoreItem>(out StoreItem item))
         {
             if (CurrencyManager.Instance.CheckEnoughCurrency(CurrencyType.Gems, item.GemPrice))
             {
-                ItemPurchased?.Invoke(itemData);
+                ItemPurchased?.Invoke(itemData.item);
                 CurrencyManager.Instance.RemoveCurrency(CurrencyType.Gems, item.GemPrice);
             }
         }

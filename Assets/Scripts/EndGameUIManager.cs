@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 using System;
+using MirraGames.SDK;
 
 // Перечисление состояний конца игры
 public enum EndGameState
@@ -56,6 +57,7 @@ public class EndGameUIManager : MonoBehaviour
     private EndGameState currentState = EndGameState.None;
     private void ShowEndGameUIAction(EndGameState state)
     {
+        MirraSDK.Analytics.GameplayStop();
         ShowEndGameUI(state);
     }
         /// <summary>
