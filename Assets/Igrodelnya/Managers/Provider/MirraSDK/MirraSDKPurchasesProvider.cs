@@ -58,8 +58,8 @@ public class MirraSDKPurchaseProvider : PurchasesProvider
 
         MirraSDK.Payments.RestorePurchases((restoreData) =>
         {
-            Debug.Log($"MirraSDK: Restored purchases: {string.Join(", ", restoreData.AllPurchases)}");
-            Debug.Log($"MirraSDK: Pending products: {string.Join(", ", restoreData.PendingProducts)}");
+            //Debug.Log($"MirraSDK: Restored purchases: {string.Join(", ", restoreData.AllPurchases)}");
+            //Debug.Log($"MirraSDK: Pending products: {string.Join(", ", restoreData.PendingProducts)}");
 
             foreach (var id in restoreData.PendingProducts)
             {

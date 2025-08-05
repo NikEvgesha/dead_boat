@@ -29,7 +29,7 @@ public class MirraSDKSaveProvider : SaveProvider
         // Дождёмся полной готовности системы сохранений
         MirraSDK.WaitForProviders(() =>
         {
-            Debug.Log("MirraSDKSaveProvider initialized");
+            //Debug.Log("MirraSDKSaveProvider initialized");
             isInitialize = true;
         });
     }
@@ -194,7 +194,7 @@ public class MirraSDKSaveProvider : SaveProvider
         if (!isInitialize)
             return false;
         bool res = MirraSDK.Data.GetBool(key, false);
-        Debug.Log("level " + key + " unlocked: " + res);
+        //Debug.Log("level " + key + " unlocked: " + res);
         return res;
     }
 
@@ -467,7 +467,7 @@ public class MirraSDKSaveProvider : SaveProvider
         if (!isInitialize) return DateTime.Today.AddDays(-1);
 
         string date = MirraSDK.Data.GetString(SaveKey.RouletteLastDate.ToString());
-        Debug.Log("Date loaded: " + date);
+        //Debug.Log("Date loaded: " + date);
         if (date.Length == 0)
         {
             return DateTime.Today.AddDays(-1);

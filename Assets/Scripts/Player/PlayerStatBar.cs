@@ -9,7 +9,7 @@ public class PlayerStatBar : MonoBehaviour
     [SerializeField] private Text _progressText;
     [SerializeField] private Text _levelText;
 
-    private bool _barActive = false;
+    //private bool _barActive = false;
 
     private PlayerStatsManager _player;
 

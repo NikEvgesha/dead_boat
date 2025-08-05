@@ -15,7 +15,7 @@ public class MirraSDKAdsProvider : AdsProvider
             isInitialized=true;
             // ¬ MirraSDK нет €вной инициализации Ads-модул€,
             // но логируем факт подключени€ провайдера
-            Debug.Log("MirraSDKAdsProvider initialized");
+            //Debug.Log("MirraSDKAdsProvider initialized");
         });
     }
 

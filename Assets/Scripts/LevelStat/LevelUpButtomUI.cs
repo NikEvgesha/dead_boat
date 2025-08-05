@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -22,8 +23,16 @@ public class LevelUpButtomUI : MonoBehaviour
     }
     private void UseButton()
     {
+        var values = Enum.GetValues(typeof(RareType)) as RareType[];
+        var lastValue = values[values.Length - 1];
+
+        if (_rare == lastValue)
+        {
             _item.AddBoost(_rare);
-        LevelUpUi.Instance.Close();
+            LevelUpUi.Instance.Close();
+            return;
+        }
+        LevelUpUi.Instance.ChoiceBoost(_item,_rare);
     }
     public void AddItemInButton(BoostItem item,RareType rare)
     {

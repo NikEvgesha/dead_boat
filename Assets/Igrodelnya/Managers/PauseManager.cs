@@ -1,3 +1,4 @@
+using MirraGames.SDK.Common;
 using UnityEngine;
 
 /// <summary>
@@ -19,6 +20,7 @@ public class PauseManager : MonoBehaviour
     }
 
     public bool IsPaused => _provider != null && _provider.IsPaused;
+    private int _pause = 0;
     private void Awake()
     {
         if (_instance == null)
@@ -62,7 +64,12 @@ public class PauseManager : MonoBehaviour
     /// </summary>
     public void SetPause(bool paused, bool controlAudio = true)
     {
-        _provider?.SetPause(paused, controlAudio);
+        _pause += paused ? 1 : -1;
+
+        if (_pause < 0)
+            _pause = 0;
+
+        _provider?.SetPause(_pause != 0, controlAudio);
     }
 
     private void OnDestroy()

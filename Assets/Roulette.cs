@@ -19,7 +19,7 @@ public class Roulette : MonoBehaviour
 {
     [SerializeField] private List<RouletteReward> _rewards = new();
     [SerializeField] private int _gemsPrice;
-    [SerializeField] private float _startSpeed = 50f;
+    //[SerializeField] private float _startSpeed = 50f;
     [SerializeField] private float _spinDuration = 5f;
     [SerializeField] private AnimationCurve _speedCurve;
 
@@ -42,17 +42,17 @@ public class Roulette : MonoBehaviour
 
 
 
-    private List<RouletteReward> _availableRewards = new();
+    //private List<RouletteReward> _availableRewards = new();
     private List<RouletteSlot> _slots;
     private float _rotateAngle;
     private bool _isOpen;
     private int _targetId;
     private bool _spinning;
-    private float _spinProgress;
+    //private float _spinProgress;
     private TimeSpan _tillNextDay;
     private bool _freeAvailable;
     private float _targetAngle;
-    private float _currentAngle;
+    //private float _currentAngle;
     private float _currentSpinTime;
     private DateTime _lastSpinTime;
     private IEnumerator _spinCoroutine;
@@ -291,7 +291,7 @@ public class Roulette : MonoBehaviour
 
     private IEnumerator Spin()
     {
-        _currentAngle = 0;
+        //_currentAngle = 0;
         _currentSpinTime = 0;
         _spinning = true;
 

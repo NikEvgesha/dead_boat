@@ -101,7 +101,7 @@ public class BoardController : MonoBehaviour
 
     // Общая пройденная дистанция (в метрах)
     public float TotalDistanceTraveled = 0f;
-    private float _preTotalDistanceTraveled = 0f;
+    //private float _preTotalDistanceTraveled = 0f;
     public float SaveDistanceTraveled = 10000f;
     public bool StartSpawn;
 
@@ -120,7 +120,7 @@ public class BoardController : MonoBehaviour
     public Action EndGame;
     public Action<bool> NoFuel;
     [SerializeField] private AudioSource _audioSource;
-    [SerializeField] private bool _test = false;
+    //[SerializeField] private bool _test = false;
     //[SerializeField] private int _rewardForWin = 20;
     public bool WaitFixUpdate;
     private void Awake()

@@ -16,6 +16,7 @@ public class FuelAdRewardPanel : MonoBehaviour
     private bool _isOpen;
     private float _activationProgress;
     private bool _activationInProgress;
+    private bool _activationDone = true;
 
     public void Start()
     {
@@ -34,6 +35,7 @@ public class FuelAdRewardPanel : MonoBehaviour
     {
         _isOpen = noFuel;
         _panel.SetActive(noFuel);
+        _activationDone = true;
     }
 
     private void Update()
@@ -53,6 +55,7 @@ public class FuelAdRewardPanel : MonoBehaviour
     }
 
     private void StartActivation() {
+        if (!_activationDone) return;
         _activationProgress = 0;
         _activationInProgress = true;
         StartCoroutine(Activation());
@@ -70,6 +73,7 @@ public class FuelAdRewardPanel : MonoBehaviour
 
         if (_activationProgress >= 1f)
         {
+            _activationDone = false;
             AdsManager.Instance.ShowRewardedAd(
                     "buyFuel",
                     (success) =>
@@ -79,7 +83,8 @@ public class FuelAdRewardPanel : MonoBehaviour
                             _board.AddFuel(_fuelReward);
                             _audioSource.Play();
                         }
-                            
+                        _activationDone = true;
+
                     });
         }
         _activationProgress = 0;

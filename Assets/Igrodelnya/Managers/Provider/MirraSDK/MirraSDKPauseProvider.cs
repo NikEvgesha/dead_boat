@@ -14,7 +14,7 @@ public class MirraSDKPauseProvider : PauseProvider
         {
             MirraSDK.Analytics.GameIsReady();
             // В SDK нет глобальных событий паузы, поэтому инициализация здесь пустая
-            Debug.Log("MirraSDKPauseProvider initialized");
+            //Debug.Log("MirraSDKPauseProvider initialized");
         });  
     }
     public override void SetPause(bool paused, bool controlAudio = true)

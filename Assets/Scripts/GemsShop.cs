@@ -17,7 +17,7 @@ public class GemsShop : MonoBehaviour
     private Dictionary<PurchaseData, CurrencyPackData> _purchaseData;
     private bool _isOpen;
     private bool _inAppAvailable;
-    private bool _rewardEarned;
+    //private bool _rewardEarned;
     public bool Opened => _isOpen;
 
     private static GemsShop _instance;
@@ -29,7 +29,7 @@ public class GemsShop : MonoBehaviour
         if (_instance == null)
         {
             _instance = this;
-            DontDestroyOnLoad(gameObject);
+            //DontDestroyOnLoad(gameObject);
         }
         else
         {
@@ -92,7 +92,7 @@ public class GemsShop : MonoBehaviour
         ControlManager.Instance.CursorActive = _isOpen;
         if (_isOpen)
         {
-            _rewardEarned = false;
+            //_rewardEarned = false;
             CurrencyManager.Instance.ShowGems?.Invoke(true);
             PlayerInput.Instance.AOpenWindow?.Invoke(this);
         }
@@ -138,7 +138,7 @@ public class GemsShop : MonoBehaviour
                     if (success)
                     {
                         CurrencyManager.Instance.AddCurrency(CurrencyType.Gems, _adReward);
-                        _rewardEarned = true;
+                        //_rewardEarned = true;
                         ToggleOpen();
                     }
                 });

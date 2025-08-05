@@ -13,7 +13,7 @@ public class MirraSDKAnalyticsProvider : AnalyticsProvider
     {
         MirraSDK.WaitForProviders(() =>
         {
-            Debug.Log("MirraSDKAnalyticsProvider: Events reporter initialized");
+            //Debug.Log("MirraSDKAnalyticsProvider: Events reporter initialized");
         });  // :contentReference[oaicite:0]{index=0}
     }
 

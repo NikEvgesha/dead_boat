@@ -48,13 +48,13 @@ public class AchievementManager : MonoBehaviour
         progress = new();
         foreach (AchievementType type in achievementTypes) {
             progress.Add(type, _resetProgress ? 0 : SaveManager.Instance.GetAchievementTypeProgress(type));
-            Debug.Log(type.ToString() + ": " + progress[type]);
+            //Debug.Log(type.ToString() + ": " + progress[type]);
         }
 
         foreach (Achievement achievement in _achievements.Achievements)
         {
                 achievement.StartUnlock(achievement.requirement <= progress[achievement.type]);
-                Debug.Log(achievement.id + ": " + achievement.Unlocked);
+                //Debug.Log(achievement.id + ": " + achievement.Unlocked);
         }
     }
 

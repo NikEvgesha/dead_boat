@@ -112,7 +112,7 @@ public class ZoneCleaner : MonoBehaviour
             {
                 if (col.CompareTag(tag))
                 {
-                    Debug.Log($"Объект с тегом {col.tag} обнаружен в зоне (2 точки) и будет удалён.");
+                    //Debug.Log($"Объект с тегом {col.tag} обнаружен в зоне (2 точки) и будет удалён.");
                     Destroy(col.gameObject);
                     break;
                 }

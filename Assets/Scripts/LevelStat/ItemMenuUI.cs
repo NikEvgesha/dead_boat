@@ -61,7 +61,7 @@ public class ItemMenuUI : MonoBehaviour
                 text = "+" + Stats.MaxFuel;
                 break;
             case BoostType.ConsumptionFuel:
-                text = "-" + (Stats.ConsumptionFuel - 1) + "%";
+                text = (Stats.ConsumptionFuel - 1).ToString("F2") + "%";
                 break;
             case BoostType.AddMultFuel:
                 text = "+" + (Stats.AddMultFuel - 1) + "%";

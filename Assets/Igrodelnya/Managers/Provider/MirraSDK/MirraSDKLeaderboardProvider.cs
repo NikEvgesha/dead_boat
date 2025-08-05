@@ -37,6 +37,6 @@ public class MirraSDKLeaderboardProvider : LeaderboardProvider
         MirraSDK.Achievements.SetScore(
             boardId: LBName,
             score: score);
-        Debug.Log(LBName + " set score " + score);
+        //Debug.Log(LBName + " set score " + score);
     }
 }

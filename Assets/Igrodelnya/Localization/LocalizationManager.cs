@@ -64,7 +64,7 @@ public class LocalizationManager : MonoBehaviour
 
     public void ChangeLanguage(string newLanguage)
     {
-        Debug.Log($"Язык начал изменяться на: {newLanguage}");
+        //Debug.Log($"Язык начал изменяться на: {newLanguage}");
         if (localizationData == null || newLanguage == currentLanguage)
         {
             return;
@@ -86,7 +86,7 @@ public class LocalizationManager : MonoBehaviour
             text.SetLanguage(newLanguage);
         }
 
-        Debug.Log($"Язык изменен на: {newLanguage}");
+        //Debug.Log($"Язык изменен на: {newLanguage}");
     }
 
     private void OnSwitchLanguage(string langCode)
@@ -96,7 +96,7 @@ public class LocalizationManager : MonoBehaviour
             Debug.LogWarning("Получен пустой код языка!");
             return;
         }
-        Debug.LogWarning("Получен код языка!" + langCode);
+        //Debug.LogWarning("Получен код языка!" + langCode);
         // Приводим код к нужному формату (например, первая буква в верхнем регистре)
         string formattedLang = char.ToUpper(langCode[0]) + langCode.Substring(1);
         ChangeLanguage(formattedLang);

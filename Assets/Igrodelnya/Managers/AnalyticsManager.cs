@@ -41,7 +41,7 @@ public class AnalyticsManager : MonoBehaviour
         foreach (var provider in analyticsProviders)
         {
             provider.Initialize();
-            Debug.Log($"Initialized analytics provider: {provider.GetType().Name}");
+            //Debug.Log($"Initialized analytics provider: {provider.GetType().Name}");
         }
     }
 

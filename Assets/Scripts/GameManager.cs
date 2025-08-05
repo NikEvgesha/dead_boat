@@ -67,7 +67,7 @@ public class GameManager : MonoBehaviour
 
         (int, List<string>) loadedData = SaveManager.Instance.LoadGameProgress();
 
-        Debug.Log(String.Format("LOADED DATA: {0},  {1} items", loadedData.Item1, loadedData.Item2.Count));
+        //Debug.Log(String.Format("LOADED DATA: {0},  {1} items", loadedData.Item1, loadedData.Item2.Count));
 
         //Inventory.Instance.ResetInventory();
         if (loadedData.Item1 >= 0)

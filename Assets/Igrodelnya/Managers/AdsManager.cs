@@ -66,7 +66,7 @@ public class AdsManager : MonoBehaviour
         foreach (var provider in adsProviders)
         {
             provider.Initialize();
-            Debug.Log($"Initialized ads provider: {provider.GetType().Name}");
+            //Debug.Log($"Initialized ads provider: {provider.GetType().Name}");
         }
     }
 
