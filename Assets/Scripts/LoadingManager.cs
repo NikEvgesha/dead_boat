@@ -42,7 +42,7 @@ public class LoadingManager : MonoBehaviour
     }
     private void StartGame()
     {
-        
+        GameLoader.Instance.StartAfterSDK();
         bool haveSave = SaveManager.Instance.LoadGameProgress().Item1 >= 0;
         if (SaveManager.Instance.IsNewPlayer || haveSave)
         {

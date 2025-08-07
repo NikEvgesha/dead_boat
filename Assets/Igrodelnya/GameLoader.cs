@@ -36,7 +36,7 @@ public class GameLoader : MonoBehaviour
     }
 
 
-    private void Start()
+    public void StartAfterSDK()
     {
         //_currentSceneName = _gameOptions.LobbySceneName;
         //SceneManager.LoadScene(_currentSceneName);
