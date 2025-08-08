@@ -58,6 +58,7 @@ public class EndGameUIManager : MonoBehaviour
     private void ShowEndGameUIAction(EndGameState state)
     {
         MirraSDK.Analytics.GameplayStop();
+        //Debug.Log("GameplayStop");
         ShowEndGameUI(state);
     }
         /// <summary>
@@ -150,7 +151,7 @@ public class EndGameUIManager : MonoBehaviour
             string tagText = LocalizationManager.Instance.LocalizationData.GetTranslation("Game/Traveled", LocalizationManager.Instance.CurrentLanguage);
             distanceText.text = string.Format(tagText, GameManager.Instance.CurrentDistance);
             playAgainButton.gameObject.SetActive(true);
-            reviveButton.gameObject.SetActive(true);
+            //reviveButton.gameObject.SetActive(true);
             tagText = LocalizationManager.Instance.LocalizationData.GetTranslation("Game/AutoLeft", LocalizationManager.Instance.CurrentLanguage);
             timerMessageText.text = string.Format(tagText, Mathf.Ceil(timerRemaining));
             StartCoroutine(WinLoseStateTimer());
@@ -240,7 +241,14 @@ public class EndGameUIManager : MonoBehaviour
     private void LoadLobby()
     {
         StopAllCoroutines();
-        GameManager.Instance.EndGame(true);
+        if (PurchasesManager.Instance.PurchasesAvailable())
+        {
+            GameManager.Instance.EndGame(true, currentState != EndGameState.Faint);
+        }
+        else
+        {
+            GameManager.Instance.EndGame(true);
+        }
         ShowEndGameUI(EndGameState.None);
         // Замените "LobbyScene" на имя вашей сцены лобби
         //SceneManager.LoadScene("SampleScene");

@@ -1,5 +1,4 @@
 using MirraGames.SDK;
-using System;
 using UnityEngine;
 
 public class MirraSDKInitializeProvider: InitializeProvider

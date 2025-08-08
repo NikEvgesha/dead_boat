@@ -43,6 +43,10 @@ public class LevelUpUi : MonoBehaviour
     }
     public void NewLevel(List<ItemWithRare> items)
     {
+        if (TryUpgradeHighestRarity(items, out var upgraded))
+        {
+            Debug.Log($"Повысили: теперь {upgraded.Rare}");
+        }
 
         PauseManager.Instance.SetPause(true, false);
         ControlManager.Instance.CursorActive = true;
@@ -51,7 +55,7 @@ public class LevelUpUi : MonoBehaviour
         int i = 0;
         foreach (var item in items)
         {
-            _buttons[i].AddItemInButton(item.Item, item.Rare);
+            _buttons[i].AddItemInButton(item.Item, item.Rare,item.IsAds);
             i++;
         }
     }
@@ -60,7 +64,7 @@ public class LevelUpUi : MonoBehaviour
         int i = 0;
         foreach (var item in items)
         {
-            _buttons[i].AddItemInButton(item.Item, item.Rare);
+            _buttons[i].AddItemInButton(item.Item, item.Rare,item.IsAds);
             i++;
         }
     }
@@ -126,7 +130,41 @@ public class LevelUpUi : MonoBehaviour
         _item.AddBoost(_rare);
         Close();
     }
+    public static bool TryUpgradeHighestRarity(List<ItemWithRare> list, out ItemWithRare result)
+    {
+        result = default;
 
+        if (list == null || list.Count == 0)
+            return false;
+
+        int bestIndex = 0;
+        RareType bestRare = list[0].Rare;
+
+        // находим индекс элемента с наибольшей редкостью (первый при равенстве)
+        for (int i = 1; i < list.Count; i++)
+        {
+            if (list[i].Rare > bestRare)
+            {
+                bestRare = list[i].Rare;
+                bestIndex = i;
+            }
+        }
+
+        var entry = list[bestIndex]; // struct — копия
+        result = entry;
+
+        // пробуем повысить редкость, если не максимум
+        if (entry.Rare < RareType.Mythic)
+        {
+            entry.Rare = (RareType)((int)entry.Rare + 1);
+            entry.IsAds = true;
+            list[bestIndex] = entry; // важно: положить изменённую копию обратно
+            result = entry;
+            return true; // удалось повысить
+        }
+
+        return false; // уже максимум, повысить нельзя
+    }
 
 
 

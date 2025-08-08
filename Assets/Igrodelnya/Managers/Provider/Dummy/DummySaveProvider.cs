@@ -129,7 +129,7 @@ public class DummySaveProvider : SaveProvider
     {
         throw new NotImplementedException();
     }
-    public override void SavePlayerExperience(float exp, int level)
+    public override void SavePlayerExperience(int exp, int level)
     {
         throw new NotImplementedException();
     }

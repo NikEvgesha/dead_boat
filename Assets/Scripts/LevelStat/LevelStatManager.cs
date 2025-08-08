@@ -8,6 +8,7 @@ public struct ItemWithRare
 {
     public RareType Rare;
     public BoostItem Item;
+    public bool IsAds;
 }
 [Serializable]
 public struct RareChance

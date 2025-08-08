@@ -81,11 +81,14 @@ public class LoadingManager : MonoBehaviour
         CurrentLocation = _location;
         LocationChanged?.Invoke(CurrentLocation);
         MirraSDK.Analytics.GameplayStart();
+        //Debug.Log("GameplayStart");
+        
     }
 
-    public void LoadLocation(Location location, string sceneName = null)
+    public void LoadLocation(Location location, string sceneName = null, bool withAds = true)
     {
         MirraSDK.Analytics.GameplayStop();
+        //Debug.Log("GameplayStop");
         if (location == Location.Game)
         {
             GameLoader.Instance.LoadNextScene(sceneName != null ? sceneName : _gameScene, true);
@@ -93,7 +96,7 @@ public class LoadingManager : MonoBehaviour
         }
         else if (location == Location.Lobby)
         {
-            GameLoader.Instance.LoadNextScene(_lobbyScene, true);
+            GameLoader.Instance.LoadNextScene(_lobbyScene, true, withAds);
             _location = Location.Lobby;
         }
     }

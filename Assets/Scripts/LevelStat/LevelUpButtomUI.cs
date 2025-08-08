@@ -1,4 +1,4 @@
-using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,8 +12,10 @@ public class LevelUpButtomUI : MonoBehaviour
     [SerializeField] Image _icon;
     [SerializeField] Text _rareText;
     [SerializeField] Image _rareBack;
+    [SerializeField] GameObject _adsIcon;
     [SerializeField] Text _boostText;
     [SerializeField] Text _description;
+    bool _isAds;
 
 
     private void Awake()
@@ -23,21 +25,45 @@ public class LevelUpButtomUI : MonoBehaviour
     }
     private void UseButton()
     {
-        var values = Enum.GetValues(typeof(RareType)) as RareType[];
-        var lastValue = values[values.Length - 1];
+        //var values = Enum.GetValues(typeof(RareType)) as RareType[];
+       // var lastValue = values[values.Length - 1];
+       if (_isAds)
+        {
+            AdsManager.Instance.ShowRewardedAd(
+            "ChoiseCard",
+            (success) =>
+            {
+                if (success)
+                {
+                    StartCoroutine(AddRevard());
+                }
+            });
+        }
+        else
+        {
+            StartCoroutine(AddRevard());
+        }
 
-        if (_rare == lastValue)
+        /*if (_rare == lastValue)
         {
             _item.AddBoost(_rare);
             LevelUpUi.Instance.Close();
             return;
         }
-        LevelUpUi.Instance.ChoiceBoost(_item,_rare);
+        LevelUpUi.Instance.ChoiceBoost(_item,_rare);*/
     }
-    public void AddItemInButton(BoostItem item,RareType rare)
+    private IEnumerator AddRevard()
+    {
+        yield return new WaitForSecondsRealtime(0.2f);
+        _item.AddBoost(_rare);
+        LevelUpUi.Instance.Close();
+    }
+    public void AddItemInButton(BoostItem item,RareType rare,bool isAds)
     {
         _item = item;
         _rare = rare;
+        _isAds = isAds;
+        _adsIcon.SetActive(_isAds);
         _title.text = GetText(item.BoostType.ToString(), BoostUI.Title) ;
         _icon.sprite = item.BoostIcon;
         RareBack rareBack = LevelUpUi.Instance.GetRareBackUI(rare);

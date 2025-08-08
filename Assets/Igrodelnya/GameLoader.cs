@@ -46,13 +46,13 @@ public class GameLoader : MonoBehaviour
         }
     }
 
-    public void LoadNextScene(string SceneName, bool asyncMode)
+    public void LoadNextScene(string SceneName, bool asyncMode,bool withAds = true)
     {
         _currentSceneName = SceneName;
 
         if (asyncMode)
         {
-            if (_startLoadingFinished)
+            if (_startLoadingFinished && withAds)
                 AdsManager.Instance.ShowInterstitialAd();
             else
                 _startLoadingFinished = true;

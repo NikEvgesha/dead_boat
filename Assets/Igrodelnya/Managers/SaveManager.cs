@@ -197,7 +197,7 @@ public class SaveManager : MonoBehaviour
     {
         return saveProvider.LoadPlayerHealth();
     }
-    public void SavePlayerExperience(float exp , int level)
+    public void SavePlayerExperience(int exp , int level)
     {
         saveProvider.SavePlayerExperience(exp, level);
     }

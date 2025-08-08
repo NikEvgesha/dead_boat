@@ -278,11 +278,11 @@ public class MirraSDKSaveProvider : SaveProvider
         Changed = true;
         MirraSDK.Data.SetFloat(SaveKey.Health.ToString(), health);
     }
-    public override void SavePlayerExperience(float exp, int level)
+    public override void SavePlayerExperience(int exp, int level)
     {
         if (!isInitialize) return;
         Changed = true;
-        MirraSDK.Data.SetFloat(SaveKey.Exp.ToString(), exp);
+        MirraSDK.Data.SetInt(SaveKey.Exp.ToString(), exp);
         MirraSDK.Data.SetInt(SaveKey.Level.ToString(), level);
     }
     public override (int, int) LoadPlayerExperience()

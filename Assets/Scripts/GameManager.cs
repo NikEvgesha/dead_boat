@@ -100,7 +100,7 @@ public class GameManager : MonoBehaviour
             Debug.LogWarning("Не найден prefab Quest_Kill5Rats_Prefab");
     }
 
-    public void EndGame(bool lobby)
+    public void EndGame(bool lobby,bool withAds = true)
     {
         PlayerManager.Instance.gameObject.transform.SetParent(null);
         DontDestroyOnLoad(PlayerManager.Instance.gameObject);
@@ -123,7 +123,7 @@ public class GameManager : MonoBehaviour
         SaveManager.Instance.SavePlayerExperience(0, 0);
         //SaveManager.Instance.SaveQuestProgress();
         _ammoManager.ResetAmmo();
-        LoadingManager.Instance.LoadLocation(location);
+        LoadingManager.Instance.LoadLocation(location,default,withAds);
     }
 
 

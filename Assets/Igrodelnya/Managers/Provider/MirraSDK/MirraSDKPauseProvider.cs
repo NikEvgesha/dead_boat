@@ -34,8 +34,17 @@ public class MirraSDKPauseProvider : PauseProvider
 
         // Оповещаем подписчиков об изменении паузы
         RaisePauseChanged(_isPaused);
-        if (_isPaused) MirraSDK.Analytics.GameplayStop(); 
-        else MirraSDK.Analytics.GameplayStart();
+        if (_isPaused)
+        {
+            MirraSDK.Analytics.GameplayStop();
+            //Debug.Log("GameplayStop");
+        }
+        else 
+        { 
+            MirraSDK.Analytics.GameplayStart();
+            //Debug.Log("GameplayStart");
+        }
+
 
         Debug.Log($"MirraSDKPauseProvider: pause set to {_isPaused}");
     }
