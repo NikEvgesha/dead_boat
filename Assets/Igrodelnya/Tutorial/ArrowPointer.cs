@@ -48,21 +48,13 @@ public class ArrowPointer : MonoBehaviour
         float dist = Vector3.Distance(tgtPos, transform.position);
         SetVisible(dist > hideDistance);
 
-        // Находим нормаль пола под стрелкой и прижимаем её к поверхности
-        Vector3 up = Vector3.up;
-        if (Physics.Raycast(transform.position + Vector3.up * groundRayHeight, Vector3.down,
-                            out var hit, 2f, groundMask, QueryTriggerInteraction.Ignore))
-        {
-            up = hit.normal;
-            transform.position = hit.point + up * 0.02f; // чуть над полом
-        }
-
-        // Поворачиваемся к цели по плоскости пола
+        // Поворачиваемся к цели только по горизонтали (Y — вверх)
         Vector3 dir = tgtPos - transform.position;
-        Vector3 flatDir = Vector3.ProjectOnPlane(dir, up);
-        if (flatDir.sqrMagnitude < 0.0001f) return;
+        dir.y = 0f; // << ключевая строка: игнорируем высоту
 
-        Quaternion look = Quaternion.LookRotation(flatDir.normalized, up);
+        if (dir.sqrMagnitude < 0.0001f) return;
+
+        Quaternion look = Quaternion.LookRotation(dir.normalized, Vector3.up);
         transform.rotation = Quaternion.RotateTowards(transform.rotation, look, turnSpeed * Time.deltaTime);
     }
 
