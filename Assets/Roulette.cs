@@ -114,6 +114,7 @@ public class Roulette : MonoBehaviour
 
     public void ToggleOpen()
     {
+        if (!(LoadingManager.Instance.CurrentLocation == Location.Lobby)) return;
         _isOpen = !_isOpen;
         ControlManager.Instance.CursorActive = _isOpen;
         if (!_isOpen)

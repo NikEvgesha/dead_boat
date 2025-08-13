@@ -77,6 +77,10 @@ public class PlaytimeRewardPanel : MonoBehaviour
     }
     public void ToggleOpen()
     {
+        if (!(LoadingManager.Instance.CurrentLocation == Location.Lobby)) 
+        { 
+            return;
+        } 
         _isOpen = !_isOpen;
         _panel.SetActive(_isOpen);
         ControlManager.Instance.CursorActive = _isOpen;
