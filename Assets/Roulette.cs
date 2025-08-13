@@ -88,10 +88,12 @@ public class Roulette : MonoBehaviour
 
     private void OnEnable()
     {
+        PlayerInput.Instance.ARoulette += ToggleOpen;
         PlayerInput.Instance.AOpenWindow += Close;
     }
     private void OnDisable()
     {
+        PlayerInput.Instance.ARoulette -= ToggleOpen;
         LoadingManager.Instance.LocationChanged -= ToggleButtonVisibility;
         PlayerInput.Instance.AOpenWindow -= Close;
     }

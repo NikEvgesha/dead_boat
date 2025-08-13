@@ -127,6 +127,8 @@ public class PlayerInput : MonoBehaviour
     private bool _rotationX;
     private bool _rotationY;
     private bool _pause;
+    private bool _roulette;
+    private bool _playtime;
 
 
     public Action AJump;
@@ -143,6 +145,8 @@ public class PlayerInput : MonoBehaviour
     public Action AAttack;
     public Action AHealing;
     public Action APause;
+    public Action ARoulette;
+    public Action APlaytime;
     public Action<MonoBehaviour> AOpenWindow;
 
     private void Awake()
@@ -202,6 +206,8 @@ public class PlayerInput : MonoBehaviour
             _rotationY = _interactionHold;
             _rotationX = Input.GetKey(KeyCode.Q);
             _pause = Input.GetKeyDown(KeyCode.P);
+            _roulette = Input.GetKeyDown(KeyCode.K);
+            _playtime = Input.GetKeyDown(KeyCode.L);
             if (!ControlManager.Instance.CursorActive)
             {
                 _pickUp = Input.GetMouseButtonDown(1);
@@ -224,6 +230,8 @@ public class PlayerInput : MonoBehaviour
         if (_attack) AAttack?.Invoke();
         if (_healing) AHealing?.Invoke();
         if (_pause) APause?.Invoke();
+        if (_roulette) ARoulette?.Invoke();
+        if (_playtime) APlaytime?.Invoke();
 
     // _useItem = _pickUp; //Переработать смысл кнопки
 
