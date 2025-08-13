@@ -41,7 +41,7 @@ public class HealingBottleController : MonoBehaviour
     // Подписка/отписка от события Use в зависимости от активности
     private void SetActiveUse(bool active)
     {
-        ControlUI.Instance.ShowUseButton(active);
+        ControlUI.Instance.ShowUseButton(active, active);
         ControlUI.Instance.ShowReloadButton(false);
         if (active)
         {

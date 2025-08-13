@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.UI;
 
 [Serializable]
 public struct TouchControls
@@ -16,6 +17,7 @@ public struct TouchControls
     public OnScreenButton rotateYButton;
 
 
+    public GameObject textHoldButton;
     public OnScreenJoystick moveJoystick;
     public CameraTouchController cameraTouchController;
 }
@@ -28,6 +30,7 @@ public struct DesktopHints
     public GameObject putToInventory;
     public GameObject attach;
     public GameObject rotate;
+    public GameObject healing;
 }
 public class ControlUI : MonoBehaviour
 {
@@ -63,9 +66,15 @@ public class ControlUI : MonoBehaviour
         else
         {
             Destroy(gameObject);
+            return;
         }
+        DeactivateAll();
     }
-
+    private void DeactivateAll()
+    {
+        _descktopHints.rotate.SetActive(false);
+        //_touchControls.rotateXButton.gameObject.SetActive(false);
+    }
     /*    public void SwitchPlatformControls(bool onPlatform)
         {
             _touchControls.jumpButton.gameObject.SetActive(onPlatform);
@@ -153,6 +162,10 @@ public class ControlUI : MonoBehaviour
             _touchControls.useButton.gameObject.SetActive(!visible);
             _touchControls.attackButton.gameObject.SetActive(visible);
         }
+        else
+        {
+            _descktopHints.healing.SetActive(!visible);
+        }
         //else
         //_descktopHints.attack.SetActive(visible);
     }
@@ -167,14 +180,19 @@ public class ControlUI : MonoBehaviour
             //_descktopHints.reload.SetActive(visible);
     }
 
-    public void ShowUseButton(bool visible)
+    public void ShowUseButton(bool visible,bool hold = false)
     {
         if (_isQuitting)
             return;
         if (_isMobile)
         {
             _touchControls.useButton.gameObject.SetActive(visible);
+            _touchControls.textHoldButton.SetActive(hold);
             _touchControls.attackButton.gameObject.SetActive(!visible);
+        } 
+        else
+        {
+            _descktopHints.healing.SetActive(hold);
         }
             
         //else

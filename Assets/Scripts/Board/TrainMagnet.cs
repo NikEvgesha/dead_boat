@@ -30,6 +30,8 @@ public class TrainMagnet : MonoBehaviour
     private void Start()
     {
         StartCoroutine(SaveItem());
+        if(ArrowPointer.Instance)
+            ArrowPointer.Instance.target = transform;
     }
     private void OnDisable() 
     { 

@@ -35,6 +35,8 @@ public class MirraSDKAdsProvider : AdsProvider
         }
 
         // Используем упрощённый InvokeRewarded с одним коллбэком onClose
+        PauseManager.Instance?.SetPause(true);
+        ControlManager.Instance.CursorActive = true;
         MirraSDK.Ads.InvokeRewarded(
             rewardTag: rewardId,
             onSuccess: () =>
@@ -42,6 +44,9 @@ public class MirraSDKAdsProvider : AdsProvider
                Debug.Log($"MirraSDK: Rewarded ad succeeded (tag = {rewardId})");
                 
                 onComplete?.Invoke(true);
+
+                PauseManager.Instance?.SetPause(false);
+                ControlManager.Instance.CursorActive = false;
             }
         );
     }
@@ -55,6 +60,8 @@ public class MirraSDKAdsProvider : AdsProvider
         }
 
 
+        PauseManager.Instance?.SetPause(true);
+        ControlManager.Instance.CursorActive = true;
         //PauseManager.Instance.SetPause(true, true);
         // Правильные имена параметров: onOpen и onClose
         MirraSDK.Ads.InvokeInterstitial(
@@ -66,7 +73,9 @@ public class MirraSDKAdsProvider : AdsProvider
             onClose: (success) =>
             {
                 Debug.Log("MirraSDK: Interstitial ad closed");
-                AdClosed?.Invoke();
+                //AdClosed?.Invoke();
+                PauseManager.Instance?.SetPause(false);
+                ControlManager.Instance.CursorActive = false;
                 //PauseManager.Instance.SetPause(false, true);
                 //ControlManager.Instance.CursorActive = false;
             }

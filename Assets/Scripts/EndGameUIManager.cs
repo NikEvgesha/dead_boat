@@ -69,6 +69,7 @@ public class EndGameUIManager : MonoBehaviour
         /// <param name="duration">Длительность таймера (в секундах)</param>
         public void ShowEndGameUI(EndGameState state, int distance = 0, float duration = 10f)
     {
+        bool isStart = currentState == state && state == EndGameState.None;
         currentState = state;
         timerDuration = duration;
         timerRemaining = duration;
@@ -94,7 +95,8 @@ public class EndGameUIManager : MonoBehaviour
         if (state == EndGameState.None)
         {
             ControlManager.Instance.MoveActive = true;
-            ControlManager.Instance.CursorActive = false;
+            if (!isStart)
+                ControlManager.Instance.CursorActive = false;
             lobbyButton.gameObject.SetActive(false);
             timerSlider.gameObject.SetActive(false);
             _panel.gameObject.SetActive(false);

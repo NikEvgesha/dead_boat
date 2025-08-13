@@ -1,4 +1,3 @@
-using MirraGames.SDK;
 using System;
 using System.Collections;
 using UnityEngine;
@@ -76,6 +75,7 @@ public class GameLoader : MonoBehaviour
         while (_asyncOperation.progress < 0.95f)
         {
             loadingProgress = Mathf.Clamp01(_asyncOperation.progress / 0.95f);
+            LoadingProgressBarUI.Instance?.Progress(_asyncOperation.progress);
             yield return true;
         }
         BoardController board = FindAnyObjectByType<BoardController>();

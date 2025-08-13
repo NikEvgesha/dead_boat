@@ -25,6 +25,12 @@ public class FuelDeposit : MonoBehaviour
             Debug.Log("Добавлено топлива: " + fuelItem.fuelValue);
             // Удаляем объект после его использования
             AddFuel?.Invoke();
+            ZombieController zombieController = fuelItem.GetComponentInParent<ZombieController>();
+            if (zombieController)
+            {
+                zombieController.TakeDamage(999999);
+            }
+
             Destroy(fuelItem.gameObject);
         }
     }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.ComponentModel;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -168,6 +169,7 @@ public class BoardController : MonoBehaviour
         Vector3 newPos = transform.position + transform.forward * pos;
         float time = 0;
         StartSpawn = true;
+        LoadingProgressBarUI.Instance?.EndProgress(1);
         while (time < 1)
         {
             time += Time.deltaTime;
@@ -178,7 +180,6 @@ public class BoardController : MonoBehaviour
             transform.position = Vector3.Lerp(oldPos, newPos, time);
             TotalDistanceTraveled = time * pos + FixCoordinate.Instance.BoardAddPos;
             PlayerMovement.Instance.Teleport(transform);
-
             yield return null;
         }
         StartGame = true;

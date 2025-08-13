@@ -107,7 +107,7 @@ public class TimerAd : MonoBehaviour
                 yield return new WaitForSecondsRealtime(1);
                 secondsRemain--;
             }
-
+            PauseManager.Instance.SetPause(false);
             AdsManager.Instance.ShowInterstitialAd();
             _adPanel.SetActive(false);
         }
