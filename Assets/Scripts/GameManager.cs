@@ -123,7 +123,7 @@ public class GameManager : MonoBehaviour
         SaveManager.Instance.SavePlayerExperience(0, 0);
         //SaveManager.Instance.SaveQuestProgress();
         _ammoManager.ResetAmmo();
-        if (PurchasesManager.Instance.PurchasesAvailable() && lobby)
+        if (!PurchasesManager.Instance.PurchasesAvailable() && lobby)
 
             LoadingManager.Instance.LoadLocation(location, default, false);
 

@@ -40,6 +40,8 @@ public class ControlUI : MonoBehaviour
     private GameObject _mobileUI;
     [SerializeField]
     private GameObject _desktopUI;
+    [SerializeField]
+    private GameObject _desktopMenuUI;
 
     [SerializeField] private TouchControls _touchControls;
     [SerializeField] private DesktopHints _descktopHints;
@@ -54,6 +56,7 @@ public class ControlUI : MonoBehaviour
         _isMobile = isMobile;
         _mobileUI.SetActive(isMobile);
         _desktopUI.SetActive(!isMobile);
+        _desktopMenuUI.SetActive(!isMobile);
     }
 
     private void Awake()

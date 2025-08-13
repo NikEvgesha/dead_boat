@@ -243,7 +243,7 @@ public class EndGameUIManager : MonoBehaviour
     private void LoadLobby()
     {
         StopAllCoroutines();
-        if (PurchasesManager.Instance.PurchasesAvailable())
+        if (!PurchasesManager.Instance.PurchasesAvailable())
         {
             GameManager.Instance.EndGame(true, currentState != EndGameState.Faint);
         }
