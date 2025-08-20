@@ -33,11 +33,11 @@ public class MirraSDKAdsProvider : AdsProvider
             onComplete?.Invoke(false);
             return;
         }
+        ControlManager.Instance.CursorActive = true;
+        PauseManager.Instance?.SetPause(true);
         MirraSDK.Ads.InvokeRewarded(
             onOpen: () =>
             {
-                PauseManager.Instance?.SetPause(true);
-                ControlManager.Instance.CursorActive = true;
             },
             rewardTag: rewardId,
             onSuccess: () =>
