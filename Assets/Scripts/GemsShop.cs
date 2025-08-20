@@ -132,15 +132,15 @@ public class GemsShop : MonoBehaviour
     public void OnRewardButtonCLick()
     {
         AdsManager.Instance.ShowRewardedAd(
-                "RouletteSpin",
+                "WatchAdToEarn",
                 (success) =>
                 {
                     if (success)
                     {
                         CurrencyManager.Instance.AddCurrency(CurrencyType.Gems, _adReward);
                         //_rewardEarned = true;
-                        ToggleOpen();
                     }
+                    ToggleOpen();
                 });
     }
 
