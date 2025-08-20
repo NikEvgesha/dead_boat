@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -42,6 +43,8 @@ public class ControlUI : MonoBehaviour
     private GameObject _desktopUI;
     [SerializeField]
     private GameObject _desktopMenuUI;
+    [SerializeField]
+    private List<GameObject> _hotKeys; 
 
     [SerializeField] private TouchControls _touchControls;
     [SerializeField] private DesktopHints _descktopHints;
@@ -57,6 +60,10 @@ public class ControlUI : MonoBehaviour
         _mobileUI.SetActive(isMobile);
         _desktopUI.SetActive(!isMobile);
         _desktopMenuUI.SetActive(!isMobile);
+        foreach (GameObject go in _hotKeys)
+        {
+            go.SetActive(!isMobile);
+        }
     }
 
     private void Awake()

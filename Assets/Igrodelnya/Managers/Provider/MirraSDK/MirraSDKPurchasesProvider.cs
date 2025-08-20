@@ -7,7 +7,7 @@ using MirraGames.SDK.Common;  // пространство имён SDK
 public class MirraSDKPurchaseProvider : PurchasesProvider
 {
     private bool isInitialized = false;
-    private Action<bool> currentCallback;
+    //private Action<bool> currentCallback;
 
     public override void Initialize()
     {
@@ -26,22 +26,26 @@ public class MirraSDKPurchaseProvider : PurchasesProvider
             onComplete?.Invoke(false);
             return;
         }
+/*
+        PauseManager.Instance?.SetPause(true);
+        ControlManager.Instance.CursorActive = true;*/
 
-        currentCallback = onComplete;
         MirraSDK.Payments.Purchase(
             purchaseId,
             onSuccess: () =>
             {
                 Debug.Log($"MirraSDK: Purchase successful: {purchaseId}");
                 //Shop.Instance.OnRestorePurchases(purchaseId);
-                currentCallback?.Invoke(true);
-                currentCallback = null;
+                onComplete?.Invoke(true);/*
+                PauseManager.Instance?.SetPause(false);
+                ControlManager.Instance.CursorActive = false;*/
             },
             onError: () =>
             {
                 Debug.LogWarning($"MirraSDK: Purchase failed or closed: {purchaseId}");
-                currentCallback?.Invoke(false);
-                currentCallback = null;
+                onComplete?.Invoke(false);/*
+                PauseManager.Instance?.SetPause(false);
+                ControlManager.Instance.CursorActive = false;*/
             }
         );  // :contentReference[oaicite:1]{index=1}
 
