@@ -117,7 +117,7 @@ public class MirraSDKPurchaseProvider : PurchasesProvider
 
     public override bool PurchasesAvailable()
     {
-        return (MirraSDK.Platform.Current != MirraGames.SDK.Common.PlatformType.CrazyGames);
+        return (MirraSDK.Platform.Current == MirraGames.SDK.Common.PlatformType.YandexGames);
     }
 
     private void OnDestroy()

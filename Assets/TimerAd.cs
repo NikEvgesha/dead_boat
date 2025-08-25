@@ -29,6 +29,8 @@ public class TimerAd : MonoBehaviour
         _playerStats.StatChanged += OnPlayerStatChange;
         LoadingManager.Instance.LocationChanged += OnLocationChanged;
         _adsInterval = MirraSDK.Flags.GetInt("AdsInterval", _adsInterval);
+        if (MirraSDK.Platform.Current == MirraGames.SDK.Common.PlatformType.Y8)
+            _adsInterval = 121;
 
         _adTimer = AdTimer();
         StartCoroutine(_adTimer);
