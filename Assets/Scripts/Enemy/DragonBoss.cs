@@ -9,6 +9,7 @@ public class DragonBoss : TriggerBossFight
 {
     [Header("Ссылки")]
     [SerializeField] private DragonBossController dragonController;
+    [SerializeField] private AchievementType _bossType;
 
     private float _currentHP;
     public float HP
@@ -44,9 +45,11 @@ public class DragonBoss : TriggerBossFight
     {
         // Скрываем HP
         hpBar.gameObject.SetActive(false);
+        AchievementManager.Instance.UpdateData(_bossType);
         // Задержка перед окончанием боя
         yield return new WaitForSeconds(1f);
         // Открываем экран победы
+
         EndGameUIManager.EndGame(EndGameState.Win);
     }
     private void AddDamage(float damage)

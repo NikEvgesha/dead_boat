@@ -28,7 +28,8 @@ public class TimerAd : MonoBehaviour
         _playerStats = PlayerManager.Instance.StatsManager;
         _playerStats.StatChanged += OnPlayerStatChange;
         LoadingManager.Instance.LocationChanged += OnLocationChanged;
-        _adsInterval = MirraSDK.Flags.GetInt("AdsInterval", 61);
+        _adsInterval = MirraSDK.Flags.GetInt("AdsInterval", _adsInterval);
+
         _adTimer = AdTimer();
         StartCoroutine(_adTimer);
     }
@@ -93,7 +94,7 @@ public class TimerAd : MonoBehaviour
         while (enabled)
         {
             yield return new WaitForSeconds(_adsInterval);
-            while (!_canShowAd || PlayerInput.Instance.InteractionHold)
+            while (!_canShowAd || PlayerInput.Instance.InteractionHold || !MirraSDK.Ads.IsInterstitialReady)
             {
                 yield return new WaitForSeconds(1);
             }

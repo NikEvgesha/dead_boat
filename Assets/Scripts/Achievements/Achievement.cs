@@ -1,10 +1,12 @@
 
+using MirraGames.SDK;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "Achievement", menuName ="ScriptableObject/Achievement")]
 public class Achievement : ScriptableObject
 {
     public string id;
+    public string tags = "";
     public AchievementType type;
     public int requirement;
     public string title => LocalizationManager.Instance.LocalizationData.GetTranslation(id + "_Title", LocalizationManager.Instance.CurrentLanguage, LocalizationKeyType.Achievement.ToString());
@@ -25,6 +27,8 @@ public class Achievement : ScriptableObject
     {
         unlocked = true;
         GiveReward();
+        if(tags != "")
+            MirraSDK.Achievements.Unlock(tags);
         rewarded = true;
         SaveManager.Instance.SaveAchiementStatus(id, rewarded);
     }

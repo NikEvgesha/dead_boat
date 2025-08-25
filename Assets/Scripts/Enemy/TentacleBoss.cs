@@ -56,6 +56,7 @@ public class TentacleBoss : TriggerBossFight
         if (hpBar)
             hpBar.gameObject.SetActive(false);
         GameEvents.OnEnemyKilled?.Invoke(EnemyType.Boss);
+        AchievementManager.Instance.UpdateData(AchievementType.KilledBossSquid);
         yield return new WaitForSeconds(1);
         EndGameUIManager.EndGame(EndGameState.Win);
     }

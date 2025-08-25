@@ -114,7 +114,10 @@ public enum AchievementType
     WinCount,
     DeathCount,
     ItemsCollected,
-    TotalDistance
+    TotalDistance,
+    KilledBossSquid,
+    KilledBossPurpleDragon,
+    KilledBossIceDragon,
 }
 /// <summary>
 /// «десь перечисл€ютс€ все идентификаторы квестов.
