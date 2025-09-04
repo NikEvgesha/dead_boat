@@ -180,7 +180,13 @@ public class PlayerMovement : MonoBehaviour
 
     private void CameraRotation()
     {
-        Vector2 rotationInput = PlayerInput.Instance.Rotation * _rotationSpeed * Time.deltaTime;
+        Vector2 rawInput = PlayerInput.Instance.Rotation;
+
+        float dtFactor = ControlManager.Instance.UseTouchControl ? Time.deltaTime : 0.01f;
+
+        Vector2 rotationInput = rawInput * _rotationSpeed * dtFactor;
+
+        //Vector2 rotationInput = PlayerInput.Instance.Rotation * _rotationSpeed * Time.deltaTime;
 
         if (!ControlManager.Instance.UseTouchControl)
         {
@@ -193,6 +199,11 @@ public class PlayerMovement : MonoBehaviour
         _currentXRotation -= rotationInput.y;
         _currentXRotation = Mathf.Clamp(_currentXRotation, _YRotationLimitMin, _YRotationLimitMax);
         transform.rotation = Quaternion.Euler(0f, _currentYRotation + _startYRotation, 0f);
+
+        Debug.Log("_currentYRotation " + _currentYRotation);
+        Debug.Log("_startYRotation: " + _startYRotation);
+        Debug.Log("_currentYRotation + _startYRotation: " + _currentYRotation + _startYRotation);
+        Debug.Log("_currentXRotation: " + _currentXRotation);
         _camera.transform.localRotation = Quaternion.Euler(_currentXRotation, 0f, 0f);
     }
 
