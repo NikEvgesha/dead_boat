@@ -15,14 +15,18 @@ public class LevelUpUi : MonoBehaviour
     [SerializeField] private GameObject _panel;
     [SerializeField] private Animator _anim;
     [SerializeField] private GameObject _panelAdsChoise;
+    [SerializeField] private GameObject _buttonLevelUp;
+    [SerializeField] private Text _countLevelUpUi;
     [SerializeField] private List<LevelUpButtomUI> _buttons;
     [SerializeField] private List<RareBack> _rareBack;
+
 
     [SerializeField] private int _price = 1;
     [SerializeField] Text _textPrice;
 
     private BoostItem _item;
     private RareType _rare;
+    private int _countLevelUp;
     public RareBack GetRareBackUI(RareType rare) 
     {
         return _rareBack.Find(r => r.Type == rare);
@@ -40,6 +44,12 @@ public class LevelUpUi : MonoBehaviour
         }
         _panel.SetActive(false);
         _textPrice.text = _price.ToString();
+    }
+    public void AddNewLevelCount(int count)
+    {
+        _buttonLevelUp.SetActive(true);
+        _countLevelUp = count;
+        _countLevelUpUi.text = _countLevelUp.ToString();
     }
     public void NewLevel(List<ItemWithRare> items)
     {
@@ -77,6 +87,18 @@ public class LevelUpUi : MonoBehaviour
         _panelAdsChoise.SetActive(false);
         _price = 1;
         _textPrice.text = _price.ToString();
+        _countLevelUp--;
+
+        if (!LevelStatManager.Instance.CheckNewLevel())
+        {
+            _buttonLevelUp.SetActive(false);
+            _countLevelUp = 0;
+        }
+        _countLevelUpUi.text = _countLevelUp.ToString();
+    }
+    public void _NewLevel()
+    {
+        LevelStatManager.Instance.CheckNewLevel();
     }
     public void _RefreshClickAds()
     {

@@ -86,6 +86,7 @@ public class LevelStatManager : MonoBehaviour
 };
     public List<BoostItem> _boostItems = new List<BoostItem>();
     public List<RareChance> _rarityChances;
+    private int _countLevelUp;
     private void Awake()
     {
         if (Instance == null)
@@ -102,11 +103,23 @@ public class LevelStatManager : MonoBehaviour
     }
     private void Start()
     {
-        PlayerStatsManager.Instance.Experience().NewLevel.AddListener(NewLevel);
+        PlayerStatsManager.Instance.Experience().NewLevel.AddListener(AddNewLevelNum);
     }
     private void NewLevel()
     {
         LevelUpUi.Instance.NewLevel(GetRandomBoostsWithRarity()); 
+    }
+    private void AddNewLevelNum()
+    {
+        _countLevelUp++;
+        LevelUpUi.Instance.AddNewLevelCount(_countLevelUp);
+    }
+    public bool CheckNewLevel()
+    {
+        if (_countLevelUp == 0) return false;
+        _countLevelUp--;
+        NewLevel();
+        return true;
     }
     public void Refresh()
     {

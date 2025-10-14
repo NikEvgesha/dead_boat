@@ -200,10 +200,10 @@ public class PlayerMovement : MonoBehaviour
         _currentXRotation = Mathf.Clamp(_currentXRotation, _YRotationLimitMin, _YRotationLimitMax);
         transform.rotation = Quaternion.Euler(0f, _currentYRotation + _startYRotation, 0f);
 
-        Debug.Log("_currentYRotation " + _currentYRotation);
-        Debug.Log("_startYRotation: " + _startYRotation);
-        Debug.Log("_currentYRotation + _startYRotation: " + _currentYRotation + _startYRotation);
-        Debug.Log("_currentXRotation: " + _currentXRotation);
+        //Debug.Log("_currentYRotation " + _currentYRotation);
+        //Debug.Log("_startYRotation: " + _startYRotation);
+        //Debug.Log("_currentYRotation + _startYRotation: " + _currentYRotation + _startYRotation);
+        //Debug.Log("_currentXRotation: " + _currentXRotation);
         _camera.transform.localRotation = Quaternion.Euler(_currentXRotation, 0f, 0f);
     }
 

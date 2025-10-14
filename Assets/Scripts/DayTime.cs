@@ -115,7 +115,7 @@ public class DayTime : MonoBehaviour
         {
             // Быстрый восход
             float t = (_timeOfDay - _sunriseStart) / (_sunriseEnd - _sunriseStart);
-            sunAngle = Mathf.Lerp(-90f, 90f, t);
+            sunAngle = Mathf.Lerp(-90f, 50f, t);
             //_isTransitioning = true;
             _skybox.SetFloat(_exposure, Mathf.Lerp(_nightLightIntensity, 1f, t));
             RenderSettings.fogColor = Color.Lerp(_nightFogColor, _dayFogColor, t);
@@ -126,7 +126,7 @@ public class DayTime : MonoBehaviour
         {
             // Быстрый закат
             float t = (_timeOfDay - _sunsetStart) / (_sunsetEnd - _sunsetStart);
-            sunAngle = Mathf.Lerp(90f, 270f, t);
+            sunAngle = Mathf.Lerp(50f, 270f, t);
             //_isTransitioning = true;
             _skybox.SetFloat(_exposure, Mathf.Lerp(1f, _nightLightIntensity, t));
             RenderSettings.fogColor = Color.Lerp(_dayFogColor, _nightFogColor, t);
@@ -142,7 +142,7 @@ public class DayTime : MonoBehaviour
             }
             // Неподвижное положение
             //_isTransitioning = false;
-            sunAngle = _isNight ? -90f : 90f;
+            sunAngle = _isNight ? -90f : 50f;
         }
 
         _sun.transform.rotation = Quaternion.Euler(sunAngle, _axisOffset, 0);
