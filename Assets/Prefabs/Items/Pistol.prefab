@@ -275,9 +275,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _usableItem: {fileID: 1312611646448416272}
   weaponType: 0
-  damage: 40
+  _damage: 10
   range: 100
-  fireRate: 0.5
+  _attackSpeed: 0.5
   fpsCam: {fileID: 0}
   muzzleTransform: {fileID: 8401005555706286613}
   muzzleFlash: {fileID: 5425077395267631640}
@@ -293,8 +293,7 @@ MonoBehaviour:
   spreadAngle: 5
   maxAmmo: 6
   _currentAmmo: 6
-  _reserveAmmo: 24
-  reloadTime: 2
+  _reloadTime: 2
   bulletTrailPrefab: {fileID: 573734600728898942, guid: d3a0060ed807e7d4cb7f7a32fc0e9610, type: 3}
   bulletSpeed: 1000
 --- !u!1001 &5009325307404333948
@@ -521,6 +520,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 4316069213998548548}
     m_Modifications:
+    - target: {fileID: 7816193671645646528, guid: 0d39ed0185ca8e74283374bdb1c95e2b, type: 3}
+      propertyPath: m_CastShadows
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8996243937179973133, guid: 0d39ed0185ca8e74283374bdb1c95e2b, type: 3}
       propertyPath: m_Name
       value: PirateMusket_standardShader

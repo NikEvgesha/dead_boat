@@ -30,8 +30,8 @@ public class ActivateItem : MonoBehaviour
             //Debug.Log("Нажата ли кнопка :" + PlayerInput.Instance.UseItem);
             if (PlayerInput.Instance.UseItem)
             {
-                if (_playerItemPickUp.PickUpIsUse())
-                    _canUse = false;
+                //if (_playerItemPickUp.PickUpIsUse())
+                    //_canUse = false;
                 
                 if (_canUse)
                 {

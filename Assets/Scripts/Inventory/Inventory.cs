@@ -114,7 +114,7 @@ public class Inventory : MonoBehaviour
 
         if (item.GetComponent<AmmoItem>() != null)
         {
-            item.PutToInventory();
+            item.PutToInventory(transform);
             return true;
         }
         
@@ -128,7 +128,7 @@ public class Inventory : MonoBehaviour
                 added = true;
                 if (_activeItemManager.Active == null)
                 {
-                    item.PutToInventory();
+                    item.PutToInventory(transform);
                     _activeItemManager.SwitchActiveItem(item);
                     return true;
                 }
@@ -153,9 +153,11 @@ public class Inventory : MonoBehaviour
 
         if (added)
         {
-            item.PutToInventory();
+            item.PutToInventory(transform);
             item.transform.SetParent(transform);
-            item.gameObject.SetActive(false);  
+            item.Put();
+            //item.gameObject.SetActive(false);  
+
             return true;
         }
 

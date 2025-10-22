@@ -1,7 +1,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
+using static UnityEditor.Progress;
 
 public class PickableItem : MonoBehaviour
 {
@@ -57,6 +59,7 @@ public class PickableItem : MonoBehaviour
     private bool _isFuel;
     private bool _isSellable;
     private bool _isRewarded;
+    private float _speedPut = 10;
 
     public bool IsFuel => _isFuel;
     public bool IsSellable => _isSellable;
@@ -174,30 +177,56 @@ public class PickableItem : MonoBehaviour
     }
 
 
-    public void PutToInventory()
+    public void PutToInventory(Transform parent)
     {
         CheckComponents();
         if (_status != ItemStatus.Free) return;
+
+        transform.SetParent(parent);
+
         if (_tags.Contains(ItemTag.Ammo))
         {
             if (this.GetComponent<AmmoItem>().AddAmmo())
             {
-                Destroy(this.gameObject);
+                StartCoroutine(PutAnimation(true));
+                //Destroy(this.gameObject);
                 return;
             }
         }
-            if (_collider)
-                _collider.enabled = false;
+        if (_collider)
+            _collider.enabled = false;
 
-            OnFocus(false);
-            tag = Tag.Inventory.ToString();
-            this.gameObject.layer = (int)Layer.Inventory;
-            _rb.interpolation = RigidbodyInterpolation.None;
-            _useKinematicCheck = false;
-            TrySetAttach(false);
-            _status = ItemStatus.InInventory;
-            PutItemToInventory?.Invoke();
-
+        OnFocus(false);
+        tag = Tag.Inventory.ToString();
+        this.gameObject.layer = (int)Layer.Inventory;
+        _rb.interpolation = RigidbodyInterpolation.None;
+        _useKinematicCheck = false;
+        TrySetAttach(false);
+        _status = ItemStatus.InInventory;
+        PutItemToInventory?.Invoke();
+    }
+    public void Put() 
+    {
+        StartCoroutine(PutAnimation());
+    }
+    private IEnumerator PutAnimation(bool isDestroy = false)
+    {
+        float t = 0;
+        Vector3 startPos = transform.localPosition;
+        while (t < 1) 
+        {
+            t += Time.deltaTime * _speedPut;
+            transform.localPosition = Vector3.Lerp(startPos, Vector3.up,t);
+            yield return null;
+        }
+        if (isDestroy)
+        {
+            Destroy(gameObject);
+        }
+        else
+        {
+            gameObject.SetActive(false);
+        }
     }
 
     public void DropOutFromInventory(Transform dropOutPoint)

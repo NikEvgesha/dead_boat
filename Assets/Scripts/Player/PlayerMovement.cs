@@ -46,6 +46,7 @@ public class PlayerMovement : MonoBehaviour
     private PlayerStatsManager _playerStats;
     private CharacterController _controller;
     private Rigidbody _rb;
+    private Animator _playerAnimator ;
 
     private Vector3 _velocity;
     private float _currentXRotation = 0f;
@@ -90,7 +91,7 @@ public class PlayerMovement : MonoBehaviour
         _rb = GetComponent<Rigidbody>();
         _controlUI = FindAnyObjectByType<ControlUI>();
         _controlUI.UseMobileSetup(ControlManager.Instance.UseTouchControl);
-
+        _playerAnimator = _camera.GetComponentInChildren<Animator>();
         Settings.instance.ChangeMouseSensitivity += ChangeMouseSensitivity;
     }
 
@@ -175,6 +176,13 @@ public class PlayerMovement : MonoBehaviour
         }
         Vector3 finalMovement = horizontalMovement + new Vector3(0f, _velocity.y, 0f);
         _controller.Move(finalMovement * Time.deltaTime);
+
+        Vector3 planarVel = new Vector3(_controller.velocity.x, 0f, _controller.velocity.z);
+        float speed = planarVel.magnitude;                           // м/с
+        float maxSpeed = MoveSpeed * _sprintMultiplier;              // твоя максимальная наземная скорость
+        float normalizedSpeed = Mathf.Clamp01(speed / maxSpeed);     // 0..1
+
+        _playerAnimator.SetFloat("Speed", normalizedSpeed);
     }
 
 

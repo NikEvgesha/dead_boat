@@ -23,11 +23,13 @@ public abstract class EnemyCore : MonoBehaviour
     protected int currentHP;
     protected int _maxHP;
     protected bool isDead;
+    protected DamageFlash _damageFlash;
 
     protected virtual void Awake()
     {
         if (hpBar == null)
             hpBar = GetComponentInChildren<Scrollbar>();
+        _damageFlash = GetComponentInChildren<DamageFlash>();
     }
 
     /// <summary>
@@ -59,9 +61,9 @@ public abstract class EnemyCore : MonoBehaviour
             hpBar.gameObject.SetActive(true);
         if (hpBar)
             hpBar.size = (float)currentHP / _maxHP;
-
         if (currentHP <= 0)
             Die();
+        _damageFlash?.Trigger();
     }
 
     protected virtual void PlayDamageSound()

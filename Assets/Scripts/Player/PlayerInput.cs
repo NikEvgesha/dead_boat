@@ -129,6 +129,7 @@ public class PlayerInput : MonoBehaviour
     private bool _pause;
     private bool _roulette;
     private bool _playtime;
+    private bool _levelUp;
 
 
     public Action AJump;
@@ -148,6 +149,7 @@ public class PlayerInput : MonoBehaviour
     public Action ARoulette;
     public Action APlaytime;
     public Action<MonoBehaviour> AOpenWindow;
+    public Action ALevelUp;
 
     private void Awake()
     {
@@ -208,6 +210,7 @@ public class PlayerInput : MonoBehaviour
             _pause = Input.GetKeyDown(KeyCode.P);
             _roulette = Input.GetKeyDown(KeyCode.K);
             _playtime = Input.GetKeyDown(KeyCode.L);
+            _levelUp = Input.GetKeyDown(KeyCode.B);
             if (!ControlManager.Instance.CursorActive)
             {
                 _pickUp = Input.GetMouseButtonDown(1);
@@ -232,10 +235,11 @@ public class PlayerInput : MonoBehaviour
         if (_pause) APause?.Invoke();
         if (_roulette) ARoulette?.Invoke();
         if (_playtime) APlaytime?.Invoke();
+        if (_levelUp) ALevelUp?.Invoke();
 
-    // _useItem = _pickUp; //Переработать смысл кнопки
+        // _useItem = _pickUp; //Переработать смысл кнопки
 
-}
+    }
 
     private void UpdateMovement()
     {

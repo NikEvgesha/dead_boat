@@ -1303,6 +1303,7 @@ GameObject:
   - component: {fileID: 3416121458706858728}
   - component: {fileID: 4777770811422167851}
   - component: {fileID: 109399941067520247}
+  - component: {fileID: 2226369802843958310}
   m_Layer: 8
   m_Name: drowned
   m_TagString: Item
@@ -1610,6 +1611,21 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &2226369802843958310
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5371316712090260022}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8b603ca4e767ad64b8be6e4e15152b02, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  flashColor: {r: 1, g: 0, b: 0, a: 1}
+  duration: 0.12
+  affectChildren: 1
 --- !u!1 &5629849400920029576
 GameObject:
   m_ObjectHideFlags: 0

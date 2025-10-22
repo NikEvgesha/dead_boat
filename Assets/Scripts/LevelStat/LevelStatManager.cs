@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 
 [Serializable]
 public struct ItemWithRare
@@ -104,7 +105,10 @@ public class LevelStatManager : MonoBehaviour
     private void Start()
     {
         PlayerStatsManager.Instance.Experience().NewLevel.AddListener(AddNewLevelNum);
+        PlayerInput.Instance.ALevelUp += ButtonLevelUse;
+
     }
+
     private void NewLevel()
     {
         LevelUpUi.Instance.NewLevel(GetRandomBoostsWithRarity()); 
@@ -113,6 +117,10 @@ public class LevelStatManager : MonoBehaviour
     {
         _countLevelUp++;
         LevelUpUi.Instance.AddNewLevelCount(_countLevelUp);
+    }
+    private void ButtonLevelUse()
+    {
+        CheckNewLevel();
     }
     public bool CheckNewLevel()
     {

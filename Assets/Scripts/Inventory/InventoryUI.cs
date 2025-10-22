@@ -12,6 +12,8 @@ public class InventoryUI : MonoBehaviour
     [SerializeField] private Transform _inventorySlotsParent;
     [SerializeField] private Transform _quickSlotsParent;
 
+    [SerializeField] private Image _inventoryImagePrefab;
+
     [SerializeField] private Text _capacityText;
     [SerializeField] private Text _capacityButtonText;
     [SerializeField] private Animator _buttonAnimation;
@@ -105,6 +107,7 @@ public class InventoryUI : MonoBehaviour
             {
                 _quickSlots[i].gameObject.SetActive(true);
             }
+            _inventoryImagePrefab.color = Color.green;
         }
         else
         {
@@ -117,6 +120,7 @@ public class InventoryUI : MonoBehaviour
             }
             _panel.SetActive(false);
             _isOpen = false;
+            _inventoryImagePrefab.color = Color.white;
         }
     }
     public void Close(MonoBehaviour ui)

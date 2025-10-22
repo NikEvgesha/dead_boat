@@ -10,6 +10,8 @@ public class SettingUI : MonoBehaviour
     [SerializeField] private GameObject _exitButton;
     [SerializeField] private GameObject _lobbyButtons;
 
+    [SerializeField] private Image _menuImagePrefab;
+
     private bool _isOpen;
     public void ToggleOpen()
     {
@@ -22,7 +24,14 @@ public class SettingUI : MonoBehaviour
         PauseManager.Instance.SetPause(_isOpen, false);
         
         if (_isOpen)
+        {
             PlayerInput.Instance.AOpenWindow?.Invoke(this);
+            _menuImagePrefab.color = Color.red;
+        }
+        else
+        {
+            _menuImagePrefab.color = Color.white;
+        }
         
     }
     private void Start()
