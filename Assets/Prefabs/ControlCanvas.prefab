@@ -973,6 +973,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _mobileUI: {fileID: 9067317721387146202}
   _desktopUI: {fileID: 14153258767989125}
+  _desktopMenuUI: {fileID: 0}
+  _hotKeys: []
   _touchControls:
     jumpButton: {fileID: 287383947436499836}
     sprintButton: {fileID: 6210167109082593801}
@@ -2202,6 +2204,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3338639645145558644}
   - component: {fileID: 5887597852875113879}
+  - component: {fileID: 1370410596677250365}
   m_Layer: 5
   m_Name: ExpBar
   m_TagString: Untagged
@@ -2246,6 +2249,59 @@ MonoBehaviour:
   _barObj: {fileID: 3419197670132132350}
   _progressText: {fileID: 7038551882510706361}
   _levelText: {fileID: 7794426209635602558}
+  _newStyle: 0
+--- !u!114 &1370410596677250365
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4340791377717700772}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c26f9bc76f1af5340a5ff8bb98e2f019, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fillImage: {fileID: 3414644403080772618}
+  minText: {fileID: 0}
+  maxText: {fileID: 0}
+  valueText: {fileID: 7038551882510706361}
+  min: 0
+  max: 100
+  value: 100
+  animate: 1
+  animateSpeed: 8
+  numberFormat: 0
+  dangerEnd: 0
+  shakeThreshold: 1
+  maxShakePixels: 0
+  shakeFrequency: 0
+  shakeIntensityByDanger:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  pulseScale: 0
+  maxScalePulse: 0.06
 --- !u!1 &4550064723053248627
 GameObject:
   m_ObjectHideFlags: 0
@@ -2474,6 +2530,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7713879207951308112}
   - component: {fileID: 8284695775130556920}
+  - component: {fileID: 4290740313092516766}
   m_Layer: 5
   m_Name: HPBar
   m_TagString: Untagged
@@ -2518,6 +2575,77 @@ MonoBehaviour:
   _barObj: {fileID: 5238451184168221588}
   _progressText: {fileID: 8951204490346205397}
   _levelText: {fileID: 0}
+  _newStyle: 1
+--- !u!114 &4290740313092516766
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5145198736973152382}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c26f9bc76f1af5340a5ff8bb98e2f019, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fillImage: {fileID: 6893429706867692907}
+  minText: {fileID: 0}
+  maxText: {fileID: 0}
+  valueText: {fileID: 8951204490346205397}
+  min: 0
+  max: 100
+  value: 100
+  animate: 1
+  animateSpeed: 8
+  numberFormat: 0
+  dangerEnd: 0
+  shakeThreshold: 0.8
+  maxShakePixels: 8
+  shakeFrequency: 18
+  shakeIntensityByDanger:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.50541896
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.9064532
+      value: 0.09892276
+      inSlope: 0.80005294
+      outSlope: 0.80005294
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 8.832779
+      outSlope: 8.832779
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.21317713
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  pulseScale: 0
+  maxScalePulse: 0.06
 --- !u!1 &5238451184168221588
 GameObject:
   m_ObjectHideFlags: 0
@@ -2819,6 +2947,7 @@ MonoBehaviour:
   _barObj: {fileID: 646432655668701391}
   _progressText: {fileID: 0}
   _levelText: {fileID: 0}
+  _newStyle: 0
 --- !u!1 &6111887450250240075
 GameObject:
   m_ObjectHideFlags: 0

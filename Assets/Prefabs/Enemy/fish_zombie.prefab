@@ -1304,6 +1304,7 @@ GameObject:
   - component: {fileID: 2105899817989920638}
   - component: {fileID: 5236964359354044767}
   - component: {fileID: 1969312941847395234}
+  - component: {fileID: 298781963655601282}
   m_Layer: 8
   m_Name: drowned
   m_TagString: Item
@@ -1632,6 +1633,22 @@ CapsuleCollider:
   m_Height: 0.022858014
   m_Direction: 1
   m_Center: {x: 0.000116200186, y: 0.0024136025, z: 0.049368944}
+--- !u!114 &298781963655601282
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5371316712090260022}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8b603ca4e767ad64b8be6e4e15152b02, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  flashColor: {r: 1, g: 0, b: 0, a: 1}
+  duration: 0.16
+  affectChildren: 1
+  smoothFadeOut: 1
 --- !u!1 &5629849400920029576
 GameObject:
   m_ObjectHideFlags: 0

@@ -598,8 +598,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _itemData: {fileID: 11400000, guid: b31810ed29bb17c4d9d9fcacb57a56c1, type: 2}
   _visualObj: {fileID: 4584968741067805062}
+  _sellPoint: {fileID: 0}
   _lerpSpeed: 10
-  _maxSpeed: 10
   _damping: 0.1
   _stopDistance: 0.05
   _maxDistance: 8
@@ -607,6 +607,8 @@ MonoBehaviour:
   _dragOrigin: 1
   _dropVelocityMultiplier: 2
   _kinematicDistance: 30
+  _rotationSpeed: 40
+  _collider: {fileID: 0}
 --- !u!114 &7686678436296062356
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -638,6 +640,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   fuelValue: 10
+  InFire: 0
 --- !u!114 &1077845069797327637
 MonoBehaviour:
   m_ObjectHideFlags: 0

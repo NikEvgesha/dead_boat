@@ -815,6 +815,7 @@ GameObject:
   - component: {fileID: 5753171406411494504}
   - component: {fileID: 4136330557854969030}
   - component: {fileID: 7525548215538647995}
+  - component: {fileID: 7605498718006258379}
   m_Layer: 0
   m_Name: BossDragon
   m_TagString: Untagged
@@ -1035,6 +1036,22 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1.58, z: 3}
   m_Center: {x: 0, y: 0.26, z: 0.35}
+--- !u!114 &7605498718006258379
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4931231161241002067}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8b603ca4e767ad64b8be6e4e15152b02, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  flashColor: {r: 1, g: 0, b: 0, a: 1}
+  duration: 0.16
+  affectChildren: 1
+  smoothFadeOut: 1
 --- !u!1 &6042949889972262095
 GameObject:
   m_ObjectHideFlags: 0

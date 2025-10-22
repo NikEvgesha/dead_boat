@@ -8,11 +8,16 @@ public class PlayerStatBar : MonoBehaviour
     [SerializeField] private GameObject _barObj;
     [SerializeField] private Text _progressText;
     [SerializeField] private Text _levelText;
-
+    [SerializeField] private bool _newStyle = false;
+    private ValueBar _valueBar;
     //private bool _barActive = false;
 
     private PlayerStatsManager _player;
-
+    private void Awake()
+    {
+        if (_valueBar == null)
+            _valueBar = GetComponent<ValueBar>();
+    }
 
     private void Start()
     {
@@ -34,6 +39,14 @@ public class PlayerStatBar : MonoBehaviour
     private void OnStatChange(PlayerStat stat, float amount, float max)
     {
         if (stat != _stat) return;
+        if ( _newStyle)
+        {
+            if (_valueBar == null) return;
+
+            _valueBar.Set(amount,0,max,true);
+
+            return;
+        }
         /*
                 if (amount >= max && _barActive)
                 {
