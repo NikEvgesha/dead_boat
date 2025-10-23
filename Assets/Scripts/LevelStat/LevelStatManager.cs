@@ -116,6 +116,7 @@ public class LevelStatManager : MonoBehaviour
     private void AddNewLevelNum()
     {
         _countLevelUp++;
+        SaveManager.Instance.SaveLevelUp(_countLevelUp);
         LevelUpUi.Instance.AddNewLevelCount(_countLevelUp);
     }
     private void ButtonLevelUse()
@@ -126,6 +127,7 @@ public class LevelStatManager : MonoBehaviour
     {
         if (_countLevelUp == 0) return false;
         _countLevelUp--;
+        SaveManager.Instance.SaveLevelUp(_countLevelUp);
         NewLevel();
         return true;
     }
@@ -149,6 +151,12 @@ public class LevelStatManager : MonoBehaviour
        Stats save = SaveManager.Instance.LoadLevelUpdate();
         if (!save.Save) { return; }
         Stats = save;
+        int countLevelUp = SaveManager.Instance.LoadLevelUp();
+        _countLevelUp = countLevelUp;
+        if (_countLevelUp > 0)
+        {
+            LevelUpUi.Instance.AddNewLevelCount(_countLevelUp);
+        }
     }
     private void Change(BoostType boost, float count)
     {
@@ -262,5 +270,6 @@ public class LevelStatManager : MonoBehaviour
     {
         Stats = StatsDefault;
         SaveManager.Instance.SaveLevelUpdate(Stats);
+        SaveManager.Instance.SaveLevelUp(0);
     }
 }

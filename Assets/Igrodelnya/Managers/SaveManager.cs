@@ -283,6 +283,14 @@ public class SaveManager : MonoBehaviour
     {
         return saveProvider.LoadLevelUpdate();
     }
+    public void SaveLevelUp(int count)
+    {
+        saveProvider.SaveLevelUp(count);
+    }
+    public int LoadLevelUp()
+    {
+        return saveProvider.LoadLevelUp();
+    }
 
     /*    public void SaveAttachedItem(string id)
         {

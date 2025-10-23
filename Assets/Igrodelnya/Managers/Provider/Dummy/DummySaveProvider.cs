@@ -245,4 +245,12 @@ public class DummySaveProvider : SaveProvider
     {
         return new Stats();
     }
+    public override void SaveLevelUp(int count)
+    {
+        throw new NotImplementedException();
+    }
+    public override int LoadLevelUp()
+    {
+        return 0;
+    }
 }

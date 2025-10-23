@@ -1,7 +1,7 @@
-using UnityEngine;
 using MirraGames.SDK;
-using System.Collections.Generic;
 using System;  // доступ к MirraSDK.Data
+using System.Collections.Generic;
+using UnityEngine;
 
 [System.Serializable]
 public class ListSaver
@@ -512,6 +512,22 @@ public class MirraSDKSaveProvider : SaveProvider
             items = MirraSDK.Data.GetObject<Stats>(SaveKey.BoostType.ToString(), new Stats());
         }
         return items;
+    }
+    public override void SaveLevelUp(int count)
+    {
+
+        if (!isInitialize) return;
+        Changed = true;
+        MirraSDK.Data.SetInt(SaveKey.LevelUp.ToString(), count);
+    }
+    public override int LoadLevelUp()
+    {
+        int count = 0;
+        if (isInitialize)
+        {
+            count = MirraSDK.Data.GetInt(SaveKey.LevelUp.ToString());
+        }
+        return count;
     }
 
 }

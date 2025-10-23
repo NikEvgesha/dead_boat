@@ -236,6 +236,7 @@ public enum SaveKey
     PlayerFixPos,
     BoardFixPos,
     BoostType,
+    LevelUp,
 
 }
 public enum BoostType

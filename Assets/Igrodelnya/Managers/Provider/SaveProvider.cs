@@ -95,4 +95,6 @@ public abstract class SaveProvider : MonoBehaviour
     public abstract float LoadBoardFixPos();
     public abstract void SaveLevelUpdate(Stats stats);
     public abstract Stats LoadLevelUpdate();
+    public abstract void SaveLevelUp(int count);
+    public abstract int LoadLevelUp();
 }
