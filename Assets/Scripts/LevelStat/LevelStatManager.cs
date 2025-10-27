@@ -107,6 +107,10 @@ public class LevelStatManager : MonoBehaviour
         PlayerStatsManager.Instance.Experience().NewLevel.AddListener(AddNewLevelNum);
         PlayerInput.Instance.ALevelUp += ButtonLevelUse;
 
+        if (_countLevelUp > 0)
+        {
+            LevelUpUi.Instance.AddNewLevelCount(_countLevelUp);
+        }
     }
 
     private void NewLevel()
@@ -125,7 +129,7 @@ public class LevelStatManager : MonoBehaviour
     }
     public bool CheckNewLevel()
     {
-        if (_countLevelUp == 0) return false;
+        if (_countLevelUp <= 0) return false;
         _countLevelUp--;
         SaveManager.Instance.SaveLevelUp(_countLevelUp);
         NewLevel();
@@ -153,10 +157,6 @@ public class LevelStatManager : MonoBehaviour
         Stats = save;
         int countLevelUp = SaveManager.Instance.LoadLevelUp();
         _countLevelUp = countLevelUp;
-        if (_countLevelUp > 0)
-        {
-            LevelUpUi.Instance.AddNewLevelCount(_countLevelUp);
-        }
     }
     private void Change(BoostType boost, float count)
     {
@@ -271,5 +271,7 @@ public class LevelStatManager : MonoBehaviour
         Stats = StatsDefault;
         SaveManager.Instance.SaveLevelUpdate(Stats);
         SaveManager.Instance.SaveLevelUp(0);
+        _countLevelUp = 0;
+        LevelUpUi.Instance.RestartAll();
     }
 }

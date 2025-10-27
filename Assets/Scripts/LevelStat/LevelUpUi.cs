@@ -91,10 +91,14 @@ public class LevelUpUi : MonoBehaviour
 
         if (!LevelStatManager.Instance.CheckNewLevel())
         {
-            _buttonLevelUp.SetActive(false);
-            _countLevelUp = 0;
+            RestartAll();
         }
         _countLevelUpUi.text = _countLevelUp.ToString();
+    }
+    public void RestartAll()
+    {
+        _buttonLevelUp.SetActive(false);
+        _countLevelUp = 0;
     }
     public void _NewLevel()
     {

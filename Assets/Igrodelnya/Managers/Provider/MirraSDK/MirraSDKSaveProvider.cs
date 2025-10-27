@@ -525,7 +525,7 @@ public class MirraSDKSaveProvider : SaveProvider
         int count = 0;
         if (isInitialize)
         {
-            count = MirraSDK.Data.GetInt(SaveKey.LevelUp.ToString());
+            count = MirraSDK.Data.GetInt(SaveKey.LevelUp.ToString(),0);
         }
         return count;
     }
