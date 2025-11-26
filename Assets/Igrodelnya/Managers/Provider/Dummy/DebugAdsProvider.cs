@@ -20,7 +20,7 @@ public class DebugAdsProvider : AdsProvider
         onComplete?.Invoke(true); // Симулируем успешное завершение
     }
 
-    public override void ShowInterstitialAd()
+    public override void ShowInterstitialAd(Action<bool> onComplete = null)
     {
         Debug.Log("Debug Interstitial Ad shown");
     }

@@ -39,6 +39,15 @@ public class LevelUpButtomUI : MonoBehaviour
                 }
             });
         }
+        else if (!LevelStatManager.Instance.HaveLevelUp())
+        {
+            AdsManager.Instance.ShowInterstitialAd(
+                (success) =>
+                {
+                    StartCoroutine(AddRevard());
+                }
+                );
+        }
         else
         {
             StartCoroutine(AddRevard());

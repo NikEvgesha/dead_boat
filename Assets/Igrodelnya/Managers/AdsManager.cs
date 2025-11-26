@@ -112,7 +112,7 @@ public class AdsManager : MonoBehaviour
     }
 
     // ѕоказ interstitial-рекламы через первый доступный провайдер
-    public void ShowInterstitialAd()
+    public void ShowInterstitialAd(Action<bool> onComplete = null)
     {
         if (adsProviders.Count == 0)
         {
@@ -122,7 +122,7 @@ public class AdsManager : MonoBehaviour
 
         foreach (var provider in adsProviders)
         {
-            provider.ShowInterstitialAd();
+            provider.ShowInterstitialAd(onComplete);
             return;
         }
         Debug.LogWarning("No interstitial ads available!");

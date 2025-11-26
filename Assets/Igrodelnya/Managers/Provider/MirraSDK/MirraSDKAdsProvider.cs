@@ -53,7 +53,7 @@ public class MirraSDKAdsProvider : AdsProvider
         );
     }
 
-    public override void ShowInterstitialAd()
+    public override void ShowInterstitialAd(Action<bool> onComplete = null)
     {
         if (!MirraSDK.Ads.IsInterstitialReady)
         {
@@ -78,6 +78,7 @@ public class MirraSDKAdsProvider : AdsProvider
                 //AdClosed?.Invoke();
                 PauseManager.Instance?.SetPause(false);
                 ControlManager.Instance.CursorActive = false;
+                onComplete?.Invoke(success);
                 //PauseManager.Instance.SetPause(false, true);
                 //ControlManager.Instance.CursorActive = false;
             }

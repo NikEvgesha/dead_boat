@@ -135,6 +135,10 @@ public class LevelStatManager : MonoBehaviour
         NewLevel();
         return true;
     }
+    public bool HaveLevelUp()
+    {
+        return _countLevelUp > 0;
+    }
     public void Refresh()
     {
         LevelUpUi.Instance.RefreshLevel(GetRandomBoostsWithRarity());
