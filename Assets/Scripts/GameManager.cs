@@ -64,6 +64,7 @@ public class GameManager : MonoBehaviour
             //PlayerMovement.Instance.Teleport(_playerSpawnPoint);
         }
         _ammoManager = _player.GetComponent<PlayerAmmoManager>();
+        EggSpawnRuntimeState.ResetRun();
 
         (int, List<string>) loadedData = SaveManager.Instance.LoadGameProgress();
 

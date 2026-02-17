@@ -120,7 +120,8 @@ public class PlayerItemPickUp : MonoBehaviour
         if (_grabbedItem == null && _raycastHitItem != null)
         {
             Inventory.Instance.AddItem(_raycastHitItem);
-            _raycastHitItem.OnFocus(false);
+            if (_raycastHitItem != null)
+                _raycastHitItem.OnFocus(false);
             _raycastHitItem = null;
         }
     }
