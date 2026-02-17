@@ -1,10 +1,12 @@
+using MirraGames.SDK;
+using MirraGames.SDK.Common;
+using System;
 using UnityEngine;
-using MirraGames.SDK;  // пространство имён MirraSDK
 
-//#if MIRRA_SDK_ENABLED
 public class MirraSDKPauseProvider : PauseProvider
 {
     private bool _isPaused;
+    private bool _isInitialized;
 
     public override bool IsPaused => _isPaused;
 
@@ -12,41 +14,90 @@ public class MirraSDKPauseProvider : PauseProvider
     {
         MirraSDK.WaitForProviders(() =>
         {
-            MirraSDK.Analytics.GameIsReady();
-            // В SDK нет глобальных событий паузы, поэтому инициализация здесь пустая
-            //Debug.Log("MirraSDKPauseProvider initialized");
-        });  
+            _isInitialized = true;
+
+            if (!IsGameplayAnalyticsEnabled())
+                return;
+
+            try
+            {
+                MirraSDK.Analytics.GameIsReady();
+            }
+            catch (Exception exception)
+            {
+                Debug.LogWarning($"MirraSDKPauseProvider: failed to send GameIsReady ({exception.Message})");
+            }
+        });
     }
+
     public override void SetPause(bool paused, bool controlAudio = true)
     {
         if (_isPaused == paused) return;
 
         _isPaused = paused;
 
-        // Управляем временем через MirraSDK.Time.Scale
-        MirraSDK.Time.Scale = paused ? 0f : 1f;  // :contentReference[oaicite:0]{index=0}
-
-        if (controlAudio)
+        if (_isInitialized && MirraSDK.IsInitialized)
         {
-            // Управляем звуком через MirraSDK.Audio.Pause
-            MirraSDK.Audio.Pause = paused;         // :contentReference[oaicite:1]{index=1}
+            try
+            {
+                MirraSDK.Time.Scale = paused ? 0f : 1f;
+
+                if (controlAudio)
+                    MirraSDK.Audio.Pause = paused;
+            }
+            catch (Exception exception)
+            {
+                Debug.LogWarning($"MirraSDKPauseProvider: failed to apply Mirra pause ({exception.Message})");
+                ApplyUnityPause(paused, controlAudio);
+            }
+        }
+        else
+        {
+            ApplyUnityPause(paused, controlAudio);
         }
 
-        // Оповещаем подписчиков об изменении паузы
         RaisePauseChanged(_isPaused);
-        if (_isPaused)
-        {
-            MirraSDK.Analytics.GameplayStop();
-            //Debug.Log("GameplayStop");
-        }
-        else 
-        { 
-            MirraSDK.Analytics.GameplayStart();
-            //Debug.Log("GameplayStart");
-        }
 
+        if (IsGameplayAnalyticsEnabled())
+        {
+            try
+            {
+                if (_isPaused)
+                    MirraSDK.Analytics.GameplayStop();
+                else
+                    MirraSDK.Analytics.GameplayStart();
+            }
+            catch (Exception exception)
+            {
+                Debug.LogWarning($"MirraSDKPauseProvider: failed to send gameplay analytics ({exception.Message})");
+            }
+        }
 
         Debug.Log($"MirraSDKPauseProvider: pause set to {_isPaused}");
     }
+
+    private void ApplyUnityPause(bool paused, bool controlAudio)
+    {
+        Time.timeScale = paused ? 0f : 1f;
+
+        if (controlAudio)
+            AudioListener.pause = paused;
+    }
+
+    private bool IsGameplayAnalyticsEnabled()
+    {
+        if (!_isInitialized || !MirraSDK.IsInitialized)
+            return false;
+
+        try
+        {
+            PlatformType platform = MirraSDK.Platform.Current;
+            return platform != PlatformType.Playgama && platform != PlatformType.PlaygamaBridge;
+        }
+        catch (Exception exception)
+        {
+            Debug.LogWarning($"MirraSDKPauseProvider: gameplay analytics disabled ({exception.Message})");
+            return false;
+        }
+    }
 }
-//#endif

@@ -17,7 +17,7 @@ public class LoadingProgressBarUI : MonoBehaviour
         if (Instance == null)
             Instance = this;
         else
-            Destroy(Instance.gameObject);
+            Destroy(gameObject);
     }
     public void Progress(float progress)
     {

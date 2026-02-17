@@ -18,7 +18,10 @@ public class SaveManager : MonoBehaviour
 
         if (_newPlayer)
         {
-            MirraSDK.Data.DeleteAll();
+            MirraSDK.WaitForProviders(() =>
+            {
+                MirraSDK.Data.DeleteAll();
+            });
         }
 
         if (_instance == null)
@@ -106,7 +109,8 @@ public class SaveManager : MonoBehaviour
     public void SaveGems(int amount)
     {
         saveProvider.SaveGems(amount);
-        LeaderboardManager.Instance.SaveScore(LBName.gems.ToString(), amount);
+        if (LeaderboardManager.Instance != null)
+            LeaderboardManager.Instance.SaveScore(LBName.gems.ToString(), amount);
     }
 
     public int GetGems()
@@ -246,7 +250,8 @@ public class SaveManager : MonoBehaviour
     {
         int wins = saveProvider.LoadWins();
         saveProvider.SaveWins(wins+1);
-        LeaderboardManager.Instance.SaveScore(LBName.wins.ToString(), wins+1);
+        if (LeaderboardManager.Instance != null)
+            LeaderboardManager.Instance.SaveScore(LBName.wins.ToString(), wins+1);
     }
 
     public void SaveRouletteDate(DateTime date)

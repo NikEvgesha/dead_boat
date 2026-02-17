@@ -40,7 +40,8 @@ public class LevelUpUi : MonoBehaviour
         }
         else
         {
-            Destroy(Instance.gameObject);
+            Destroy(gameObject);
+            return;
         }
         _panel.SetActive(false);
         _textPrice.text = _price.ToString();

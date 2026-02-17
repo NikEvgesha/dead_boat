@@ -45,10 +45,26 @@ public class PurchasesManager : MonoBehaviour
     {
         if (_instance != null && _instance != this)
         {
-            Destroy(gameObject);
-            return;
+            bool canReplaceAutoCreated =
+                _instance.provider == null &&
+                _instance.activeProvider == null &&
+                activeProvider != null;
+
+            if (canReplaceAutoCreated)
+            {
+                Destroy(_instance.gameObject);
+                _instance = this;
+            }
+            else
+            {
+                Destroy(gameObject);
+                return;
+            }
         }
-        _instance = this;
+        else
+        {
+            _instance = this;
+        }
         //DontDestroyOnLoad(gameObject);
 
         // Проверка и инициализация провайдера
@@ -60,10 +76,16 @@ public class PurchasesManager : MonoBehaviour
 
         provider.Initialize();
     }
-    
+
 
     public void RestorePurchases()
     {
+        if (provider == null)
+        {
+            Debug.LogWarning("Purchases provider not initialized!");
+            return;
+        }
+
         provider.ConsumePendingPurchases();
     }
 
@@ -95,6 +117,12 @@ public class PurchasesManager : MonoBehaviour
     // Установка нового провайдера в рантайме (опционально)
     public void SetProvider(PurchasesProvider newProvider)
     {
+        if (newProvider == null)
+        {
+            Debug.LogError("Cannot set null purchases provider!");
+            return;
+        }
+
         provider = newProvider;
         provider.Initialize();
         provider.ConsumePendingPurchases();
@@ -102,6 +130,6 @@ public class PurchasesManager : MonoBehaviour
 
     public bool PurchasesAvailable()
     {
-        return provider.PurchasesAvailable();
+        return provider != null && provider.PurchasesAvailable();
     }
 }

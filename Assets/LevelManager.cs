@@ -71,6 +71,20 @@ public class LevelManager : MonoBehaviour
         return _levels.Levels[id];
     }
 
+    public bool TryGetLevel(int id, out LevelData level)
+    {
+        level = null;
+
+        if (_levels == null || _levels.Levels == null)
+            return false;
+
+        if (id < 0 || id >= _levels.Levels.Count)
+            return false;
+
+        level = _levels.Levels[id];
+        return level != null;
+    }
+
     public LevelData GetLevel(string sceneName)
     {
         return _levels.Levels.Find(x => x.Scene == sceneName);

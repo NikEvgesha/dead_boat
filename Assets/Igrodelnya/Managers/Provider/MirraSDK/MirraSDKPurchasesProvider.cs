@@ -1,21 +1,18 @@
 using System;
 using UnityEngine;
 using MirraGames.SDK;
-using MirraGames.SDK.Common;  // пространство имён SDK
+using MirraGames.SDK.Common;
 
-//#if MIRRA_SDK_ENABLED
 public class MirraSDKPurchaseProvider : PurchasesProvider
 {
     private bool isInitialized = false;
-    //private Action<bool> currentCallback;
 
     public override void Initialize()
     {
         MirraSDK.WaitForProviders(() =>
         {
             isInitialized = true;
-            //Debug.Log("MirraSDK: Payments initialized");
-        });  // :contentReference[oaicite:0]{index=0}
+        });
     }
 
     public override void BuyPurchase(string purchaseId, Action<bool> onComplete)
@@ -26,28 +23,20 @@ public class MirraSDKPurchaseProvider : PurchasesProvider
             onComplete?.Invoke(false);
             return;
         }
-/*
-        PauseManager.Instance?.SetPause(true);
-        ControlManager.Instance.CursorActive = true;*/
 
         MirraSDK.Payments.Purchase(
             purchaseId,
             onSuccess: () =>
             {
                 Debug.Log($"MirraSDK: Purchase successful: {purchaseId}");
-                //Shop.Instance.OnRestorePurchases(purchaseId);
-                onComplete?.Invoke(true);/*
-                PauseManager.Instance?.SetPause(false);
-                ControlManager.Instance.CursorActive = false;*/
+                onComplete?.Invoke(true);
             },
             onError: () =>
             {
                 Debug.LogWarning($"MirraSDK: Purchase failed or closed: {purchaseId}");
-                onComplete?.Invoke(false);/*
-                PauseManager.Instance?.SetPause(false);
-                ControlManager.Instance.CursorActive = false;*/
+                onComplete?.Invoke(false);
             }
-        );  // :contentReference[oaicite:1]{index=1}
+        );
 
         Debug.Log($"MirraSDK: Purchase requested: {purchaseId}");
     }
@@ -62,31 +51,14 @@ public class MirraSDKPurchaseProvider : PurchasesProvider
 
         MirraSDK.Payments.RestorePurchases((restoreData) =>
         {
-            //Debug.Log($"MirraSDK: Restored purchases: {string.Join(", ", restoreData.AllPurchases)}");
-            //Debug.Log($"MirraSDK: Pending products: {string.Join(", ", restoreData.PendingProducts)}");
-
             foreach (var id in restoreData.PendingProducts)
             {
-
                 restoreData.RestoreProduct(id, onProductRestore: () => {
-
                     GemsShop.Instance.OnPurchaseRestore(id);
-                    Debug.Log($"Товар '{id}' восстановлен");
-
+                    Debug.Log($"Product '{id}' restored");
                 });
-
-                // Delegate Method: SupplyProduct(string, Action onSuccess, bool incrementSupply)
-                /*                MirraSDK.Payments.SupplyProduct(
-                                    id,
-                                    () =>
-                                    {
-                                        Debug.Log($"MirraSDK: Supplied product: {id}");
-                                        //Shop.Instance.OnRestorePurchases(id);
-                                    },
-                                    true
-                                );*/  // :contentReference[oaicite:2]{index=2}
             }
-        });  // :contentReference[oaicite:3]{index=3}
+        });
 
         Debug.Log("MirraSDK: Restoring pending purchases");
     }
@@ -102,7 +74,7 @@ public class MirraSDKPurchaseProvider : PurchasesProvider
         ProductData data = MirraSDK.Payments.GetProductData(purchaseId);
         if (data == null)
         {
-            Debug.LogError($"MirraSDK: No product data for ID «{purchaseId}»");
+            Debug.LogError($"MirraSDK: No product data for ID '{purchaseId}'");
             return null;
         }
 
@@ -112,17 +84,26 @@ public class MirraSDKPurchaseProvider : PurchasesProvider
             "",
             data.PriceInteger.ToString(),
             data.Currency
-        );  // :contentReference[oaicite:4]{index=4}
+        );
     }
 
     public override bool PurchasesAvailable()
     {
-        return (MirraSDK.Platform.Current == MirraGames.SDK.Common.PlatformType.YandexGames);
+        if (!isInitialized || !MirraSDK.IsInitialized)
+            return false;
+
+        try
+        {
+            return MirraSDK.Platform.Current == PlatformType.YandexGames;
+        }
+        catch (Exception exception)
+        {
+            Debug.LogWarning($"MirraSDK: failed to resolve purchases availability ({exception.Message})");
+            return false;
+        }
     }
 
     private void OnDestroy()
     {
-        // Никаких глобальных событий не подписывали, всё в делегатах.
     }
 }
-//#endif

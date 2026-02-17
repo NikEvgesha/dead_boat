@@ -1,4 +1,5 @@
 using MirraGames.SDK;
+using MirraGames.SDK.Common;
 using System;
 using UnityEngine;
 
@@ -26,20 +27,19 @@ public class LoadingManager : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("LoadingManager уже существует! Удаляем дубликат.");
+            Debug.LogWarning("LoadingManager already exists. Removing duplicate.");
             Destroy(gameObject);
         }
     }
-    void Start()
+
+    private void Start()
     {
         GameLoader.Instance.OnSceneLoaded += OnSceneLoaded;
         MirraSDK.WaitForProviders(static () => {
             LoadingManager.Instance.StartGame();
-            // Методы SDK не должны вызывать вылет или NullReferenceException,
-            // делегат будет вызван только когда все провайдеры имеют статус IsInitialized.
         });
-
     }
+
     private void StartGame()
     {
         GameLoader.Instance.StartAfterSDK();
@@ -52,16 +52,15 @@ public class LoadingManager : MonoBehaviour
             else
             {
                 int lvlId = SaveManager.Instance.LoadLevelId();
-                if (lvlId >= 0)
-                    GameLoader.Instance.LoadNextScene(LevelManager.Instance.GetLevel(lvlId).Scene, true);
+                if (LevelManager.Instance != null && LevelManager.Instance.TryGetLevel(lvlId, out LevelData level))
+                    GameLoader.Instance.LoadNextScene(level.Scene, true);
                 else
                 {
                     _location = Location.Lobby;
                     GameLoader.Instance.LoadNextScene(_lobbyScene, true);
-                }    
-                    
+                }
             }
-           
+
             SaveManager.Instance.SetSave(true);
         }
         else
@@ -80,18 +79,16 @@ public class LoadingManager : MonoBehaviour
     {
         CurrentLocation = _location;
         LocationChanged?.Invoke(CurrentLocation);
-        MirraSDK.Analytics.GameplayStart();
-        //Debug.Log("GameplayStart");
-        
+        TryGameplayStart();
     }
 
     public void LoadLocation(Location location, string sceneName = null, bool withAds = true)
     {
-        MirraSDK.Analytics.GameplayStop();
-        //Debug.Log("GameplayStop");
+        TryGameplayStop();
+
         if (location == Location.Game)
         {
-            GameLoader.Instance.LoadNextScene(sceneName != null ? sceneName : _gameScene, true);
+            GameLoader.Instance.LoadNextScene(sceneName != null ? sceneName : _gameScene, true, withAds);
             _location = Location.Game;
         }
         else if (location == Location.Lobby)
@@ -101,4 +98,48 @@ public class LoadingManager : MonoBehaviour
         }
     }
 
+    private bool IsGameplayAnalyticsEnabled()
+    {
+        if (!MirraSDK.IsInitialized)
+            return false;
+
+        try
+        {
+            PlatformType platform = MirraSDK.Platform.Current;
+            return platform != PlatformType.Playgama && platform != PlatformType.PlaygamaBridge;
+        }
+        catch (Exception exception)
+        {
+            Debug.LogWarning($"LoadingManager: gameplay analytics disabled ({exception.Message})");
+            return false;
+        }
+    }
+
+    private void TryGameplayStart()
+    {
+        if (!IsGameplayAnalyticsEnabled()) return;
+
+        try
+        {
+            MirraSDK.Analytics.GameplayStart();
+        }
+        catch (Exception exception)
+        {
+            Debug.LogWarning($"LoadingManager: failed to send GameplayStart ({exception.Message})");
+        }
+    }
+
+    private void TryGameplayStop()
+    {
+        if (!IsGameplayAnalyticsEnabled()) return;
+
+        try
+        {
+            MirraSDK.Analytics.GameplayStop();
+        }
+        catch (Exception exception)
+        {
+            Debug.LogWarning($"LoadingManager: failed to send GameplayStop ({exception.Message})");
+        }
+    }
 }

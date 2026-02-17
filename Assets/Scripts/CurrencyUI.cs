@@ -9,12 +9,6 @@ public class CurrencyUI : MonoBehaviour
 
     private int _currentAmount = 0;
 
-    private void Start()
-    {
-        CurrencyManager.Instance.CurrencyChanged += OnCurrencyChanged;
-        OnCurrencyChanged(_type, CurrencyManager.Instance.GetBalance(_type));
-    }
-
     private void OnEnable()
     {
         if (CurrencyManager.Instance)
@@ -27,7 +21,8 @@ public class CurrencyUI : MonoBehaviour
 
     private void OnDisable()
     {
-        CurrencyManager.Instance.CurrencyChanged -= OnCurrencyChanged;
+        if (CurrencyManager.Instance)
+            CurrencyManager.Instance.CurrencyChanged -= OnCurrencyChanged;
     }
 
 

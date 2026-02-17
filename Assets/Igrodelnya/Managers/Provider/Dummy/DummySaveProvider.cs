@@ -123,27 +123,28 @@ public class DummySaveProvider : SaveProvider
     public override void SavePlayerStats(int coin, float hp) { }
     public override void SaveGameCoin(int coin)
     {
-        throw new NotImplementedException();
+        PlayerPrefs.SetInt("GameCoin", coin);
     }
     public override void SavePlayerHealth(float health)
     {
-        throw new NotImplementedException();
+        PlayerPrefs.SetFloat("PlayerHealth", health);
     }
     public override void SavePlayerExperience(int exp, int level)
     {
-        throw new NotImplementedException();
+        PlayerPrefs.SetInt("PlayerExp", exp);
+        PlayerPrefs.SetInt("PlayerLevel", level);
     }
     public override (int, int) LoadPlayerExperience()
     {
-        throw new NotImplementedException();
+        return (PlayerPrefs.GetInt("PlayerExp", 0), PlayerPrefs.GetInt("PlayerLevel", 0));
     }
     public override int LoadGameCoin()
     {
-        throw new NotImplementedException();
+        return PlayerPrefs.GetInt("GameCoin", 0);
     }
     public override float LoadPlayerHealth()
     {
-        throw new NotImplementedException();
+        return PlayerPrefs.GetFloat("PlayerHealth", 100f);
     }
     public override (int, float) LoadPlayerStats()
     {
@@ -239,18 +240,22 @@ public class DummySaveProvider : SaveProvider
     }
     public override void SaveLevelUpdate(Stats stats)
     {
-        throw new NotImplementedException();
+        PlayerPrefs.SetString("LevelStats", JsonUtility.ToJson(stats));
     }
     public override Stats LoadLevelUpdate()
     {
-        return new Stats();
+        string json = PlayerPrefs.GetString("LevelStats", string.Empty);
+        if (string.IsNullOrEmpty(json))
+            return new Stats();
+
+        return JsonUtility.FromJson<Stats>(json);
     }
     public override void SaveLevelUp(int count)
     {
-        throw new NotImplementedException();
+        PlayerPrefs.SetInt("LevelUpCount", count);
     }
     public override int LoadLevelUp()
     {
-        return 0;
+        return PlayerPrefs.GetInt("LevelUpCount", 0);
     }
 }

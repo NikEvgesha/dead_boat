@@ -96,7 +96,7 @@ public class LevelStatManager : MonoBehaviour
         } 
         else
         {
-            Destroy(Instance.gameObject);
+            Destroy(gameObject);
             return;
         }
         LoadStats();
@@ -238,16 +238,19 @@ public class LevelStatManager : MonoBehaviour
             RareType selectedRarity = GetRandomRarityByChance();
 
             // Проверим, есть ли такая рарность у этого бустера
-            if (item.RareRewards.Any(r => r.Rare == selectedRarity))
+            if (item.RareRewards != null && item.RareRewards.Count > 0 && item.RareRewards.Any(r => r.Rare == selectedRarity))
             {
-                ItemWithRare itemR = new ItemWithRare() { Rare = selectedRarity , Item = item}; 
-                result.Add(itemR) ;
+                ItemWithRare itemR = new ItemWithRare() { Rare = selectedRarity, Item = item };
+                result.Add(itemR);
             }
             else
             {
-                // Если нет нужной рарности — выбираем первую доступную
-                var fallbackRarity = item.RareRewards[0].Rare;
-                ItemWithRare itemR = new ItemWithRare() { Rare = selectedRarity, Item = item };
+                // Если нет нужной редкости, выбираем первую доступную у буста
+                RareType fallbackRarity = selectedRarity;
+                if (item.RareRewards != null && item.RareRewards.Count > 0)
+                    fallbackRarity = item.RareRewards[0].Rare;
+
+                ItemWithRare itemR = new ItemWithRare() { Rare = fallbackRarity, Item = item };
                 result.Add(itemR);
             }
         }
