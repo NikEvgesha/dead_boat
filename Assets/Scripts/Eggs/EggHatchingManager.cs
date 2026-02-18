@@ -5,10 +5,13 @@ using UnityEngine;
 
 public class EggHatchingManager : MonoBehaviour
 {
+    private const string DefaultCatalogResourcePath = "Eggs/EggHatchingCatalog";
+
     private static EggHatchingManager _instance;
     public static EggHatchingManager Instance => _instance;
 
     [SerializeField] private EggHatchingCatalog _catalog;
+    [SerializeField] private string _catalogResourcePath = DefaultCatalogResourcePath;
     [SerializeField] private List<EggNestPoint> _nests = new();
     [SerializeField] private Transform _animalsRoot;
     [SerializeField] private bool _autoLoadOnStart = true;
@@ -29,6 +32,7 @@ public class EggHatchingManager : MonoBehaviour
         }
 
         _instance = this;
+        EnsureCatalogAssigned();
 
         if (_animalsRoot == null)
             _animalsRoot = transform;
@@ -80,6 +84,7 @@ public class EggHatchingManager : MonoBehaviour
 
     public void LoadState()
     {
+        EnsureCatalogAssigned();
         _state = EggFeatureStorage.Load();
         CleanupInvalidData();
         RebuildReadyNotified();
@@ -391,5 +396,17 @@ public class EggHatchingManager : MonoBehaviour
     private static long GetNowUnix()
     {
         return DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+    }
+
+    private void EnsureCatalogAssigned()
+    {
+        if (_catalog != null)
+            return;
+
+        string path = string.IsNullOrWhiteSpace(_catalogResourcePath)
+            ? DefaultCatalogResourcePath
+            : _catalogResourcePath;
+
+        _catalog = Resources.Load<EggHatchingCatalog>(path);
     }
 }

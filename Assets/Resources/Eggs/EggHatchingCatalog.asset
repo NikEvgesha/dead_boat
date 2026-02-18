@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 64c13f3e9b5a44b8a3d19efad2c285c4, type: 3}
+  m_Name: EggHatchingCatalog
+  m_EditorClassIdentifier: 
+  _definitions:
+  - eggId: egg_chicken
+    title: Chicken Egg
+    incubationSeconds: 1800
+    skipCostGems: 25
+    animalPrefab: {fileID: 100100000, guid: af68f6ffff31ff64c93521a587d234b1, type: 3}
+    eggPreviewPrefab: {fileID: 100100000, guid: 9cc1d9ce9a214b7bbbd81ac6a4fd9c8a, type: 3}
+  - eggId: egg_condor
+    title: Condor Egg
+    incubationSeconds: 3600
+    skipCostGems: 45
+    animalPrefab: {fileID: 100100000, guid: ea09f74638baa144b976a6d30cfeb5c0, type: 3}
+    eggPreviewPrefab: {fileID: 100100000, guid: 8709ecf0baf84f4b8af631f2f21ff9a4, type: 3}
