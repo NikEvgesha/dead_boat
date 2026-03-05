@@ -186,7 +186,7 @@ public static class ProfessionService
     public static string BuildStarterItemsSummary(ProfessionDefinition definition)
     {
         if (definition == null)
-            return "Нет данных.";
+            return ProfessionLocalization.NoData;
 
         StringBuilder builder = new();
         bool hasAnyLine = false;
@@ -205,18 +205,18 @@ public static class ProfessionService
 
         if (definition.startCoinsBonus > 0)
         {
-            builder.AppendLine($"Монеты +{definition.startCoinsBonus}");
+            builder.AppendLine(ProfessionLocalization.FormatCoinsBonus(definition.startCoinsBonus));
             hasAnyLine = true;
         }
 
         if (definition.startGemsBonus > 0)
         {
-            builder.AppendLine($"Гемы +{definition.startGemsBonus}");
+            builder.AppendLine(ProfessionLocalization.FormatGemsBonus(definition.startGemsBonus));
             hasAnyLine = true;
         }
 
         if (!hasAnyLine)
-            return "Нет стартовых предметов или бонусов.";
+            return ProfessionLocalization.NoStarterItems;
 
         return builder.ToString().TrimEnd();
     }
@@ -224,7 +224,7 @@ public static class ProfessionService
     public static string BuildPerksSummary(ProfessionDefinition definition)
     {
         if (definition == null || definition.perkLines == null || definition.perkLines.Count == 0)
-            return "Нет специальных способностей.";
+            return ProfessionLocalization.NoSpecialAbilities;
 
         StringBuilder builder = new();
         for (int i = 0; i < definition.perkLines.Count; i++)
@@ -241,7 +241,7 @@ public static class ProfessionService
         }
 
         if (builder.Length == 0)
-            return "Нет специальных способностей.";
+            return ProfessionLocalization.NoSpecialAbilities;
 
         return builder.ToString();
     }
@@ -249,7 +249,7 @@ public static class ProfessionService
     private static string ResolveItemDisplayName(PickableItem itemPrefab)
     {
         if (itemPrefab == null)
-            return "Неизвестный предмет";
+            return ProfessionLocalization.UnknownItem;
 
         string fallbackName = itemPrefab.Data != null
             ? itemPrefab.Data.Name
@@ -332,8 +332,8 @@ public static class ProfessionService
         return new ProfessionDefinition
         {
             professionId = FallbackProfessionId,
-            title = "Юнга",
-            description = "Базовая профессия без дополнительных бонусов.",
+            title = ProfessionLocalization.DefaultProfessionTitle,
+            description = ProfessionLocalization.DefaultProfessionDescription,
             defaultUnlocked = true,
             starterItems = new List<ProfessionStarterItem>(),
             perkLines = new List<string>()

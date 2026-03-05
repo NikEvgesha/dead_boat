@@ -161,7 +161,7 @@ public class ProfessionSelectionPanel : MonoBehaviour
         if (!ProfessionService.TrySelectProfession(definition.professionId))
             return;
 
-        SetMessage($"Выбрана профессия: {definition.title}");
+        SetMessage(ProfessionLocalization.FormatSelectedProfession(definition.title));
         RefreshView();
     }
 
@@ -169,20 +169,20 @@ public class ProfessionSelectionPanel : MonoBehaviour
     {
         if (!ProfessionService.HasLockedProfessions())
         {
-            SetMessage("Все профессии уже открыты.");
+            SetMessage(ProfessionLocalization.MessageAllUnlocked);
             RefreshView();
             return;
         }
 
         if (!ProfessionService.TryUnlockRandomLockedProfession(_unlockRandomPriceGems, out ProfessionDefinition unlockedDefinition))
         {
-            SetMessage("Не удалось открыть профессию.");
+            SetMessage(ProfessionLocalization.MessageUnlockFailed);
             RefreshView();
             return;
         }
 
         _currentIndex = FindProfessionIndex(unlockedDefinition.professionId);
-        SetMessage($"Открыта профессия: {unlockedDefinition.title}");
+        SetMessage(ProfessionLocalization.FormatUnlockedProfession(unlockedDefinition.title));
         RefreshView();
     }
 
@@ -200,7 +200,7 @@ public class ProfessionSelectionPanel : MonoBehaviour
 
         if (_professionDescriptionText != null)
             _professionDescriptionText.text = string.IsNullOrWhiteSpace(definition.description)
-                ? "Нет описания."
+                ? ProfessionLocalization.NoDescription
                 : definition.description;
 
         if (_starterItemsText != null)
@@ -212,11 +212,11 @@ public class ProfessionSelectionPanel : MonoBehaviour
         if (_statusText != null)
         {
             if (selected)
-                _statusText.text = "Экипировано";
+                _statusText.text = ProfessionLocalization.StatusEquipped;
             else if (unlocked)
-                _statusText.text = "Открыто";
+                _statusText.text = ProfessionLocalization.StatusOpened;
             else
-                _statusText.text = "Заблокировано";
+                _statusText.text = ProfessionLocalization.StatusLocked;
         }
 
         if (_professionIcon != null)
