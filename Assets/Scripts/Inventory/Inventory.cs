@@ -112,9 +112,7 @@ public class Inventory : MonoBehaviour
         bool added = false;
         if (item.Attached) return false;
 
-        if (LoadingManager.Instance != null &&
-            LoadingManager.Instance.CurrentLocation == Location.Game &&
-            item.TryGetComponent<EggCollectibleItem>(out EggCollectibleItem eggCollectible))
+        if (item.TryGetComponent<EggCollectibleItem>(out EggCollectibleItem eggCollectible))
         {
             if (eggCollectible.TryCollect())
             {
@@ -368,3 +366,4 @@ public class Inventory : MonoBehaviour
         SetStartItems(itemPrefabs.AsReadOnly());
     }
 }
+

@@ -9,6 +9,8 @@ public class EggHatchingDefinition
     public string title;
     [Min(1)] public int incubationSeconds = 300;
     [Min(0)] public int skipCostGems = 10;
+    [Min(0)] public int passiveIncomeCoins = 0;
+    [Min(1)] public int passiveIncomeIntervalSeconds = 60;
     public GameObject animalPrefab;
     public GameObject eggPreviewPrefab;
 }

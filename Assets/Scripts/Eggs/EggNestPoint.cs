@@ -6,6 +6,7 @@ public class EggNestPoint : MonoBehaviour
 {
     [SerializeField] private string _nestId;
     [SerializeField] private Transform _eggVisualAnchor;
+    [Header("Legacy migration support. New placement uses AnimalPlacementPoint.")]
     [SerializeField] private List<Transform> _animalSpawnPoints = new();
     [SerializeField] private EggNestSelectionPanel _selectionPanel;
 
@@ -48,7 +49,7 @@ public class EggNestPoint : MonoBehaviour
 
     public void PlaceAnimalAction()
     {
-        EggHatchingManager.Instance?.TryPlaceReadyAnimal(_nestId);
+        EggHatchingManager.Instance?.TryCollectReadyAnimal(_nestId);
     }
 
     public void SetEggPreview(GameObject previewPrefab)
@@ -61,6 +62,9 @@ public class EggNestPoint : MonoBehaviour
         _eggPreviewInstance = Instantiate(previewPrefab, EggVisualAnchor);
         _eggPreviewInstance.transform.localPosition = Vector3.zero;
         _eggPreviewInstance.transform.localRotation = Quaternion.identity;
+
+        // Preview should stay visual-only and never be collected as a real item.
+        DisablePreviewInteraction(_eggPreviewInstance);
     }
 
     public void ClearEggPreview()
@@ -85,5 +89,26 @@ public class EggNestPoint : MonoBehaviour
     public int GetSpawnPointCount()
     {
         return _animalSpawnPoints != null ? _animalSpawnPoints.Count : 0;
+    }
+
+    private static void DisablePreviewInteraction(GameObject root)
+    {
+        if (root == null)
+            return;
+
+        PickableItem pickable = root.GetComponent<PickableItem>();
+        if (pickable != null)
+            pickable.enabled = false;
+
+        Rigidbody rb = root.GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.isKinematic = true;
+            rb.detectCollisions = false;
+        }
+
+        Collider[] colliders = root.GetComponentsInChildren<Collider>(true);
+        for (int i = 0; i < colliders.Length; i++)
+            colliders[i].enabled = false;
     }
 }

@@ -13,14 +13,15 @@ public class EggHatchingManager : MonoBehaviour
     [SerializeField] private EggHatchingCatalog _catalog;
     [SerializeField] private string _catalogResourcePath = DefaultCatalogResourcePath;
     [SerializeField] private List<EggNestPoint> _nests = new();
+    [SerializeField] private List<AnimalPlacementPoint> _animalPoints = new();
     [SerializeField] private Transform _animalsRoot;
     [SerializeField] private bool _autoLoadOnStart = true;
+    [SerializeField] private bool _autoCollectFinishedEggs = true;
 
     public event Action StateChanged;
 
     private EggFeatureState _state;
     private readonly Dictionary<string, GameObject> _spawnedAnimals = new();
-    private readonly HashSet<string> _readyNotified = new();
     private float _nextTick;
 
     private void Awake()
@@ -39,6 +40,13 @@ public class EggHatchingManager : MonoBehaviour
 
         if (_nests == null || _nests.Count == 0)
             _nests = FindObjectsByType<EggNestPoint>(FindObjectsSortMode.None).ToList();
+        else
+            _nests = _nests.Where(x => x != null).Distinct().ToList();
+
+        if (_animalPoints == null || _animalPoints.Count == 0)
+            _animalPoints = FindObjectsByType<AnimalPlacementPoint>(FindObjectsSortMode.None).ToList();
+        else
+            _animalPoints = _animalPoints.Where(x => x != null).Distinct().ToList();
     }
 
     private void Start()
@@ -59,37 +67,33 @@ public class EggHatchingManager : MonoBehaviour
 
         _nextTick = Time.unscaledTime + 1f;
 
-        bool changed = false;
-        long now = GetNowUnix();
+        bool stateChanged = false;
 
-        foreach (EggNestState nest in _state.nests)
-        {
-            if (nest == null)
-                continue;
+        if (_autoCollectFinishedEggs)
+            stateChanged = CollectFinishedNestsInternal();
 
-            if (nest.finishAtUnix <= now)
-            {
-                if (_readyNotified.Add(nest.nestId))
-                    changed = true;
-            }
-            else
-            {
-                _readyNotified.Remove(nest.nestId);
-            }
-        }
+        if (stateChanged)
+            SaveAndNotify();
 
-        if (changed)
-            StateChanged?.Invoke();
+        TryRestoreMissingSpawnedAnimals();
+        ProcessAnimalIncomeTick();
     }
 
     public void LoadState()
     {
         EnsureCatalogAssigned();
+        RefreshSceneReferencesIfNeeded();
         _state = EggFeatureStorage.Load();
         CleanupInvalidData();
-        RebuildReadyNotified();
         RestoreSpawnedAnimals();
         RefreshNestVisuals();
+
+        if (_autoCollectFinishedEggs && CollectFinishedNestsInternal())
+        {
+            SaveAndNotify();
+            return;
+        }
+
         StateChanged?.Invoke();
     }
 
@@ -99,10 +103,22 @@ public class EggHatchingManager : MonoBehaviour
         return _state.GetEggAmount(eggId);
     }
 
+    public int GetAnimalAmount(string eggId)
+    {
+        EnsureStateLoaded();
+        return _state.GetAnimalAmount(eggId);
+    }
+
     public IReadOnlyList<EggInventoryEntry> GetOwnedEggs()
     {
         EnsureStateLoaded();
         return _state.ownedEggs;
+    }
+
+    public IReadOnlyList<AnimalInventoryEntry> GetOwnedAnimals()
+    {
+        EnsureStateLoaded();
+        return _state.ownedAnimals;
     }
 
     public bool TryGetDefinition(string eggId, out EggHatchingDefinition definition)
@@ -207,11 +223,24 @@ public class EggHatchingManager : MonoBehaviour
         }
 
         nest.finishAtUnix = GetNowUnix();
+
+        if (_autoCollectFinishedEggs && CollectFinishedNestsInternal())
+        {
+            SaveAndNotify();
+            return true;
+        }
+
         SaveAndNotify();
         return true;
     }
 
+    // Legacy name kept to avoid breaking UI bindings.
     public bool TryPlaceReadyAnimal(string nestId)
+    {
+        return TryCollectReadyAnimal(nestId);
+    }
+
+    public bool TryCollectReadyAnimal(string nestId)
     {
         EnsureStateLoaded();
 
@@ -222,32 +251,101 @@ public class EggHatchingManager : MonoBehaviour
         if (GetRemainingSeconds(nestId) > 0)
             return false;
 
-        EggNestPoint nestPoint = _nests.Find(x => x != null && x.NestId == nestId);
-        if (nestPoint == null)
+        _state.AddAnimal(nest.eggId, 1);
+        _state.nests.Remove(nest);
+
+        SaveAndNotify();
+        return true;
+    }
+
+    public bool TryPlaceAnyOwnedAnimal(string pointId)
+    {
+        EnsureStateLoaded();
+
+        AnimalInventoryEntry first = _state.ownedAnimals.FirstOrDefault(x =>
+            !string.IsNullOrWhiteSpace(x.eggId) &&
+            x.amount > 0 &&
+            _catalog != null &&
+            _catalog.TryGet(x.eggId, out EggHatchingDefinition definition) &&
+            definition.animalPrefab != null);
+
+        if (first == null)
             return false;
 
-        if (_catalog == null || !_catalog.TryGet(nest.eggId, out EggHatchingDefinition definition))
+        return TryPlaceAnimalToPoint(pointId, first.eggId);
+    }
+
+    public bool TryPlaceAnimalToPoint(string pointId, string eggId)
+    {
+        EnsureStateLoaded();
+
+        if (string.IsNullOrWhiteSpace(pointId) || string.IsNullOrWhiteSpace(eggId))
+            return false;
+
+        if (_catalog == null || !_catalog.TryGet(eggId, out EggHatchingDefinition definition))
             return false;
 
         if (definition.animalPrefab == null)
             return false;
 
-        int spawnPoint = FindFreeSpawnPoint(nestPoint);
-        if (spawnPoint < 0)
+        AnimalPlacementPoint point = FindAnimalPoint(pointId);
+        if (point == null)
             return false;
 
-        _state.placedAnimals.Add(new PlacedAnimalState
+        if (IsAnimalPointOccupied(pointId))
+            return false;
+
+        if (!_state.TryConsumeAnimal(eggId, 1))
+            return false;
+
+        PlacedAnimalState placed = new PlacedAnimalState
         {
-            nestId = nestId,
-            eggId = nest.eggId,
-            pointIndex = spawnPoint
-        });
+            pointId = pointId,
+            eggId = eggId,
+            lastIncomeUnix = GetNowUnix()
+        };
 
-        _state.nests.Remove(nest);
+        _state.placedAnimals.Add(placed);
+        SpawnAnimal(definition, point.SpawnAnchor, MakePointAnimalKey(pointId));
 
-        SpawnAnimal(nestPoint, definition, spawnPoint);
         SaveAndNotify();
         return true;
+    }
+
+    public bool TryRemovePlacedAnimal(string pointId)
+    {
+        EnsureStateLoaded();
+
+        if (string.IsNullOrWhiteSpace(pointId))
+            return false;
+
+        PlacedAnimalState placed = _state.placedAnimals.Find(x => x != null && x.pointId == pointId);
+        if (placed == null)
+            return false;
+
+        _state.AddAnimal(placed.eggId, 1);
+        _state.placedAnimals.Remove(placed);
+
+        string key = MakePointAnimalKey(pointId);
+        if (_spawnedAnimals.TryGetValue(key, out GameObject oldAnimal) && oldAnimal != null)
+            Destroy(oldAnimal);
+
+        _spawnedAnimals.Remove(key);
+
+        SaveAndNotify();
+        return true;
+    }
+
+    public bool IsAnimalPointOccupied(string pointId)
+    {
+        return TryGetPlacedAnimal(pointId, out _);
+    }
+
+    public bool TryGetPlacedAnimal(string pointId, out PlacedAnimalState placed)
+    {
+        EnsureStateLoaded();
+        placed = _state.placedAnimals.Find(x => x != null && x.pointId == pointId);
+        return placed != null;
     }
 
     public static void RegisterEggPickup(string eggId, int amount = 1)
@@ -255,15 +353,12 @@ public class EggHatchingManager : MonoBehaviour
         EggFeatureStorage.AddEgg(eggId, amount);
 
         if (_instance != null)
-        {
             _instance.LoadState();
-        }
     }
 
     private void SaveAndNotify()
     {
         EggFeatureStorage.Save(_state);
-        RebuildReadyNotified();
         RefreshNestVisuals();
         StateChanged?.Invoke();
     }
@@ -276,26 +371,8 @@ public class EggHatchingManager : MonoBehaviour
 
     private void CleanupInvalidData()
     {
+        // Keep unknown ids to reduce risk of data loss if catalog/scene is temporarily incomplete.
         _state.Normalize();
-
-        if (_catalog == null)
-            return;
-
-        _state.ownedEggs = _state.ownedEggs
-            .Where(x => _catalog.TryGet(x.eggId, out _))
-            .ToList();
-
-        _state.nests = _state.nests
-            .Where(x => _catalog.TryGet(x.eggId, out _))
-            .ToList();
-
-        _state.placedAnimals = _state.placedAnimals
-            .Where(x => _catalog.TryGet(x.eggId, out _))
-            .ToList();
-
-        HashSet<string> knownNestIds = new HashSet<string>(_nests.Where(x => x != null).Select(x => x.NestId));
-        _state.nests = _state.nests.Where(x => knownNestIds.Contains(x.nestId)).ToList();
-        _state.placedAnimals = _state.placedAnimals.Where(x => knownNestIds.Contains(x.nestId)).ToList();
     }
 
     private void RestoreSpawnedAnimals()
@@ -310,53 +387,188 @@ public class EggHatchingManager : MonoBehaviour
 
         foreach (PlacedAnimalState placed in _state.placedAnimals)
         {
-            if (!_catalog.TryGet(placed.eggId, out EggHatchingDefinition definition))
+            if (placed == null)
                 continue;
 
-            EggNestPoint nestPoint = _nests.Find(x => x != null && x.NestId == placed.nestId);
-            if (nestPoint == null)
+            if (_catalog == null || !_catalog.TryGet(placed.eggId, out EggHatchingDefinition definition))
                 continue;
 
-            SpawnAnimal(nestPoint, definition, placed.pointIndex);
+            if (definition.animalPrefab == null)
+                continue;
+
+            if (!TryResolvePlacementAnchor(placed, out Transform anchor, out string key))
+                continue;
+
+            SpawnAnimal(definition, anchor, key);
         }
     }
 
-    private void SpawnAnimal(EggNestPoint nestPoint, EggHatchingDefinition definition, int pointIndex)
+    private void TryRestoreMissingSpawnedAnimals()
     {
-        if (!nestPoint.TryGetSpawnPoint(pointIndex, out Transform point) || point == null)
+        if (_state == null || _state.placedAnimals == null || _state.placedAnimals.Count == 0)
             return;
 
-        string key = MakeAnimalKey(nestPoint.NestId, pointIndex);
+        foreach (PlacedAnimalState placed in _state.placedAnimals)
+        {
+            if (placed == null)
+                continue;
+
+            if (_catalog == null || !_catalog.TryGet(placed.eggId, out EggHatchingDefinition definition))
+                continue;
+
+            if (definition.animalPrefab == null)
+                continue;
+
+            if (!TryResolvePlacementAnchor(placed, out Transform anchor, out string key))
+                continue;
+
+            if (_spawnedAnimals.TryGetValue(key, out GameObject existing) && existing != null)
+                continue;
+
+            SpawnAnimal(definition, anchor, key);
+        }
+    }
+
+    private void SpawnAnimal(EggHatchingDefinition definition, Transform anchor, string key)
+    {
+        if (anchor == null || definition == null || definition.animalPrefab == null || string.IsNullOrWhiteSpace(key))
+            return;
 
         if (_spawnedAnimals.TryGetValue(key, out GameObject oldAnimal) && oldAnimal != null)
             Destroy(oldAnimal);
 
-        GameObject animal = Instantiate(definition.animalPrefab, point.position, point.rotation, _animalsRoot);
+        GameObject animal = Instantiate(definition.animalPrefab, anchor.position, anchor.rotation, _animalsRoot);
         _spawnedAnimals[key] = animal;
     }
 
-    private int FindFreeSpawnPoint(EggNestPoint nestPoint)
+    private bool TryResolvePlacementAnchor(PlacedAnimalState placed, out Transform anchor, out string key)
     {
-        int total = nestPoint.GetSpawnPointCount();
-        if (total <= 0)
-            return -1;
+        anchor = null;
+        key = string.Empty;
 
-        HashSet<int> occupied = new HashSet<int>(
-            _state.placedAnimals
-                .Where(x => x.nestId == nestPoint.NestId)
-                .Select(x => x.pointIndex));
+        if (placed == null)
+            return false;
 
-        for (int i = 0; i < total; i++)
+        if (!string.IsNullOrWhiteSpace(placed.pointId))
         {
-            if (!occupied.Contains(i))
-                return i;
+            AnimalPlacementPoint point = FindAnimalPoint(placed.pointId);
+            if (point == null || point.SpawnAnchor == null)
+                return false;
+
+            anchor = point.SpawnAnchor;
+            key = MakePointAnimalKey(placed.pointId);
+            return true;
         }
 
-        return -1;
+        if (string.IsNullOrWhiteSpace(placed.nestId) || placed.pointIndex < 0)
+            return false;
+
+        EggNestPoint nestPoint = FindNestPoint(placed.nestId);
+        if (nestPoint == null)
+            return false;
+
+        if (!nestPoint.TryGetSpawnPoint(placed.pointIndex, out Transform legacyAnchor) || legacyAnchor == null)
+            return false;
+
+        anchor = legacyAnchor;
+        key = MakeLegacyAnimalKey(placed.nestId, placed.pointIndex);
+        return true;
+    }
+
+    private void ProcessAnimalIncomeTick()
+    {
+        if (_state == null || _state.placedAnimals == null || _state.placedAnimals.Count == 0)
+            return;
+
+        CurrencyManager currency = CurrencyManager.Instance;
+        if (currency == null)
+            return;
+
+        long now = GetNowUnix();
+        long totalReward = 0;
+        bool changed = false;
+
+        foreach (PlacedAnimalState placed in _state.placedAnimals)
+        {
+            if (placed == null)
+                continue;
+
+            if (_catalog == null || !_catalog.TryGet(placed.eggId, out EggHatchingDefinition definition))
+                continue;
+
+            int income = Mathf.Max(0, definition.passiveIncomeCoins);
+            if (income <= 0)
+                continue;
+
+            int interval = Mathf.Max(1, definition.passiveIncomeIntervalSeconds);
+
+            if (placed.lastIncomeUnix <= 0)
+            {
+                placed.lastIncomeUnix = now;
+                changed = true;
+                continue;
+            }
+
+            long elapsed = now - placed.lastIncomeUnix;
+            if (elapsed < interval)
+                continue;
+
+            long cycles = elapsed / interval;
+            if (cycles <= 0)
+                continue;
+
+            placed.lastIncomeUnix += cycles * interval;
+            totalReward += (long)income * cycles;
+            changed = true;
+        }
+
+        if (totalReward > 0)
+        {
+            int reward = totalReward > int.MaxValue ? int.MaxValue : (int)totalReward;
+            currency.AddCurrency(CurrencyType.Coins, reward);
+        }
+
+        if (changed)
+            EggFeatureStorage.Save(_state);
+    }
+
+    private bool CollectFinishedNestsInternal()
+    {
+        if (_state == null || _state.nests == null || _state.nests.Count == 0)
+            return false;
+
+        long now = GetNowUnix();
+        bool changed = false;
+
+        for (int i = _state.nests.Count - 1; i >= 0; i--)
+        {
+            EggNestState nest = _state.nests[i];
+
+            if (nest == null || string.IsNullOrWhiteSpace(nest.eggId))
+            {
+                _state.nests.RemoveAt(i);
+                changed = true;
+                continue;
+            }
+
+            if (nest.finishAtUnix > now)
+                continue;
+
+            _state.AddAnimal(nest.eggId, 1);
+            _state.nests.RemoveAt(i);
+            changed = true;
+        }
+
+        return changed;
     }
 
     private void RefreshNestVisuals()
     {
+        if (_state == null)
+            return;
+
+        RefreshSceneReferencesIfNeeded();
+
         foreach (EggNestPoint nestPoint in _nests)
         {
             if (nestPoint == null)
@@ -376,21 +588,45 @@ public class EggHatchingManager : MonoBehaviour
         }
     }
 
-    private static string MakeAnimalKey(string nestId, int pointIndex)
+    private AnimalPlacementPoint FindAnimalPoint(string pointId)
     {
-        return $"{nestId}::{pointIndex}";
+        if (string.IsNullOrWhiteSpace(pointId))
+            return null;
+
+        RefreshSceneReferencesIfNeeded();
+        return _animalPoints.Find(x => x != null && x.PointId == pointId);
     }
 
-    private void RebuildReadyNotified()
+    private EggNestPoint FindNestPoint(string nestId)
     {
-        _readyNotified.Clear();
+        if (string.IsNullOrWhiteSpace(nestId))
+            return null;
 
-        long now = GetNowUnix();
-        foreach (EggNestState nest in _state.nests)
-        {
-            if (nest != null && nest.finishAtUnix <= now)
-                _readyNotified.Add(nest.nestId);
-        }
+        RefreshSceneReferencesIfNeeded();
+        return _nests.Find(x => x != null && x.NestId == nestId);
+    }
+
+    private void RefreshSceneReferencesIfNeeded()
+    {
+        if (_nests == null || _nests.Count == 0 || _nests.Any(x => x == null))
+            _nests = FindObjectsByType<EggNestPoint>(FindObjectsSortMode.None).ToList();
+        else
+            _nests = _nests.Where(x => x != null).Distinct().ToList();
+
+        if (_animalPoints == null || _animalPoints.Count == 0 || _animalPoints.Any(x => x == null))
+            _animalPoints = FindObjectsByType<AnimalPlacementPoint>(FindObjectsSortMode.None).ToList();
+        else
+            _animalPoints = _animalPoints.Where(x => x != null).Distinct().ToList();
+    }
+
+    private static string MakePointAnimalKey(string pointId)
+    {
+        return $"point::{pointId}";
+    }
+
+    private static string MakeLegacyAnimalKey(string nestId, int pointIndex)
+    {
+        return $"legacy::{nestId}::{pointIndex}";
     }
 
     private static long GetNowUnix()
