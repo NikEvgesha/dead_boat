@@ -6,6 +6,8 @@ using UnityEngine;
 public class StarterPackManager : MonoBehaviour
 {
     [SerializeField] private List<PickableItem> _starterPackItems;
+    [SerializeField] private ProfessionCatalog _professionCatalog;
+    [SerializeField] private bool _includeProfessionStarterItems = true;
 
     private void Start()
     {
@@ -15,6 +17,7 @@ public class StarterPackManager : MonoBehaviour
 
     public ReadOnlyCollection<PickableItem> GetStartItems()
     {
-        return _starterPackItems.AsReadOnly();
+        ProfessionService.ConfigureCatalog(_professionCatalog);
+        return ProfessionService.BuildStarterPack(_starterPackItems, _includeProfessionStarterItems);
     }
 }

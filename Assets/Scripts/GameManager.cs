@@ -79,6 +79,7 @@ public class GameManager : MonoBehaviour
         {
             string scene = SceneManager.GetActiveScene().name;
             Inventory.Instance.SetLoadedInventory();
+            ProfessionService.ApplyCurrentProfessionStartBonuses();
             SaveManager.Instance.SaveGameProgress(0, Inventory.Instance.GetInventoryList(), LevelManager.Instance.GetLevelId(scene));
         }
         _ammoManager.Save();
@@ -138,3 +139,4 @@ public class GameManager : MonoBehaviour
         CurrencyManager.Instance.AddCurrency(CurrencyType.Gems, _reward);
     }
 }
+

@@ -47,3 +47,26 @@
 - Зафиксированы текущие наработки по новой механике (яйца, гнезда, размещение животных, доход, баланс спавна).
 - Переведен `Assets/Scripts/TODO.md` в формат структурированного backlog со статусами, приоритетами и регресс-чеклистом.
 - Добавлены стартовый контекст и документы по механике для дальнейшего масштабирования на другие проекты.
+
+### 2026-03-05 (профессии: первый этап реализации)
+
+- Добавлена новая система профессий:
+  - `Assets/Scripts/Professions/ProfessionCatalog.cs`
+  - `Assets/Scripts/Professions/ProfessionState.cs`
+  - `Assets/Scripts/Professions/ProfessionStorage.cs`
+  - `Assets/Scripts/Professions/ProfessionService.cs`
+  - `Assets/Scripts/Professions/ProfessionSelectionPanel.cs`
+  - `Assets/Scripts/Professions/ProfessionNpcPoint.cs`
+- Реализованы ключевые сценарии:
+  - дефолтно открытая базовая профессия,
+  - выбор только открытых профессий,
+  - случайное открытие закрытой профессии за гемы,
+  - сохранение текущей профессии и списка открытых,
+  - интеграция бонусов профессии в старт рана (стартовые предметы + валютные бонусы).
+- Интеграция в существующий проект:
+  - `StarterPackManager` теперь может добавлять стартовые предметы выбранной профессии,
+  - `GameManager` при старте нового рана применяет валютные бонусы текущей профессии.
+- Добавлена документация:
+  - `Docs/PROFESSION_SYSTEM_SPEC.md`
+  - `Docs/PROFESSION_SYSTEM_SETUP.md`
+- Обновлены `TODO.md`, `Docs/README.md` и `START_PROMPT.md` под новую механику.

@@ -17,7 +17,10 @@
 4. `Docs/EGG_SYSTEM_SETUP.md`  
 Пошаговая настройка в Unity и smoke-чеклист.
 
-5. `Docs/DOC_WORKFLOW_TEMPLATE.md`  
+5. `Docs/PROFESSION_SYSTEM_SPEC.md` и `Docs/PROFESSION_SYSTEM_SETUP.md`  
+Документы по механике выбора профессии через NPC.
+
+6. `Docs/DOC_WORKFLOW_TEMPLATE.md`  
 Шаблон, который можно переносить в другие проекты.
 
 ## 2) Базовые правила работы
