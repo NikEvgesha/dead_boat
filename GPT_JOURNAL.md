@@ -70,3 +70,20 @@
   - `Docs/PROFESSION_SYSTEM_SPEC.md`
   - `Docs/PROFESSION_SYSTEM_SETUP.md`
 - Обновлены `TODO.md`, `Docs/README.md` и `START_PROMPT.md` под новую механику.
+
+### 2026-03-27 (prod-срез + roadmap на 3 направления)
+
+- Проведена ревизия проекта как прод-потока (сцена + префабы + runtime, без внедрения новых фич).
+- Зафиксировано:
+  - egg-механика подключена в `Lobby` сцене,
+  - `SaveManager` в основном потоке использует `MirraSDKSaveProvider`,
+  - профессии есть в коде, но не подключены в сценовой проводке (нет активной интеграции UI/NPC и каталога).
+- Актуализирован backlog в `Assets/Scripts/TODO.md`:
+  - добавлен единый roadmap по 3 направлениям (яйца, профессии, баланс),
+  - добавлен отдельный блок задач по балансу.
+- Добавлен документ `Docs/BALANCE_ROADMAP.md` с планом итераций:
+  - baseline метрики,
+  - core tuning,
+  - synergy tuning,
+  - final regression pass.
+- Обновлен `Docs/README.md` (индекс документации расширен баланс-документом).
