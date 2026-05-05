@@ -15,8 +15,11 @@ public class CurrencyVisibilitySwitcher : MonoBehaviour
 
     private void OnDisable()
     {
-        CurrencyManager.Instance.ShowGems -= SwitchGemsVisibility;
-        LoadingManager.Instance.LocationChanged -= OnLocationChange;
+        if (CurrencyManager.Instance != null)
+            CurrencyManager.Instance.ShowGems -= SwitchGemsVisibility;
+
+        if (LoadingManager.Instance != null)
+            LoadingManager.Instance.LocationChanged -= OnLocationChange;
     }
 
     private void SwitchGemsVisibility(bool visible)

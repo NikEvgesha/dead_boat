@@ -15,8 +15,14 @@ public class EggHatchingManager : MonoBehaviour
     [SerializeField] private List<EggNestPoint> _nests = new();
     [SerializeField] private List<AnimalPlacementPoint> _animalPoints = new();
     [SerializeField] private Transform _animalsRoot;
+    [SerializeField] private bool _parentAnimalsToAnchor = true;
+    [SerializeField] private bool _resetAnimalLocalPoseWhenParented = true;
     [SerializeField] private bool _autoLoadOnStart = true;
     [SerializeField] private bool _autoCollectFinishedEggs = true;
+    [Header("Passive income balance")]
+    [SerializeField, Min(0)] private int _fullIncomeAnimalCount = 3;
+    [SerializeField, Range(0.05f, 1f)] private float _extraAnimalIncomeMultiplier = 0.5f;
+    [SerializeField, Min(0)] private int _maxAccumulatedIncomeSeconds = 3600;
 
     public event Action StateChanged;
 
@@ -437,7 +443,18 @@ public class EggHatchingManager : MonoBehaviour
         if (_spawnedAnimals.TryGetValue(key, out GameObject oldAnimal) && oldAnimal != null)
             Destroy(oldAnimal);
 
-        GameObject animal = Instantiate(definition.animalPrefab, anchor.position, anchor.rotation, _animalsRoot);
+        Transform parent = _parentAnimalsToAnchor
+            ? anchor
+            : (_animalsRoot != null ? _animalsRoot : transform);
+
+        GameObject animal = Instantiate(definition.animalPrefab, anchor.position, anchor.rotation, parent);
+
+        if (_parentAnimalsToAnchor && _resetAnimalLocalPoseWhenParented)
+        {
+            animal.transform.localPosition = Vector3.zero;
+            animal.transform.localRotation = Quaternion.identity;
+        }
+
         _spawnedAnimals[key] = animal;
     }
 
@@ -485,14 +502,21 @@ public class EggHatchingManager : MonoBehaviour
             return;
 
         long now = GetNowUnix();
-        long totalReward = 0;
+        double totalReward = 0d;
         bool changed = false;
+        int rewardedAnimalsCount = 0;
 
-        foreach (PlacedAnimalState placed in _state.placedAnimals)
+        float extraIncomeMultiplier = Mathf.Clamp(_extraAnimalIncomeMultiplier, 0.05f, 1f);
+        int fullIncomeAnimalCount = Mathf.Max(0, _fullIncomeAnimalCount);
+        int maxAccumulatedIncomeSeconds = Mathf.Max(0, _maxAccumulatedIncomeSeconds);
+
+        IEnumerable<PlacedAnimalState> orderedPlacedAnimals = _state.placedAnimals
+            .Where(x => x != null)
+            .OrderBy(x => x.pointId)
+            .ThenBy(x => x.eggId);
+
+        foreach (PlacedAnimalState placed in orderedPlacedAnimals)
         {
-            if (placed == null)
-                continue;
-
             if (_catalog == null || !_catalog.TryGet(placed.eggId, out EggHatchingDefinition definition))
                 continue;
 
@@ -510,6 +534,13 @@ public class EggHatchingManager : MonoBehaviour
             }
 
             long elapsed = now - placed.lastIncomeUnix;
+            if (maxAccumulatedIncomeSeconds > 0 && elapsed > maxAccumulatedIncomeSeconds)
+            {
+                elapsed = maxAccumulatedIncomeSeconds;
+                placed.lastIncomeUnix = now - maxAccumulatedIncomeSeconds;
+                changed = true;
+            }
+
             if (elapsed < interval)
                 continue;
 
@@ -518,13 +549,20 @@ public class EggHatchingManager : MonoBehaviour
                 continue;
 
             placed.lastIncomeUnix += cycles * interval;
-            totalReward += (long)income * cycles;
+            float slotMultiplier = rewardedAnimalsCount < fullIncomeAnimalCount
+                ? 1f
+                : extraIncomeMultiplier;
+
+            totalReward += income * cycles * slotMultiplier;
+            rewardedAnimalsCount++;
             changed = true;
         }
 
-        if (totalReward > 0)
+        if (totalReward > 0d)
         {
-            int reward = totalReward > int.MaxValue ? int.MaxValue : (int)totalReward;
+            int reward = totalReward > int.MaxValue
+                ? int.MaxValue
+                : Mathf.Max(0, Mathf.RoundToInt((float)totalReward));
             currency.AddCurrency(CurrencyType.Coins, reward);
         }
 

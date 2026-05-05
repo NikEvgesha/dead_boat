@@ -19,26 +19,46 @@ public class LocalizationData : ScriptableObject
     {
         if (entries == null || languages == null)
         {
-            Debug.LogError("LocalizationData: Entries или Languages не инициализированы!");
+            Debug.LogError("LocalizationData: Entries or Languages are not initialized!");
             return key;
         }
 
         var entry = entries.Find(e => e.Key == key);
         if (entry == null)
         {
-            Debug.LogWarning($"LocalizationData:  люч '{key}' не найден!");
+            Debug.LogWarning($"LocalizationData: Key '{key}' was not found!");
             return key;
         }
 
         int langIndex = languages.IndexOf(language);
         if (langIndex < 0 || langIndex >= entry.Translations.Count)
         {
-            Debug.LogWarning($"LocalizationData: язык '{language}' не найден дл€ ключа '{key}'!");
+            Debug.LogWarning($"LocalizationData: Language '{language}' was not found for key '{key}'!");
             return key;
         }
 
         return entry.Translations[langIndex];
     }
+
+    public bool TryGetTranslation(string key, string language, out string translation)
+    {
+        translation = null;
+
+        if (entries == null || languages == null)
+            return false;
+
+        var entry = entries.Find(e => e.Key == key);
+        if (entry == null)
+            return false;
+
+        int langIndex = languages.IndexOf(language);
+        if (langIndex < 0 || langIndex >= entry.Translations.Count)
+            return false;
+
+        translation = entry.Translations[langIndex];
+        return true;
+    }
+
 
     public string GetTranslation(string key, string language, string tag)
     {

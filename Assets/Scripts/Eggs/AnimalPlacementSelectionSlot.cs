@@ -12,6 +12,14 @@ public class AnimalPlacementSelectionSlot : MonoBehaviour
     private string _eggId;
     private Action<string> _onSelect;
 
+    public void BindTemporaryReferences(Text titleText, Text countText, Text incomeText, Button button)
+    {
+        _titleText = titleText;
+        _countText = countText;
+        _incomeText = incomeText;
+        _button = button;
+    }
+
     public void Init(EggHatchingDefinition definition, int amount, Action<string> onSelect)
     {
         _eggId = definition != null ? definition.eggId : string.Empty;

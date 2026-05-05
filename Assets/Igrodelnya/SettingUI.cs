@@ -58,8 +58,11 @@ public class SettingUI : MonoBehaviour
 
     private void OnDisable()
     {
-        SoundManager.Instance.Ready -= SetValues;
-        PlayerInput.Instance.APause -= ToggleOpen;
+        if (SoundManager.Instance != null)
+            SoundManager.Instance.Ready -= SetValues;
+
+        if (PlayerInput.Instance != null)
+            PlayerInput.Instance.APause -= ToggleOpen;
     }
 
     private void SetValues()

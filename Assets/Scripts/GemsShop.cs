@@ -59,7 +59,8 @@ public class GemsShop : MonoBehaviour
 
     private void OnDisable()
     {
-        CurrencyManager.Instance.NoGems -= ToggleOpen;
+        if (CurrencyManager.Instance != null)
+            CurrencyManager.Instance.NoGems -= ToggleOpen;
     }
 
 

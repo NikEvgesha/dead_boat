@@ -6,6 +6,7 @@ public class ProfessionState
 {
     public int version = 1;
     public string selectedProfessionId;
+    public bool hasExplicitProfessionChoice;
     public List<string> unlockedProfessionIds = new();
 
     public void Normalize(IReadOnlyList<ProfessionDefinition> definitions, string fallbackDefaultProfessionId)

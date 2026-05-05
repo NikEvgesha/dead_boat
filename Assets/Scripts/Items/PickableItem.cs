@@ -87,7 +87,8 @@ public class PickableItem : MonoBehaviour
     private void OnDisable()
     {
         StopAllCoroutines();
-        ControlUI.Instance.HideItemHints();
+        if (ControlUI.Instance != null)
+            ControlUI.Instance.HideItemHints();
     }
 
     public void CheckComponents()
@@ -138,8 +139,8 @@ public class PickableItem : MonoBehaviour
         _rb.useGravity = false;
         _rb.freezeRotation = true;
         _useKinematicCheck = false;
-        _rb.drag = _drag;
-        _rb.angularDrag = _drag;
+        _rb.linearDamping = _drag;
+        _rb.angularDamping = _drag;
         OnFocus(false);
         _attacher.CanAttach += CanAttachChange;
 
@@ -164,10 +165,10 @@ public class PickableItem : MonoBehaviour
         _itemPoint = null;
         _rb.freezeRotation = false;
         _rb.useGravity = true;
-        _rb.velocity = _velocity * _dropVelocityMultiplier;
+        _rb.linearVelocity = _velocity * _dropVelocityMultiplier;
         _useKinematicCheck = true;
-        _rb.drag = _dragOrigin;
-        _rb.angularDrag = 0.5f;
+        _rb.linearDamping = _dragOrigin;
+        _rb.angularDamping = 0.5f;
         _attacher.CanAttach -= CanAttachChange;
         ControlUI.Instance.ShowRotateButtons(Grabbed);
         _outline.OutlineColor = Color.white;
@@ -266,7 +267,7 @@ public class PickableItem : MonoBehaviour
             if (distance < _stopDistance)
             {
                 transform.position = targetPosition;
-                _rb.velocity = Vector3.zero;
+                _rb.linearVelocity = Vector3.zero;
                 _velocity = Vector3.zero;
                 CheckRotation();
                 return;
@@ -276,7 +277,7 @@ public class PickableItem : MonoBehaviour
             _velocity = Vector3.Lerp(_velocity, targetVelocity, _damping);
 
             float distanceDamping = Mathf.Clamp01(distance);
-            _rb.velocity = Vector3.Lerp(_rb.velocity, _velocity * distanceDamping, Time.fixedDeltaTime * _lerpSpeed);
+            _rb.linearVelocity = Vector3.Lerp(_rb.linearVelocity, _velocity * distanceDamping, Time.fixedDeltaTime * _lerpSpeed);
 
             //
             CheckRotation();
@@ -447,6 +448,8 @@ public class PickableItem : MonoBehaviour
 
     private void OnDestroy()
     {
+        if (ControlUI.Instance == null) return;
+
         ControlUI.Instance.ShowAttachButton(false);
         ControlUI.Instance.ShowPickUpButton(false);
         ControlUI.Instance.ShowPutToInventoryButton(false);

@@ -10,6 +10,41 @@ public class ProfessionStarterItem
 }
 
 [Serializable]
+public class ProfessionPassiveBonuses
+{
+    [Header("Player")]
+    public float maxHealthFlat;
+    public float moveSpeedFlat;
+    public float moveSpeedMultiplier = 1f;
+    public float experienceMultiplier = 1f;
+
+    [Header("Economy")]
+    public float saleRewardMultiplier = 1f;
+
+    [Header("Boat")]
+    public float maxFuelFlat;
+    public float fuelConsumptionMultiplier = 1f;
+    public float fuelFillMultiplier = 1f;
+    public float boatSpeedFlat;
+
+    [Header("Combat")]
+    public float meleeDamageFlat;
+    public float meleeAttackSpeedMultiplier = 1f;
+    public float rangedDamageFlat;
+    public float rangedAttackSpeedMultiplier = 1f;
+    public float rangedReloadSpeedMultiplier = 1f;
+
+    public float SafeMoveSpeedMultiplier => moveSpeedMultiplier > 0f ? moveSpeedMultiplier : 1f;
+    public float SafeExperienceMultiplier => experienceMultiplier > 0f ? experienceMultiplier : 1f;
+    public float SafeSaleRewardMultiplier => saleRewardMultiplier > 0f ? saleRewardMultiplier : 1f;
+    public float SafeFuelConsumptionMultiplier => fuelConsumptionMultiplier > 0f ? fuelConsumptionMultiplier : 1f;
+    public float SafeFuelFillMultiplier => fuelFillMultiplier > 0f ? fuelFillMultiplier : 1f;
+    public float SafeMeleeAttackSpeedMultiplier => meleeAttackSpeedMultiplier > 0f ? meleeAttackSpeedMultiplier : 1f;
+    public float SafeRangedAttackSpeedMultiplier => rangedAttackSpeedMultiplier > 0f ? rangedAttackSpeedMultiplier : 1f;
+    public float SafeRangedReloadSpeedMultiplier => rangedReloadSpeedMultiplier > 0f ? rangedReloadSpeedMultiplier : 1f;
+}
+
+[Serializable]
 public class ProfessionDefinition
 {
     public string professionId;
@@ -21,6 +56,7 @@ public class ProfessionDefinition
     public bool defaultUnlocked;
     public List<ProfessionStarterItem> starterItems = new();
     public List<string> perkLines = new();
+    public ProfessionPassiveBonuses passiveBonuses = new();
 }
 
 [CreateAssetMenu(fileName = "ProfessionCatalog", menuName = "ScriptableObject/Professions/ProfessionCatalog")]

@@ -12,6 +12,7 @@ public static class ProfessionService
     private static ProfessionCatalog _configuredCatalog;
     private static readonly List<ProfessionDefinition> _definitions = new();
     private static readonly Dictionary<string, ProfessionDefinition> _definitionsById = new();
+    private static readonly ProfessionPassiveBonuses _defaultPassiveBonuses = new();
     private static ProfessionState _state;
     private static bool _initialized;
 
@@ -75,6 +76,30 @@ public static class ProfessionService
         return false;
     }
 
+    public static int GetUnlockedCount()
+    {
+        EnsureInitialized();
+        return _state.unlockedProfessionIds.Count;
+    }
+
+    public static int GetLockedCount()
+    {
+        EnsureInitialized();
+        return Mathf.Max(0, _definitions.Count - _state.unlockedProfessionIds.Count);
+    }
+
+    public static bool HasExplicitProfessionChoice()
+    {
+        EnsureInitialized();
+        return _state.hasExplicitProfessionChoice;
+    }
+
+    public static int GetTotalProfessionCount()
+    {
+        EnsureInitialized();
+        return _definitions.Count;
+    }
+
     public static bool TrySelectProfession(string professionId)
     {
         EnsureInitialized();
@@ -85,10 +110,11 @@ public static class ProfessionService
         if (!IsUnlocked(professionId))
             return false;
 
-        if (_state.selectedProfessionId == professionId)
+        if (_state.selectedProfessionId == professionId && _state.hasExplicitProfessionChoice)
             return true;
 
         _state.selectedProfessionId = professionId;
+        _state.hasExplicitProfessionChoice = true;
         SaveState();
         return true;
     }
@@ -145,7 +171,7 @@ public static class ProfessionService
             }
         }
 
-        if (includeProfessionStarterItems)
+        if (includeProfessionStarterItems && _state.hasExplicitProfessionChoice)
         {
             ProfessionDefinition profession = GetCurrentProfession();
             AppendProfessionStarterItems(result, profession);
@@ -157,6 +183,9 @@ public static class ProfessionService
     public static bool ApplyCurrentProfessionStartBonuses()
     {
         EnsureInitialized();
+
+        if (!_state.hasExplicitProfessionChoice)
+            return false;
 
         ProfessionDefinition profession = GetCurrentProfession();
         if (profession == null)
@@ -181,6 +210,98 @@ public static class ProfessionService
         }
 
         return changed;
+    }
+
+    public static ProfessionPassiveBonuses GetCurrentPassiveBonuses()
+    {
+        EnsureInitialized();
+
+        if (!_state.hasExplicitProfessionChoice)
+            return _defaultPassiveBonuses;
+
+        ProfessionDefinition profession = GetCurrentProfession();
+        if (profession == null || profession.passiveBonuses == null)
+            return _defaultPassiveBonuses;
+
+        return profession.passiveBonuses;
+    }
+
+    public static float ApplyMoveSpeed(float baseValue)
+    {
+        ProfessionPassiveBonuses bonuses = GetCurrentPassiveBonuses();
+        return (baseValue + bonuses.moveSpeedFlat) * bonuses.SafeMoveSpeedMultiplier;
+    }
+
+    public static float ApplyMaxHealth(float baseValue)
+    {
+        ProfessionPassiveBonuses bonuses = GetCurrentPassiveBonuses();
+        return baseValue + bonuses.maxHealthFlat;
+    }
+
+    public static int ApplyExperienceGain(int baseValue)
+    {
+        ProfessionPassiveBonuses bonuses = GetCurrentPassiveBonuses();
+        return Mathf.Max(0, Mathf.RoundToInt(baseValue * bonuses.SafeExperienceMultiplier));
+    }
+
+    public static int ApplySaleReward(int baseValue)
+    {
+        ProfessionPassiveBonuses bonuses = GetCurrentPassiveBonuses();
+        return Mathf.Max(0, Mathf.RoundToInt(baseValue * bonuses.SafeSaleRewardMultiplier));
+    }
+
+    public static float ApplyMaxFuel(float baseValue)
+    {
+        ProfessionPassiveBonuses bonuses = GetCurrentPassiveBonuses();
+        return baseValue + bonuses.maxFuelFlat;
+    }
+
+    public static float ApplyFuelConsumption(float baseValue)
+    {
+        ProfessionPassiveBonuses bonuses = GetCurrentPassiveBonuses();
+        return baseValue * bonuses.SafeFuelConsumptionMultiplier;
+    }
+
+    public static float ApplyFuelFill(float baseValue)
+    {
+        ProfessionPassiveBonuses bonuses = GetCurrentPassiveBonuses();
+        return baseValue * bonuses.SafeFuelFillMultiplier;
+    }
+
+    public static float ApplyBoatMaxSpeed(float baseValue)
+    {
+        ProfessionPassiveBonuses bonuses = GetCurrentPassiveBonuses();
+        return baseValue + bonuses.boatSpeedFlat;
+    }
+
+    public static float ApplyMeleeDamage(float baseValue)
+    {
+        ProfessionPassiveBonuses bonuses = GetCurrentPassiveBonuses();
+        return baseValue + bonuses.meleeDamageFlat;
+    }
+
+    public static float ApplyMeleeAttackSpeed(float baseValue)
+    {
+        ProfessionPassiveBonuses bonuses = GetCurrentPassiveBonuses();
+        return baseValue * bonuses.SafeMeleeAttackSpeedMultiplier;
+    }
+
+    public static float ApplyRangedDamage(float baseValue)
+    {
+        ProfessionPassiveBonuses bonuses = GetCurrentPassiveBonuses();
+        return baseValue + bonuses.rangedDamageFlat;
+    }
+
+    public static float ApplyRangedAttackSpeed(float baseValue)
+    {
+        ProfessionPassiveBonuses bonuses = GetCurrentPassiveBonuses();
+        return baseValue * bonuses.SafeRangedAttackSpeedMultiplier;
+    }
+
+    public static float ApplyRangedReloadSpeed(float baseValue)
+    {
+        ProfessionPassiveBonuses bonuses = GetCurrentPassiveBonuses();
+        return baseValue * bonuses.SafeRangedReloadSpeedMultiplier;
     }
 
     public static string BuildStarterItemsSummary(ProfessionDefinition definition)
@@ -223,27 +344,72 @@ public static class ProfessionService
 
     public static string BuildPerksSummary(ProfessionDefinition definition)
     {
-        if (definition == null || definition.perkLines == null || definition.perkLines.Count == 0)
-            return ProfessionLocalization.NoSpecialAbilities;
-
         StringBuilder builder = new();
-        for (int i = 0; i < definition.perkLines.Count; i++)
+        if (definition != null && definition.perkLines != null)
         {
-            string perkLine = definition.perkLines[i];
-            if (string.IsNullOrWhiteSpace(perkLine))
-                continue;
-
-            if (builder.Length > 0)
-                builder.AppendLine();
-
-            builder.Append("• ");
-            builder.Append(perkLine.Trim());
+            for (int i = 0; i < definition.perkLines.Count; i++)
+            {
+                string perkLine = definition.perkLines[i];
+                if (string.IsNullOrWhiteSpace(perkLine))
+                    continue;
+                if (builder.Length > 0)
+                    builder.AppendLine();
+                builder.Append("- ");
+                builder.Append(perkLine.Trim());
+            }
         }
-
+        if (definition != null)
+        {
+            List<string> passiveLines = BuildPassivePerkLines(definition.passiveBonuses);
+            for (int i = 0; i < passiveLines.Count; i++)
+            {
+                if (builder.Length > 0)
+                    builder.AppendLine();
+                builder.Append("- ");
+                builder.Append(passiveLines[i]);
+            }
+        }
         if (builder.Length == 0)
             return ProfessionLocalization.NoSpecialAbilities;
-
         return builder.ToString();
+    }
+    private static List<string> BuildPassivePerkLines(ProfessionPassiveBonuses bonuses)
+    {
+        List<string> lines = new();
+        if (bonuses == null)
+            return lines;
+        AppendFlatLine(lines, ProfessionLocalization.PassiveMoveSpeedFlatLabel, bonuses.moveSpeedFlat);
+        AppendMultiplierLine(lines, ProfessionLocalization.PassiveMoveSpeedMultLabel, bonuses.SafeMoveSpeedMultiplier);
+        AppendFlatLine(lines, ProfessionLocalization.PassiveMaxHealthFlatLabel, bonuses.maxHealthFlat);
+        AppendMultiplierLine(lines, ProfessionLocalization.PassiveExperienceMultLabel, bonuses.SafeExperienceMultiplier);
+        AppendMultiplierLine(lines, ProfessionLocalization.PassiveSaleRewardMultLabel, bonuses.SafeSaleRewardMultiplier);
+        AppendFlatLine(lines, ProfessionLocalization.PassiveMaxFuelFlatLabel, bonuses.maxFuelFlat);
+        AppendMultiplierLine(lines, ProfessionLocalization.PassiveFuelConsumptionMultLabel, bonuses.SafeFuelConsumptionMultiplier, invertSign: true);
+        AppendMultiplierLine(lines, ProfessionLocalization.PassiveFuelFillMultLabel, bonuses.SafeFuelFillMultiplier);
+        AppendFlatLine(lines, ProfessionLocalization.PassiveBoatSpeedFlatLabel, bonuses.boatSpeedFlat);
+        AppendFlatLine(lines, ProfessionLocalization.PassiveMeleeDamageFlatLabel, bonuses.meleeDamageFlat);
+        AppendMultiplierLine(lines, ProfessionLocalization.PassiveMeleeAttackSpeedMultLabel, bonuses.SafeMeleeAttackSpeedMultiplier);
+        AppendFlatLine(lines, ProfessionLocalization.PassiveRangedDamageFlatLabel, bonuses.rangedDamageFlat);
+        AppendMultiplierLine(lines, ProfessionLocalization.PassiveRangedAttackSpeedMultLabel, bonuses.SafeRangedAttackSpeedMultiplier);
+        AppendMultiplierLine(lines, ProfessionLocalization.PassiveRangedReloadMultLabel, bonuses.SafeRangedReloadSpeedMultiplier, invertSign: true);
+        return lines;
+    }
+    private static void AppendFlatLine(List<string> lines, string label, float value)
+    {
+        if (Mathf.Approximately(value, 0f))
+            return;
+        string sign = value > 0f ? "+" : string.Empty;
+        lines.Add($"{label}: {sign}{Mathf.RoundToInt(value)}");
+    }
+    private static void AppendMultiplierLine(List<string> lines, string label, float multiplier, bool invertSign = false)
+    {
+        int deltaPercent = Mathf.RoundToInt((multiplier - 1f) * 100f);
+        if (deltaPercent == 0)
+            return;
+        if (invertSign)
+            deltaPercent *= -1;
+        string sign = deltaPercent > 0 ? "+" : string.Empty;
+        lines.Add($"{label}: {sign}{deltaPercent}%");
     }
 
     private static string ResolveItemDisplayName(PickableItem itemPrefab)
@@ -336,7 +502,8 @@ public static class ProfessionService
             description = ProfessionLocalization.DefaultProfessionDescription,
             defaultUnlocked = true,
             starterItems = new List<ProfessionStarterItem>(),
-            perkLines = new List<string>()
+            perkLines = new List<string>(),
+            passiveBonuses = new ProfessionPassiveBonuses()
         };
     }
 

@@ -3,7 +3,10 @@ using UnityEngine;
 
 public class EggStorageDisplay : MonoBehaviour
 {
+    private const string DefaultCatalogResourcePath = "Eggs/EggHatchingCatalog";
+
     [SerializeField] private EggHatchingCatalog _catalog;
+    [SerializeField] private string _catalogResourcePath = DefaultCatalogResourcePath;
     [SerializeField] private Transform _displayRoot;
     [SerializeField] private List<Transform> _slots = new();
     [SerializeField] private int _maxDisplayed = 20;
@@ -29,6 +32,7 @@ public class EggStorageDisplay : MonoBehaviour
         ClearInstances();
 
         TryBindManager();
+        EnsureCatalogAssigned();
 
         if (_manager == null || _catalog == null)
             return;
@@ -102,5 +106,17 @@ public class EggStorageDisplay : MonoBehaviour
 
         _manager = manager;
         _manager.StateChanged += Rebuild;
+    }
+
+    private void EnsureCatalogAssigned()
+    {
+        if (_catalog != null)
+            return;
+
+        string path = string.IsNullOrWhiteSpace(_catalogResourcePath)
+            ? DefaultCatalogResourcePath
+            : _catalogResourcePath;
+
+        _catalog = Resources.Load<EggHatchingCatalog>(path);
     }
 }

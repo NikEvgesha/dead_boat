@@ -18,9 +18,10 @@ public class BoardController : MonoBehaviour
     { 
         get 
         {
+            float maxFuel = _maxFuel;
             if (LevelStatManager.Instance)
-                return _maxFuel + LevelStatManager.Instance.Stats.MaxFuel;
-            return _maxFuel; 
+                maxFuel += LevelStatManager.Instance.Stats.MaxFuel;
+            return ProfessionService.ApplyMaxFuel(maxFuel);
         }
         set { _maxFuel = value; } 
     }
@@ -31,10 +32,10 @@ public class BoardController : MonoBehaviour
     { 
         get
         {
+            float rate = _fuelConsumptionRate;
             if (LevelStatManager.Instance)
-                return _fuelConsumptionRate * LevelStatManager.Instance.Stats.ConsumptionFuel;
-
-            return _fuelConsumptionRate;
+                rate *= LevelStatManager.Instance.Stats.ConsumptionFuel;
+            return ProfessionService.ApplyFuelConsumption(rate);
         }
         set 
         { 
@@ -51,10 +52,10 @@ public class BoardController : MonoBehaviour
     {
         get
         {
+            float maxSpeed = _maxSpeed;
             if (LevelStatManager.Instance)
-                return _maxSpeed + LevelStatManager.Instance.Stats.MaxSpeedBoard;
-
-            return _maxSpeed;
+                maxSpeed += LevelStatManager.Instance.Stats.MaxSpeedBoard;
+            return ProfessionService.ApplyBoatMaxSpeed(maxSpeed);
         }
         set
         {
@@ -200,7 +201,7 @@ public class BoardController : MonoBehaviour
         StartCoroutine(UpdateUiDistance());
         //StartCoroutine(CheckProgressSave());
         SwitchSpeed?.Invoke(currentSpeed);
-        SwitchFuel?.Invoke(currentFuel, _maxFuel);
+        SwitchFuel?.Invoke(currentFuel, MaxFuel);
         if (_audioSource)
         {
             _audioSource.volume = 0;
@@ -346,23 +347,22 @@ public class BoardController : MonoBehaviour
         }
             
 
-        SwitchFuel?.Invoke(currentFuel, _maxFuel);
+        SwitchFuel?.Invoke(currentFuel, MaxFuel);
     }
 
     // Метод для добавления топлива
     public void AddFuel(float amount)
     {
-
         if (LevelStatManager.Instance)
             amount *= LevelStatManager.Instance.Stats.AddMultFuel;
-
+        amount = ProfessionService.ApplyFuelFill(amount);
         currentFuel += amount;
-        if (currentFuel > _maxFuel)
+        if (currentFuel > MaxFuel)
         {
-            currentFuel = _maxFuel;
+            currentFuel = MaxFuel;
         }
         if (currentFuel > 0) NoFuel?.Invoke(false);
-        SwitchFuel?.Invoke(currentFuel, _maxFuel);
+        SwitchFuel?.Invoke(currentFuel, MaxFuel);
     }
 
     // Внешний метод для установки режима водителя

@@ -12,6 +12,7 @@ public class AnimalPlacementSelectionPanel : MonoBehaviour
     [SerializeField] private Text _pointLabel;
     [SerializeField] private GameObject _emptyState;
     [SerializeField] private bool _setCursorWhenOpen = true;
+    [SerializeField] private bool _createTemporaryUiIfMissing = true;
 
     private EggHatchingManager _manager;
     private string _currentPointId;
@@ -30,6 +31,7 @@ public class AnimalPlacementSelectionPanel : MonoBehaviour
         if (_panel == null)
             _panel = gameObject;
 
+        EnsureTemporaryUiIfNeeded();
         _panel.SetActive(false);
     }
 
@@ -130,7 +132,7 @@ public class AnimalPlacementSelectionPanel : MonoBehaviour
         ClearSlots();
 
         if (_pointLabel != null)
-            _pointLabel.text = _currentPointId;
+            _pointLabel.text = EggTemporaryUIFactory.FormatHeader("Place animal", _currentPointId);
 
         bool anyAvailable = false;
 
@@ -205,6 +207,26 @@ public class AnimalPlacementSelectionPanel : MonoBehaviour
 
         _manager = manager;
         _manager.StateChanged += HandleStateChanged;
+    }
+
+    private void EnsureTemporaryUiIfNeeded()
+    {
+        if (!_createTemporaryUiIfMissing || _panel == null)
+            return;
+
+        if (_grid == null)
+            _grid = EggTemporaryUIFactory.EnsureGrid(_panel, "TemporaryAnimalSelectionGrid");
+
+        if (_slotPrefab == null)
+            _slotPrefab = EggTemporaryUIFactory.EnsureAnimalSlotTemplate(this);
+
+        if (_emptyState == null)
+            _emptyState = EggTemporaryUIFactory.EnsureEmptyState(_panel, "No animals ready");
+
+        if (_pointLabel == null)
+            _pointLabel = EggTemporaryUIFactory.EnsureHeader(_panel, "TemporaryAnimalSelectionHeader", "Place animal");
+
+        EggTemporaryUIFactory.EnsureCloseButton(_panel, CloseFromButton);
     }
 
     private void BindWindowCloseEvent()

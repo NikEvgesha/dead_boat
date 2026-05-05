@@ -93,9 +93,14 @@ public class Roulette : MonoBehaviour
     }
     private void OnDisable()
     {
-        PlayerInput.Instance.ARoulette -= ToggleOpen;
-        LoadingManager.Instance.LocationChanged -= ToggleButtonVisibility;
-        PlayerInput.Instance.AOpenWindow -= Close;
+        if (PlayerInput.Instance != null)
+        {
+            PlayerInput.Instance.ARoulette -= ToggleOpen;
+            PlayerInput.Instance.AOpenWindow -= Close;
+        }
+
+        if (LoadingManager.Instance != null)
+            LoadingManager.Instance.LocationChanged -= ToggleButtonVisibility;
     }
 
     private IEnumerator Timer()

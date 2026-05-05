@@ -157,3 +157,19 @@
 | Баланс сложности по этапам ранa | **Не делалось** | 10% | Требуется кривая давления: early/mid/late без резких провалов или спайков. |
 | Баланс синергий профессии + яйца | **Не делалось** | 5% | Проверить, чтобы комбинации не ломали экономику и не давали auto-win в early game. |
 | Регрессионный баланс-smoke | **Не делалось** | 5% | Единый повторяемый сценарий для перепроверки после каждого баланс-патча. |
+
+---
+
+## 2026-03-28 update (implemented)
+
+- [x] Pets now can be parented to placement anchors (EggHatchingManager) so they move with the boat when anchor points are on boat hierarchy.
+- [x] Profession passive bonuses added to data model (ProfessionPassiveBonuses) and connected to gameplay stats.
+- [x] Profession UI now shows numeric passive summary in perks panel.
+- [x] Random profession unlock price can now scale by progression (base + step, capped).
+- [x] Egg passive income now has configurable balancing controls (soft-cap for many pets + accumulated income cap).
+
+Next manual QA in Unity:
+- [ ] Verify pet movement while boat is moving in production scene.
+- [ ] Verify passive bonuses for at least 3 professions on new run and resumed run.
+- [ ] Tune unlock price (base/step/max) against real economy values.
+- [ ] Tune pet income settings (fullIncomeAnimalCount, extraAnimalIncomeMultiplier, maxAccumulatedIncomeSeconds).

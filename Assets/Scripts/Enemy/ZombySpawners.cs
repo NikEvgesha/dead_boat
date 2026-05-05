@@ -57,7 +57,8 @@ public class ZombieSpawner : MonoBehaviour
 
         corutineStart = false;
         StopAllCoroutines();
-        DayTime.instanse.DayNightCycle -= OnDayNightCycle;
+        if (DayTime.instanse != null)
+            DayTime.instanse.DayNightCycle -= OnDayNightCycle;
     }
 
     private void OnDayNightCycle()

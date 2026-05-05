@@ -84,10 +84,18 @@ public class MirraSDKLeaderboardProvider : LeaderboardProvider
 
         try
         {
+            DeploymentType deployment = MirraSDK.Platform.Deployment;
             PlatformType platform = MirraSDK.Platform.Current;
 
-            if (platform == PlatformType.Playgama || platform == PlatformType.PlaygamaBridge)
+            if (deployment == DeploymentType.Editor ||
+                platform == PlatformType.Editor ||
+                platform == PlatformType.Localhost ||
+                platform == PlatformType.Unknown ||
+                platform == PlatformType.Playgama ||
+                platform == PlatformType.PlaygamaBridge)
+            {
                 return false;
+            }
 
             return true;
         }

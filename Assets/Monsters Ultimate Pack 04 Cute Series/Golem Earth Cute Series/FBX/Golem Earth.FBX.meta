@@ -1,7 +1,7 @@
 fileFormatVersion: 2
 guid: bfe92606348df634fb607686bbb0ca33
 ModelImporter:
-  serializedVersion: 20200
+  serializedVersion: 24200
   internalIDToNameTable: []
   externalObjects: {}
   materials:
@@ -14,9 +14,8 @@ ModelImporter:
     bakeSimulation: 0
     resampleCurves: 1
     optimizeGameObjects: 0
+    removeConstantScaleCurves: 0
     motionNodeName: 
-    rigImportErrors: 
-    rigImportWarnings: 
     animationImportErrors: 
     animationImportWarnings: 
     animationRetargetingWarnings: 
@@ -39,10 +38,12 @@ ModelImporter:
     addColliders: 0
     useSRGBMaterialColor: 1
     sortHierarchyByName: 1
+    importPhysicalCameras: 1
     importVisibility: 1
     importBlendShapes: 1
     importCameras: 1
     importLights: 1
+    nodeNameCollisionStrategy: 0
     fileIdsGeneration: 2
     swapUVChannels: 0
     generateSecondaryUV: 0
@@ -54,6 +55,10 @@ ModelImporter:
     skinWeightsMode: 0
     maxBonesPerVertex: 4
     minBoneWeight: 0.001
+    optimizeBones: 1
+    generateMeshLods: 0
+    meshLodGenerationFlags: 0
+    maximumMeshLod: -1
     meshOptimizationFlags: -1
     indexFormat: 0
     secondaryUVAngleDistortion: 8
@@ -64,6 +69,7 @@ ModelImporter:
     secondaryUVMinObjectScale: 1
     secondaryUVPackMargin: 4
     useFileScale: 1
+    strictVertexDataChecks: 0
   tangentSpace:
     normalSmoothAngle: 60
     normalImportMode: 0
@@ -72,29 +78,7 @@ ModelImporter:
     legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0
     blendShapeNormalImportMode: 1
     normalSmoothingSource: 0
-  referencedClips:
-  - c8e8114f5c8c7db4888a0dd2544e6fd0
-  - c8ab0d211fa556942919fb88b0bcc080
-  - 0d210798fbfcfc24c99274d011c9ffb2
-  - a9e58997c00633746a03b02ea670dd24
-  - 4384038dd418a23489e02a1639bb18a5
-  - 02768b71acde2324c849ee8d20eab33a
-  - 7b54acd1e0d863c47ab8161a05763e9c
-  - ae1e2af0639b5d0439e7c9003d484ff2
-  - 13e168513b763b44d9342acd1ac6c322
-  - 1dea8e0ce3122c74284d4246ff4d4d4e
-  - 19f01b78eabe1db4ea83a19fb6f3d6bb
-  - cf6cf84aaf7b8cb4a8ee8ec93ae49e15
-  - 369ecdc60ac3e9c47ab90600d7381b59
-  - 1bebb191716eea34a945a0ed797c9db6
-  - 826cb9e4924ee3f45b8e209dcf7e8667
-  - 40d08740e97a74049ab8e6dd47f81542
-  - 5ebd875aee320c7468bca67db20977bf
-  - dbd2fa7c1200f744f86f1f344f669344
-  - e56d8b4b05484a74fbdc7af2f08e1443
-  - 41581c057b9096641adbb9b2a67a7352
-  - 4b797ada68a1084498ec415f7fecf00b
-  - 2f8372e79f2efe84d88fdf11b6cdf0d6
+  referencedClips: []
   importAnimation: 1
   humanDescription:
     serializedVersion: 3
@@ -118,6 +102,8 @@ ModelImporter:
   humanoidOversampling: 1
   avatarSetup: 1
   addHumanoidExtraRootOnlyWhenUsingAvatar: 0
+  importBlendShapeDeformPercent: 0
+  remapMaterialsIfMaterialImportModeIsNone: 1
   additionalBone: 0
   userData: 
   assetBundleName: 

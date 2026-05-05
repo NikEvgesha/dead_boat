@@ -25,12 +25,13 @@ public class PlayerMovement : MonoBehaviour
     public float MoveSpeed 
     {
         get 
-        { 
+        {
+            float speed = _moveSpeed;
             if (LevelStatManager.Instance)
             {
-                return _moveSpeed + LevelStatManager.Instance.Stats.MoveSpeedMult;
+                speed += LevelStatManager.Instance.Stats.MoveSpeedMult;
             }
-            return _moveSpeed; 
+            return ProfessionService.ApplyMoveSpeed(speed);
         }
         set { _moveSpeed = value; }
     }
@@ -98,7 +99,8 @@ public class PlayerMovement : MonoBehaviour
 
     private void OnDisable()
     {
-        Settings.instance.ChangeMouseSensitivity -= ChangeMouseSensitivity;
+        if (Settings.instance != null)
+            Settings.instance.ChangeMouseSensitivity -= ChangeMouseSensitivity;
     }
 
     private void OnTriggerStay(Collider other)

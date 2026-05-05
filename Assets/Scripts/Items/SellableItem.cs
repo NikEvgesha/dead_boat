@@ -6,10 +6,12 @@ public class SellableItem : MonoBehaviour, ISellable
 
     public int GetReward() 
     {
+        float reward = _cost;
 
         if (LevelStatManager.Instance)
-            return (int)(_cost * LevelStatManager.Instance.Stats.MoneyMultSale);
-        return _cost;
+            reward *= LevelStatManager.Instance.Stats.MoneyMultSale;
+
+        return ProfessionService.ApplySaleReward(Mathf.RoundToInt(reward));
     }
 
 }

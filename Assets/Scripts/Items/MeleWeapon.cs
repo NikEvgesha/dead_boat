@@ -11,10 +11,10 @@ public class MeleWeapon : MonoBehaviour
     public int Damage 
     {
         get {
-
+            float damage = _damage;
             if (LevelStatManager.Instance)
-                return _damage + LevelStatManager.Instance.Stats.MeleDamage;
-            return _damage; 
+                damage += LevelStatManager.Instance.Stats.MeleDamage;
+            return Mathf.RoundToInt(ProfessionService.ApplyMeleeDamage(damage));
         }
     }
     [SerializeField] private float _attackSpeed = 1;
@@ -23,10 +23,10 @@ public class MeleWeapon : MonoBehaviour
     {
         get
         {
-
+            float attackSpeed = _attackSpeed;
             if (LevelStatManager.Instance)
-                return _attackSpeed * LevelStatManager.Instance.Stats.MeleAttackSpeed;
-            return _attackSpeed;
+                attackSpeed *= LevelStatManager.Instance.Stats.MeleAttackSpeed;
+            return ProfessionService.ApplyMeleeAttackSpeed(attackSpeed);
         }
     }
     [SerializeField] private AudioClip _audioHit;

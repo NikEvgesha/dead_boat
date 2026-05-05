@@ -91,11 +91,10 @@ public class PlayerStatsManager : MonoBehaviour
     public float MaxHealth
     {
         get {
-
+            float health = _maxHealth;
             if (LevelStatManager.Instance)
-                return _maxHealth + LevelStatManager.Instance.Stats.HP;
-
-            return _maxHealth; 
+                health += LevelStatManager.Instance.Stats.HP;
+            return ProfessionService.ApplyMaxHealth(health);
         }
     }
     public float Stamina
@@ -140,6 +139,7 @@ public class PlayerStatsManager : MonoBehaviour
     {
         if (LevelStatManager.Instance)
             exp = (int)(exp * LevelStatManager.Instance.Stats.MultExp);
+        exp = ProfessionService.ApplyExperienceGain(exp);
         _experience.Exp += exp;
     }
     public Experience Experience()
@@ -227,7 +227,7 @@ public class PlayerStatsManager : MonoBehaviour
     }
     public void Revive()
     {
-        Health = _maxHealth;
+        Health = MaxHealth;
         _isDead = false;
     }
     public void LoadHealth(float hp)

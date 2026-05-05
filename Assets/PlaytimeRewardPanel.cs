@@ -71,8 +71,12 @@ public class PlaytimeRewardPanel : MonoBehaviour
     }
     private void OnDisable()
     {
-        PlayerInput.Instance.APlaytime -= ToggleOpen;
-        PlayerInput.Instance.AOpenWindow -= Close;
+        if (PlayerInput.Instance != null)
+        {
+            PlayerInput.Instance.APlaytime -= ToggleOpen;
+            PlayerInput.Instance.AOpenWindow -= Close;
+        }
+
         StopAllCoroutines();
     }
     public void ToggleOpen()

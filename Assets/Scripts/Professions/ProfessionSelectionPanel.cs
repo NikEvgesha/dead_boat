@@ -14,6 +14,7 @@ public class ProfessionSelectionPanel : MonoBehaviour
     [Header("Root")]
     [SerializeField] private GameObject _panel;
     [SerializeField] private bool _setCursorWhenOpen = true;
+    [SerializeField] private bool _createTemporaryUiIfMissing = true;
 
     [Header("Texts")]
     [SerializeField] private Text _professionTitleText;
@@ -37,6 +38,9 @@ public class ProfessionSelectionPanel : MonoBehaviour
 
     [Header("Unlock")]
     [SerializeField] private int _unlockRandomPriceGems = 25;
+    [SerializeField] private bool _scaleUnlockPriceByOpenedCount = true;
+    [SerializeField] private int _unlockPriceStepGems = 5;
+    [SerializeField] private int _unlockPriceMaxGems = 120;
 
     private readonly List<ProfessionDefinition> _definitions = new();
     private int _currentIndex;
@@ -57,6 +61,7 @@ public class ProfessionSelectionPanel : MonoBehaviour
         if (_panel == null)
             _panel = gameObject;
 
+        EnsureTemporaryUiIfNeeded();
         _panel.SetActive(false);
     }
 
@@ -167,6 +172,8 @@ public class ProfessionSelectionPanel : MonoBehaviour
 
     private void UnlockRandomProfession()
     {
+        int unlockPrice = GetUnlockPriceGems();
+
         if (!ProfessionService.HasLockedProfessions())
         {
             SetMessage(ProfessionLocalization.MessageAllUnlocked);
@@ -174,7 +181,7 @@ public class ProfessionSelectionPanel : MonoBehaviour
             return;
         }
 
-        if (!ProfessionService.TryUnlockRandomLockedProfession(_unlockRandomPriceGems, out ProfessionDefinition unlockedDefinition))
+        if (!ProfessionService.TryUnlockRandomLockedProfession(unlockPrice, out ProfessionDefinition unlockedDefinition))
         {
             SetMessage(ProfessionLocalization.MessageUnlockFailed);
             RefreshView();
@@ -193,7 +200,8 @@ public class ProfessionSelectionPanel : MonoBehaviour
             return;
 
         bool unlocked = ProfessionService.IsUnlocked(definition.professionId);
-        bool selected = string.Equals(ProfessionService.CurrentProfessionId, definition.professionId, StringComparison.Ordinal);
+        bool selected = ProfessionService.HasExplicitProfessionChoice() &&
+            string.Equals(ProfessionService.CurrentProfessionId, definition.professionId, StringComparison.Ordinal);
 
         if (_professionTitleText != null)
             _professionTitleText.text = string.IsNullOrWhiteSpace(definition.title) ? definition.professionId : definition.title;
@@ -238,7 +246,7 @@ public class ProfessionSelectionPanel : MonoBehaviour
             _unlockRandomButton.interactable = ProfessionService.HasLockedProfessions();
 
         if (_unlockPriceText != null)
-            _unlockPriceText.text = _unlockRandomPriceGems.ToString();
+            _unlockPriceText.text = GetUnlockPriceGems().ToString();
     }
 
     private void RebuildDefinitions()
@@ -316,6 +324,19 @@ public class ProfessionSelectionPanel : MonoBehaviour
         _messageText.text = message ?? string.Empty;
     }
 
+    private int GetUnlockPriceGems()
+    {
+        int basePrice = Mathf.Max(0, _unlockRandomPriceGems);
+        if (!_scaleUnlockPriceByOpenedCount)
+            return basePrice;
+
+        int extraOpened = Mathf.Max(0, ProfessionService.GetUnlockedCount() - 1);
+        int scaledPrice = basePrice + (Mathf.Max(0, _unlockPriceStepGems) * extraOpened);
+
+        int maxPrice = Mathf.Max(basePrice, _unlockPriceMaxGems);
+        return Mathf.Clamp(scaledPrice, basePrice, maxPrice);
+    }
+
     private void HandleProfessionStateChanged()
     {
         if (!_opened)
@@ -327,6 +348,8 @@ public class ProfessionSelectionPanel : MonoBehaviour
 
     private void BindButtons()
     {
+        EnsureTemporaryUiIfNeeded();
+
         if (_nextButton != null)
         {
             _nextButton.onClick.RemoveListener(ShowNextProfession);
@@ -365,5 +388,44 @@ public class ProfessionSelectionPanel : MonoBehaviour
 
         PlayerInput.Instance.AOpenWindow -= CloseByOtherWindow;
         PlayerInput.Instance.AOpenWindow += CloseByOtherWindow;
+    }
+
+    private void EnsureTemporaryUiIfNeeded()
+    {
+        if (!_createTemporaryUiIfMissing || _panel == null)
+            return;
+
+        bool hasMainText = _professionTitleText != null
+            && _professionDescriptionText != null
+            && _starterItemsText != null
+            && _perksText != null;
+
+        bool hasMainButtons = _applyButton != null
+            && _nextButton != null
+            && _prevButton != null
+            && _unlockRandomButton != null
+            && _closeButton != null;
+
+        if (hasMainText && hasMainButtons)
+            return;
+
+        ProfessionTemporaryUIFactory.PanelRefs refs = ProfessionTemporaryUIFactory.EnsurePanel(_panel, CloseFromButton);
+        if (refs == null)
+            return;
+
+        _professionTitleText ??= refs.titleText;
+        _professionDescriptionText ??= refs.descriptionText;
+        _starterItemsText ??= refs.starterItemsText;
+        _perksText ??= refs.perksText;
+        _statusText ??= refs.statusText;
+        _messageText ??= refs.messageText;
+        _unlockPriceText ??= refs.unlockPriceText;
+        _professionIcon ??= refs.icon;
+        _lockObject ??= refs.lockObject;
+        _applyButton ??= refs.applyButton;
+        _nextButton ??= refs.nextButton;
+        _prevButton ??= refs.prevButton;
+        _unlockRandomButton ??= refs.unlockRandomButton;
+        _closeButton ??= refs.closeButton;
     }
 }

@@ -178,7 +178,8 @@ public class DecorationSpawner : MonoBehaviour
     private void OnDrawGizmos()
     {
         Vector3 playerPos = (player != null) ? player.position : Vector3.zero;
-        float boardZ = (boardController != null) ? boardController.TotalDistanceTraveled - FixCoordinate.Instance.BoardAddPos : 0f;
+        float boardAddPos = FixCoordinate.Instance != null ? FixCoordinate.Instance.BoardAddPos : 0f;
+        float boardZ = (boardController != null) ? boardController.TotalDistanceTraveled - boardAddPos : 0f;
 
         // Отрисовка области спавна, исходя из текущего boardZ
         Vector2 spawnOrigin = new Vector2(playerPos.x + spawnAreaOffset.x, boardZ + spawnAreaOffset.y);

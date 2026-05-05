@@ -72,7 +72,8 @@ public class LoadingManager : MonoBehaviour
 
     private void OnDisable()
     {
-        GameLoader.Instance.OnSceneLoaded -= OnSceneLoaded;
+        if (GameLoader.Instance != null)
+            GameLoader.Instance.OnSceneLoaded -= OnSceneLoaded;
     }
 
     private void OnSceneLoaded()
@@ -105,8 +106,14 @@ public class LoadingManager : MonoBehaviour
 
         try
         {
+            DeploymentType deployment = MirraSDK.Platform.Deployment;
             PlatformType platform = MirraSDK.Platform.Current;
-            return platform != PlatformType.Playgama && platform != PlatformType.PlaygamaBridge;
+            return deployment != DeploymentType.Editor &&
+                   platform != PlatformType.Editor &&
+                   platform != PlatformType.Localhost &&
+                   platform != PlatformType.Unknown &&
+                   platform != PlatformType.Playgama &&
+                   platform != PlatformType.PlaygamaBridge;
         }
         catch (Exception exception)
         {

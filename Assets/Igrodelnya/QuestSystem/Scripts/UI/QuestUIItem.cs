@@ -41,7 +41,8 @@ public class QuestUIItem : MonoBehaviour
 
     private void OnDisable()
     {
-        LocalizationManager.Instance.OnLanguageChanged -= UpdateLanguage;
+        if (LocalizationManager.Instance != null)
+            LocalizationManager.Instance.OnLanguageChanged -= UpdateLanguage;
     }
     private void UpdateLanguage(string lang)
     {
@@ -134,7 +135,8 @@ public class QuestUIItem : MonoBehaviour
             _boundQuest.OnQuestClaimed -= OnBoundQuestDestroyed;
             _boundQuest.OnDestroyed -= OnBoundQuestDestroyed;
         }
-        _claimButton.onClick.RemoveAllListeners();
+        if (_claimButton != null)
+            _claimButton.onClick.RemoveAllListeners();
     }
     private IEnumerator EndAnimation()
     {

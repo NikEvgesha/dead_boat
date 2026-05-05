@@ -12,6 +12,7 @@ public class EggNestSelectionPanel : MonoBehaviour
     [SerializeField] private Text _nestLabel;
     [SerializeField] private GameObject _emptyState;
     [SerializeField] private bool _setCursorWhenOpen = true;
+    [SerializeField] private bool _createTemporaryUiIfMissing = true;
 
     private EggHatchingManager _manager;
     private string _currentNestId;
@@ -29,6 +30,7 @@ public class EggNestSelectionPanel : MonoBehaviour
         if (_panel == null)
             _panel = gameObject;
 
+        EnsureTemporaryUiIfNeeded();
         _panel.SetActive(false);
     }
 
@@ -129,7 +131,7 @@ public class EggNestSelectionPanel : MonoBehaviour
         ClearSlots();
 
         if (_nestLabel != null)
-            _nestLabel.text = _currentNestId;
+            _nestLabel.text = EggTemporaryUIFactory.FormatHeader("Select egg", _currentNestId);
 
         bool anyAvailable = false;
 
@@ -201,6 +203,26 @@ public class EggNestSelectionPanel : MonoBehaviour
 
         _manager = manager;
         _manager.StateChanged += HandleStateChanged;
+    }
+
+    private void EnsureTemporaryUiIfNeeded()
+    {
+        if (!_createTemporaryUiIfMissing || _panel == null)
+            return;
+
+        if (_grid == null)
+            _grid = EggTemporaryUIFactory.EnsureGrid(_panel, "TemporaryEggSelectionGrid");
+
+        if (_slotPrefab == null)
+            _slotPrefab = EggTemporaryUIFactory.EnsureEggSlotTemplate(this);
+
+        if (_emptyState == null)
+            _emptyState = EggTemporaryUIFactory.EnsureEmptyState(_panel, "No eggs in storage");
+
+        if (_nestLabel == null)
+            _nestLabel = EggTemporaryUIFactory.EnsureHeader(_panel, "TemporaryEggSelectionHeader", "Select egg");
+
+        EggTemporaryUIFactory.EnsureCloseButton(_panel, CloseFromButton);
     }
 
     private void BindWindowCloseEvent()

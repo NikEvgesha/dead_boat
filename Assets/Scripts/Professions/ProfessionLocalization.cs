@@ -14,7 +14,20 @@ public static class ProfessionLocalization
     public static string UnknownItem => Translate("UI/Profession/UnknownItem", "Неизвестный предмет", "Unknown item");
     public static string DefaultProfessionTitle => Translate("UI/Profession/DefaultTitle", "Юнга", "Deckhand");
     public static string DefaultProfessionDescription => Translate("UI/Profession/DefaultDescription", "Базовая профессия без дополнительных бонусов.", "Base profession without extra bonuses.");
-
+    public static string PassiveMoveSpeedFlatLabel => Translate("UI/Profession/Passive/MoveSpeedFlat", "Move speed", "Move speed");
+    public static string PassiveMoveSpeedMultLabel => Translate("UI/Profession/Passive/MoveSpeedMult", "Move speed multiplier", "Move speed multiplier");
+    public static string PassiveMaxHealthFlatLabel => Translate("UI/Profession/Passive/MaxHealthFlat", "Max health", "Max health");
+    public static string PassiveExperienceMultLabel => Translate("UI/Profession/Passive/ExperienceMult", "Experience", "Experience");
+    public static string PassiveSaleRewardMultLabel => Translate("UI/Profession/Passive/SaleRewardMult", "Sell rewards", "Sell rewards");
+    public static string PassiveMaxFuelFlatLabel => Translate("UI/Profession/Passive/MaxFuelFlat", "Max fuel", "Max fuel");
+    public static string PassiveFuelConsumptionMultLabel => Translate("UI/Profession/Passive/FuelConsumptionMult", "Fuel consumption", "Fuel consumption");
+    public static string PassiveFuelFillMultLabel => Translate("UI/Profession/Passive/FuelFillMult", "Fuel fill efficiency", "Fuel fill efficiency");
+    public static string PassiveBoatSpeedFlatLabel => Translate("UI/Profession/Passive/BoatSpeedFlat", "Boat speed", "Boat speed");
+    public static string PassiveMeleeDamageFlatLabel => Translate("UI/Profession/Passive/MeleeDamageFlat", "Melee damage", "Melee damage");
+    public static string PassiveMeleeAttackSpeedMultLabel => Translate("UI/Profession/Passive/MeleeAttackSpeedMult", "Melee attack speed", "Melee attack speed");
+    public static string PassiveRangedDamageFlatLabel => Translate("UI/Profession/Passive/RangedDamageFlat", "Ranged damage", "Ranged damage");
+    public static string PassiveRangedAttackSpeedMultLabel => Translate("UI/Profession/Passive/RangedAttackSpeedMult", "Ranged attack speed", "Ranged attack speed");
+    public static string PassiveRangedReloadMultLabel => Translate("UI/Profession/Passive/RangedReloadMult", "Reload speed", "Reload speed");
     public static string FormatSelectedProfession(string title)
     {
         string format = Translate("UI/Profession/SelectedFormat", "Выбрана профессия: {0}", "Selected profession: {0}");
@@ -49,7 +62,9 @@ public static class ProfessionLocalization
         if (manager == null || manager.LocalizationData == null)
             return fallback;
 
-        string translated = manager.LocalizationData.GetTranslation(key, language);
+        if (!manager.LocalizationData.TryGetTranslation(key, language, out string translated))
+            return fallback;
+
         if (string.IsNullOrWhiteSpace(translated) || string.Equals(translated, key, StringComparison.Ordinal))
             return fallback;
 
