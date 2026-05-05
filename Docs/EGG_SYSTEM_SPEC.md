@@ -1,93 +1,268 @@
-# Egg System Spec (dead_boat)
+# Egg System Spec
 
-Updated: 2026-03-05  
-Status: implementation in progress, core runtime is already in code.
+Updated: 2026-05-05
+Status: core exists, target loop needs a v2 pass before production.
 
-## 1) Цель механики
+## Goal
 
-Добавить отдельный игровой цикл для яиц:
-- подбор яйца в ранe,
-- хранение в отдельном хранилище,
-- запуск инкубации в гнезде,
-- получение животного,
-- установка животного в точке размещения,
-- пассивный доход от установленного животного.
+Eggs are a meta-progression feature that starts during a run and resolves in the lobby.
 
-Механика должна работать независимо от обычного инвентаря.
+Target player loop:
 
-## 2) Данные и сохранение
+1. Player starts a normal run.
+2. Locations spawn eggs alongside ordinary pickup objects.
+3. Picking up an egg does not put it into the run inventory. It goes into separate egg storage.
+4. The UI shows how many eggs of each type the player owns.
+5. After win/lose, the player returns to the lobby.
+6. In the lobby, the player approaches nest points and starts hatching an owned egg.
+7. Each egg type can hatch into several possible animal variants.
+8. When the timer finishes, the animal appears at the nest and waits for manual collection.
+9. Collected animals go into a separate animal inventory.
+10. The player approaches animal placement points on the boat and chooses which owned animal to place.
+11. Placed animals apply buffs during the next run.
+12. A merge station lets the player merge two identical animals of the same stage into one stronger animal.
+13. Merged animals change visuals slightly, for example tint/material variation and later particles.
+14. Animals have a max stage, currently planned as 3-4 stages. Max-stage animals cannot be merged further.
 
-Точка хранения: `EggFeatureStorage` (`StorageKey = EggFeatureState_v1`).
+## Current Implementation
 
-Модель:
-- `ownedEggs[]` - количество яиц по `eggId`,
-- `ownedAnimals[]` - количество животных по `eggId`,
-- `nests[]` - активные инкубации (`nestId`, `eggId`, `finishAtUnix`, `durationSeconds`),
-- `placedAnimals[]` - размещенные животные (`pointId`, `eggId`, `lastIncomeUnix` + legacy поля).
+Implemented foundation:
 
-Требования к данным:
-- никакой потери прогресса при пустом/битом json,
-- fallback на `PlayerPrefs`, если `MirraSDK` недоступен,
-- нормализация и дедупликация записей при каждом `Load/Save`.
+- Separate storage key: `EggFeatureState_v1`.
+- Save scope is meta-progress, not run-progress. Eggs, nests, animal inventory, and placed animals must survive `GameManager.EndGame()` and must not be stored in `LevelStatManager.Stats`.
+- Egg pickup bypasses ordinary inventory and uses `EggFeatureStorage.AddEgg`.
+- `EggHatchingCatalog` exists in `Resources/Eggs/EggHatchingCatalog`.
+- `EggHatchingManager` supports:
+  - starting incubation in `EggNestPoint`;
+  - skip by gems;
+  - ready nest detection;
+  - collecting ready animals;
+  - animal placement in `AnimalPlacementPoint`;
+  - restoring placed animals after load;
+  - simple passive coin income from placed animals.
+- Temporary UI exists for nest selection and animal placement.
+- Spawn chance degradation exists through `EggSpawnRuntimeState`.
 
-## 3) Каталог и параметры
+Important gaps versus target loop:
 
-Каталог: `EggHatchingCatalog` (`ScriptableObject`), ресурс по умолчанию: `Resources/Eggs/EggHatchingCatalog`.
+- Animal inventory is currently grouped by `eggId`, not by unique `animalId` and `stage`.
+- An egg currently maps to one `animalPrefab`; target needs a hatch result pool.
+- Ready eggs can be auto-collected through `_autoCollectFinishedEggs`; target behavior should keep the animal at the nest until the player collects it.
+- Placed animals currently provide passive coin income; target needs run buffs applied to gameplay stats.
+- Merge station, merge state, stage visuals, and max-stage rules are not implemented.
 
-Поля `EggHatchingDefinition`:
-- `eggId`,
-- `title`,
-- `incubationSeconds`,
-- `skipCostGems`,
-- `passiveIncomeCoins`,
-- `passiveIncomeIntervalSeconds`,
-- `animalPrefab`,
-- `eggPreviewPrefab`.
+## Data Model V2
 
-## 4) Runtime-поток
+Keep `EggFeatureState_v1` for save compatibility, but extend it additively. Do not rename the storage key unless a migration layer is added.
 
-1. Игрок подбирает объект с `EggCollectibleItem`.
-2. `Inventory.AddItem` перехватывает его и вызывает `EggHatchingManager.RegisterEggPickup`.
-3. Яйцо уходит в `EggFeatureState.ownedEggs`.
-4. Игрок открывает гнездо (`EggNestPoint`) и выбирает яйцо в `EggNestSelectionPanel`.
-5. `EggHatchingManager.TryStartIncubation` создает запись в `nests`.
-6. По таймеру/скипу (гемы) гнездо становится готовым.
-7. `TryCollectReadyAnimal` переносит результат в `ownedAnimals`.
-8. Через `AnimalPlacementSelectionPanel` животное ставится в `AnimalPlacementPoint`.
-9. `EggHatchingManager` начисляет пассивный доход по интервалам.
+Recommended model:
 
-## 5) Спавн-баланс яиц
+```csharp
+public class EggInventoryEntry
+{
+    public string eggId;
+    public int amount;
+}
 
-`EggSpawnRuntimeState` снижает effective chance после каждого подбора яйца в рамках текущего забега.
+public class AnimalInventoryEntry
+{
+    public string animalId;
+    public int stage;
+    public int amount;
+}
 
-Параметры:
-- `decreasePerCollected`,
-- `minChanceMultiplier`,
-- reset в начале рана (`GameManager.Start` / `EggSpawnBalancer`).
+public class EggNestState
+{
+    public string nestId;
+    public string eggId;
+    public string hatchedAnimalId;
+    public int hatchedStage;
+    public long finishAtUnix;
+    public int durationSeconds;
+    public bool isReady;
+}
 
-Интеграция:
-- `LocationItemSpawnCollection` применяет модификатор только к префабам с `EggCollectibleItem`.
+public class PlacedAnimalState
+{
+    public string pointId;
+    public string animalId;
+    public int stage;
+}
+```
 
-## 6) Сценовые объекты
+Compatibility rule:
 
-Обязательные runtime-компоненты:
-- `EggHatchingManager`,
-- один или несколько `EggNestPoint` (уникальный `nestId`),
-- `EggNestSelectionPanel` (+ slot prefab),
-- `AnimalPlacementPoint` (уникальный `pointId`),
-- `AnimalPlacementSelectionPanel` (+ slot prefab),
-- при необходимости `EggNestUI` и `EggStorageDisplay`.
+- Existing saves with old `ownedAnimals[].eggId` should migrate to `animalId = eggId`, `stage = 1`.
+- Existing `placedAnimals[].eggId` should migrate the same way.
+- Unknown ids must be preserved when possible, not deleted, so temporary catalog mistakes do not wipe player progress.
 
-## 7) Известные риски и долги
+## Catalog V2
 
-- Не завершена финальная инспекторная проводка панелей в лобби.
-- Нужен полный smoke на перезаходах и миграции сохранений.
-- В UI остаются hardcoded строки (`Ready`, `No income`).
-- Требуется финальная балансировка времени инкубации, шансов спавна и дохода.
+`EggHatchingCatalog` should describe eggs, possible hatch results, animal stages, buffs, visuals, and merge limits.
 
-## 8) Критерии приемки
+Recommended data:
 
-- Сквозной сценарий работает без ручной правки данных.
-- После перезахода состояние гнезд/животных восстанавливается корректно.
-- Пассивный доход начисляется стабильно и без дублирования.
-- TODO/Journal/Docs синхронизированы после каждого заметного изменения.
+```csharp
+public class EggHatchingDefinition
+{
+    public string eggId;
+    public string title;
+    public int incubationSeconds;
+    public int skipCostGems;
+    public GameObject eggPreviewPrefab;
+    public List<EggHatchResult> hatchResults;
+}
+
+public class EggHatchResult
+{
+    public string animalId;
+    public int weight;
+}
+
+public class AnimalDefinition
+{
+    public string animalId;
+    public string title;
+    public int maxStage;
+    public List<AnimalStageDefinition> stages;
+}
+
+public class AnimalStageDefinition
+{
+    public int stage;
+    public GameObject animalPrefab;
+    public Color tint;
+    public GameObject mergeParticlesPrefab;
+    public AnimalRunBuffs buffs;
+}
+```
+
+Hatch selection:
+
+- Use weighted random among `hatchResults`.
+- Store the chosen `hatchedAnimalId` in the nest when incubation starts or when it finishes.
+- Prefer choosing at incubation start if we want the result to be stable even if balance changes before collection.
+
+## Buffs
+
+Animals should affect the next run only when placed on the boat.
+
+Recommended buff categories:
+
+- Player: max health, move speed, damage resistance.
+- Boat: max fuel, fuel consumption multiplier, boat speed.
+- Combat: melee damage, melee attack speed, ranged damage, reload speed.
+- Economy: coin reward multiplier, pickup value multiplier.
+- Utility: egg spawn chance modifier, rare hatch chance modifier, extra inventory capacity.
+
+Rules:
+
+- Buffs from multiple placed animals stack through a deterministic aggregator.
+- Multipliers must be clamped to avoid runaway combinations.
+- Merge stages should improve buffs by table values, not a hardcoded formula, so balance can be controlled from catalog/Google Sheets.
+- Profession and animal buffs must be tested together; neither should create an early-game auto-win.
+
+## Merge Rules
+
+Target merge behavior:
+
+- Merge station exists in the lobby.
+- Player selects two owned animals.
+- Merge is allowed only when:
+  - same `animalId`;
+  - same `stage`;
+  - `stage < maxStage`;
+  - both animals are in inventory, not placed on the boat.
+- Result:
+  - consume 2 animals of `(animalId, stage)`;
+  - add 1 animal of `(animalId, stage + 1)`;
+  - show VFX/SFX feedback;
+  - refresh animal inventory UI.
+
+Future optional rules:
+
+- Merge cost in coins/gems.
+- Chance-based merge for higher stages.
+- Duplicate protection or pity logic for rare hatch results.
+
+## UI Requirements
+
+Run UI:
+
+- Egg pickup feedback.
+- Egg storage counter by egg type.
+- No egg item should appear in ordinary run inventory.
+
+Lobby nest UI:
+
+- Shows owned eggs by type.
+- Shows empty nest, hatching timer, ready state, and collect action.
+- Ready nest should show animal preview, not silently move the animal to inventory.
+- Skip button shows gem cost and disabled state when the player lacks gems.
+
+Animal inventory UI:
+
+- Shows animal type, stage, count, and current buff summary.
+- Supports selecting an animal for boat placement.
+- Clearly marks placed animals as unavailable for merge.
+
+Boat placement UI:
+
+- Shows available animals.
+- Allows replace/remove behavior.
+- Shows currently active buffs for the run.
+
+Merge UI:
+
+- Shows mergeable pairs.
+- Blocks invalid combinations with clear disabled states.
+- Shows result stage and upgraded buff preview before confirming.
+
+## Balance Requirements
+
+Balance tables should eventually live in Google Sheets and import into local ScriptableObject assets.
+
+Egg balance:
+
+- Spawn chance per egg type.
+- Per-run chance decay after collecting eggs.
+- Max useful eggs per run if needed.
+- Incubation duration.
+- Skip cost.
+- Hatch result weights.
+
+Animal balance:
+
+- Stage count per animal.
+- Buff values per stage.
+- Merge cost if used.
+- Visual/VFX references per stage.
+
+Progression targets to tune:
+
+- Time to first egg.
+- Time to first hatched animal.
+- Time to first placed animal buff.
+- Time to first merge.
+- Expected number of runs to reach stage 2/3/4.
+
+## Acceptance Checklist
+
+- Eggs spawn in a normal run.
+- Egg pickup updates egg storage and does not add to run inventory.
+- After win/lose, lobby state still contains collected eggs.
+- Player can start hatching an egg in a nest.
+- Timer survives scene reload/restart.
+- Ready nest waits for manual collection.
+- Collected animal appears in animal inventory.
+- Player can place an animal on the boat.
+- Placed animal buff affects the next run.
+- Player can remove/replace a placed animal.
+- Two identical unplaced animals can merge into the next stage.
+- Max-stage animals cannot merge.
+- Old saves without egg data still load safely.
+- Existing saves with old `eggId` animals migrate to stage-1 animals.
+
+## Related Architecture
+
+See `Docs/SAVE_SCOPE_AND_STAT_MODIFIERS.md` for the save-scope rules and the planned unified stat modifier layer. The current implementation applies animal buffs after run cards and professions; before adding the future class mechanic, stat application should be centralized so cards, professions, animals, and classes share one deterministic calculation path.

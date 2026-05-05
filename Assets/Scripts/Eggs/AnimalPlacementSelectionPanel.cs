@@ -143,17 +143,16 @@ public class AnimalPlacementSelectionPanel : MonoBehaviour
                 if (owned == null || owned.amount <= 0)
                     continue;
 
-                if (!_manager.TryGetDefinition(owned.eggId, out EggHatchingDefinition definition))
-                    continue;
-
-                if (definition.animalPrefab == null)
+                string animalId = owned.EffectiveAnimalId;
+                int stage = owned.EffectiveStage;
+                if (!_manager.TryGetAnimalDetails(animalId, stage, out string title, out string detail))
                     continue;
 
                 AnimalPlacementSelectionSlot slot = _grid.SpawnObject<AnimalPlacementSelectionSlot>(_slotPrefab.gameObject);
                 if (slot == null)
                     continue;
 
-                slot.Init(definition, owned.amount, TrySelectAnimal);
+                slot.Init(animalId, stage, title, detail, owned.amount, TrySelectAnimal);
                 anyAvailable = true;
             }
         }
@@ -179,15 +178,15 @@ public class AnimalPlacementSelectionPanel : MonoBehaviour
         }
     }
 
-    private void TrySelectAnimal(string eggId)
+    private void TrySelectAnimal(string animalId, int stage)
     {
-        if (string.IsNullOrWhiteSpace(eggId))
+        if (string.IsNullOrWhiteSpace(animalId))
             return;
 
         if (_manager == null || string.IsNullOrWhiteSpace(_currentPointId))
             return;
 
-        if (_manager.TryPlaceAnimalToPoint(_currentPointId, eggId))
+        if (_manager.TryPlaceAnimalToPoint(_currentPointId, animalId, stage))
         {
             Close(true);
             return;

@@ -12,9 +12,11 @@ using UnityEditor;
 [CreateAssetMenu(fileName = "GoogleSheetData", menuName = "Google Sheets/Data")]
 public class GoogleSheetData : ScriptableObject
 {
+    private const string DefaultCredentialsPath = "UserSettings/Google/credentials.json";
+
     [SerializeField] private string sheetId;
     [SerializeField] private string sheetName;
-    [SerializeField] private string credentialsPath = "Assets/Resources/credentials.json";
+    [SerializeField] private string credentialsPath = DefaultCredentialsPath;
     [SerializeField] private LocalizationData localizationData;
 
     private SheetsService GetSheetsService(bool readOnly)
@@ -25,7 +27,11 @@ public class GoogleSheetData : ScriptableObject
                 ? new[] { SheetsService.Scope.SpreadsheetsReadonly }
                 : new[] { SheetsService.Scope.Spreadsheets };
 
-            var credential = GoogleCredential.FromFile(credentialsPath)
+            string resolvedCredentialsPath = string.IsNullOrWhiteSpace(credentialsPath)
+                ? DefaultCredentialsPath
+                : credentialsPath;
+
+            var credential = GoogleCredential.FromFile(resolvedCredentialsPath)
                 .CreateScoped(scopes);
 
             return new SheetsService(new BaseClientService.Initializer

@@ -11,7 +11,8 @@ public class SellableItem : MonoBehaviour, ISellable
         if (LevelStatManager.Instance)
             reward *= LevelStatManager.Instance.Stats.MoneyMultSale;
 
-        return ProfessionService.ApplySaleReward(Mathf.RoundToInt(reward));
+        int professionReward = ProfessionService.ApplySaleReward(Mathf.RoundToInt(reward));
+        return EggAnimalBuffService.ApplySaleReward(professionReward);
     }
 
 }

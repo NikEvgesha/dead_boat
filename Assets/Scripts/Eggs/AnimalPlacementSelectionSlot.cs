@@ -9,8 +9,9 @@ public class AnimalPlacementSelectionSlot : MonoBehaviour
     [SerializeField] private Text _incomeText;
     [SerializeField] private Button _button;
 
-    private string _eggId;
-    private Action<string> _onSelect;
+    private string _animalId;
+    private int _stage = 1;
+    private Action<string, int> _onSelect;
 
     public void BindTemporaryReferences(Text titleText, Text countText, Text incomeText, Button button)
     {
@@ -22,14 +23,21 @@ public class AnimalPlacementSelectionSlot : MonoBehaviour
 
     public void Init(EggHatchingDefinition definition, int amount, Action<string> onSelect)
     {
-        _eggId = definition != null ? definition.eggId : string.Empty;
+        string animalId = definition != null ? definition.eggId : string.Empty;
+        Init(animalId, 1, definition != null ? definition.title : animalId, "No income", amount,
+            (selectedAnimalId, _) => onSelect?.Invoke(selectedAnimalId));
+    }
+
+    public void Init(string animalId, int stage, string title, string detail, int amount, Action<string, int> onSelect)
+    {
+        _animalId = animalId;
+        _stage = Mathf.Max(1, stage);
         _onSelect = onSelect;
 
         if (_titleText != null)
         {
-            _titleText.text = string.IsNullOrWhiteSpace(definition?.title)
-                ? _eggId
-                : definition.title;
+            string safeTitle = string.IsNullOrWhiteSpace(title) ? _animalId : title;
+            _titleText.text = $"{safeTitle} S{_stage}";
         }
 
         if (_countText != null)
@@ -37,15 +45,7 @@ public class AnimalPlacementSelectionSlot : MonoBehaviour
 
         if (_incomeText != null)
         {
-            if (definition == null || definition.passiveIncomeCoins <= 0)
-            {
-                _incomeText.text = "No income";
-            }
-            else
-            {
-                int interval = Mathf.Max(1, definition.passiveIncomeIntervalSeconds);
-                _incomeText.text = $"+{definition.passiveIncomeCoins} / {FormatSeconds(interval)}";
-            }
+            _incomeText.text = string.IsNullOrWhiteSpace(detail) ? "Ready" : detail;
         }
 
         if (_button == null)
@@ -53,7 +53,7 @@ public class AnimalPlacementSelectionSlot : MonoBehaviour
 
         _button.onClick.RemoveListener(OnButtonClicked);
         _button.onClick.AddListener(OnButtonClicked);
-        _button.interactable = definition != null && amount > 0 && !string.IsNullOrWhiteSpace(_eggId);
+        _button.interactable = amount > 0 && !string.IsNullOrWhiteSpace(_animalId);
     }
 
     private void OnDisable()
@@ -64,10 +64,10 @@ public class AnimalPlacementSelectionSlot : MonoBehaviour
 
     private void OnButtonClicked()
     {
-        if (string.IsNullOrWhiteSpace(_eggId))
+        if (string.IsNullOrWhiteSpace(_animalId))
             return;
 
-        _onSelect?.Invoke(_eggId);
+        _onSelect?.Invoke(_animalId, _stage);
     }
 
     private static string FormatSeconds(int totalSeconds)

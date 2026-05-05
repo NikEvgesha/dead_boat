@@ -94,7 +94,8 @@ public class PlayerStatsManager : MonoBehaviour
             float health = _maxHealth;
             if (LevelStatManager.Instance)
                 health += LevelStatManager.Instance.Stats.HP;
-            return ProfessionService.ApplyMaxHealth(health);
+            health = ProfessionService.ApplyMaxHealth(health);
+            return EggAnimalBuffService.ApplyMaxHealth(health);
         }
     }
     public float Stamina
@@ -140,6 +141,7 @@ public class PlayerStatsManager : MonoBehaviour
         if (LevelStatManager.Instance)
             exp = (int)(exp * LevelStatManager.Instance.Stats.MultExp);
         exp = ProfessionService.ApplyExperienceGain(exp);
+        exp = EggAnimalBuffService.ApplyExperienceGain(exp);
         _experience.Exp += exp;
     }
     public Experience Experience()

@@ -21,7 +21,8 @@ public class BoardController : MonoBehaviour
             float maxFuel = _maxFuel;
             if (LevelStatManager.Instance)
                 maxFuel += LevelStatManager.Instance.Stats.MaxFuel;
-            return ProfessionService.ApplyMaxFuel(maxFuel);
+            maxFuel = ProfessionService.ApplyMaxFuel(maxFuel);
+            return EggAnimalBuffService.ApplyMaxFuel(maxFuel);
         }
         set { _maxFuel = value; } 
     }
@@ -35,7 +36,8 @@ public class BoardController : MonoBehaviour
             float rate = _fuelConsumptionRate;
             if (LevelStatManager.Instance)
                 rate *= LevelStatManager.Instance.Stats.ConsumptionFuel;
-            return ProfessionService.ApplyFuelConsumption(rate);
+            rate = ProfessionService.ApplyFuelConsumption(rate);
+            return EggAnimalBuffService.ApplyFuelConsumption(rate);
         }
         set 
         { 
@@ -55,7 +57,8 @@ public class BoardController : MonoBehaviour
             float maxSpeed = _maxSpeed;
             if (LevelStatManager.Instance)
                 maxSpeed += LevelStatManager.Instance.Stats.MaxSpeedBoard;
-            return ProfessionService.ApplyBoatMaxSpeed(maxSpeed);
+            maxSpeed = ProfessionService.ApplyBoatMaxSpeed(maxSpeed);
+            return EggAnimalBuffService.ApplyBoatMaxSpeed(maxSpeed);
         }
         set
         {
@@ -356,6 +359,7 @@ public class BoardController : MonoBehaviour
         if (LevelStatManager.Instance)
             amount *= LevelStatManager.Instance.Stats.AddMultFuel;
         amount = ProfessionService.ApplyFuelFill(amount);
+        amount = EggAnimalBuffService.ApplyFuelFill(amount);
         currentFuel += amount;
         if (currentFuel > MaxFuel)
         {

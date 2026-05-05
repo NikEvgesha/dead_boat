@@ -129,6 +129,44 @@ public static class EggTemporaryUIFactory
         return button;
     }
 
+    public static Button EnsureFloatingMergeButton(Canvas canvas, UnityAction openAction)
+    {
+        if (canvas == null)
+            return null;
+
+        Transform existing = canvas.transform.Find("TemporaryAnimalMergeOpenButton");
+        if (existing != null && existing.TryGetComponent(out Button existingButton))
+        {
+            existingButton.onClick.RemoveListener(openAction);
+            existingButton.onClick.AddListener(openAction);
+            return existingButton;
+        }
+
+        GameObject root = CreateRectObject("TemporaryAnimalMergeOpenButton", canvas.transform);
+        RectTransform rect = root.GetComponent<RectTransform>();
+        rect.anchorMin = new Vector2(0.2f, 0.08f);
+        rect.anchorMax = new Vector2(0.36f, 0.16f);
+        rect.offsetMin = Vector2.zero;
+        rect.offsetMax = Vector2.zero;
+
+        Image background = root.AddComponent<Image>();
+        background.color = new Color(0.22f, 0.24f, 0.26f, 1f);
+
+        Button button = root.AddComponent<Button>();
+        button.targetGraphic = background;
+        button.onClick.AddListener(openAction);
+
+        Text label = CreateSlotText("Label", root.transform, TextAnchor.MiddleCenter, 18, Color.white);
+        RectTransform labelRect = label.GetComponent<RectTransform>();
+        labelRect.anchorMin = Vector2.zero;
+        labelRect.anchorMax = Vector2.one;
+        labelRect.offsetMin = Vector2.zero;
+        labelRect.offsetMax = Vector2.zero;
+        label.text = "Merge Pets";
+
+        return button;
+    }
+
     public static EggNestSelectionSlot EnsureEggSlotTemplate(MonoBehaviour owner)
     {
         GameObject slot = CreateSlotTemplate(owner, "TemporaryEggSelectionSlot");

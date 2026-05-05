@@ -1,102 +1,146 @@
-# Настройка egg-механики в Unity (dead_boat)
+# Egg System Setup
 
-## Что уже реализовано кодом
+Updated: 2026-05-05
 
-- Отдельное хранилище яиц/животных (`EggFeatureState_v1`).
-- Инкубация и skip за гемы (`EggHatchingManager`).
-- Размещение животных и пассивный доход (`AnimalPlacementPoint` + `EggHatchingManager`).
-- Понижение шанса спавна яиц внутри забега (`EggSpawnRuntimeState`).
+This file tracks Unity setup for the egg feature. The current implementation has temporary UI fallbacks, but production should use explicit scene/prefab references.
 
-Ниже - только шаги сценовой настройки.
+## Scene Objects
 
-## 1) Каталог яиц
+Required lobby objects:
 
-1. Проверь `Assets/Resources/Eggs/EggHatchingCatalog.asset`.
-2. Для каждого яйца заполни:
-   - `eggId`,
-   - `title`,
-   - `incubationSeconds`,
-   - `skipCostGems`,
-   - `passiveIncomeCoins`,
-   - `passiveIncomeIntervalSeconds`,
-   - `animalPrefab`,
-   - `eggPreviewPrefab`.
+- `EggHatchingManager`
+- One or more `EggNestPoint` objects with unique `Nest Id`
+- One or more `AnimalPlacementPoint` objects on the boat with unique `Point Id`
+- Future: one `AnimalMergePoint` or merge station object
 
-## 2) Менеджер механики
+Required UI:
 
-1. На сцене должен быть один `EggHatchingManager`.
-2. В инспекторе проверь:
-   - `Catalog` (можно оставить пустым, если используется `Resources/Eggs/EggHatchingCatalog`),
-   - `Catalog Resource Path`,
-   - `Nests`,
-   - `Animal Points`,
-   - `Animals Root`,
-   - `Auto Load On Start = true`,
-   - `Auto Collect Finished Eggs = true`.
+- `EggNestSelectionPanel`
+- `AnimalPlacementSelectionPanel`
+- Future: `AnimalInventoryPanel`
+- Future: `AnimalMergePanel`
+- Optional: `EggStorageDisplay`
+- Optional: `EggNestUI` per nest
 
-## 3) Гнезда
+## Catalog
 
-1. На каждый объект гнезда повесь `EggNestPoint`.
-2. Заполни уникальный `Nest Id`.
-3. Привяжи `Egg Visual Anchor`.
-4. При необходимости добавь legacy `Animal Spawn Points` (для старых данных).
+Current asset:
 
-## 4) Панель выбора яйца
+- `Assets/Resources/Eggs/EggHatchingCatalog.asset`
 
-1. Создай/проверь UI-объект с `EggNestSelectionPanel`.
-2. В `EggNestSelectionPanel` проставь:
-   - `Panel`,
-   - `Grid` (`DynamicGridSpawner`),
-   - `Slot Prefab` (`EggNestSelectionSlot`),
-   - `Nest Label`,
-   - `Empty State`.
-3. На кнопку закрытия повесь `EggNestSelectionPanel.CloseFromButton()`.
-4. Если панель отдельная для конкретного гнезда, привяжи ее в `EggNestPoint._selectionPanel`.
+Before production, extend the catalog so it contains:
 
-## 5) Точки размещения животных
+- Egg definitions
+- Hatch result pools
+- Animal definitions
+- Animal stages
+- Stage prefabs/tints/VFX
+- Buff values per stage
+- Merge limits/costs
 
-1. На каждую точку повесь `AnimalPlacementPoint`.
-2. Заполни уникальный `Point Id`.
-3. Привяжи `Spawn Anchor`.
+## Manager Settings
 
-## 6) Панель выбора животного
+For target gameplay, use:
 
-1. Создай/проверь UI-объект с `AnimalPlacementSelectionPanel`.
-2. В инспекторе проставь:
-   - `Panel`,
-   - `Grid` (`DynamicGridSpawner`),
-   - `Slot Prefab` (`AnimalPlacementSelectionSlot`),
-   - `Point Label`,
-   - `Empty State`.
-3. На кнопку закрытия повесь `AnimalPlacementSelectionPanel.CloseFromButton()`.
-4. При необходимости привяжи панель напрямую в `AnimalPlacementPoint._selectionPanel`.
+- `Auto Load On Start = true`
+- `Auto Collect Finished Eggs = false`
 
-## 7) Интеграция со спавном
+Reason: ready animals should wait at the nest until the player manually collects them. Auto-collect is useful for old tests, but it does not match the desired loop.
 
-1. В `LocationItemSpawnCollection` убедись, что egg-префабы добавлены в `spawnEntries`.
-2. На префабах яиц должны быть:
-   - `PickableItem`,
-   - `EggCollectibleItem` с корректным `eggId`.
-3. На сцене добавь/проверь `EggSpawnBalancer`:
-   - `Decrease Per Collected`,
-   - `Min Chance Multiplier`,
-   - `Reset Run On Start`.
+Check:
 
-## 8) Smoke-чеклист (обязательный)
+- `Catalog` is assigned or `Catalog Resource Path = Eggs/EggHatchingCatalog`
+- `Nests` includes all production nests or auto-search finds them
+- `Animal Points` includes all boat placement points or auto-search finds them
+- `Animals Root` is assigned when animals should not be parented directly to placement anchors
+- `Parent Animals To Anchor = true` for boat-mounted points
 
-1. Подобрать яйцо в ранe.
-2. Открыть гнездо и выбрать яйцо.
-3. Проверить таймер и превью яйца в гнезде.
-4. Проверить skip за гемы.
-5. Дождаться готовности и получить животное.
-6. Поставить животное в `AnimalPlacementPoint`.
-7. Проверить начисление пассивного дохода.
-8. Перезайти в сцену и убедиться, что состояние восстановилось.
-9. Снять животное и убедиться, что оно вернулось в хранилище.
+## Egg Pickup Setup
 
-## 9) Что проверить перед релизом
+Each egg pickup prefab needs:
 
-- Нет дубликатов `nestId` и `pointId`.
-- UI-панели корректно закрываются при открытии других окон.
-- На мобильном вводе нет зависаний курсора/окон.
-- При отсутствии `MirraSDK` сохранение работает через `PlayerPrefs`.
+- `PickableItem`
+- `EggCollectibleItem`
+- Valid `eggId` matching the catalog
+
+Spawn setup:
+
+- Add egg prefabs to `LocationItemSpawnCollection`.
+- Tune spawn chance per location.
+- Use `EggSpawnBalancer` to reduce effective chance after each egg pickup in the same run.
+
+## Nest Setup
+
+For each nest:
+
+- Add `EggNestPoint`.
+- Set unique `Nest Id`, for example `nest_01`.
+- Assign `Egg Visual Anchor`.
+- Connect `EggNestUI` if using designer UI.
+- Connect `EggNestSelectionPanel` if this nest uses a local panel; otherwise global panel instance can be used.
+
+Production behavior:
+
+- Empty nest opens egg selection.
+- Hatching nest shows timer and optional skip.
+- Ready nest shows animal preview and collect action.
+
+## Animal Placement Setup
+
+For each boat placement point:
+
+- Add `AnimalPlacementPoint`.
+- Set unique `Point Id`, for example `boat_pet_01`.
+- Assign `Spawn Anchor` on the boat hierarchy.
+- Connect `AnimalPlacementSelectionPanel` if this point uses a local panel.
+
+Production behavior:
+
+- Empty point opens animal selection.
+- Occupied point allows remove/replace.
+- Placed animals are excluded from merge inventory.
+
+## Merge Station Setup
+
+Not implemented yet.
+
+Target setup:
+
+- Add lobby interaction point, likely `AnimalMergePoint`.
+- Connect `AnimalMergePanel`.
+- Panel should list only mergeable pairs:
+  - same `animalId`;
+  - same `stage`;
+  - count at least 2;
+  - stage below max.
+- Confirm action consumes two and adds one upgraded animal.
+
+## Manual Smoke
+
+Minimum smoke after every egg-system change:
+
+1. Start from `LoadingScene`.
+2. Enter a run.
+3. Pick up an egg.
+4. Confirm ordinary inventory did not receive the egg.
+5. Confirm egg storage count increased.
+6. Win or lose and return to lobby.
+7. Start incubation in a nest.
+8. Reload scene or restart Play Mode and confirm timer persists.
+9. Wait or skip until ready.
+10. Confirm ready animal stays at nest until collected.
+11. Collect animal.
+12. Place animal on boat.
+13. Start a new run and confirm the animal buff applies.
+14. Return to lobby, remove animal from boat.
+15. Hatch/obtain a duplicate animal.
+16. Merge two identical stage-1 animals into one stage-2 animal.
+17. Confirm max-stage animals cannot be merged.
+
+## Release Risks
+
+- Do not change the storage key lightly. Use additive fields and migration.
+- Do not delete unknown animal ids during normalization.
+- Avoid auto-collect for production if the nest is meant to be an interaction point.
+- Test egg/pet buffs together with profession buffs before release.
+- Keep temporary UI replaceable; production UI should be prefab-driven.

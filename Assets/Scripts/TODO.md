@@ -173,3 +173,31 @@ Next manual QA in Unity:
 - [ ] Verify passive bonuses for at least 3 professions on new run and resumed run.
 - [ ] Tune unlock price (base/step/max) against real economy values.
 - [ ] Tune pet income settings (fullIncomeAnimalCount, extraAnimalIncomeMultiplier, maxAccumulatedIncomeSeconds).
+
+---
+
+## 2026-05-05 egg loop v2 clarification
+
+Updated target loop from design discussion:
+
+- Eggs spawn during ordinary runs and are collected into separate egg storage, never into the normal run inventory.
+- Lobby nests hatch eggs after win/lose return flow.
+- One egg type can hatch into several possible animal variants through weighted results.
+- Ready nests should wait for manual animal collection; production should not silently auto-collect ready animals.
+- Animals live in a separate animal inventory.
+- Boat placement points let the player choose which owned animal to place.
+- Placed animals should provide run buffs, not just passive coin income.
+- Merge station should merge 2 identical unplaced animals of the same stage into 1 stronger animal.
+- Animals need 3-4 stages; max-stage animals cannot merge.
+- Higher stages should have stronger buff data and lightweight visual changes: tint/material variation first, particles later.
+
+Implementation backlog for eggs:
+
+- [x] Extend egg save model from `eggId + amount` animals to `animalId + stage + amount`, with migration from old `eggId` animals to stage 1.
+- [x] Extend `EggHatchingCatalog` with hatch result pools, animal definitions, stage definitions, stage visuals, and run buff values.
+- [x] Change ready nest flow so hatching produces a visible ready animal that waits for player collection.
+- [x] Add animal buff aggregator for placed boat animals and apply it to run stats.
+- [x] Add merge service/state/UI for two identical unplaced animals.
+- [x] Add temporary replaceable UI for animal inventory and merge panel if production UI is not ready.
+- [ ] Update Google Sheets balance export/import for egg result weights, animal stages, merge costs, and buffs.
+- [ ] Run full smoke: pickup -> storage -> nest -> timer -> collect -> place -> buff in run -> remove -> merge -> save reload.

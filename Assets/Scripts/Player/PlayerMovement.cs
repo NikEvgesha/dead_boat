@@ -31,7 +31,8 @@ public class PlayerMovement : MonoBehaviour
             {
                 speed += LevelStatManager.Instance.Stats.MoveSpeedMult;
             }
-            return ProfessionService.ApplyMoveSpeed(speed);
+            speed = ProfessionService.ApplyMoveSpeed(speed);
+            return EggAnimalBuffService.ApplyMoveSpeed(speed);
         }
         set { _moveSpeed = value; }
     }

@@ -15,7 +15,8 @@ public class RangedWeaponController : MonoBehaviour
             float damage = _damage;
             if (LevelStatManager.Instance)
                 damage += LevelStatManager.Instance.Stats.RangeDamage;
-            return ProfessionService.ApplyRangedDamage(damage);
+            damage = ProfessionService.ApplyRangedDamage(damage);
+            return EggAnimalBuffService.ApplyRangedDamage(damage);
         }
     }
     [SerializeField] private float range = 100f;
@@ -27,7 +28,8 @@ public class RangedWeaponController : MonoBehaviour
             float attackSpeed = _attackSpeed;
             if (LevelStatManager.Instance)
                 attackSpeed *= LevelStatManager.Instance.Stats.RangeAttackSpeed;
-            return ProfessionService.ApplyRangedAttackSpeed(attackSpeed);
+            attackSpeed = ProfessionService.ApplyRangedAttackSpeed(attackSpeed);
+            return EggAnimalBuffService.ApplyRangedAttackSpeed(attackSpeed);
         }
     }
     [SerializeField] private Camera fpsCam;
@@ -57,7 +59,8 @@ public class RangedWeaponController : MonoBehaviour
             float reloadSpeed = _reloadTime;
             if (LevelStatManager.Instance)
                 reloadSpeed *= LevelStatManager.Instance.Stats.RangeReloadSpeed;
-            return ProfessionService.ApplyRangedReloadSpeed(reloadSpeed);
+            reloadSpeed = ProfessionService.ApplyRangedReloadSpeed(reloadSpeed);
+            return EggAnimalBuffService.ApplyRangedReloadSpeed(reloadSpeed);
         }
     }
 

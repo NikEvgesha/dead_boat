@@ -11,7 +11,7 @@ using UnityEngine;
 
 public sealed class BalanceSheetSyncWindow : EditorWindow
 {
-    private const string DefaultCredentialsPath = "Assets/Resources/credentials.json";
+    private const string DefaultCredentialsPath = "UserSettings/Google/credentials.json";
     private const string DefaultSheetId = "1HSS4jCpcI94jL0jDs6EZqboiEkLthXGt8ib7YOywqYI";
     private const string EggCatalogPath = "Assets/Resources/Eggs/EggHatchingCatalog.asset";
     private const string ProfessionCatalogPath = "Assets/Resources/Professions/ProfessionCatalog.asset";
@@ -45,7 +45,16 @@ public sealed class BalanceSheetSyncWindow : EditorWindow
 
         EditorGUI.BeginChangeCheck();
         _sheetId = EditorGUILayout.TextField("Sheet Id", _sheetId);
-        _credentialsPath = EditorGUILayout.TextField("Credentials Path", _credentialsPath);
+        using (new EditorGUILayout.HorizontalScope())
+        {
+            _credentialsPath = EditorGUILayout.TextField("Credentials Path", _credentialsPath);
+            if (GUILayout.Button("Browse", GUILayout.Width(70)))
+            {
+                string selectedPath = EditorUtility.OpenFilePanel("Google Service Account Credentials", string.Empty, "json");
+                if (!string.IsNullOrWhiteSpace(selectedPath))
+                    _credentialsPath = selectedPath;
+            }
+        }
         _syncEggs = EditorGUILayout.ToggleLeft("Eggs", _syncEggs);
         _syncProfessions = EditorGUILayout.ToggleLeft("Professions", _syncProfessions);
         _syncBoosters = EditorGUILayout.ToggleLeft("Boosters", _syncBoosters);

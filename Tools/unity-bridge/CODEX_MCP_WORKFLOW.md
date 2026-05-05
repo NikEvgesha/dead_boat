@@ -24,6 +24,14 @@ powershell -ExecutionPolicy Bypass -File .\Tools\unity-bridge\mcp-wrapper.ps1 -C
 powershell -ExecutionPolicy Bypass -File .\Tools\unity-bridge\mcp-wrapper.ps1 -Command scene_hierarchy
 ```
 
+```powershell
+powershell -ExecutionPolicy Bypass -File .\Tools\unity-bridge\mcp-wrapper.ps1 -Command project_status
+```
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\Tools\unity-bridge\mcp-wrapper.ps1 -Command console
+```
+
 Or run the bundled smoke test:
 
 ```powershell
@@ -31,6 +39,30 @@ powershell -ExecutionPolicy Bypass -File .\Tools\unity-bridge\mcp-smoke.ps1
 ```
 
 ## Common commands
+
+### Project status
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\Tools\unity-bridge\mcp-wrapper.ps1 -Command project_status
+```
+
+### Console errors and warnings
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\Tools\unity-bridge\mcp-wrapper.ps1 -Command console
+```
+
+### Asset search
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\Tools\unity-bridge\mcp-wrapper.ps1 -Command assets_find -Query Egg -Type ScriptableObject
+```
+
+### Asset read
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\Tools\unity-bridge\mcp-wrapper.ps1 -Command asset_read -Path "Assets/Resources/Professions/ProfessionCatalog.asset"
+```
 
 ### Scene grep
 

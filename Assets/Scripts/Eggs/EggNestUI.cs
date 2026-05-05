@@ -58,7 +58,9 @@ public class EggNestUI : MonoBehaviour
         SetState(false, !ready, ready);
 
         if (_eggNameText != null)
-            _eggNameText.text = nestState.eggId;
+            _eggNameText.text = ready && !string.IsNullOrWhiteSpace(nestState.hatchedAnimalId)
+                ? nestState.hatchedAnimalId
+                : nestState.eggId;
 
         if (_timerText != null)
             _timerText.text = ready ? "Ready" : FormatSeconds(remaining);

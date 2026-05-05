@@ -104,6 +104,8 @@ namespace UnityBridge
                 
                 AddAssemblyIfNotExists(references, typeof(object).Assembly.Location);
                 AddAssemblyIfNotExists(references, typeof(Uri).Assembly.Location);
+                AddAssemblyIfNotExists(references, typeof(Enumerable).Assembly.Location);
+                AddAssemblyIfNotExists(references, FindAssemblyPath("netstandard.dll"));
                 
                 AddAssemblyIfNotExists(references, typeof(UnityEngine.GameObject).Assembly.Location);
                 if (needUnityEditor)
@@ -125,7 +127,8 @@ namespace UnityBridge
                         var name = asm.GetName().Name;
                         if (allowedUnityAssemblies.Contains(name) || 
                             name == "Assembly-CSharp" || 
-                            name == "Assembly-CSharp-Editor")
+                            name == "Assembly-CSharp-Editor" ||
+                            name == "netstandard")
                         {
                             AddAssemblyIfNotExists(references, asm.Location);
                         }

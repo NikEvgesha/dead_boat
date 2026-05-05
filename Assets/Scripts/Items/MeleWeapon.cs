@@ -14,7 +14,8 @@ public class MeleWeapon : MonoBehaviour
             float damage = _damage;
             if (LevelStatManager.Instance)
                 damage += LevelStatManager.Instance.Stats.MeleDamage;
-            return Mathf.RoundToInt(ProfessionService.ApplyMeleeDamage(damage));
+            damage = ProfessionService.ApplyMeleeDamage(damage);
+            return Mathf.RoundToInt(EggAnimalBuffService.ApplyMeleeDamage(damage));
         }
     }
     [SerializeField] private float _attackSpeed = 1;
@@ -26,7 +27,8 @@ public class MeleWeapon : MonoBehaviour
             float attackSpeed = _attackSpeed;
             if (LevelStatManager.Instance)
                 attackSpeed *= LevelStatManager.Instance.Stats.MeleAttackSpeed;
-            return ProfessionService.ApplyMeleeAttackSpeed(attackSpeed);
+            attackSpeed = ProfessionService.ApplyMeleeAttackSpeed(attackSpeed);
+            return EggAnimalBuffService.ApplyMeleeAttackSpeed(attackSpeed);
         }
     }
     [SerializeField] private AudioClip _audioHit;

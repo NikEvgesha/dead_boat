@@ -1,72 +1,155 @@
-# Настройка механики профессий в Unity (dead_boat)
+# Profession System Setup
 
-## 1) Создать каталог профессий
+Updated: 2026-05-06
 
-1. Создай `ProfessionCatalog`:
-   - меню `Create -> ScriptableObject -> Professions -> ProfessionCatalog`.
-2. Добавь профессии в `Definitions`.
-3. Для дефолтной профессии (`Юнга`) поставь `defaultUnlocked = true`.
-4. Для каждой профессии укажи:
-   - `professionId` (уникальный),
-   - `title`,
-   - `description`,
-   - `icon`,
-   - `starterItems` (префаб + amount),
-   - `startCoinsBonus` / `startGemsBonus`,
-   - `perkLines`.
+This setup doc describes the target profession feature. Some parts are not implemented yet and are marked as pending.
 
-## 2) Подключить каталог в сцене
+## 1. Catalog
 
-1. На объекте со `StarterPackManager` проставь поле `Profession Catalog`.
-2. На объекте с `ProfessionSelectionPanel` проставь тот же `Profession Catalog`.
+Create or update the profession catalog:
 
-Это гарантирует одинаковый источник данных для UI и старта.
+- Asset menu: `Create -> ScriptableObject -> Professions -> ProfessionCatalog`.
+- Recommended path: `Assets/Resources/Professions/ProfessionCatalog.asset`.
 
-## 3) Настроить UI панели профессий
+Each profession should have:
 
-На объект с `ProfessionSelectionPanel` повесь ссылки:
-- `Panel`,
-- `Profession Title Text`,
-- `Profession Description Text`,
-- `Starter Items Text`,
-- `Perks Text`,
-- `Status Text`,
-- `Message Text` (опционально),
-- `Unlock Price Text`,
-- `Profession Icon`,
-- `Lock Object`,
-- кнопки `Apply/Next/Prev/UnlockRandom/Close`.
+- stable `professionId`;
+- `title`;
+- `description`;
+- `icon`;
+- starter items;
+- start currency bonuses if needed;
+- passive stat bonuses;
+- random unlock settings;
+- direct purchase settings.
 
-Рекомендуемая логика кнопок:
-- `Apply` видно только для открытых профессий;
-- для закрытых показывается `Lock Object`;
-- `UnlockRandom` всегда видна, но отключается, когда все открыты.
+Current implementation fields:
 
-## 4) Настроить NPC точку
+- `professionId`
+- `title`
+- `description`
+- `icon`
+- `defaultUnlocked`
+- `starterItems`
+- `startCoinsBonus`
+- `startGemsBonus`
+- `perkLines`
+- `passiveBonuses`
 
-1. На NPC-объект добавь `ProfessionNpcPoint`.
-2. Добавь `Trigger`-коллайдер зоны взаимодействия.
-3. В `ProfessionNpcPoint` проставь:
-   - `Info Canvas` (подсказка "E выбрать класс"),
-   - `Selection Panel` (или оставить пустым для авто-поиска `Instance`),
-   - `Touch Open Button` (опционально для mobile hint),
-   - `Close Panel On Trigger Exit` по необходимости.
+Pending v2 fields:
 
-## 5) Проверить стартовые бонусы
+- random unlock pool flag;
+- random unlock weight;
+- direct coin/soft-currency cost;
+- purchase product id;
+- soft-currency fallback flag for platforms without purchases.
 
-1. Выбери профессию в панели.
-2. Запусти новый ран (ветка, где нет активного сохраненного забега).
-3. Проверь:
-   - стартовые предметы профессии добавлены в инвентарь,
-   - валютные бонусы добавлены.
+## 2. Default State
 
-## 6) Smoke-чеклист
+Target behavior:
 
-1. С чистого сейва открыть панель профессий, убедиться что открыта только `Юнга`.
-2. Попробовать выбрать закрытую профессию - должно быть заблокировано.
-3. Нажать "случайная профессия за гемы":
-   - гемы списались,
-   - открылась случайная закрытая профессия.
-4. Выбрать открытую профессию, перезапустить игру - выбор должен сохраниться.
-5. Запустить новый ран и проверить стартовые бонусы.
-6. Повторить до состояния "все профессии открыты" и проверить disable кнопки unlock.
+- New players start with no active profession.
+- "No profession" should be selectable and should give no bonuses.
+
+Current implementation note:
+
+- Existing code always unlocks a default profession when `defaultUnlocked` is set.
+- During the v2 implementation pass, normalize logic should be changed so old saves still work, but new players can stay in no-profession state.
+
+## 3. Lobby Interaction
+
+Add a profession point in the lobby:
+
+1. Create a lobby object for profession selection.
+2. Add `ProfessionNpcPoint`.
+3. Add trigger collider for interaction.
+4. Assign:
+   - info canvas or hint object;
+   - `ProfessionSelectionPanel`;
+   - optional touch open button.
+
+The interaction should open the profession panel and not start a run by itself.
+
+## 4. UI Panel
+
+Required panel controls:
+
+- close button;
+- previous/next or list selection;
+- select/equip button;
+- random unlock button;
+- direct buy button;
+- title text;
+- description text;
+- starter item summary;
+- stat/perk summary;
+- status text;
+- price text;
+- icon;
+- locked marker.
+
+Target UI states:
+
+- No profession selected.
+- Profession locked.
+- Profession unlocked but not selected.
+- Profession selected.
+- Random unlock available.
+- Random unlock unavailable because all pool professions are unlocked.
+- Direct real-money buy available.
+- Direct soft-currency fallback available.
+- Direct buy unavailable on this platform.
+
+Temporary UI is acceptable during implementation, but it should be easy to replace with final UI.
+
+## 5. Economy Wiring
+
+Random unlock:
+
+- Spend configured soft currency, initially coins.
+- Unlock one random locked profession from the random pool.
+- Persist the unlock to `ProfessionState_v1`.
+
+Direct buy:
+
+- If purchases are available, use the configured product id.
+- If purchases are unavailable and fallback is allowed, spend configured soft currency.
+- Unlock the chosen profession permanently after success.
+
+Need implementation check:
+
+- Confirm exact `PurchasesManager` product API before wiring direct real-money unlock.
+- Confirm whether coins or gems should be the fallback currency per platform.
+
+## 6. Run Integration
+
+At new run start:
+
+- If no profession is selected, do nothing.
+- If a profession is selected:
+  - add starter items;
+  - apply start currency bonuses;
+  - include passive stat bonuses in run stat calculation.
+
+Rules:
+
+- Do not apply starter items when resuming an unfinished saved run.
+- Do not clear profession state at win/lose.
+- Do not store profession bonuses in `LevelStatManager.Stats`.
+
+## 7. Smoke Checklist
+
+Run these checks after implementation:
+
+1. Clean save opens profession UI with no profession selected.
+2. Starting a run with no profession works and gives no extra items/stats.
+3. Random unlock spends soft currency and unlocks one profession.
+4. Random unlock cannot pick already unlocked professions.
+5. Direct buy unlocks the selected profession on purchase-capable platform.
+6. Direct buy switches to soft-currency fallback when purchases are unavailable and fallback is allowed.
+7. Unlocked profession can be selected.
+8. Selected profession persists after restart.
+9. New run receives starter items and passive stat bonuses.
+10. Resumed run does not duplicate starter items.
+11. Win/lose reset does not clear unlocked professions or selected profession.
+12. Unity Console stays free of errors and dangerous warnings.

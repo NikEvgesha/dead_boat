@@ -1,8 +1,12 @@
 ﻿param(
-    [ValidateSet("ping", "scene_hierarchy", "scene_grep", "screenshot", "camera_screenshot", "execute", "raw")]
+    [ValidateSet("ping", "project_status", "console", "assets_find", "asset_read", "scene_hierarchy", "scene_grep", "screenshot", "camera_screenshot", "execute", "raw")]
     [string]$Command = "ping",
     [string]$BaseUrl = "http://localhost:7778",
     [string]$Query,
+    [string]$Type,
+    [string]$Path,
+    [string]$Guid,
+    [string]$Under = "Assets",
     [string]$Code,
     [string]$Json = "{}",
     [string]$Endpoint = "/api/execute",
@@ -47,6 +51,40 @@ try {
         }
         "scene_hierarchy" {
             $resp = Invoke-McpPost -Url "$BaseUrl/api/scene_hierarchy" -Body @{}
+            $resp | ConvertTo-Json -Depth 32
+        }
+        "project_status" {
+            $resp = Invoke-McpPost -Url "$BaseUrl/api/project_status" -Body @{
+                include_packages = $true
+                include_selection = $true
+            }
+            $resp | ConvertTo-Json -Depth 32
+        }
+        "console" {
+            $resp = Invoke-McpPost -Url "$BaseUrl/api/console" -Body @{
+                max_entries = 100
+                include_stack = $false
+                types = @("Error", "Warning")
+            }
+            $resp | ConvertTo-Json -Depth 32
+        }
+        "assets_find" {
+            $resp = Invoke-McpPost -Url "$BaseUrl/api/assets_find" -Body @{
+                query = $Query
+                type = $Type
+                under = $Under
+                max_results = 100
+            }
+            $resp | ConvertTo-Json -Depth 32
+        }
+        "asset_read" {
+            $resp = Invoke-McpPost -Url "$BaseUrl/api/asset_read" -Body @{
+                path = $Path
+                guid = $Guid
+                include_dependencies = $true
+                include_text = $true
+                max_text_chars = 8000
+            }
             $resp | ConvertTo-Json -Depth 32
         }
         "scene_grep" {

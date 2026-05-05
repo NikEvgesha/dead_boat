@@ -127,6 +127,18 @@ namespace UnityBridge
 
                 case "/api/play_mode":
                     return ExecuteOnMainThread(() => UnityOperations.SetPlayMode(request));
+
+                case "/api/project_status":
+                    return ExecuteOnMainThread(() => UnityOperations.GetProjectStatus(request));
+
+                case "/api/console":
+                    return ExecuteOnMainThread(() => UnityOperations.GetConsoleEntries(request));
+
+                case "/api/assets_find":
+                    return ExecuteOnMainThread(() => UnityOperations.FindAssets(request));
+
+                case "/api/asset_read":
+                    return ExecuteOnMainThread(() => UnityOperations.ReadAsset(request));
                     
                 default:
                     return OperationResult.Fail($"Unknown endpoint: {request.Endpoint}");

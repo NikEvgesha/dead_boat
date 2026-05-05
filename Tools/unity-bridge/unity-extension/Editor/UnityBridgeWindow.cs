@@ -37,6 +37,26 @@ namespace UnityBridge
         {
             ShowWindow();
         }
+
+        [MenuItem("Tools/Unity Bridge")]
+        public static void ShowWindowFromTools()
+        {
+            ShowWindow();
+        }
+
+        [MenuItem("Tools/Unity Bridge/Start Server")]
+        public static void StartServerFromTools()
+        {
+            UnityBridge.StartServer();
+            ShowWindow();
+        }
+
+        [MenuItem("Tools/Unity Bridge/Stop Server")]
+        public static void StopServerFromTools()
+        {
+            UnityBridge.StopServer();
+            ShowWindow();
+        }
         
         private void OnEnable()
         {

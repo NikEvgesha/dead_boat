@@ -184,3 +184,145 @@ Open follow-up:
 - Added explicit profession choice tracking to `ProfessionState`.
 - Profession passives, starter items, and start currency bonuses now apply only after the player explicitly selects a profession.
 - This keeps old production saves from receiving hidden profession balance changes when the profession feature is introduced or retuned later.
+
+### 2026-05-05 (Unity MCP cleanup)
+
+- Compared the project-local `com.unity-bridge` package with Unity's official MCP direction in Unity AI.
+- Removed the custom `Tools/unity-bridge` package from the project and from package manifest/lock.
+- Official Unity MCP should be enabled through Unity AI/AI Assistant flow in Unity 6.3+, not pinned manually in `manifest.json`; direct `com.unity.ai.assistant@2.7.0` manifest pin was rejected by Unity Package Manager.
+- Follow-up check: official Unity MCP configured correctly for Codex, but Unity rejects the direct Codex connection with `Your Unity plan doesn't include MCP connections. Upgrade your Unity plan to add more.` Current direct connection limit is 0, so official MCP is not usable from Codex on this Unity account until the plan/entitlement allows MCP direct connections.
+- Decision: restored the old project-local `com.unity-bridge` package and switched Codex back to the old `unity-mcp-advanced` server targeting `http://localhost:7778`. Keep official Unity MCP as a future option only if Unity plan/entitlement starts allowing direct MCP connections.
+- Bridge improvement backlog:
+  - Add read-only project/package diagnostics: Unity version, active scene, package list, compile state, console errors/warnings.
+  - Add asset search/read helpers for ScriptableObjects, prefabs, scenes, materials, and addressable-like references.
+  - Add safer editor actions: load/save scene, refresh asset database, ping/select object, capture game/scene view, play-mode smoke test.
+  - Add guarded write actions later: create/update assets and prefabs through explicit endpoints with dry-run output first.
+- Implemented first read-only bridge expansion:
+  - `/api/project_status`
+  - `/api/console`
+  - `/api/assets_find`
+  - `/api/asset_read`
+  - Updated `Tools/unity-bridge/mcp-wrapper.ps1` and smoke/docs for these checks.
+- Added matching direct MCP tools to `E:/GitFork/unity-mcp-advanced/unity-mcp/tools/unity.js`:
+  - `unity_project_status`
+  - `unity_console`
+  - `unity_assets_find`
+  - `unity_asset_read`
+  - Requires restarting Codex after the Node MCP server file changes.
+- Recommended official MCP setup for Codex:
+  - Keep Validation Level at `standard`.
+  - Keep Show Debug Logs off unless diagnosing MCP itself.
+  - Configure the `Codex` integration from the Unity MCP Server window when Codex needs direct Unity Editor access.
+  - Enable only the minimal tool set by default: RunCommand, GetConsoleLogs, Camera/SceneView captures, FindInFile, ReadResource, ManageScene, ManageGameObject, ManageAsset, ValidateScript. Turn on destructive/editing tools such as ApplyTextEdits/DeleteScript only when needed for a specific task.
+
+### 2026-05-05 (Unity 6.3 regression + credentials cleanup)
+
+- Ran a short Unity regression on `6000.3.9f1`:
+  - `AssetDatabase.Refresh` completed after fixing the bridge executor references.
+  - Play Mode from `LoadingScene` loaded `LevelForest`.
+  - Play Mode stop returned to `LoadingScene`.
+  - Unity Console stayed clean: 0 errors, 0 warnings.
+- Fixed the project-local Unity Bridge dynamic executor for Unity 6.3 by adding `netstandard.dll` to generated-code compiler references.
+- Verified save-safe defaults for new feature storage:
+  - Empty/old egg state loads as empty inventory/nests.
+  - Empty/old profession state normalizes to default `yunga` with one unlocked profession.
+- Moved Google service account credentials out of `Assets/Resources` to ignored local path `UserSettings/Google/credentials.json`.
+- Updated balance and localization Google tools to use `UserSettings/Google/credentials.json` by default.
+- Google Sheets export/import was not run automatically because it writes external spreadsheet data; run `Tools/Balance/Google Sheets Sync` explicitly when ready.
+
+### 2026-05-05 (Unity 6.3 material shader repair)
+
+- After Unity 6.3 migration, many scene renderers appeared magenta because 86 material assets referenced missing shader GUID `1ccecd9b89b8a4f14bfb64f29ddfcc81`.
+- Project is currently Built-in Render Pipeline (`m_CustomRenderPipeline: 0`) and has no URP package installed, so the affected materials were repaired by assigning supported built-in `Standard` shader.
+- Verified in Play Mode from `LoadingScene` into `LevelForest`:
+  - Scene material scan: `badRefs=0`, `uniqueBad=0`.
+  - Unity Console: 0 errors, 0 warnings.
+  - Game screenshot no longer shows magenta world materials.
+
+### 2026-05-05 (egg loop v2 design sync)
+
+- Re-synced egg documentation with the intended gameplay loop:
+  - eggs are run pickups stored outside ordinary inventory;
+  - lobby nests hatch eggs after win/lose return;
+  - each egg can roll several animal variants;
+  - ready animals should wait at nests for manual collection;
+  - animals go to separate animal inventory;
+  - boat placement gives run buffs;
+  - merge station combines 2 identical unplaced animals of the same stage into 1 higher-stage animal;
+  - animals should support 3-4 stages and max-stage merge lockout.
+- Replaced the mojibake egg docs with readable UTF-8 docs:
+  - `Docs/EGG_SYSTEM_SPEC.md`
+  - `Docs/EGG_SYSTEM_SETUP.md`
+- Key implementation gaps now documented:
+  - migrate animal storage from `eggId` to `animalId + stage`;
+  - add hatch result pools;
+  - disable/replace production auto-collect for ready nests;
+  - add run buff aggregation;
+  - add merge service/UI;
+  - extend balance pipeline for hatch weights, stages, merge, and buffs.
+
+### 2026-05-05 (egg loop v2 implementation pass 1)
+
+- Implemented additive egg save model v2 while keeping storage key `EggFeatureState_v1`:
+  - `AnimalInventoryEntry` now supports `animalId + stage + amount`.
+  - `PlacedAnimalState` now supports `animalId + stage`.
+  - Old `eggId` animal saves migrate in memory to stage 1 without deleting unknown ids.
+- Extended `EggHatchingCatalog`:
+  - egg hatch result pools;
+  - `AnimalDefinition`;
+  - stage definitions;
+  - per-stage tint, prefab, merge VFX reference, and run buff data.
+- Updated `EggHatchingManager`:
+  - incubation stores a stable rolled `hatchedAnimalId`;
+  - ready nests mark `isReady` and wait for manual collection;
+  - collect adds `(animalId, stage)` to animal inventory;
+  - boat placement consumes/returns staged animals;
+  - merge API combines two identical unplaced animals into one higher-stage animal;
+  - spawned animals can receive stage tint.
+- Added `EggAnimalBuffService` and wired animal buffs into the same gameplay stat points as professions: movement, max health, experience, sale reward, fuel, boat speed, melee, ranged, and reload.
+- Added temporary merge interaction:
+  - `AnimalMergePoint`;
+  - `AnimalMergeSelectionPanel`;
+  - `AnimalMergeTemporaryUIBootstrap`, which creates a replaceable `Merge Pets` button/panel in `Lobby` when no designer merge UI exists.
+- Seeded `EggHatchingCatalog.asset` with initial `chicken` and `condor` animals, 3 stages each, and conservative test buffs.
+- Verification:
+  - Unity compile clean.
+  - Model smoke: roll/migration/merge passed.
+  - Play Mode from `LoadingScene` loads `LevelForest`, stop returns to `LoadingScene`.
+  - Unity Console: 0 errors, 0 warnings.
+
+### 2026-05-05 (save scope and stat modifier audit)
+
+- Audited the existing skill-card system:
+  - cards are implemented as `LevelStat` boosters (`BoostItem`, `LevelStatManager`, `Stats`);
+  - selected card bonuses are run-save through `SaveKey.BoostType`;
+  - pending level-up choices are run-save through `SaveKey.LevelUp`;
+  - both are reset at run end by `GameManager.EndGame()` -> `LevelStatManager.DeleteProgress()`.
+- Confirmed current feature save scopes:
+  - eggs/animals/nests/placed animals use meta-save key `EggFeatureState_v1`;
+  - professions use meta-save key `ProfessionState_v1`;
+  - neither is cleared by the normal win/lose run reset.
+- Added `Docs/SAVE_SCOPE_AND_STAT_MODIFIERS.md`:
+  - documents run-save vs meta-save ownership;
+  - records that eggs, animals, professions, and future classes must be permanent meta-save;
+  - recommends a unified `RunStatService` before adding class mechanics, so run cards, professions, animals, and classes share one deterministic stat pipeline.
+
+### 2026-05-06 (profession loop v2 design sync)
+
+- Rewrote profession docs as readable UTF-8:
+  - `Docs/PROFESSION_SYSTEM_SPEC.md`
+  - `Docs/PROFESSION_SYSTEM_SETUP.md`
+- Updated target profession loop:
+  - new players start with no active profession;
+  - player can start a run without a profession;
+  - random profession unlock spends soft currency, currently expected as coins;
+  - any specific profession can be permanently bought directly;
+  - direct buy uses real money on purchase-capable platforms;
+  - direct buy falls back to soft currency on platforms without purchases when allowed;
+  - professions are configured through ScriptableObjects;
+  - selected profession gives starter items and passive run stats.
+- Documented current implementation gaps:
+  - current code auto-unlocks a default profession via `defaultUnlocked`;
+  - current random unlock is gem-priced;
+  - direct specific-profession purchase is not implemented yet;
+  - no-profession state needs to be preserved as valid meta-save state.

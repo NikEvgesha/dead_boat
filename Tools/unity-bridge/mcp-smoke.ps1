@@ -20,6 +20,18 @@ $tests = @(
         Args = @("-Command", "scene_hierarchy", "-BaseUrl", $BaseUrl)
     },
     @{
+        Name = "project_status"
+        Args = @("-Command", "project_status", "-BaseUrl", $BaseUrl)
+    },
+    @{
+        Name = "console"
+        Args = @("-Command", "console", "-BaseUrl", $BaseUrl)
+    },
+    @{
+        Name = "assets_find_scripts"
+        Args = @("-Command", "assets_find", "-BaseUrl", $BaseUrl, "-Type", "MonoScript", "-Query", "GameLoader")
+    },
+    @{
         Name = "execute_unity_version"
         Args = @("-Command", "execute", "-BaseUrl", $BaseUrl, "-Code", "return UnityEngine.Application.unityVersion;")
     }
