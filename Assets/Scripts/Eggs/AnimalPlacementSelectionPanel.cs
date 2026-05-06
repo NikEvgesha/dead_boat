@@ -143,8 +143,8 @@ public class AnimalPlacementSelectionPanel : MonoBehaviour
                 if (owned == null || owned.amount <= 0)
                     continue;
 
-                string animalId = owned.EffectiveAnimalId;
-                int stage = owned.EffectiveStage;
+                string animalId = owned.animalId;
+                int stage = Mathf.Max(1, owned.stage);
                 if (!_manager.TryGetAnimalDetails(animalId, stage, out string title, out string detail))
                     continue;
 

@@ -51,6 +51,16 @@ public class ProfessionDefinition
     public string title;
     [TextArea(2, 8)] public string description;
     public Sprite icon;
+
+    [Header("Unlock")]
+    public bool availableInRandomUnlockPool = true;
+    [Min(0)] public int randomUnlockWeight = 1;
+    [Min(0)] public int directSoftCurrencyCost = 500;
+    public CurrencyType directSoftCurrencyType = CurrencyType.Coins;
+    public string purchaseProductId;
+    public bool allowSoftCurrencyFallbackWhenPurchasesUnavailable = true;
+
+    [Header("Start Bonuses")]
     [Min(0)] public int startCoinsBonus;
     [Min(0)] public int startGemsBonus;
     public bool defaultUnlocked;

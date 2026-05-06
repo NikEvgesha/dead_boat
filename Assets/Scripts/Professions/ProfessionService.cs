@@ -46,6 +46,9 @@ public static class ProfessionService
     public static ProfessionDefinition GetCurrentProfession()
     {
         EnsureInitialized();
+        if (!_state.hasExplicitProfessionChoice)
+            return null;
+
         return TryGetDefinition(_state.selectedProfessionId, out ProfessionDefinition definition)
             ? definition
             : null;
@@ -76,6 +79,23 @@ public static class ProfessionService
         return false;
     }
 
+    public static bool HasRandomLockedProfessions()
+    {
+        EnsureInitialized();
+
+        for (int i = 0; i < _definitions.Count; i++)
+        {
+            ProfessionDefinition definition = _definitions[i];
+            if (definition == null)
+                continue;
+
+            if (IsRandomUnlockCandidate(definition) && !IsUnlocked(definition.professionId))
+                return true;
+        }
+
+        return false;
+    }
+
     public static int GetUnlockedCount()
     {
         EnsureInitialized();
@@ -92,6 +112,12 @@ public static class ProfessionService
     {
         EnsureInitialized();
         return _state.hasExplicitProfessionChoice;
+    }
+
+    public static bool IsNoProfessionSelected()
+    {
+        EnsureInitialized();
+        return !_state.hasExplicitProfessionChoice;
     }
 
     public static int GetTotalProfessionCount()
@@ -119,7 +145,20 @@ public static class ProfessionService
         return true;
     }
 
-    public static bool TryUnlockRandomLockedProfession(int unlockPriceGems, out ProfessionDefinition unlockedDefinition)
+    public static bool TrySelectNoProfession()
+    {
+        EnsureInitialized();
+
+        if (!_state.hasExplicitProfessionChoice && string.IsNullOrWhiteSpace(_state.selectedProfessionId))
+            return true;
+
+        _state.selectedProfessionId = string.Empty;
+        _state.hasExplicitProfessionChoice = false;
+        SaveState();
+        return true;
+    }
+
+    public static bool TryUnlockRandomLockedProfession(int unlockPrice, CurrencyType currencyType, out ProfessionDefinition unlockedDefinition)
     {
         EnsureInitialized();
         unlockedDefinition = null;
@@ -128,30 +167,78 @@ public static class ProfessionService
         for (int i = 0; i < _definitions.Count; i++)
         {
             ProfessionDefinition definition = _definitions[i];
-            if (!IsUnlocked(definition.professionId))
+            if (IsRandomUnlockCandidate(definition) && !IsUnlocked(definition.professionId))
                 lockedDefinitions.Add(definition);
         }
 
         if (lockedDefinitions.Count == 0)
             return false;
 
-        int clampedPrice = Mathf.Max(0, unlockPriceGems);
+        int clampedPrice = Mathf.Max(0, unlockPrice);
         if (clampedPrice > 0)
         {
             CurrencyManager currencyManager = CurrencyManager.Instance;
             if (currencyManager == null)
                 return false;
 
-            if (!currencyManager.CheckEnoughCurrency(CurrencyType.Gems, clampedPrice))
+            if (!currencyManager.CheckEnoughCurrency(currencyType, clampedPrice))
                 return false;
 
-            if (!currencyManager.RemoveCurrency(CurrencyType.Gems, clampedPrice))
+            if (!currencyManager.RemoveCurrency(currencyType, clampedPrice))
                 return false;
         }
 
-        int randomIndex = UnityEngine.Random.Range(0, lockedDefinitions.Count);
-        unlockedDefinition = lockedDefinitions[randomIndex];
-        _state.unlockedProfessionIds.Add(unlockedDefinition.professionId);
+        unlockedDefinition = RollRandomProfession(lockedDefinitions);
+        UnlockProfessionInternal(unlockedDefinition.professionId, false);
+        SaveState();
+        return true;
+    }
+
+    public static bool TryUnlockRandomLockedProfession(int unlockPriceGems, out ProfessionDefinition unlockedDefinition)
+    {
+        return TryUnlockRandomLockedProfession(unlockPriceGems, CurrencyType.Gems, out unlockedDefinition);
+    }
+
+    public static bool TryUnlockProfessionWithSoftCurrency(string professionId, int price, CurrencyType currencyType)
+    {
+        EnsureInitialized();
+
+        if (currencyType == CurrencyType.Real)
+            return false;
+
+        if (!TryGetDefinition(professionId, out ProfessionDefinition definition))
+            return false;
+
+        if (IsUnlocked(definition.professionId))
+            return true;
+
+        int clampedPrice = Mathf.Max(0, price);
+        if (clampedPrice > 0)
+        {
+            CurrencyManager currencyManager = CurrencyManager.Instance;
+            if (currencyManager == null)
+                return false;
+
+            if (!currencyManager.CheckEnoughCurrency(currencyType, clampedPrice))
+                return false;
+
+            if (!currencyManager.RemoveCurrency(currencyType, clampedPrice))
+                return false;
+        }
+
+        UnlockProfessionInternal(definition.professionId, true);
+        SaveState();
+        return true;
+    }
+
+    public static bool UnlockProfessionFromPurchase(string professionId)
+    {
+        EnsureInitialized();
+
+        if (!TryGetDefinition(professionId, out ProfessionDefinition definition))
+            return false;
+
+        UnlockProfessionInternal(definition.professionId, true);
         SaveState();
         return true;
     }
@@ -448,6 +535,43 @@ public static class ProfessionService
         }
     }
 
+    private static bool IsRandomUnlockCandidate(ProfessionDefinition definition)
+    {
+        return definition != null &&
+               definition.availableInRandomUnlockPool &&
+               definition.randomUnlockWeight > 0;
+    }
+
+    private static ProfessionDefinition RollRandomProfession(List<ProfessionDefinition> definitions)
+    {
+        int totalWeight = 0;
+        for (int i = 0; i < definitions.Count; i++)
+            totalWeight += Mathf.Max(1, definitions[i].randomUnlockWeight);
+
+        int roll = UnityEngine.Random.Range(0, Mathf.Max(1, totalWeight));
+        int cumulative = 0;
+        for (int i = 0; i < definitions.Count; i++)
+        {
+            cumulative += Mathf.Max(1, definitions[i].randomUnlockWeight);
+            if (roll < cumulative)
+                return definitions[i];
+        }
+
+        return definitions[UnityEngine.Random.Range(0, definitions.Count)];
+    }
+
+    private static void UnlockProfessionInternal(string professionId, bool purchased)
+    {
+        if (string.IsNullOrWhiteSpace(professionId))
+            return;
+
+        if (!_state.unlockedProfessionIds.Contains(professionId))
+            _state.unlockedProfessionIds.Add(professionId);
+
+        if (purchased && !_state.purchasedProfessionIds.Contains(professionId))
+            _state.purchasedProfessionIds.Add(professionId);
+    }
+
     private static void EnsureInitialized()
     {
         if (_initialized)
@@ -501,6 +625,7 @@ public static class ProfessionService
             title = ProfessionLocalization.DefaultProfessionTitle,
             description = ProfessionLocalization.DefaultProfessionDescription,
             defaultUnlocked = true,
+            availableInRandomUnlockPool = false,
             starterItems = new List<ProfessionStarterItem>(),
             perkLines = new List<string>(),
             passiveBonuses = new ProfessionPassiveBonuses()

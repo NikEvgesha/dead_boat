@@ -326,3 +326,88 @@ Open follow-up:
   - current random unlock is gem-priced;
   - direct specific-profession purchase is not implemented yet;
   - no-profession state needs to be preserved as valid meta-save state.
+
+### 2026-05-06 (profession loop v2 implementation)
+
+- Implemented no-profession as a valid meta-save state:
+  - `ProfessionState.Normalize` now keeps `hasExplicitProfessionChoice == false` as no selected profession;
+  - old explicit selected professions still normalize and survive.
+- Extended `ProfessionDefinition` with v2 unlock/purchase data:
+  - random unlock pool flag and weight;
+  - direct soft-currency cost/type;
+  - real-money `purchaseProductId`;
+  - soft-currency fallback flag for platforms without purchases.
+- Updated `ProfessionService`:
+  - selectable no-profession state;
+  - random unlock with configurable soft currency instead of hardcoded gems;
+  - weighted random unlock pool;
+  - direct soft-currency unlock;
+  - purchase-complete unlock path.
+- Updated `ProfessionSelectionPanel` and temporary UI:
+  - first carousel entry is "No profession";
+  - random unlock button is separate from direct buy;
+  - direct buy uses real purchase when available, otherwise soft-currency fallback when allowed.
+- Updated `Tools/Balance/Google Sheets Sync` profession export/import columns for the new unlock and direct-buy fields.
+- Verification:
+  - Unity compile clean after `AssetDatabase.Refresh`;
+  - Unity Console: 0 errors, 0 warnings;
+  - model smoke: catalog loads, no-profession state is valid, random pool is available.
+
+### 2026-05-06 (manual Unity integration checklist)
+
+- Added and then rewrote `Docs/UNITY_FEATURE_INTEGRATION_CHECKLIST.md` as a Russian step-by-step Unity instruction for:
+  - baseline regression;
+  - save-scope checks;
+  - egg scene wiring and smoke;
+  - profession scene wiring, economy setup, and smoke;
+  - run card reset testing;
+  - Google Sheets balance sync;
+  - Unity Bridge/MCP checks;
+  - material regression after Unity 6 migration;
+  - release readiness.
+
+### 2026-05-06 (egg catalog inspector refactor)
+
+- Refactored egg configuration away from one large inline catalog:
+  - `EggHatchingCatalog` is now only the top-level registry;
+  - each egg is a separate `EggDefinition` asset;
+  - each animal is a separate `AnimalDefinition` asset;
+  - egg hatch results reference animal assets directly instead of typed animal ids.
+- Ids are generated from asset names:
+  - `egg_chicken.asset` -> `egg_chicken`;
+  - `chicken.asset` -> `chicken`.
+- Removed unreleased legacy animal fields and old V2 naming from the egg runtime model.
+- Rebuilt current egg resources:
+  - `Assets/Resources/Eggs/Definitions/Eggs/egg_chicken.asset`
+  - `Assets/Resources/Eggs/Definitions/Eggs/egg_condor.asset`
+  - `Assets/Resources/Eggs/Definitions/Animals/chicken.asset`
+  - `Assets/Resources/Eggs/Definitions/Animals/condor.asset`
+- Updated egg balance sync:
+  - exports egg asset path, id, title, incubation, skip cost, and hatch result weights;
+  - imports editable egg fields back into existing egg assets.
+- Verification:
+  - Unity compile clean after refresh;
+  - Unity Console: 0 errors, 0 warnings;
+  - catalog smoke: 2 eggs, 2 animals, `egg_chicken` and `chicken` resolve, roll returns `chicken`.
+
+### 2026-05-06 (inline egg catalog editor)
+
+- Added custom editor for `EggHatchingCatalog`.
+- The catalog inspector now lets egg and animal references expand inline, so referenced `EggDefinition` and `AnimalDefinition` assets can be edited directly from the catalog.
+- Inline editor shows generated id as read-only and keeps the real data inside separate asset files.
+- Added a create button for empty catalog slots so new egg/animal config assets can be created and assigned from the same inspector flow.
+- Verification:
+  - Unity compile clean after refresh;
+  - Unity Console: 0 errors, 0 warnings.
+
+### 2026-05-06 (zoo prefab egg/animal configs)
+
+- User added animal prefabs under `Assets/_models/ZOO/PrefabZoo` and egg prefabs under `Assets/_models/ZOO/PrefabEgg`.
+- Generated separate `AnimalDefinition` assets for the zoo prefabs in `Assets/Resources/Eggs/Definitions/Animals`.
+- Generated separate `EggDefinition` assets for egg prefabs in `Assets/Resources/Eggs/Definitions/Eggs`.
+- Kept `egg_chicken`, `egg_condor`, and `condor` ids for compatibility with existing test content/save ids.
+- Added `Tools/Eggs/Sync Zoo Prefabs To Catalog` and a matching button in the `EggHatchingCatalog` inspector so future prefab additions can be synced from Unity.
+- Local file verification:
+  - catalog references 13 eggs and 19 animals;
+  - all GUIDs referenced by `EggHatchingCatalog.asset` exist in generated asset `.meta` files.
+- Unity refresh was not verified in this pass because the local Unity Bridge stopped responding on port `7778`.

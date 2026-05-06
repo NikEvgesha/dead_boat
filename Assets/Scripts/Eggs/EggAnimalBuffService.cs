@@ -96,7 +96,7 @@ public static class EggAnimalBuffService
                 if (placed == null)
                     continue;
 
-                AnimalRunBuffs buffs = _catalog.GetAnimalBuffs(placed.EffectiveAnimalId, placed.EffectiveStage);
+                AnimalRunBuffs buffs = _catalog.GetAnimalBuffs(placed.animalId, Mathf.Max(1, placed.stage));
                 result.Add(buffs);
             }
         }

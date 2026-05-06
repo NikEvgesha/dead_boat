@@ -1,7 +1,7 @@
 # Egg System Spec
 
-Updated: 2026-05-05
-Status: core exists, target loop needs a v2 pass before production.
+Updated: 2026-05-06
+Status: core implementation exists; needs scene hookup, final UI, and balance smoke before production.
 
 ## Goal
 
@@ -32,6 +32,7 @@ Implemented foundation:
 - Save scope is meta-progress, not run-progress. Eggs, nests, animal inventory, and placed animals must survive `GameManager.EndGame()` and must not be stored in `LevelStatManager.Stats`.
 - Egg pickup bypasses ordinary inventory and uses `EggFeatureStorage.AddEgg`.
 - `EggHatchingCatalog` exists in `Resources/Eggs/EggHatchingCatalog`.
+- Egg and animal configs are separate ScriptableObject assets referenced by the catalog.
 - `EggHatchingManager` supports:
   - starting incubation in `EggNestPoint`;
   - skip by gems;
@@ -39,19 +40,19 @@ Implemented foundation:
   - collecting ready animals;
   - animal placement in `AnimalPlacementPoint`;
   - restoring placed animals after load;
-  - simple passive coin income from placed animals.
+  - applying placed animal buffs to run stats;
+  - merging identical unplaced animals into the next stage.
 - Temporary UI exists for nest selection and animal placement.
 - Spawn chance degradation exists through `EggSpawnRuntimeState`.
 
-Important gaps versus target loop:
+Remaining gaps versus target loop:
 
-- Animal inventory is currently grouped by `eggId`, not by unique `animalId` and `stage`.
-- An egg currently maps to one `animalPrefab`; target needs a hatch result pool.
-- Ready eggs can be auto-collected through `_autoCollectFinishedEggs`; target behavior should keep the animal at the nest until the player collects it.
-- Placed animals currently provide passive coin income; target needs run buffs applied to gameplay stats.
-- Merge station, merge state, stage visuals, and max-stage rules are not implemented.
+- Final production UI is still needed; current panels can create temporary UI for testing.
+- Scene needs final nest, boat placement, and merge station positions.
+- Balance values, hatch weights, and spawn decay need real tuning.
+- Final animal visuals/VFX are placeholder-friendly but not art-final.
 
-## Data Model V2
+## Data Model
 
 Keep `EggFeatureState_v1` for save compatibility, but extend it additively. Do not rename the storage key unless a migration layer is added.
 
@@ -92,20 +93,19 @@ public class PlacedAnimalState
 
 Compatibility rule:
 
-- Existing saves with old `ownedAnimals[].eggId` should migrate to `animalId = eggId`, `stage = 1`.
-- Existing `placedAnimals[].eggId` should migrate the same way.
+- The egg feature was not released to production before this model, so no legacy animal fields are kept.
 - Unknown ids must be preserved when possible, not deleted, so temporary catalog mistakes do not wipe player progress.
 
-## Catalog V2
+## Catalog
 
 `EggHatchingCatalog` should describe eggs, possible hatch results, animal stages, buffs, visuals, and merge limits.
 
 Recommended data:
 
 ```csharp
-public class EggHatchingDefinition
+public class EggDefinition : ScriptableObject
 {
-    public string eggId;
+    public string eggId; // generated from asset name
     public string title;
     public int incubationSeconds;
     public int skipCostGems;
@@ -115,13 +115,13 @@ public class EggHatchingDefinition
 
 public class EggHatchResult
 {
-    public string animalId;
+    public AnimalDefinition animal;
     public int weight;
 }
 
-public class AnimalDefinition
+public class AnimalDefinition : ScriptableObject
 {
-    public string animalId;
+    public string animalId; // generated from asset name
     public string title;
     public int maxStage;
     public List<AnimalStageDefinition> stages;
@@ -140,6 +140,7 @@ public class AnimalStageDefinition
 Hatch selection:
 
 - Use weighted random among `hatchResults`.
+- Egg configs reference animal assets directly; ids are derived from the referenced animal assets.
 - Store the chosen `hatchedAnimalId` in the nest when incubation starts or when it finishes.
 - Prefer choosing at incubation start if we want the result to be stable even if balance changes before collection.
 
@@ -261,7 +262,7 @@ Progression targets to tune:
 - Two identical unplaced animals can merge into the next stage.
 - Max-stage animals cannot merge.
 - Old saves without egg data still load safely.
-- Existing saves with old `eggId` animals migrate to stage-1 animals.
+- Saves without egg data still load safely.
 
 ## Related Architecture
 

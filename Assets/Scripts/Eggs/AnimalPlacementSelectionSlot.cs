@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -21,7 +21,7 @@ public class AnimalPlacementSelectionSlot : MonoBehaviour
         _button = button;
     }
 
-    public void Init(EggHatchingDefinition definition, int amount, Action<string> onSelect)
+    public void Init(EggDefinition definition, int amount, Action<string> onSelect)
     {
         string animalId = definition != null ? definition.eggId : string.Empty;
         Init(animalId, 1, definition != null ? definition.title : animalId, "No income", amount,

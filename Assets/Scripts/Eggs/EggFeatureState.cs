@@ -13,14 +13,9 @@ public class EggInventoryEntry
 [Serializable]
 public class AnimalInventoryEntry
 {
-    // Legacy field. Existing saves used eggId as the animal key.
-    public string eggId;
     public string animalId;
     public int stage = 1;
     public int amount;
-
-    public string EffectiveAnimalId => !string.IsNullOrWhiteSpace(animalId) ? animalId : eggId;
-    public int EffectiveStage => Mathf.Max(1, stage);
 }
 
 [Serializable]
@@ -39,22 +34,14 @@ public class EggNestState
 public class PlacedAnimalState
 {
     public string pointId;
-    public string nestId;
-    // Legacy field. Existing saves used eggId as the animal key.
-    public string eggId;
     public string animalId;
     public int stage = 1;
-    public int pointIndex;
     public long lastIncomeUnix;
-
-    public string EffectiveAnimalId => !string.IsNullOrWhiteSpace(animalId) ? animalId : eggId;
-    public int EffectiveStage => Mathf.Max(1, stage);
 }
 
 [Serializable]
 public class EggFeatureState
 {
-    public int version = 2;
     public List<EggInventoryEntry> ownedEggs = new();
     public List<AnimalInventoryEntry> ownedAnimals = new();
     public List<EggNestState> nests = new();
@@ -75,8 +62,8 @@ public class EggFeatureState
     {
         int safeStage = Mathf.Max(1, stage);
         AnimalInventoryEntry entry = ownedAnimals.Find(x =>
-            x.EffectiveAnimalId == animalId &&
-            x.EffectiveStage == safeStage);
+            x.animalId == animalId &&
+            Mathf.Max(1, x.stage) == safeStage);
         return entry != null ? entry.amount : 0;
     }
 
@@ -107,13 +94,12 @@ public class EggFeatureState
 
         int safeStage = Mathf.Max(1, stage);
         AnimalInventoryEntry entry = ownedAnimals.Find(x =>
-            x.EffectiveAnimalId == animalId &&
-            x.EffectiveStage == safeStage);
+            x.animalId == animalId &&
+            Mathf.Max(1, x.stage) == safeStage);
         if (entry == null)
         {
             ownedAnimals.Add(new AnimalInventoryEntry
             {
-                eggId = animalId,
                 animalId = animalId,
                 stage = safeStage,
                 amount = amount
@@ -152,8 +138,8 @@ public class EggFeatureState
 
         int safeStage = Mathf.Max(1, stage);
         AnimalInventoryEntry entry = ownedAnimals.Find(x =>
-            x.EffectiveAnimalId == animalId &&
-            x.EffectiveStage == safeStage);
+            x.animalId == animalId &&
+            Mathf.Max(1, x.stage) == safeStage);
         if (entry == null || entry.amount < amount)
             return false;
 
@@ -182,18 +168,15 @@ public class EggFeatureState
             .ToList();
 
         ownedAnimals = ownedAnimals
-            .Where(x => x != null && !string.IsNullOrWhiteSpace(x.EffectiveAnimalId) && x.amount > 0)
-            .GroupBy(x => $"{x.EffectiveAnimalId}::{x.EffectiveStage}")
+            .Where(x => x != null && !string.IsNullOrWhiteSpace(x.animalId) && x.amount > 0)
+            .GroupBy(x => $"{x.animalId}::{Mathf.Max(1, x.stage)}")
             .Select(g =>
             {
                 AnimalInventoryEntry first = g.First();
-                string animalId = first.EffectiveAnimalId;
-                int stage = first.EffectiveStage;
                 return new AnimalInventoryEntry
                 {
-                    eggId = animalId,
-                    animalId = animalId,
-                    stage = stage,
+                    animalId = first.animalId,
+                    stage = Mathf.Max(1, first.stage),
                     amount = g.Sum(x => x.amount)
                 };
             })
@@ -205,39 +188,20 @@ public class EggFeatureState
             .Select(g =>
             {
                 EggNestState nest = g.OrderByDescending(x => x.finishAtUnix).First();
-                if (string.IsNullOrWhiteSpace(nest.hatchedAnimalId))
-                    nest.hatchedAnimalId = nest.eggId;
                 nest.hatchedStage = Mathf.Max(1, nest.hatchedStage);
                 return nest;
             })
             .ToList();
 
         placedAnimals = placedAnimals
-            .Where(x => x != null && !string.IsNullOrWhiteSpace(x.EffectiveAnimalId))
-            .Where(x =>
-                !string.IsNullOrWhiteSpace(x.pointId) ||
-                (!string.IsNullOrWhiteSpace(x.nestId) && x.pointIndex >= 0))
-            .GroupBy(MakePlacementKey)
+            .Where(x => x != null && !string.IsNullOrWhiteSpace(x.pointId) && !string.IsNullOrWhiteSpace(x.animalId))
+            .GroupBy(x => x.pointId)
             .Select(g =>
             {
                 PlacedAnimalState state = g.OrderByDescending(x => x.lastIncomeUnix).First();
-                string animalId = state.EffectiveAnimalId;
-                int stage = state.EffectiveStage;
-                state.eggId = animalId;
-                state.animalId = animalId;
-                state.stage = stage;
+                state.stage = Mathf.Max(1, state.stage);
                 return state;
             })
             .ToList();
-
-        version = Mathf.Max(2, version);
-    }
-
-    private static string MakePlacementKey(PlacedAnimalState state)
-    {
-        if (!string.IsNullOrWhiteSpace(state.pointId))
-            return $"point::{state.pointId}";
-
-        return $"legacy::{state.nestId}::{state.pointIndex}";
     }
 }

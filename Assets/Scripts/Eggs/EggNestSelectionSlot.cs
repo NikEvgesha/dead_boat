@@ -20,7 +20,7 @@ public class EggNestSelectionSlot : MonoBehaviour
         _button = button;
     }
 
-    public void Init(EggHatchingDefinition definition, int amount, Action<string> onSelect)
+    public void Init(EggDefinition definition, int amount, Action<string> onSelect)
     {
         _eggId = definition != null ? definition.eggId : string.Empty;
         _onSelect = onSelect;

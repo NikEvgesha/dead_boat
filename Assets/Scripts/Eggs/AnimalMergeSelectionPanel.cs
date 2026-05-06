@@ -116,8 +116,8 @@ public class AnimalMergeSelectionPanel : MonoBehaviour
                 if (owned == null || owned.amount < 2)
                     continue;
 
-                string animalId = owned.EffectiveAnimalId;
-                int stage = owned.EffectiveStage;
+                string animalId = owned.animalId;
+                int stage = Mathf.Max(1, owned.stage);
                 if (!_manager.CanMergeAnimal(animalId, stage))
                     continue;
 

@@ -219,8 +219,7 @@ public sealed class BalanceSheetSyncWindow : EditorWindow
         {
             new List<object>
             {
-                "eggId", "title", "incubationSeconds", "skipCostGems",
-                "passiveIncomeCoins", "passiveIncomeIntervalSeconds"
+                "eggAssetPath", "eggId", "title", "incubationSeconds", "skipCostGems", "hatchResults"
             }
         };
 
@@ -228,23 +227,34 @@ public sealed class BalanceSheetSyncWindow : EditorWindow
         if (catalog == null)
             return rows;
 
-        foreach (EggHatchingDefinition definition in catalog.Definitions)
+        foreach (EggDefinition definition in catalog.Definitions)
         {
             if (definition == null || string.IsNullOrWhiteSpace(definition.eggId))
                 continue;
 
             rows.Add(new List<object>
             {
+                AssetDatabase.GetAssetPath(definition),
                 definition.eggId,
                 definition.title,
                 definition.incubationSeconds,
                 definition.skipCostGems,
-                definition.passiveIncomeCoins,
-                definition.passiveIncomeIntervalSeconds
+                FormatHatchResults(definition)
             });
         }
 
         return rows;
+    }
+
+    private static string FormatHatchResults(EggDefinition definition)
+    {
+        if (definition?.hatchResults == null || definition.hatchResults.Count == 0)
+            return string.Empty;
+
+        return string.Join(";",
+            definition.hatchResults
+                .Where(result => result != null && !string.IsNullOrWhiteSpace(result.AnimalId))
+                .Select(result => $"{result.AnimalId}:{Mathf.Max(0, result.weight)}"));
     }
 
     private IList<IList<object>> BuildProfessionRows()
@@ -253,7 +263,10 @@ public sealed class BalanceSheetSyncWindow : EditorWindow
         {
             new List<object>
             {
-                "professionId", "title", "description", "defaultUnlocked", "startCoinsBonus", "startGemsBonus",
+                "professionId", "title", "description", "defaultUnlocked",
+                "availableInRandomUnlockPool", "randomUnlockWeight", "directSoftCurrencyCost",
+                "directSoftCurrencyType", "purchaseProductId", "allowSoftCurrencyFallbackWhenPurchasesUnavailable",
+                "startCoinsBonus", "startGemsBonus",
                 "perkLines",
                 "maxHealthFlat", "moveSpeedFlat", "moveSpeedMultiplier", "experienceMultiplier",
                 "saleRewardMultiplier", "maxFuelFlat", "fuelConsumptionMultiplier", "fuelFillMultiplier",
@@ -278,6 +291,12 @@ public sealed class BalanceSheetSyncWindow : EditorWindow
                 definition.title,
                 definition.description,
                 definition.defaultUnlocked ? "TRUE" : "FALSE",
+                definition.availableInRandomUnlockPool ? "TRUE" : "FALSE",
+                definition.randomUnlockWeight,
+                definition.directSoftCurrencyCost,
+                definition.directSoftCurrencyType.ToString(),
+                definition.purchaseProductId,
+                definition.allowSoftCurrencyFallbackWhenPurchasesUnavailable ? "TRUE" : "FALSE",
                 definition.startCoinsBonus,
                 definition.startGemsBonus,
                 JoinLines(definition.perkLines),
@@ -345,32 +364,26 @@ public sealed class BalanceSheetSyncWindow : EditorWindow
         }
 
         List<Row> dataRows = ParseRows(rows);
-        SerializedObject serializedCatalog = new SerializedObject(catalog);
-        SerializedProperty definitions = serializedCatalog.FindProperty("_definitions");
-
         foreach (Row row in dataRows)
         {
             string eggId = row.Get("eggId");
             if (string.IsNullOrWhiteSpace(eggId))
                 continue;
 
-            SerializedProperty entry = FindArrayElement(definitions, "eggId", eggId);
-            if (entry == null)
+            if (!catalog.TryGet(eggId, out EggDefinition definition) || definition == null)
             {
-                entry = AddArrayElement(definitions);
-                ClearEggObjectReferences(entry);
+                Debug.LogWarning($"Egg import skipped missing egg definition asset: {eggId}");
+                continue;
             }
 
-            SetString(entry, "eggId", eggId);
-            SetString(entry, "title", row.Get("title"));
-            SetInt(entry, "incubationSeconds", row.GetInt("incubationSeconds", 300));
-            SetInt(entry, "skipCostGems", row.GetInt("skipCostGems", 0));
-            SetInt(entry, "passiveIncomeCoins", row.GetInt("passiveIncomeCoins", 0));
-            SetInt(entry, "passiveIncomeIntervalSeconds", row.GetInt("passiveIncomeIntervalSeconds", 60));
+            SerializedObject serializedEgg = new SerializedObject(definition);
+            serializedEgg.FindProperty("title").stringValue = row.Get("title");
+            serializedEgg.FindProperty("incubationSeconds").intValue = row.GetInt("incubationSeconds", 300);
+            serializedEgg.FindProperty("skipCostGems").intValue = row.GetInt("skipCostGems", 0);
+            SetHatchResults(serializedEgg.FindProperty("hatchResults"), row.Get("hatchResults"), catalog);
+            serializedEgg.ApplyModifiedProperties();
+            EditorUtility.SetDirty(definition);
         }
-
-        serializedCatalog.ApplyModifiedProperties();
-        EditorUtility.SetDirty(catalog);
         Debug.Log($"Egg balance imported. Rows={dataRows.Count}");
     }
 
@@ -404,6 +417,12 @@ public sealed class BalanceSheetSyncWindow : EditorWindow
             SetString(entry, "title", row.Get("title"));
             SetString(entry, "description", row.Get("description"));
             SetBool(entry, "defaultUnlocked", row.GetBool("defaultUnlocked", false));
+            SetBool(entry, "availableInRandomUnlockPool", row.GetBool("availableInRandomUnlockPool", true));
+            SetInt(entry, "randomUnlockWeight", row.GetInt("randomUnlockWeight", 1));
+            SetInt(entry, "directSoftCurrencyCost", row.GetInt("directSoftCurrencyCost", 500));
+            SetEnum(entry, "directSoftCurrencyType", row.Get("directSoftCurrencyType"), CurrencyType.Coins);
+            SetString(entry, "purchaseProductId", row.Get("purchaseProductId"));
+            SetBool(entry, "allowSoftCurrencyFallbackWhenPurchasesUnavailable", row.GetBool("allowSoftCurrencyFallbackWhenPurchasesUnavailable", true));
             SetInt(entry, "startCoinsBonus", row.GetInt("startCoinsBonus", 0));
             SetInt(entry, "startGemsBonus", row.GetInt("startGemsBonus", 0));
             SetStringArray(entry.FindPropertyRelative("perkLines"), SplitLines(row.Get("perkLines")));
@@ -522,17 +541,6 @@ public sealed class BalanceSheetSyncWindow : EditorWindow
         return array.GetArrayElementAtIndex(index);
     }
 
-    private static void ClearEggObjectReferences(SerializedProperty entry)
-    {
-        SerializedProperty animalPrefab = entry.FindPropertyRelative("animalPrefab");
-        if (animalPrefab != null)
-            animalPrefab.objectReferenceValue = null;
-
-        SerializedProperty eggPreviewPrefab = entry.FindPropertyRelative("eggPreviewPrefab");
-        if (eggPreviewPrefab != null)
-            eggPreviewPrefab.objectReferenceValue = null;
-    }
-
     private static void ClearProfessionObjectReferences(SerializedProperty entry)
     {
         SerializedProperty icon = entry.FindPropertyRelative("icon");
@@ -542,6 +550,46 @@ public sealed class BalanceSheetSyncWindow : EditorWindow
         SerializedProperty starterItems = entry.FindPropertyRelative("starterItems");
         if (starterItems != null)
             starterItems.arraySize = 0;
+    }
+
+    private static void SetHatchResults(SerializedProperty array, string value, EggHatchingCatalog catalog)
+    {
+        if (array == null || catalog == null)
+            return;
+
+        List<(AnimalDefinition animal, int weight)> results = new List<(AnimalDefinition animal, int weight)>();
+        if (!string.IsNullOrWhiteSpace(value))
+        {
+            string[] parts = value.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+            for (int i = 0; i < parts.Length; i++)
+            {
+                string part = parts[i].Trim();
+                if (string.IsNullOrWhiteSpace(part))
+                    continue;
+
+                string[] pair = part.Split(new[] { ':' }, 2);
+                string animalId = pair[0].Trim();
+                int weight = 1;
+                if (pair.Length > 1)
+                    int.TryParse(pair[1].Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out weight);
+
+                if (!catalog.TryGetAnimal(animalId, out AnimalDefinition animal) || animal == null)
+                {
+                    Debug.LogWarning($"Egg import skipped missing animal definition asset: {animalId}");
+                    continue;
+                }
+
+                results.Add((animal, Mathf.Max(0, weight)));
+            }
+        }
+
+        array.arraySize = results.Count;
+        for (int i = 0; i < results.Count; i++)
+        {
+            SerializedProperty element = array.GetArrayElementAtIndex(i);
+            element.FindPropertyRelative("animal").objectReferenceValue = results[i].animal;
+            element.FindPropertyRelative("weight").intValue = results[i].weight;
+        }
     }
 
     private static void SetString(SerializedProperty root, string relativePath, string value)
@@ -570,6 +618,20 @@ public sealed class BalanceSheetSyncWindow : EditorWindow
         SerializedProperty property = root.FindPropertyRelative(relativePath);
         if (property != null)
             property.boolValue = value;
+    }
+
+    private static void SetEnum<TEnum>(SerializedProperty root, string relativePath, string value, TEnum fallback)
+        where TEnum : struct, Enum
+    {
+        SerializedProperty property = root.FindPropertyRelative(relativePath);
+        if (property == null)
+            return;
+
+        TEnum parsed = fallback;
+        if (!string.IsNullOrWhiteSpace(value))
+            Enum.TryParse(value, true, out parsed);
+
+        property.enumValueIndex = Convert.ToInt32(parsed, CultureInfo.InvariantCulture);
     }
 
     private static void SetStringArray(SerializedProperty array, List<string> values)

@@ -2,32 +2,37 @@ using System;
 
 public static class ProfessionLocalization
 {
+    public static string NoProfessionTitle => Translate("UI/Profession/NoneTitle", "Без профессии", "No profession");
+    public static string NoProfessionDescription => Translate("UI/Profession/NoneDescription", "Начать забег без стартовых бонусов профессии.", "Start the run without profession bonuses.");
     public static string NoData => Translate("UI/Profession/NoData", "Нет данных.", "No data.");
     public static string NoDescription => Translate("UI/Profession/NoDescription", "Нет описания.", "No description.");
-    public static string StatusEquipped => Translate("UI/Profession/StatusEquipped", "Экипировано", "Equipped");
+    public static string StatusEquipped => Translate("UI/Profession/StatusEquipped", "Выбрано", "Equipped");
     public static string StatusOpened => Translate("UI/Profession/StatusOpened", "Открыто", "Unlocked");
-    public static string StatusLocked => Translate("UI/Profession/StatusLocked", "Заблокировано", "Locked");
+    public static string StatusLocked => Translate("UI/Profession/StatusLocked", "Закрыто", "Locked");
+    public static string StatusNoProfession => Translate("UI/Profession/StatusNoProfession", "Без профессии", "No profession");
     public static string MessageAllUnlocked => Translate("UI/Profession/MessageAllUnlocked", "Все профессии уже открыты.", "All professions are already unlocked.");
     public static string MessageUnlockFailed => Translate("UI/Profession/MessageUnlockFailed", "Не удалось открыть профессию.", "Failed to unlock profession.");
+    public static string MessagePurchaseUnavailable => Translate("UI/Profession/MessagePurchaseUnavailable", "Покупка недоступна на этой площадке.", "Purchase is unavailable on this platform.");
     public static string NoStarterItems => Translate("UI/Profession/NoStarterItems", "Нет стартовых предметов или бонусов.", "No starter items or bonuses.");
     public static string NoSpecialAbilities => Translate("UI/Profession/NoSpecialAbilities", "Нет специальных способностей.", "No special abilities.");
     public static string UnknownItem => Translate("UI/Profession/UnknownItem", "Неизвестный предмет", "Unknown item");
     public static string DefaultProfessionTitle => Translate("UI/Profession/DefaultTitle", "Юнга", "Deckhand");
     public static string DefaultProfessionDescription => Translate("UI/Profession/DefaultDescription", "Базовая профессия без дополнительных бонусов.", "Base profession without extra bonuses.");
-    public static string PassiveMoveSpeedFlatLabel => Translate("UI/Profession/Passive/MoveSpeedFlat", "Move speed", "Move speed");
-    public static string PassiveMoveSpeedMultLabel => Translate("UI/Profession/Passive/MoveSpeedMult", "Move speed multiplier", "Move speed multiplier");
-    public static string PassiveMaxHealthFlatLabel => Translate("UI/Profession/Passive/MaxHealthFlat", "Max health", "Max health");
-    public static string PassiveExperienceMultLabel => Translate("UI/Profession/Passive/ExperienceMult", "Experience", "Experience");
-    public static string PassiveSaleRewardMultLabel => Translate("UI/Profession/Passive/SaleRewardMult", "Sell rewards", "Sell rewards");
-    public static string PassiveMaxFuelFlatLabel => Translate("UI/Profession/Passive/MaxFuelFlat", "Max fuel", "Max fuel");
-    public static string PassiveFuelConsumptionMultLabel => Translate("UI/Profession/Passive/FuelConsumptionMult", "Fuel consumption", "Fuel consumption");
-    public static string PassiveFuelFillMultLabel => Translate("UI/Profession/Passive/FuelFillMult", "Fuel fill efficiency", "Fuel fill efficiency");
-    public static string PassiveBoatSpeedFlatLabel => Translate("UI/Profession/Passive/BoatSpeedFlat", "Boat speed", "Boat speed");
-    public static string PassiveMeleeDamageFlatLabel => Translate("UI/Profession/Passive/MeleeDamageFlat", "Melee damage", "Melee damage");
-    public static string PassiveMeleeAttackSpeedMultLabel => Translate("UI/Profession/Passive/MeleeAttackSpeedMult", "Melee attack speed", "Melee attack speed");
-    public static string PassiveRangedDamageFlatLabel => Translate("UI/Profession/Passive/RangedDamageFlat", "Ranged damage", "Ranged damage");
-    public static string PassiveRangedAttackSpeedMultLabel => Translate("UI/Profession/Passive/RangedAttackSpeedMult", "Ranged attack speed", "Ranged attack speed");
-    public static string PassiveRangedReloadMultLabel => Translate("UI/Profession/Passive/RangedReloadMult", "Reload speed", "Reload speed");
+    public static string PassiveMoveSpeedFlatLabel => Translate("UI/Profession/Passive/MoveSpeedFlat", "Скорость", "Move speed");
+    public static string PassiveMoveSpeedMultLabel => Translate("UI/Profession/Passive/MoveSpeedMult", "Множитель скорости", "Move speed multiplier");
+    public static string PassiveMaxHealthFlatLabel => Translate("UI/Profession/Passive/MaxHealthFlat", "Макс. здоровье", "Max health");
+    public static string PassiveExperienceMultLabel => Translate("UI/Profession/Passive/ExperienceMult", "Опыт", "Experience");
+    public static string PassiveSaleRewardMultLabel => Translate("UI/Profession/Passive/SaleRewardMult", "Продажа", "Sell rewards");
+    public static string PassiveMaxFuelFlatLabel => Translate("UI/Profession/Passive/MaxFuelFlat", "Макс. топливо", "Max fuel");
+    public static string PassiveFuelConsumptionMultLabel => Translate("UI/Profession/Passive/FuelConsumptionMult", "Расход топлива", "Fuel consumption");
+    public static string PassiveFuelFillMultLabel => Translate("UI/Profession/Passive/FuelFillMult", "Заправка", "Fuel fill efficiency");
+    public static string PassiveBoatSpeedFlatLabel => Translate("UI/Profession/Passive/BoatSpeedFlat", "Скорость лодки", "Boat speed");
+    public static string PassiveMeleeDamageFlatLabel => Translate("UI/Profession/Passive/MeleeDamageFlat", "Урон ближнего боя", "Melee damage");
+    public static string PassiveMeleeAttackSpeedMultLabel => Translate("UI/Profession/Passive/MeleeAttackSpeedMult", "Скорость ближнего боя", "Melee attack speed");
+    public static string PassiveRangedDamageFlatLabel => Translate("UI/Profession/Passive/RangedDamageFlat", "Дальний урон", "Ranged damage");
+    public static string PassiveRangedAttackSpeedMultLabel => Translate("UI/Profession/Passive/RangedAttackSpeedMult", "Скорострельность", "Ranged attack speed");
+    public static string PassiveRangedReloadMultLabel => Translate("UI/Profession/Passive/RangedReloadMult", "Перезарядка", "Reload speed");
+
     public static string FormatSelectedProfession(string title)
     {
         string format = Translate("UI/Profession/SelectedFormat", "Выбрана профессия: {0}", "Selected profession: {0}");
@@ -50,6 +55,13 @@ public static class ProfessionLocalization
     {
         string format = Translate("UI/Profession/GemsBonusFormat", "Гемы +{0}", "Gems +{0}");
         return string.Format(format, amount);
+    }
+
+    public static string FormatSoftPrice(int amount, CurrencyType currencyType)
+    {
+        string currency = currencyType == CurrencyType.Gems ? "gems" : "coins";
+        string format = Translate("UI/Profession/SoftPriceFormat", "{0} {1}", "{0} {1}");
+        return string.Format(format, amount, currency);
     }
 
     private static string Translate(string key, string fallbackRu, string fallbackEn)

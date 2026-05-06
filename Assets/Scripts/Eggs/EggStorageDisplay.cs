@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class EggStorageDisplay : MonoBehaviour
@@ -44,7 +44,7 @@ public class EggStorageDisplay : MonoBehaviour
         int shown = 0;
         foreach (EggInventoryEntry egg in eggs)
         {
-            if (!_catalog.TryGet(egg.eggId, out EggHatchingDefinition definition))
+            if (!_catalog.TryGet(egg.eggId, out EggDefinition definition))
                 continue;
 
             if (definition.eggPreviewPrefab == null)

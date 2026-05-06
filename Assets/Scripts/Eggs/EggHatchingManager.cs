@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -19,10 +19,6 @@ public class EggHatchingManager : MonoBehaviour
     [SerializeField] private bool _resetAnimalLocalPoseWhenParented = true;
     [SerializeField] private bool _autoLoadOnStart = true;
     [SerializeField] private bool _autoCollectFinishedEggs = false;
-    [Header("Passive income balance")]
-    [SerializeField, Min(0)] private int _fullIncomeAnimalCount = 3;
-    [SerializeField, Range(0.05f, 1f)] private float _extraAnimalIncomeMultiplier = 0.5f;
-    [SerializeField, Min(0)] private int _maxAccumulatedIncomeSeconds = 3600;
 
     public event Action StateChanged;
 
@@ -81,7 +77,6 @@ public class EggHatchingManager : MonoBehaviour
             SaveAndNotify();
 
         TryRestoreMissingSpawnedAnimals();
-        ProcessAnimalIncomeTick();
     }
 
     public void LoadState()
@@ -132,7 +127,7 @@ public class EggHatchingManager : MonoBehaviour
         return _state.ownedAnimals;
     }
 
-    public bool TryGetDefinition(string eggId, out EggHatchingDefinition definition)
+    public bool TryGetDefinition(string eggId, out EggDefinition definition)
     {
         definition = null;
         if (_catalog == null)
@@ -203,7 +198,7 @@ public class EggHatchingManager : MonoBehaviour
         if (string.IsNullOrWhiteSpace(nestId) || string.IsNullOrWhiteSpace(eggId))
             return false;
 
-        if (_catalog == null || !_catalog.TryGet(eggId, out EggHatchingDefinition definition))
+        if (_catalog == null || !_catalog.TryGet(eggId, out EggDefinition definition))
             return false;
 
         if (!_state.TryConsumeEgg(eggId, 1))
@@ -238,7 +233,7 @@ public class EggHatchingManager : MonoBehaviour
         if (GetRemainingSeconds(nestId) <= 0)
             return true;
 
-        if (_catalog == null || !_catalog.TryGet(nest.eggId, out EggHatchingDefinition definition))
+        if (_catalog == null || !_catalog.TryGet(nest.eggId, out EggDefinition definition))
             return false;
 
         int price = Mathf.Max(0, definition.skipCostGems);
@@ -261,7 +256,6 @@ public class EggHatchingManager : MonoBehaviour
         return true;
     }
 
-    // Legacy name kept to avoid breaking UI bindings.
     public bool TryPlaceReadyAnimal(string nestId)
     {
         return TryCollectReadyAnimal(nestId);
@@ -279,7 +273,13 @@ public class EggHatchingManager : MonoBehaviour
             return false;
 
         if (string.IsNullOrWhiteSpace(nest.hatchedAnimalId))
-            nest.hatchedAnimalId = nest.eggId;
+        {
+            if (_catalog != null && _catalog.TryGet(nest.eggId, out EggDefinition definition))
+                nest.hatchedAnimalId = _catalog.RollAnimalId(definition);
+        }
+
+        if (string.IsNullOrWhiteSpace(nest.hatchedAnimalId))
+            return false;
 
         int stage = Mathf.Max(1, nest.hatchedStage);
         _state.AddAnimal(nest.hatchedAnimalId, stage, 1);
@@ -294,15 +294,15 @@ public class EggHatchingManager : MonoBehaviour
         EnsureStateLoaded();
 
         AnimalInventoryEntry first = _state.ownedAnimals.FirstOrDefault(x =>
-            !string.IsNullOrWhiteSpace(x.EffectiveAnimalId) &&
+            !string.IsNullOrWhiteSpace(x.animalId) &&
             x.amount > 0 &&
             _catalog != null &&
-            _catalog.ResolveAnimalPrefab(x.EffectiveAnimalId, x.EffectiveStage) != null);
+            _catalog.ResolveAnimalPrefab(x.animalId, Mathf.Max(1, x.stage)) != null);
 
         if (first == null)
             return false;
 
-        return TryPlaceAnimalToPoint(pointId, first.EffectiveAnimalId, first.EffectiveStage);
+        return TryPlaceAnimalToPoint(pointId, first.animalId, Mathf.Max(1, first.stage));
     }
 
     public bool TryPlaceAnimalToPoint(string pointId, string eggId)
@@ -338,7 +338,6 @@ public class EggHatchingManager : MonoBehaviour
         PlacedAnimalState placed = new PlacedAnimalState
         {
             pointId = pointId,
-            eggId = animalId,
             animalId = animalId,
             stage = safeStage,
             lastIncomeUnix = GetNowUnix()
@@ -362,7 +361,7 @@ public class EggHatchingManager : MonoBehaviour
         if (placed == null)
             return false;
 
-        _state.AddAnimal(placed.EffectiveAnimalId, placed.EffectiveStage, 1);
+        _state.AddAnimal(placed.animalId, Mathf.Max(1, placed.stage), 1);
         _state.placedAnimals.Remove(placed);
 
         string key = MakePointAnimalKey(pointId);
@@ -416,7 +415,7 @@ public class EggHatchingManager : MonoBehaviour
             if (entry == null)
                 continue;
 
-            if (TryMergeAnimal(entry.EffectiveAnimalId, entry.EffectiveStage))
+            if (TryMergeAnimal(entry.animalId, Mathf.Max(1, entry.stage)))
                 return true;
         }
 
@@ -460,7 +459,6 @@ public class EggHatchingManager : MonoBehaviour
 
     private void CleanupInvalidData()
     {
-        // Keep unknown ids to reduce risk of data loss if catalog/scene is temporarily incomplete.
         _state.Normalize();
     }
 
@@ -482,14 +480,14 @@ public class EggHatchingManager : MonoBehaviour
             if (_catalog == null)
                 continue;
 
-            GameObject animalPrefab = _catalog.ResolveAnimalPrefab(placed.EffectiveAnimalId, placed.EffectiveStage);
+            GameObject animalPrefab = _catalog.ResolveAnimalPrefab(placed.animalId, Mathf.Max(1, placed.stage));
             if (animalPrefab == null)
                 continue;
 
             if (!TryResolvePlacementAnchor(placed, out Transform anchor, out string key))
                 continue;
 
-            SpawnAnimal(placed.EffectiveAnimalId, placed.EffectiveStage, animalPrefab, anchor, key);
+            SpawnAnimal(placed.animalId, Mathf.Max(1, placed.stage), animalPrefab, anchor, key);
         }
     }
 
@@ -506,7 +504,7 @@ public class EggHatchingManager : MonoBehaviour
             if (_catalog == null)
                 continue;
 
-            GameObject animalPrefab = _catalog.ResolveAnimalPrefab(placed.EffectiveAnimalId, placed.EffectiveStage);
+            GameObject animalPrefab = _catalog.ResolveAnimalPrefab(placed.animalId, Mathf.Max(1, placed.stage));
             if (animalPrefab == null)
                 continue;
 
@@ -516,7 +514,7 @@ public class EggHatchingManager : MonoBehaviour
             if (_spawnedAnimals.TryGetValue(key, out GameObject existing) && existing != null)
                 continue;
 
-            SpawnAnimal(placed.EffectiveAnimalId, placed.EffectiveStage, animalPrefab, anchor, key);
+            SpawnAnimal(placed.animalId, Mathf.Max(1, placed.stage), animalPrefab, anchor, key);
         }
     }
 
@@ -607,97 +605,7 @@ public class EggHatchingManager : MonoBehaviour
             return true;
         }
 
-        if (string.IsNullOrWhiteSpace(placed.nestId) || placed.pointIndex < 0)
-            return false;
-
-        EggNestPoint nestPoint = FindNestPoint(placed.nestId);
-        if (nestPoint == null)
-            return false;
-
-        if (!nestPoint.TryGetSpawnPoint(placed.pointIndex, out Transform legacyAnchor) || legacyAnchor == null)
-            return false;
-
-        anchor = legacyAnchor;
-        key = MakeLegacyAnimalKey(placed.nestId, placed.pointIndex);
-        return true;
-    }
-
-    private void ProcessAnimalIncomeTick()
-    {
-        if (_state == null || _state.placedAnimals == null || _state.placedAnimals.Count == 0)
-            return;
-
-        CurrencyManager currency = CurrencyManager.Instance;
-        if (currency == null)
-            return;
-
-        long now = GetNowUnix();
-        double totalReward = 0d;
-        bool changed = false;
-        int rewardedAnimalsCount = 0;
-
-        float extraIncomeMultiplier = Mathf.Clamp(_extraAnimalIncomeMultiplier, 0.05f, 1f);
-        int fullIncomeAnimalCount = Mathf.Max(0, _fullIncomeAnimalCount);
-        int maxAccumulatedIncomeSeconds = Mathf.Max(0, _maxAccumulatedIncomeSeconds);
-
-        IEnumerable<PlacedAnimalState> orderedPlacedAnimals = _state.placedAnimals
-            .Where(x => x != null)
-            .OrderBy(x => x.pointId)
-            .ThenBy(x => x.eggId);
-
-        foreach (PlacedAnimalState placed in orderedPlacedAnimals)
-        {
-            if (_catalog == null || !_catalog.TryGet(placed.EffectiveAnimalId, out EggHatchingDefinition definition))
-                continue;
-
-            int income = Mathf.Max(0, definition.passiveIncomeCoins);
-            if (income <= 0)
-                continue;
-
-            int interval = Mathf.Max(1, definition.passiveIncomeIntervalSeconds);
-
-            if (placed.lastIncomeUnix <= 0)
-            {
-                placed.lastIncomeUnix = now;
-                changed = true;
-                continue;
-            }
-
-            long elapsed = now - placed.lastIncomeUnix;
-            if (maxAccumulatedIncomeSeconds > 0 && elapsed > maxAccumulatedIncomeSeconds)
-            {
-                elapsed = maxAccumulatedIncomeSeconds;
-                placed.lastIncomeUnix = now - maxAccumulatedIncomeSeconds;
-                changed = true;
-            }
-
-            if (elapsed < interval)
-                continue;
-
-            long cycles = elapsed / interval;
-            if (cycles <= 0)
-                continue;
-
-            placed.lastIncomeUnix += cycles * interval;
-            float slotMultiplier = rewardedAnimalsCount < fullIncomeAnimalCount
-                ? 1f
-                : extraIncomeMultiplier;
-
-            totalReward += income * cycles * slotMultiplier;
-            rewardedAnimalsCount++;
-            changed = true;
-        }
-
-        if (totalReward > 0d)
-        {
-            int reward = totalReward > int.MaxValue
-                ? int.MaxValue
-                : Mathf.Max(0, Mathf.RoundToInt((float)totalReward));
-            currency.AddCurrency(CurrencyType.Coins, reward);
-        }
-
-        if (changed)
-            EggFeatureStorage.Save(_state);
+        return false;
     }
 
     private bool MarkFinishedNestsReadyInternal()
@@ -724,10 +632,8 @@ public class EggHatchingManager : MonoBehaviour
 
             if (string.IsNullOrWhiteSpace(nest.hatchedAnimalId))
             {
-                if (_catalog != null && _catalog.TryGet(nest.eggId, out EggHatchingDefinition definition))
+                if (_catalog != null && _catalog.TryGet(nest.eggId, out EggDefinition definition))
                     nest.hatchedAnimalId = _catalog.RollAnimalId(definition);
-                else
-                    nest.hatchedAnimalId = nest.eggId;
             }
 
             nest.hatchedStage = Mathf.Max(1, nest.hatchedStage);
@@ -762,12 +668,12 @@ public class EggHatchingManager : MonoBehaviour
                 GameObject animalPreview = _catalog.ResolveAnimalPrefab(nest.hatchedAnimalId, nest.hatchedStage);
                 if (animalPreview != null)
                     nestPoint.SetEggPreview(animalPreview);
-                else if (_catalog.TryGet(nest.eggId, out EggHatchingDefinition readyDefinition))
+                else if (_catalog.TryGet(nest.eggId, out EggDefinition readyDefinition))
                     nestPoint.SetEggPreview(readyDefinition.eggPreviewPrefab);
                 else
                     nestPoint.ClearEggPreview();
             }
-            else if (_catalog != null && _catalog.TryGet(nest.eggId, out EggHatchingDefinition definition))
+            else if (_catalog != null && _catalog.TryGet(nest.eggId, out EggDefinition definition))
             {
                 nestPoint.SetEggPreview(definition.eggPreviewPrefab);
             }
@@ -812,11 +718,6 @@ public class EggHatchingManager : MonoBehaviour
     private static string MakePointAnimalKey(string pointId)
     {
         return $"point::{pointId}";
-    }
-
-    private static string MakeLegacyAnimalKey(string nestId, int pointIndex)
-    {
-        return $"legacy::{nestId}::{pointIndex}";
     }
 
     private static long GetNowUnix()

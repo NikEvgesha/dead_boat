@@ -6,7 +6,7 @@ public class EggNestPoint : MonoBehaviour
 {
     [SerializeField] private string _nestId;
     [SerializeField] private Transform _eggVisualAnchor;
-    [Header("Legacy migration support. New placement uses AnimalPlacementPoint.")]
+    [Header("Optional preview/support anchors")]
     [SerializeField] private List<Transform> _animalSpawnPoints = new();
     [SerializeField] private EggNestSelectionPanel _selectionPanel;
 

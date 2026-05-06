@@ -19,6 +19,7 @@ public static class ProfessionTemporaryUIFactory
         public Button nextButton;
         public Button prevButton;
         public Button unlockRandomButton;
+        public Button directBuyButton;
         public Button closeButton;
     }
 
@@ -66,8 +67,9 @@ public static class ProfessionTemporaryUIFactory
             lockObject = EnsureLock(body.transform),
             prevButton = EnsureButton(body.transform, "PrevButton", "<", new Vector2(0.08f, 0.83f), new Vector2(0.16f, 0.93f), null),
             nextButton = EnsureButton(body.transform, "NextButton", ">", new Vector2(0.84f, 0.83f), new Vector2(0.92f, 0.93f), null),
-            applyButton = EnsureButton(body.transform, "ApplyButton", "Apply", new Vector2(0.28f, 0.08f), new Vector2(0.44f, 0.17f), null),
-            unlockRandomButton = EnsureButton(body.transform, "UnlockRandomButton", "Unlock", new Vector2(0.44f, 0.08f), new Vector2(0.58f, 0.17f), null),
+            applyButton = EnsureButton(body.transform, "ApplyButton", "Apply", new Vector2(0.20f, 0.08f), new Vector2(0.36f, 0.17f), null),
+            unlockRandomButton = EnsureButton(body.transform, "UnlockRandomButton", "Random", new Vector2(0.38f, 0.08f), new Vector2(0.54f, 0.17f), null),
+            directBuyButton = EnsureButton(body.transform, "DirectBuyButton", "Buy", new Vector2(0.56f, 0.08f), new Vector2(0.72f, 0.17f), null),
             closeButton = EnsureButton(body.transform, "CloseButton", "X", new Vector2(0.9f, 0.9f), new Vector2(0.98f, 0.98f), closeAction)
         };
 

@@ -142,7 +142,7 @@ public class EggNestSelectionPanel : MonoBehaviour
                 if (owned == null || owned.amount <= 0)
                     continue;
 
-                if (!_manager.TryGetDefinition(owned.eggId, out EggHatchingDefinition definition))
+                if (!_manager.TryGetDefinition(owned.eggId, out EggDefinition definition))
                     continue;
 
                 EggNestSelectionSlot slot = _grid.SpawnObject<EggNestSelectionSlot>(_slotPrefab.gameObject);

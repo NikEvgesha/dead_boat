@@ -2,7 +2,7 @@
 
 Updated: 2026-05-06
 
-This setup doc describes the target profession feature. Some parts are not implemented yet and are marked as pending.
+This setup doc describes the current profession feature setup after the v2 implementation pass.
 
 ## 1. Catalog
 
@@ -36,13 +36,14 @@ Current implementation fields:
 - `perkLines`
 - `passiveBonuses`
 
-Pending v2 fields:
+V2 fields:
 
-- random unlock pool flag;
-- random unlock weight;
-- direct coin/soft-currency cost;
-- purchase product id;
-- soft-currency fallback flag for platforms without purchases.
+- `availableInRandomUnlockPool`;
+- `randomUnlockWeight`;
+- `directSoftCurrencyCost`;
+- `directSoftCurrencyType`;
+- `purchaseProductId`;
+- `allowSoftCurrencyFallbackWhenPurchasesUnavailable`.
 
 ## 2. Default State
 
@@ -51,10 +52,10 @@ Target behavior:
 - New players start with no active profession.
 - "No profession" should be selectable and should give no bonuses.
 
-Current implementation note:
+Implementation note:
 
-- Existing code always unlocks a default profession when `defaultUnlocked` is set.
-- During the v2 implementation pass, normalize logic should be changed so old saves still work, but new players can stay in no-profession state.
+- Existing `defaultUnlocked` professions can still be unlocked by default, but they are not auto-selected for new players.
+- New players stay in no-profession state until they explicitly select a profession.
 
 ## 3. Lobby Interaction
 
@@ -116,7 +117,7 @@ Direct buy:
 - If purchases are unavailable and fallback is allowed, spend configured soft currency.
 - Unlock the chosen profession permanently after success.
 
-Need implementation check:
+Need content/economy check:
 
 - Confirm exact `PurchasesManager` product API before wiring direct real-money unlock.
 - Confirm whether coins or gems should be the fallback currency per platform.

@@ -8,10 +8,12 @@ public class ProfessionState
     public string selectedProfessionId;
     public bool hasExplicitProfessionChoice;
     public List<string> unlockedProfessionIds = new();
+    public List<string> purchasedProfessionIds = new();
 
     public void Normalize(IReadOnlyList<ProfessionDefinition> definitions, string fallbackDefaultProfessionId)
     {
         unlockedProfessionIds ??= new List<string>();
+        purchasedProfessionIds ??= new List<string>();
 
         HashSet<string> validIds = new();
         for (int i = 0; i < definitions.Count; i++)
@@ -48,9 +50,46 @@ public class ProfessionState
         }
 
         unlockedProfessionIds = normalizedUnlocked;
+        NormalizePurchased(validIds);
+
+        if (!hasExplicitProfessionChoice)
+        {
+            selectedProfessionId = string.Empty;
+            return;
+        }
 
         if (string.IsNullOrWhiteSpace(selectedProfessionId) || !uniqueUnlocked.Contains(selectedProfessionId))
+        {
             selectedProfessionId = defaultProfessionId;
+
+            if (string.IsNullOrWhiteSpace(selectedProfessionId) || !uniqueUnlocked.Contains(selectedProfessionId))
+            {
+                selectedProfessionId = string.Empty;
+                hasExplicitProfessionChoice = false;
+            }
+        }
+    }
+
+    private void NormalizePurchased(HashSet<string> validIds)
+    {
+        HashSet<string> uniquePurchased = new();
+        List<string> normalizedPurchased = new();
+        for (int i = 0; i < purchasedProfessionIds.Count; i++)
+        {
+            string id = purchasedProfessionIds[i];
+            if (string.IsNullOrWhiteSpace(id))
+                continue;
+
+            if (!validIds.Contains(id))
+                continue;
+
+            if (!uniquePurchased.Add(id))
+                continue;
+
+            normalizedPurchased.Add(id);
+        }
+
+        purchasedProfessionIds = normalizedPurchased;
     }
 
     private static string ResolveDefaultProfessionId(IReadOnlyList<ProfessionDefinition> definitions, string fallbackDefaultProfessionId)

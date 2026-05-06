@@ -1,7 +1,7 @@
 # Profession System Spec
 
 Updated: 2026-05-06
-Status: gameplay loop clarified; implementation needs a v2 pass.
+Status: v2 implementation pass completed; needs manual UI/economy smoke in Lobby.
 
 ## Goal
 
@@ -33,13 +33,18 @@ Existing code foundation:
 - `ProfessionSelectionPanel` and temporary UI exist.
 - `ProfessionNpcPoint` exists for lobby interaction.
 
-Important differences from the target design:
+Implemented v2 additions:
 
-- Current normalization always unlocks a default profession if any `defaultUnlocked` exists. Target design says initial state is "no profession".
-- Current random unlock is priced in gems. Target design says random profession unlock should use soft currency, currently expected as coins.
-- Current implementation has random unlock only; target also needs direct permanent buy for any profession.
-- Current direct buy must support two purchase modes: real-money product where platform purchases are available, and soft-currency fallback where purchases are unavailable.
-- Current selected profession is stored as meta-progress. That is correct, but the "no active profession" state must also be valid.
+- No-profession state is valid and selected by default when the player has no explicit profession choice.
+- Random unlock supports configurable soft currency, currently coins in `ProfessionSelectionPanel`.
+- Profession definitions include random pool, weight, direct soft-currency cost, purchase product id, and soft fallback flags.
+- Direct buy supports real-money purchase when `PurchasesManager.PurchasesAvailable()` is true and `purchaseProductId` is set.
+- Direct buy falls back to soft currency when purchases are unavailable and the profession allows fallback.
+- Temporary UI now includes a separate direct buy button.
+
+Remaining implementation notes:
+
+- Purchase product ids and final direct-buy prices still need real content values in `ProfessionCatalog.asset`.
 - Current stat application is direct through `ProfessionService.Apply*`; before adding class mechanics, this should move behind the planned unified run stat layer.
 
 ## Save Scope
@@ -62,18 +67,18 @@ public class ProfessionState
 }
 ```
 
-Target v2 rules:
+Current v2 rules:
 
-- no profession must be a valid state;
+- no profession is a valid state through `hasExplicitProfessionChoice == false`;
 - unknown ids should not wipe the whole state;
 - permanent unlocks must survive win/lose, scene reload, and browser refresh;
 - profession state must not be stored in `LevelStatManager.Stats`, `SaveKey.BoostType`, or `SaveKey.LevelUp`.
 
 Compatibility:
 
-- Old saves with a selected default profession should keep working.
-- If an old save has `hasExplicitProfessionChoice == false`, it should behave as no profession selected.
-- If an old save has selected profession unlocked explicitly, keep that selected profession.
+- Old saves with a selected default profession keep working.
+- If an old save has `hasExplicitProfessionChoice == false`, it behaves as no profession selected.
+- If an old save has selected profession unlocked explicitly, it keeps that selected profession.
 
 ## Data Model
 

@@ -44,7 +44,7 @@ Status: planning + baseline setup.
 ### Итерация A: Baseline
 - Зафиксировать текущие значения:
   - `EggSpawnBalancer`,
-  - `EggHatchingCatalog` (время, доход, skip cost),
+- `EggHatchingCatalog` и отдельные egg/animal assets (время, skip cost, hatch weights, stage buffs),
   - стоимость открытия профессий за гемы,
   - стартовые бонусы профессий.
 - Прогнать не менее 10 ранoв и собрать KPI.
@@ -53,7 +53,7 @@ Status: planning + baseline setup.
 - Подкрутить только 1-2 группы параметров за шаг:
   - экономика ранней игры,
   - давление mid game,
-  - доходность яйца/животного.
+- бафы и прогрессия стадий животных.
 - После каждого изменения прогонять короткий regression smoke.
 
 ### Итерация C: Synergy Tuning

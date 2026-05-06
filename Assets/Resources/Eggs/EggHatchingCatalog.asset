@@ -1,4 +1,4 @@
-%YAML 1.1
+﻿%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -12,149 +12,37 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 64c13f3e9b5a44b8a3d19efad2c285c4, type: 3}
   m_Name: EggHatchingCatalog
   m_EditorClassIdentifier: 
-  _definitions:
-  - eggId: egg_chicken
-    title: Chicken Egg
-    incubationSeconds: 1800
-    skipCostGems: 25
-    passiveIncomeCoins: 1
-    passiveIncomeIntervalSeconds: 60
-    animalPrefab: {fileID: 100100000, guid: af68f6ffff31ff64c93521a587d234b1, type: 3}
-    eggPreviewPrefab: {fileID: 100100000, guid: 9cc1d9ce9a214b7bbbd81ac6a4fd9c8a, type: 3}
-    hatchResults:
-    - animalId: chicken
-      weight: 100
-  - eggId: egg_condor
-    title: Condor Egg
-    incubationSeconds: 3600
-    skipCostGems: 45
-    passiveIncomeCoins: 3
-    passiveIncomeIntervalSeconds: 90
-    animalPrefab: {fileID: 100100000, guid: ea09f74638baa144b976a6d30cfeb5c0, type: 3}
-    eggPreviewPrefab: {fileID: 100100000, guid: 8709ecf0baf84f4b8af631f2f21ff9a4, type: 3}
-    hatchResults:
-    - animalId: condor
-      weight: 100
+  _eggs:
+  - {fileID: 11400000, guid: 4742b9646301a234a87341a431215e24, type: 2}
+  - {fileID: 11400000, guid: 14f62d27318fe4841ab10c52d6affdeb, type: 2}
+  - {fileID: 11400000, guid: d351820b75804d76b2a35be0f9072ced, type: 2}
+  - {fileID: 11400000, guid: 1d383c261d7a4665bea5221960a1df68, type: 2}
+  - {fileID: 11400000, guid: 7bbf26cc96284c768f564ec6821d7fa1, type: 2}
+  - {fileID: 11400000, guid: ff32e541b9b54314a92fa4a478c70c96, type: 2}
+  - {fileID: 11400000, guid: 941e423724074bd09d4bbbfb83632d1b, type: 2}
+  - {fileID: 11400000, guid: f31c4f3aa0bc4f0e8487c0eeab850b6c, type: 2}
+  - {fileID: 11400000, guid: 7f384a38ebb441ddbf342656b3f3a571, type: 2}
+  - {fileID: 11400000, guid: af348730342f4747842e20c6aeed9294, type: 2}
+  - {fileID: 11400000, guid: 6d58ef854b8e41b0a02d57b74ca01532, type: 2}
+  - {fileID: 11400000, guid: 752f325eaf064e9f9f5c690f34da9dc5, type: 2}
+  - {fileID: 11400000, guid: bc401327531f48c1a512877fa322fcf6, type: 2}
   _animals:
-  - animalId: chicken
-    title: Chicken
-    maxStage: 3
-    stages:
-    - stage: 1
-      animalPrefab: {fileID: 100100000, guid: af68f6ffff31ff64c93521a587d234b1, type: 3}
-      tint: {r: 1, g: 1, b: 1, a: 1}
-      mergeParticlesPrefab: {fileID: 0}
-      buffs:
-        maxHealthFlat: 0
-        moveSpeedFlat: 0
-        moveSpeedMultiplier: 1
-        experienceMultiplier: 1
-        saleRewardMultiplier: 1.03
-        maxFuelFlat: 0
-        fuelConsumptionMultiplier: 1
-        fuelFillMultiplier: 1
-        boatSpeedFlat: 0
-        meleeDamageFlat: 0
-        meleeAttackSpeedMultiplier: 1
-        rangedDamageFlat: 0
-        rangedAttackSpeedMultiplier: 1
-        rangedReloadSpeedMultiplier: 1
-    - stage: 2
-      animalPrefab: {fileID: 100100000, guid: af68f6ffff31ff64c93521a587d234b1, type: 3}
-      tint: {r: 1, g: 0.9, b: 0.65, a: 1}
-      mergeParticlesPrefab: {fileID: 0}
-      buffs:
-        maxHealthFlat: 0
-        moveSpeedFlat: 0
-        moveSpeedMultiplier: 1
-        experienceMultiplier: 1
-        saleRewardMultiplier: 1.06
-        maxFuelFlat: 0
-        fuelConsumptionMultiplier: 1
-        fuelFillMultiplier: 1
-        boatSpeedFlat: 0
-        meleeDamageFlat: 0
-        meleeAttackSpeedMultiplier: 1
-        rangedDamageFlat: 0
-        rangedAttackSpeedMultiplier: 1
-        rangedReloadSpeedMultiplier: 1
-    - stage: 3
-      animalPrefab: {fileID: 100100000, guid: af68f6ffff31ff64c93521a587d234b1, type: 3}
-      tint: {r: 1, g: 0.75, b: 0.35, a: 1}
-      mergeParticlesPrefab: {fileID: 0}
-      buffs:
-        maxHealthFlat: 0
-        moveSpeedFlat: 0
-        moveSpeedMultiplier: 1
-        experienceMultiplier: 1
-        saleRewardMultiplier: 1.1
-        maxFuelFlat: 0
-        fuelConsumptionMultiplier: 1
-        fuelFillMultiplier: 1
-        boatSpeedFlat: 0
-        meleeDamageFlat: 0
-        meleeAttackSpeedMultiplier: 1
-        rangedDamageFlat: 0
-        rangedAttackSpeedMultiplier: 1
-        rangedReloadSpeedMultiplier: 1
-  - animalId: condor
-    title: Condor
-    maxStage: 3
-    stages:
-    - stage: 1
-      animalPrefab: {fileID: 100100000, guid: ea09f74638baa144b976a6d30cfeb5c0, type: 3}
-      tint: {r: 1, g: 1, b: 1, a: 1}
-      mergeParticlesPrefab: {fileID: 0}
-      buffs:
-        maxHealthFlat: 0
-        moveSpeedFlat: 0
-        moveSpeedMultiplier: 1
-        experienceMultiplier: 1
-        saleRewardMultiplier: 1
-        maxFuelFlat: 25
-        fuelConsumptionMultiplier: 0.98
-        fuelFillMultiplier: 1
-        boatSpeedFlat: 0
-        meleeDamageFlat: 0
-        meleeAttackSpeedMultiplier: 1
-        rangedDamageFlat: 0
-        rangedAttackSpeedMultiplier: 1
-        rangedReloadSpeedMultiplier: 1
-    - stage: 2
-      animalPrefab: {fileID: 100100000, guid: ea09f74638baa144b976a6d30cfeb5c0, type: 3}
-      tint: {r: 0.8, g: 0.95, b: 1, a: 1}
-      mergeParticlesPrefab: {fileID: 0}
-      buffs:
-        maxHealthFlat: 0
-        moveSpeedFlat: 0
-        moveSpeedMultiplier: 1
-        experienceMultiplier: 1
-        saleRewardMultiplier: 1
-        maxFuelFlat: 50
-        fuelConsumptionMultiplier: 0.95
-        fuelFillMultiplier: 1
-        boatSpeedFlat: 0
-        meleeDamageFlat: 0
-        meleeAttackSpeedMultiplier: 1
-        rangedDamageFlat: 0
-        rangedAttackSpeedMultiplier: 1
-        rangedReloadSpeedMultiplier: 1
-    - stage: 3
-      animalPrefab: {fileID: 100100000, guid: ea09f74638baa144b976a6d30cfeb5c0, type: 3}
-      tint: {r: 0.55, g: 0.8, b: 1, a: 1}
-      mergeParticlesPrefab: {fileID: 0}
-      buffs:
-        maxHealthFlat: 0
-        moveSpeedFlat: 0
-        moveSpeedMultiplier: 1
-        experienceMultiplier: 1
-        saleRewardMultiplier: 1
-        maxFuelFlat: 90
-        fuelConsumptionMultiplier: 0.9
-        fuelFillMultiplier: 1
-        boatSpeedFlat: 0
-        meleeDamageFlat: 0
-        meleeAttackSpeedMultiplier: 1
-        rangedDamageFlat: 0
-        rangedAttackSpeedMultiplier: 1
-        rangedReloadSpeedMultiplier: 1
+  - {fileID: 11400000, guid: 20fe85e472324b09896a29f803bef777, type: 2}
+  - {fileID: 11400000, guid: d4fdbecc39d54c988edfdc4b147572f0, type: 2}
+  - {fileID: 11400000, guid: b5006fb2132f4c2ea5f07b5a4ca9f5ba, type: 2}
+  - {fileID: 11400000, guid: de5fbf68bff941bea962729b308dcbfd, type: 2}
+  - {fileID: 11400000, guid: 88811fd1732946239bb971b8a2dcb74b, type: 2}
+  - {fileID: 11400000, guid: 9967be4dedd24b7439fc01f1c4624a0e, type: 2}
+  - {fileID: 11400000, guid: fe190ede4a31424da9732a2cf97171ed, type: 2}
+  - {fileID: 11400000, guid: 5a2f0e6d9ca2405a8f1b6707a57b7375, type: 2}
+  - {fileID: 11400000, guid: 9043c579516f44069dac272346c09373, type: 2}
+  - {fileID: 11400000, guid: 8ab6d3ee6c9843ed90e3d67f7c132d6f, type: 2}
+  - {fileID: 11400000, guid: 351675a1fe3546a2a49bf14714bea134, type: 2}
+  - {fileID: 11400000, guid: 2c027b5ee01344a5893f0906bb92909c, type: 2}
+  - {fileID: 11400000, guid: d8c0a96118cd45eb8a2a013cf70e8ec9, type: 2}
+  - {fileID: 11400000, guid: 2ed4be6b179a476aa61693630f2532ba, type: 2}
+  - {fileID: 11400000, guid: 3406e0ddc74a49818563a2a1e543b309, type: 2}
+  - {fileID: 11400000, guid: 1e160e362cf340b6b84c621615d9365a, type: 2}
+  - {fileID: 11400000, guid: 714ede7b27f047c59dbe1b3f3ca4598d, type: 2}
+  - {fileID: 11400000, guid: 4b2617b70c994f7caf6b18012ffef6c0, type: 2}
+  - {fileID: 11400000, guid: 8cabb8c7b2d2b3847a38d05954ee50fa, type: 2}

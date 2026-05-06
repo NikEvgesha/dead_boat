@@ -1,6 +1,6 @@
 # Egg System Setup
 
-Updated: 2026-05-05
+Updated: 2026-05-06
 
 This file tracks Unity setup for the egg feature. The current implementation has temporary UI fallbacks, but production should use explicit scene/prefab references.
 
@@ -11,32 +11,39 @@ Required lobby objects:
 - `EggHatchingManager`
 - One or more `EggNestPoint` objects with unique `Nest Id`
 - One or more `AnimalPlacementPoint` objects on the boat with unique `Point Id`
-- Future: one `AnimalMergePoint` or merge station object
+- One `AnimalMergePoint` or merge station object
 
 Required UI:
 
 - `EggNestSelectionPanel`
 - `AnimalPlacementSelectionPanel`
-- Future: `AnimalInventoryPanel`
-- Future: `AnimalMergePanel`
+- Future: final `AnimalInventoryPanel`
+- `AnimalMergeSelectionPanel`
 - Optional: `EggStorageDisplay`
 - Optional: `EggNestUI` per nest
 
 ## Catalog
 
-Current asset:
+Current assets:
 
 - `Assets/Resources/Eggs/EggHatchingCatalog.asset`
+- `Assets/Resources/Eggs/Definitions/Eggs/*.asset`
+- `Assets/Resources/Eggs/Definitions/Animals/*.asset`
 
-Before production, extend the catalog so it contains:
+The catalog is only the top-level registry. It should contain references to egg assets and animal assets.
 
-- Egg definitions
-- Hatch result pools
-- Animal definitions
-- Animal stages
-- Stage prefabs/tints/VFX
-- Buff values per stage
-- Merge limits/costs
+Egg asset setup:
+
+- Asset name is the id. `egg_chicken.asset` becomes `egg_chicken`.
+- Set `Title`, `Incubation Seconds`, `Skip Cost Gems`, and `Egg Preview Prefab`.
+- Add `Hatch Results` by dragging existing `AnimalDefinition` assets into the list and setting weights.
+
+Animal asset setup:
+
+- Asset name is the id. `chicken.asset` becomes `chicken`.
+- Set `Title` and `Max Stage`.
+- Add stages with `Stage`, `Animal Prefab`, `Tint`, optional `Merge Particles Prefab`, and buff values.
+- Do not type animal ids into eggs manually. Drag the animal asset reference instead.
 
 ## Manager Settings
 
@@ -101,10 +108,6 @@ Production behavior:
 - Placed animals are excluded from merge inventory.
 
 ## Merge Station Setup
-
-Not implemented yet.
-
-Target setup:
 
 - Add lobby interaction point, likely `AnimalMergePoint`.
 - Connect `AnimalMergePanel`.

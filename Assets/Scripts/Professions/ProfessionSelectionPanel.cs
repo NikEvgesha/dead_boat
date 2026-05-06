@@ -34,13 +34,15 @@ public class ProfessionSelectionPanel : MonoBehaviour
     [SerializeField] private Button _nextButton;
     [SerializeField] private Button _prevButton;
     [SerializeField] private Button _unlockRandomButton;
+    [SerializeField] private Button _directBuyButton;
     [SerializeField] private Button _closeButton;
 
     [Header("Unlock")]
-    [SerializeField] private int _unlockRandomPriceGems = 25;
+    [SerializeField] private int _unlockRandomPriceCoins = 250;
+    [SerializeField] private CurrencyType _unlockRandomCurrencyType = CurrencyType.Coins;
     [SerializeField] private bool _scaleUnlockPriceByOpenedCount = true;
-    [SerializeField] private int _unlockPriceStepGems = 5;
-    [SerializeField] private int _unlockPriceMaxGems = 120;
+    [SerializeField] private int _unlockPriceStepCoins = 100;
+    [SerializeField] private int _unlockPriceMaxCoins = 2000;
 
     private readonly List<ProfessionDefinition> _definitions = new();
     private int _currentIndex;
@@ -100,6 +102,9 @@ public class ProfessionSelectionPanel : MonoBehaviour
 
         if (_unlockRandomButton != null)
             _unlockRandomButton.onClick.RemoveListener(UnlockRandomProfession);
+
+        if (_directBuyButton != null)
+            _directBuyButton.onClick.RemoveListener(DirectBuyProfession);
 
         if (_closeButton != null)
             _closeButton.onClick.RemoveListener(CloseFromButton);
@@ -161,7 +166,12 @@ public class ProfessionSelectionPanel : MonoBehaviour
     {
         ProfessionDefinition definition = GetCurrentDefinition();
         if (definition == null)
+        {
+            ProfessionService.TrySelectNoProfession();
+            SetMessage(ProfessionLocalization.StatusNoProfession);
+            RefreshView();
             return;
+        }
 
         if (!ProfessionService.TrySelectProfession(definition.professionId))
             return;
@@ -172,16 +182,16 @@ public class ProfessionSelectionPanel : MonoBehaviour
 
     private void UnlockRandomProfession()
     {
-        int unlockPrice = GetUnlockPriceGems();
+        int unlockPrice = GetUnlockPrice();
 
-        if (!ProfessionService.HasLockedProfessions())
+        if (!ProfessionService.HasRandomLockedProfessions())
         {
             SetMessage(ProfessionLocalization.MessageAllUnlocked);
             RefreshView();
             return;
         }
 
-        if (!ProfessionService.TryUnlockRandomLockedProfession(unlockPrice, out ProfessionDefinition unlockedDefinition))
+        if (!ProfessionService.TryUnlockRandomLockedProfession(unlockPrice, _unlockRandomCurrencyType, out ProfessionDefinition unlockedDefinition))
         {
             SetMessage(ProfessionLocalization.MessageUnlockFailed);
             RefreshView();
@@ -193,11 +203,64 @@ public class ProfessionSelectionPanel : MonoBehaviour
         RefreshView();
     }
 
+    private void DirectBuyProfession()
+    {
+        ProfessionDefinition definition = GetCurrentDefinition();
+        if (definition == null || ProfessionService.IsUnlocked(definition.professionId))
+            return;
+
+        if (CanUseRealPurchase(definition))
+        {
+            PauseManager.Instance.SetPause(true, true);
+            PurchasesManager.Instance.BuyPurchase(
+                definition.purchaseProductId,
+                success =>
+                {
+                    if (success)
+                    {
+                        ProfessionService.UnlockProfessionFromPurchase(definition.professionId);
+                        SetMessage(ProfessionLocalization.FormatUnlockedProfession(definition.title));
+                    }
+                    else
+                    {
+                        SetMessage(ProfessionLocalization.MessageUnlockFailed);
+                    }
+
+                    PauseManager.Instance.SetPause(false, true);
+                    RefreshView();
+                });
+            return;
+        }
+
+        if (!CanUseSoftCurrencyFallback(definition))
+        {
+            SetMessage(ProfessionLocalization.MessagePurchaseUnavailable);
+            RefreshView();
+            return;
+        }
+
+        if (!ProfessionService.TryUnlockProfessionWithSoftCurrency(
+                definition.professionId,
+                definition.directSoftCurrencyCost,
+                definition.directSoftCurrencyType))
+        {
+            SetMessage(ProfessionLocalization.MessageUnlockFailed);
+            RefreshView();
+            return;
+        }
+
+        SetMessage(ProfessionLocalization.FormatUnlockedProfession(definition.title));
+        RefreshView();
+    }
+
     private void RefreshView()
     {
         ProfessionDefinition definition = GetCurrentDefinition();
         if (definition == null)
+        {
+            RefreshNoProfessionView();
             return;
+        }
 
         bool unlocked = ProfessionService.IsUnlocked(definition.professionId);
         bool selected = ProfessionService.HasExplicitProfessionChoice() &&
@@ -243,15 +306,18 @@ public class ProfessionSelectionPanel : MonoBehaviour
         }
 
         if (_unlockRandomButton != null)
-            _unlockRandomButton.interactable = ProfessionService.HasLockedProfessions();
+            _unlockRandomButton.interactable = ProfessionService.HasRandomLockedProfessions();
 
         if (_unlockPriceText != null)
-            _unlockPriceText.text = GetUnlockPriceGems().ToString();
+            _unlockPriceText.text = BuildPriceText(definition, unlocked);
+
+        RefreshDirectBuyButton(definition, unlocked);
     }
 
     private void RebuildDefinitions()
     {
         _definitions.Clear();
+        _definitions.Add(null);
 
         IReadOnlyList<ProfessionDefinition> definitions = ProfessionService.GetDefinitions();
         for (int i = 0; i < definitions.Count; i++)
@@ -264,12 +330,12 @@ public class ProfessionSelectionPanel : MonoBehaviour
 
     private int FindProfessionIndex(string professionId)
     {
-        if (string.IsNullOrWhiteSpace(professionId))
+        if (string.IsNullOrWhiteSpace(professionId) || ProfessionService.IsNoProfessionSelected())
             return 0;
 
         for (int i = 0; i < _definitions.Count; i++)
         {
-            if (string.Equals(_definitions[i].professionId, professionId, StringComparison.Ordinal))
+            if (_definitions[i] != null && string.Equals(_definitions[i].professionId, professionId, StringComparison.Ordinal))
                 return i;
         }
 
@@ -324,17 +390,109 @@ public class ProfessionSelectionPanel : MonoBehaviour
         _messageText.text = message ?? string.Empty;
     }
 
-    private int GetUnlockPriceGems()
+    private int GetUnlockPrice()
     {
-        int basePrice = Mathf.Max(0, _unlockRandomPriceGems);
+        int basePrice = Mathf.Max(0, _unlockRandomPriceCoins);
         if (!_scaleUnlockPriceByOpenedCount)
             return basePrice;
 
-        int extraOpened = Mathf.Max(0, ProfessionService.GetUnlockedCount() - 1);
-        int scaledPrice = basePrice + (Mathf.Max(0, _unlockPriceStepGems) * extraOpened);
+        int extraOpened = Mathf.Max(0, ProfessionService.GetUnlockedCount());
+        int scaledPrice = basePrice + (Mathf.Max(0, _unlockPriceStepCoins) * extraOpened);
 
-        int maxPrice = Mathf.Max(basePrice, _unlockPriceMaxGems);
+        int maxPrice = Mathf.Max(basePrice, _unlockPriceMaxCoins);
         return Mathf.Clamp(scaledPrice, basePrice, maxPrice);
+    }
+
+    private void RefreshNoProfessionView()
+    {
+        bool selected = ProfessionService.IsNoProfessionSelected();
+
+        if (_professionTitleText != null)
+            _professionTitleText.text = ProfessionLocalization.NoProfessionTitle;
+
+        if (_professionDescriptionText != null)
+            _professionDescriptionText.text = ProfessionLocalization.NoProfessionDescription;
+
+        if (_starterItemsText != null)
+            _starterItemsText.text = ProfessionLocalization.NoStarterItems;
+
+        if (_perksText != null)
+            _perksText.text = ProfessionLocalization.NoSpecialAbilities;
+
+        if (_statusText != null)
+            _statusText.text = selected ? ProfessionLocalization.StatusEquipped : ProfessionLocalization.StatusNoProfession;
+
+        if (_professionIcon != null)
+        {
+            _professionIcon.enabled = false;
+            _professionIcon.sprite = null;
+        }
+
+        if (_lockObject != null)
+            _lockObject.SetActive(false);
+
+        if (_applyButton != null)
+        {
+            _applyButton.gameObject.SetActive(true);
+            _applyButton.interactable = !selected;
+        }
+
+        if (_unlockRandomButton != null)
+            _unlockRandomButton.interactable = ProfessionService.HasRandomLockedProfessions();
+
+        if (_directBuyButton != null)
+            _directBuyButton.gameObject.SetActive(false);
+
+        if (_unlockPriceText != null)
+            _unlockPriceText.text = ProfessionLocalization.FormatSoftPrice(GetUnlockPrice(), _unlockRandomCurrencyType);
+    }
+
+    private void RefreshDirectBuyButton(ProfessionDefinition definition, bool unlocked)
+    {
+        if (_directBuyButton == null)
+            return;
+
+        bool canBuy = !unlocked && (CanUseRealPurchase(definition) || CanUseSoftCurrencyFallback(definition));
+        _directBuyButton.gameObject.SetActive(canBuy);
+        _directBuyButton.interactable = canBuy;
+    }
+
+    private string BuildPriceText(ProfessionDefinition definition, bool unlocked)
+    {
+        if (unlocked)
+            return ProfessionLocalization.FormatSoftPrice(GetUnlockPrice(), _unlockRandomCurrencyType);
+
+        if (CanUseRealPurchase(definition))
+        {
+            PurchaseData purchaseData = PurchasesManager.Instance.GetPurchaseData(definition.purchaseProductId);
+            if (purchaseData != null && !string.IsNullOrWhiteSpace(purchaseData.Price))
+                return purchaseData.Price;
+        }
+
+        if (CanUseSoftCurrencyFallback(definition))
+            return ProfessionLocalization.FormatSoftPrice(definition.directSoftCurrencyCost, definition.directSoftCurrencyType);
+
+        return ProfessionLocalization.FormatSoftPrice(GetUnlockPrice(), _unlockRandomCurrencyType);
+    }
+
+    private bool CanUseRealPurchase(ProfessionDefinition definition)
+    {
+        return definition != null &&
+               PurchasesManager.Instance != null &&
+               PurchasesManager.Instance.PurchasesAvailable() &&
+               !string.IsNullOrWhiteSpace(definition.purchaseProductId);
+    }
+
+    private bool CanUseSoftCurrencyFallback(ProfessionDefinition definition)
+    {
+        if (definition == null || !definition.allowSoftCurrencyFallbackWhenPurchasesUnavailable)
+            return false;
+
+        if (definition.directSoftCurrencyType == CurrencyType.Real)
+            return false;
+
+        bool purchasesAvailable = PurchasesManager.Instance != null && PurchasesManager.Instance.PurchasesAvailable();
+        return !purchasesAvailable && definition.directSoftCurrencyCost >= 0;
     }
 
     private void HandleProfessionStateChanged()
@@ -374,6 +532,12 @@ public class ProfessionSelectionPanel : MonoBehaviour
             _unlockRandomButton.onClick.AddListener(UnlockRandomProfession);
         }
 
+        if (_directBuyButton != null)
+        {
+            _directBuyButton.onClick.RemoveListener(DirectBuyProfession);
+            _directBuyButton.onClick.AddListener(DirectBuyProfession);
+        }
+
         if (_closeButton != null)
         {
             _closeButton.onClick.RemoveListener(CloseFromButton);
@@ -404,6 +568,7 @@ public class ProfessionSelectionPanel : MonoBehaviour
             && _nextButton != null
             && _prevButton != null
             && _unlockRandomButton != null
+            && _directBuyButton != null
             && _closeButton != null;
 
         if (hasMainText && hasMainButtons)
@@ -426,6 +591,7 @@ public class ProfessionSelectionPanel : MonoBehaviour
         _nextButton ??= refs.nextButton;
         _prevButton ??= refs.prevButton;
         _unlockRandomButton ??= refs.unlockRandomButton;
+        _directBuyButton ??= refs.directBuyButton;
         _closeButton ??= refs.closeButton;
     }
 }
