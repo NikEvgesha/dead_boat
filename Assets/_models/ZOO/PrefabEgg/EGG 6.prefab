@@ -9,9 +9,13 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2477137213784488565}
-  m_Layer: 0
+  - component: {fileID: 910000000000000062}
+  - component: {fileID: 910000000000000063}
+  - component: {fileID: 910000000000000061}
+  - component: {fileID: 910000000000000064}
+  m_Layer: 8
   m_Name: EGG 6
-  m_TagString: Untagged
+  m_TagString: Item
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -94,3 +98,90 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2067362034567659573, guid: 2a1b3c2012393484e9aa0554a2f837a8, type: 3}
   m_PrefabInstance: {fileID: 3281141994788241295}
   m_PrefabAsset: {fileID: 0}
+--- !u!54 &910000000000000062
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8915785104613501764}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 1
+  m_AngularDamping: 0.5
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 1
+  m_Constraints: 0
+  m_CollisionDetection: 0
+--- !u!65 &910000000000000063
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8915785104613501764}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0.5, z: 0}
+--- !u!114 &910000000000000061
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8915785104613501764}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2d49efb5469e35d48b947117d8d65ce9, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  _itemData: {fileID: 0}
+  _visualObj: {fileID: 8915785104613501764}
+  _sellPoint: {fileID: 0}
+  _lerpSpeed: 25
+  _damping: 0.3
+  _stopDistance: 0.05
+  _maxDistance: 6
+  _drag: 10
+  _dragOrigin: 1
+  _dropVelocityMultiplier: 0.4
+  _kinematicDistance: 30
+  _rotationSpeed: 100
+  _collider: {fileID: 910000000000000063}
+--- !u!114 &910000000000000064
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8915785104613501764}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d637f2cf4c8f455eafb4d228f5f87bc1, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  _eggId: egg_6
+  _amount: 1

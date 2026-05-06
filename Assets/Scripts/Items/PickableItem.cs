@@ -67,7 +67,8 @@ public class PickableItem : MonoBehaviour
     private void OnEnable()
     {
         CheckComponents();
-        _infoUI.SetInfoText(Data.Name, _tags);
+        if (_infoUI != null && Data != null)
+            _infoUI.SetInfoText(Data.Name, _tags);
         if (_player != null)
             StartCoroutine(KinematicCheck());
 
@@ -109,6 +110,7 @@ public class PickableItem : MonoBehaviour
         {
             yield return new WaitForSeconds(1);
             if (!_useKinematicCheck) continue;
+            if (_rb == null || _player == null) continue;
 
             float distance = (transform.position - _player.position).magnitude;
             if (distance < _kinematicDistance && _rb.isKinematic)
@@ -124,14 +126,17 @@ public class PickableItem : MonoBehaviour
     public void OnFocus(bool focus)
     {
         CheckComponents();
-        _outline.enabled = focus;
-        _infoUI.ShowInfo(focus);
+        if (_outline != null)
+            _outline.enabled = focus;
+        if (_infoUI != null)
+            _infoUI.ShowInfo(focus);
         CheckPossibleActions(focus);
     }
 
     public void PickUp(Transform point)
     {
         if (_status != ItemStatus.Free) return;
+        if (_rb == null) return;
         
 
         Grabbed = true;
@@ -142,11 +147,13 @@ public class PickableItem : MonoBehaviour
         _rb.linearDamping = _drag;
         _rb.angularDamping = _drag;
         OnFocus(false);
-        _attacher.CanAttach += CanAttachChange;
+        if (_attacher != null)
+            _attacher.CanAttach += CanAttachChange;
 
         _status = ItemStatus.Grabbed;
         ControlUI.Instance.ShowRotateButtons(Grabbed);
-        _outline.OutlineColor = Color.yellow;
+        if (_outline != null)
+            _outline.OutlineColor = Color.yellow;
 
         PickUpItem?.Invoke();
     }
@@ -160,6 +167,7 @@ public class PickableItem : MonoBehaviour
     public void Drop()
     {
         if (_status != ItemStatus.Grabbed && _status != ItemStatus.Attached) return;
+        if (_rb == null) return;
 
         Grabbed = false;
         _itemPoint = null;
@@ -169,9 +177,11 @@ public class PickableItem : MonoBehaviour
         _useKinematicCheck = true;
         _rb.linearDamping = _dragOrigin;
         _rb.angularDamping = 0.5f;
-        _attacher.CanAttach -= CanAttachChange;
+        if (_attacher != null)
+            _attacher.CanAttach -= CanAttachChange;
         ControlUI.Instance.ShowRotateButtons(Grabbed);
-        _outline.OutlineColor = Color.white;
+        if (_outline != null)
+            _outline.OutlineColor = Color.white;
         _status = ItemStatus.Free;
     }
 
@@ -198,7 +208,8 @@ public class PickableItem : MonoBehaviour
         OnFocus(false);
         tag = Tag.Inventory.ToString();
         this.gameObject.layer = (int)Layer.Inventory;
-        _rb.interpolation = RigidbodyInterpolation.None;
+        if (_rb != null)
+            _rb.interpolation = RigidbodyInterpolation.None;
         _useKinematicCheck = false;
         TrySetAttach(false);
         _status = ItemStatus.InInventory;
@@ -237,7 +248,8 @@ public class PickableItem : MonoBehaviour
 
         tag = Tag.Item.ToString();
         this.gameObject.layer = (int)Layer.Pickable;
-        _rb.interpolation = RigidbodyInterpolation.Interpolate;
+        if (_rb != null)
+            _rb.interpolation = RigidbodyInterpolation.Interpolate;
         _useKinematicCheck = true;
 
         transform.SetParent(null);
@@ -340,6 +352,9 @@ public class PickableItem : MonoBehaviour
 
     public void SetKinematic(bool kinematic)
     {
+        if (_rb == null)
+            return;
+
         _rb.isKinematic = kinematic;
         if (_collider)
             _collider.enabled = !kinematic;
@@ -352,7 +367,7 @@ public class PickableItem : MonoBehaviour
     }
     public List<Vector3> GetSellPoint()
     {
-        if (_sellPoint == null)
+        if (_sellPoint == null || _visualObj == null)
             return new List<Vector3>();
 
         Vector3 offsetPosition = _sellPoint.localPosition;
@@ -374,7 +389,7 @@ public class PickableItem : MonoBehaviour
     public bool TrySetAttach(bool attach)
     {
 
-        if (attach && _status != ItemStatus.Attached && _attacher.InAttachZone)
+        if (attach && _status != ItemStatus.Attached && _attacher != null && _attacher.InAttachZone)
         {
             
             _attached = true;
@@ -382,7 +397,8 @@ public class PickableItem : MonoBehaviour
             SetKinematic(true);
             _status = ItemStatus.Attached;
             _useKinematicCheck = false;
-            _outline.OutlineColor = Color.red;
+            if (_outline != null)
+                _outline.OutlineColor = Color.red;
             /*            if (transform.parent != null && transform.parent.TryGetComponent<BoardController>(out BoardController board))
                         {
                             SaveManager.Instance.SaveAttachedItem(Data.Name);
@@ -402,7 +418,8 @@ public class PickableItem : MonoBehaviour
                         {
                             SaveManager.Instance.DeleteAttachedItem(Data.Name);
                         }*/
-            _outline.OutlineColor = Color.white;
+            if (_outline != null)
+                _outline.OutlineColor = Color.white;
             return true;
         }
 
@@ -415,12 +432,12 @@ public class PickableItem : MonoBehaviour
         switch (_status)
         {
             case ItemStatus.Free:
-                ControlUI.Instance.ShowAttachButton(focus && _attacher.InAttachZone);
+                ControlUI.Instance.ShowAttachButton(focus && _attacher != null && _attacher.InAttachZone);
                 ControlUI.Instance.ShowPickUpButton(focus);
                 ControlUI.Instance.ShowPutToInventoryButton(focus);
                 break;
             case ItemStatus.Grabbed:
-                ControlUI.Instance.ShowAttachButton(_attacher.InAttachZone);
+                ControlUI.Instance.ShowAttachButton(_attacher != null && _attacher.InAttachZone);
                 ControlUI.Instance.ShowPickUpButton(true);
                 ControlUI.Instance.ShowPutToInventoryButton(false);
                 break;
@@ -461,6 +478,9 @@ public class PickableItem : MonoBehaviour
     }
     public void CheckSaveItem()
     {
+        if (_itemData == null)
+            return;
+
         _savedItem.prefabName = _itemData.name;
         _savedItem.status = _status;
         _savedItem.position = transform.position;
@@ -481,7 +501,8 @@ public class PickableItem : MonoBehaviour
             SetKinematic(true);
             _status = ItemStatus.Attached;
             _useKinematicCheck = false;
-            _outline.OutlineColor = Color.red;
+            if (_outline != null)
+                _outline.OutlineColor = Color.red;
         }
         else
         {
