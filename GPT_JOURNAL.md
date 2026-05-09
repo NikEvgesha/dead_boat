@@ -420,3 +420,13 @@ Open follow-up:
   - local MCP URL: `http://localhost:22348`.
 - Retired the old project-local `com.unity-bridge` package and `Tools/unity-bridge` wrapper. New work should use `npx unity-mcp-cli` and the generated MCP skills, not port `7778`.
 - Added `Docs/UNITY_MCP_WORKFLOW.md` with the current quick checks.
+
+### 2026-05-09 (Burst resolver aliases for Unity-MCP NuGet DLLs)
+
+- Fixed a Burst `Failed to find entry-points` error caused by Cecil resolving NuGet dependencies by assembly name.
+- IvanMurzak Unity-MCP installs versioned DLL filenames under `Assets/Plugins/NuGet`, for example `McpPlugin.Common.6.2.1.dll`, while Burst searches for the manifest assembly name, for example `McpPlugin.Common.dll`.
+- Added disabled Unity import aliases named by assembly name so Burst can resolve dependencies without Unity importing duplicate assemblies.
+- Verification:
+  - `AssetDatabase.Refresh` completed;
+  - Unity state reports `IsCompiling=false`;
+  - Unity Console is empty after clearing and refreshing.
