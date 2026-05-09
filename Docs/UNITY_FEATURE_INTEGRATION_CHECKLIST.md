@@ -8,10 +8,11 @@
 
 1. Открой проект в Unity `6000.3.9f1`.
 2. Открой сцену `Assets/Scenes/LoadingScene.unity`.
-3. Открой окно `Tools -> Unity Bridge MCP`.
+3. Открой окно `AI Game Developer`.
 4. Проверь:
    - `Status: RUNNING`;
-   - порт `7778`;
+   - MCP configured для Codex;
+   - URL `http://localhost:22348`;
    - в Console нет ошибок.
 5. Подожди, пока Unity закончит компиляцию.
 6. Открой Console и очисти старые сообщения.
@@ -447,31 +448,32 @@ Direct buy real test:
 - импорт яиц пока не покрывает полностью animal stages/hatch weights;
 - для яиц полная таблица стадий и весов - отдельная следующая задача.
 
-## 6. Unity Bridge / MCP
+## 6. AI Game Developer / Unity-MCP
 
 Проверить:
 
-1. Открой `Tools -> Unity Bridge MCP`.
-2. Убедись, что `Status: RUNNING`.
-3. Порт должен быть `7778`.
-4. Нажми тестовые кнопки:
-   - console;
-   - project status;
-   - screenshot, если нужно.
+1. Открой `AI Game Developer`.
+2. Убедись, что выбран AI agent `Codex`.
+3. Убедись, что Model Context Protocol configured.
+4. URL должен быть `http://localhost:22348`.
+5. Для быстрой проверки из корня проекта запусти:
+   - `npx unity-mcp-cli status E:\GitFork\dead_boat --timeout 15000 --verbose`;
+   - `npx unity-mcp-cli run-tool editor-application-get-state E:\GitFork\dead_boat --input "{}" --timeout 30000 --raw`;
+   - `npx unity-mcp-cli run-tool scene-list-opened E:\GitFork\dead_boat --input "{}" --timeout 30000 --raw`.
 
 Ожидаемый результат:
 
-- bridge отвечает;
+- Unity-MCP отвечает;
 - Codex видит Unity;
 - Console читается;
 - ошибок нет.
 
-Если bridge не отвечает:
+Если Unity-MCP не отвечает:
 
-1. Нажми Stop Server.
-2. Нажми Start Server.
+1. В `AI Game Developer` нажми Reconfigure для MCP.
+2. Проверь `.codex/config.toml`, URL должен быть `http://localhost:22348`.
 3. Если не помогло - перезапусти Unity.
-4. Если не помогло - проверь, что порт `7778` не занят другим процессом.
+4. Если не помогло - запусти `npx unity-mcp-cli status E:\GitFork\dead_boat --timeout 15000 --verbose` и смотри, какой URL/порт использует CLI.
 
 ## 7. Материалы после Unity 6
 

@@ -185,19 +185,19 @@ Open follow-up:
 - Profession passives, starter items, and start currency bonuses now apply only after the player explicitly selects a profession.
 - This keeps old production saves from receiving hidden profession balance changes when the profession feature is introduced or retuned later.
 
-### 2026-05-05 (Unity MCP cleanup)
+### 2026-05-05 (Unity MCP cleanup, historical)
 
 - Compared the project-local `com.unity-bridge` package with Unity's official MCP direction in Unity AI.
 - Removed the custom `Tools/unity-bridge` package from the project and from package manifest/lock.
 - Official Unity MCP should be enabled through Unity AI/AI Assistant flow in Unity 6.3+, not pinned manually in `manifest.json`; direct `com.unity.ai.assistant@2.7.0` manifest pin was rejected by Unity Package Manager.
 - Follow-up check: official Unity MCP configured correctly for Codex, but Unity rejects the direct Codex connection with `Your Unity plan doesn't include MCP connections. Upgrade your Unity plan to add more.` Current direct connection limit is 0, so official MCP is not usable from Codex on this Unity account until the plan/entitlement allows MCP direct connections.
-- Decision: restored the old project-local `com.unity-bridge` package and switched Codex back to the old `unity-mcp-advanced` server targeting `http://localhost:7778`. Keep official Unity MCP as a future option only if Unity plan/entitlement starts allowing direct MCP connections.
+- Historical decision at that time: restored the old project-local `com.unity-bridge` package and switched Codex back to the old `unity-mcp-advanced` server targeting `http://localhost:7778`. Superseded on 2026-05-09 by Ivan Murzak Unity-MCP on `http://localhost:22348`.
 - Bridge improvement backlog:
   - Add read-only project/package diagnostics: Unity version, active scene, package list, compile state, console errors/warnings.
   - Add asset search/read helpers for ScriptableObjects, prefabs, scenes, materials, and addressable-like references.
   - Add safer editor actions: load/save scene, refresh asset database, ping/select object, capture game/scene view, play-mode smoke test.
   - Add guarded write actions later: create/update assets and prefabs through explicit endpoints with dry-run output first.
-- Implemented first read-only bridge expansion:
+- Historical old-bridge expansion:
   - `/api/project_status`
   - `/api/console`
   - `/api/assets_find`
@@ -411,3 +411,12 @@ Open follow-up:
   - catalog references 13 eggs and 19 animals;
   - all GUIDs referenced by `EggHatchingCatalog.asset` exist in generated asset `.meta` files.
 - Unity refresh was not verified in this pass because the local Unity Bridge stopped responding on port `7778`.
+### 2026-05-09 (IvanMurzak Unity-MCP adopted)
+
+- Switched the project Codex/Unity workflow to Ivan Murzak Unity-MCP:
+  - Unity package: `com.ivanmurzak.unity.mcp` pinned to `0.71.0` from GitHub;
+  - Codex config: `.codex/config.toml`;
+  - generated skills: `.agents/skills`;
+  - local MCP URL: `http://localhost:22348`.
+- Retired the old project-local `com.unity-bridge` package and `Tools/unity-bridge` wrapper. New work should use `npx unity-mcp-cli` and the generated MCP skills, not port `7778`.
+- Added `Docs/UNITY_MCP_WORKFLOW.md` with the current quick checks.
