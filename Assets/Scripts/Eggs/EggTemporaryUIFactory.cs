@@ -24,10 +24,10 @@ public static class EggTemporaryUIFactory
 
         VerticalLayoutGroup layout = root.AddComponent<VerticalLayoutGroup>();
         layout.spacing = 8f;
-        layout.childAlignment = TextAnchor.UpperCenter;
-        layout.childControlWidth = true;
-        layout.childControlHeight = true;
-        layout.childForceExpandWidth = true;
+        layout.childAlignment = TextAnchor.UpperLeft;
+        layout.childControlWidth = false;
+        layout.childControlHeight = false;
+        layout.childForceExpandWidth = false;
         layout.childForceExpandHeight = false;
 
         ContentSizeFitter fitter = root.AddComponent<ContentSizeFitter>();
@@ -129,6 +129,26 @@ public static class EggTemporaryUIFactory
         return button;
     }
 
+    public static Button FindCloseButton(GameObject panel)
+    {
+        if (panel == null)
+            return null;
+
+        Button[] buttons = panel.GetComponentsInChildren<Button>(true);
+        for (int i = 0; i < buttons.Length; i++)
+        {
+            Button button = buttons[i];
+            if (button == null)
+                continue;
+
+            string objectName = button.gameObject.name;
+            if (objectName.Contains("Close") || objectName.Contains("Exit") || objectName.Contains("Back"))
+                return button;
+        }
+
+        return null;
+    }
+
     public static Button EnsureFloatingMergeButton(Canvas canvas, UnityAction openAction)
     {
         if (canvas == null)
@@ -224,11 +244,11 @@ public static class EggTemporaryUIFactory
         HorizontalLayoutGroup layout = slot.AddComponent<HorizontalLayoutGroup>();
         layout.padding = new RectOffset(14, 14, 10, 10);
         layout.spacing = 12f;
-        layout.childAlignment = TextAnchor.MiddleCenter;
-        layout.childControlWidth = true;
-        layout.childControlHeight = true;
-        layout.childForceExpandWidth = true;
-        layout.childForceExpandHeight = true;
+        layout.childAlignment = TextAnchor.UpperLeft;
+        layout.childControlWidth = false;
+        layout.childControlHeight = false;
+        layout.childForceExpandWidth = false;
+        layout.childForceExpandHeight = false;
 
         return slot;
     }

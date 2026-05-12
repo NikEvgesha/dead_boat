@@ -1,15 +1,42 @@
 {
   "dependencies": {
     "com.ivanmurzak.unity.mcp": {
-      "version": "https://github.com/IvanMurzak/Unity-MCP.git?path=/Unity-MCP-Plugin/Packages/com.ivanmurzak.unity.mcp#0.71.0",
+      "version": "0.72.0",
       "depth": 0,
-      "source": "git",
+      "source": "registry",
       "dependencies": {
-        "com.unity.test-framework": "1.1.33",
         "com.unity.modules.uielements": "1.0.0",
+        "com.unity.test-framework": "1.1.33",
         "extensions.unity.playerprefsex": "2.1.3"
       },
-      "hash": "efd9b541b95440a9e7ebae163eded0ba1dc4c7fc"
+      "url": "https://package.openupm.com"
+    },
+    "com.ivanmurzak.unity.mcp.animation": {
+      "version": "file:com.ivanmurzak.unity.mcp.animation",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {
+        "com.ivanmurzak.unity.mcp": "0.71.0",
+        "com.unity.modules.animation": "1.0.0"
+      }
+    },
+    "com.ivanmurzak.unity.mcp.particlesystem": {
+      "version": "file:com.ivanmurzak.unity.mcp.particlesystem",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {
+        "com.ivanmurzak.unity.mcp": "0.71.0",
+        "com.unity.modules.particlesystem": "1.0.0"
+      }
+    },
+    "com.ivanmurzak.unity.mcp.probuilder": {
+      "version": "file:com.ivanmurzak.unity.mcp.probuilder",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {
+        "com.ivanmurzak.unity.mcp": "0.71.0",
+        "com.unity.probuilder": "6.0.8"
+      }
     },
     "com.romanlee17.mirrasdk5": {
       "version": "https://github.com/MirraSDK/SDK5.git",

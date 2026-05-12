@@ -6,6 +6,7 @@ public class AnimalDefinition : EggNamedDefinition
 {
     public string animalId => Id;
     public string title;
+    public Sprite icon;
     [Min(1)] public int maxStage = 3;
     public List<AnimalStageDefinition> stages = new();
 

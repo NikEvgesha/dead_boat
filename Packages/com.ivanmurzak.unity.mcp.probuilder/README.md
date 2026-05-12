@@ -1,0 +1,76 @@
+<h1 align="center"><a href="https://github.com/IvanMurzak/Unity-AI-ProBuilder/?tab=readme-ov-file#unity-ai-probuilder">Unity AI ProBuilder</a></h1>
+
+<div align="center" width="100%">
+
+[![MCP](https://badge.mcpx.dev 'MCP Server')](https://modelcontextprotocol.io/introduction)
+[![OpenUPM](https://img.shields.io/npm/v/com.ivanmurzak.unity.mcp.probuilder?label=OpenUPM&registry_uri=https://package.openupm.com&labelColor=333A41 'OpenUPM package')](https://openupm.com/packages/com.ivanmurzak.unity.mcp.probuilder/)
+[![Unity Editor](https://img.shields.io/badge/Editor-X?style=flat&logo=unity&labelColor=333A41&color=2A2A2A 'Unity Editor supported')](https://unity.com/releases/editor/archive)
+[![r](https://github.com/IvanMurzak/Unity-AI-ProBuilder/workflows/release/badge.svg 'Tests Passed')](https://github.com/IvanMurzak/Unity-AI-ProBuilder/actions/workflows/release.yml)</br>
+[![Discord](https://img.shields.io/badge/Discord-Join-7289da?logo=discord&logoColor=white&labelColor=333A41 'Join')](https://discord.gg/cfbdMZX99G)
+[![Stars](https://img.shields.io/github/stars/IvanMurzak/Unity-AI-ProBuilder 'Stars')](https://github.com/IvanMurzak/Unity-AI-ProBuilder/stargazers)
+[![License](https://img.shields.io/github/license/IvanMurzak/Unity-AI-ProBuilder?label=License&labelColor=333A41)](https://github.com/IvanMurzak/Unity-AI-ProBuilder/blob/main/LICENSE)
+[![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/badges/StandWithUkraine.svg)](https://stand-with-ukraine.pp.ua)
+
+</div>
+
+<img width="100%" alt="Stats" src="https://github.com/IvanMurzak/Unity-AI-ProBuilder/raw/main/docs/img/ai-probuilder-glitch.gif"/>
+
+AI-powered 3D modeling tools for Unity ProBuilder. Enables AI assistants to create and manipulate editable meshes through natural language commands. Create primitive shapes, extrude faces, bevel edges, apply materials, merge objects, and perform advanced mesh operations like bridging and subdivision. Supports semantic face selection by direction (up, down, left, right) for intuitive editing. Perfect for rapid level prototyping and procedural geometry generation. Built on top of the [AI Game Developer](https://github.com/IvanMurzak/Unity-MCP) platform.
+
+### How to use
+
+- [Instructions](https://github.com/IvanMurzak/Unity-MCP?tab=readme-ov-file#step-2-install-mcp-client)
+- [Video Tutorial for Visual Studio Code](https://www.youtube.com/watch?v=ZhP7Ju91mOE)
+- [Video Tutorial for Visual Studio](https://www.youtube.com/watch?v=RGdak4T69mc)
+
+[![DOWNLOAD INSTALLER](https://github.com/IvanMurzak/Unity-MCP/blob/main/docs/img/button/button_download.svg?raw=true)](https://github.com/IvanMurzak/Unity-AI-ProBuilder/releases/latest/download/AI-ProBuilder-Installer.unitypackage)
+
+### Stability status
+
+| Unity Version | Editmode                                                                                                                                                                               | Playmode                                                                                                                                                                               | Standalone                                                                                                                                                                               |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2022.3.62f3   | [![r](https://github.com/IvanMurzak/Unity-AI-ProBuilder/workflows/release/badge.svg?job=test-unity-2022-3-62f3-editmode)](https://github.com/IvanMurzak/Unity-AI-ProBuilder/actions/workflows/release.yml) | [![r](https://github.com/IvanMurzak/Unity-AI-ProBuilder/workflows/release/badge.svg?job=test-unity-2022-3-62f3-playmode)](https://github.com/IvanMurzak/Unity-AI-ProBuilder/actions/workflows/release.yml) | [![r](https://github.com/IvanMurzak/Unity-AI-ProBuilder/workflows/release/badge.svg?job=test-unity-2022-3-62f3-standalone)](https://github.com/IvanMurzak/Unity-AI-ProBuilder/actions/workflows/release.yml) |
+| 2023.2.22f1   | [![r](https://github.com/IvanMurzak/Unity-AI-ProBuilder/workflows/release/badge.svg?job=test-unity-2023-2-22f1-editmode)](https://github.com/IvanMurzak/Unity-AI-ProBuilder/actions/workflows/release.yml) | [![r](https://github.com/IvanMurzak/Unity-AI-ProBuilder/workflows/release/badge.svg?job=test-unity-2023-2-22f1-playmode)](https://github.com/IvanMurzak/Unity-AI-ProBuilder/actions/workflows/release.yml) | [![r](https://github.com/IvanMurzak/Unity-AI-ProBuilder/workflows/release/badge.svg?job=test-unity-2023-2-22f1-standalone)](https://github.com/IvanMurzak/Unity-AI-ProBuilder/actions/workflows/release.yml) |
+| 6000.3.1f1    | [![r](https://github.com/IvanMurzak/Unity-AI-ProBuilder/workflows/release/badge.svg?job=test-unity-6000-3-1f1-editmode)](https://github.com/IvanMurzak/Unity-AI-ProBuilder/actions/workflows/release.yml)  | [![r](https://github.com/IvanMurzak/Unity-AI-ProBuilder/workflows/release/badge.svg?job=test-unity-6000-3-1f1-playmode)](https://github.com/IvanMurzak/Unity-AI-ProBuilder/actions/workflows/release.yml)  | [![r](https://github.com/IvanMurzak/Unity-AI-ProBuilder/workflows/release/badge.svg?job=test-unity-6000-3-1f1-standalone)](https://github.com/IvanMurzak/Unity-AI-ProBuilder/actions/workflows/release.yml)  |
+
+## AI ProBuilder Tools
+
+Core tools:
+- `probuilder-create-shape` - Create primitive shapes (cube, sphere, cylinder, etc.)
+- `probuilder-get-mesh-info` - Read mesh data (faces, vertices, edges)
+- `probuilder-extrude` - Extrude faces with various methods
+- `probuilder-bevel` - Bevel edges
+- `probuilder-delete-faces` - Delete faces by index or direction
+- `probuilder-set-face-material` - Apply materials to specific faces
+
+Mesh operations:
+- `probuilder-flip-normals` - Reverse face normals
+- `probuilder-set-pivot` - Change mesh pivot point
+- `probuilder-merge-objects` - Combine multiple ProBuilder meshes
+
+Edge operations:
+- `probuilder-subdivide-edges` - Add vertices to edges
+- `probuilder-connect-edges` - Connect edges with new geometry
+- `probuilder-bridge` - Bridge between edge selections
+
+Advanced:
+- `probuilder-create-poly-shape` - Create custom polygon-based meshes
+
+
+## Installation
+
+### Option 1 - Installer
+
+- **[⬇️ Download Installer](https://github.com/IvanMurzak/Unity-AI-ProBuilder/releases/latest/download/AI-ProBuilder-Installer.unitypackage)**
+- **📂 Import installer into Unity project**
+  > - You can double-click on the file - Unity will open it automatically
+  > - OR: Open Unity Editor first, then click on `Assets/Import Package/Custom Package`, and choose the file
+
+### Option 2 - OpenUPM-CLI
+
+- [⬇️ Install OpenUPM-CLI](https://github.com/openupm/openupm-cli#installation)
+- 📟 Open the command line in your Unity project folder
+
+```bash
+openupm add com.ivanmurzak.unity.mcp.probuilder
+```

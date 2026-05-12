@@ -1,5 +1,9 @@
 {
   "dependencies": {
+    "com.ivanmurzak.unity.mcp": "0.72.0",
+    "com.ivanmurzak.unity.mcp.animation": "file:com.ivanmurzak.unity.mcp.animation",
+    "com.ivanmurzak.unity.mcp.particlesystem": "file:com.ivanmurzak.unity.mcp.particlesystem",
+    "com.ivanmurzak.unity.mcp.probuilder": "file:com.ivanmurzak.unity.mcp.probuilder",
     "com.romanlee17.mirrasdk5": "https://github.com/MirraSDK/SDK5.git",
     "com.unity.2d.sprite": "1.0.0",
     "com.unity.ai.navigation": "2.0.10",
@@ -45,14 +49,14 @@
     "com.unity.modules.video": "1.0.0",
     "com.unity.modules.vr": "1.0.0",
     "com.unity.modules.wind": "1.0.0",
-    "com.unity.modules.xr": "1.0.0",
-    "com.ivanmurzak.unity.mcp": "https://github.com/IvanMurzak/Unity-MCP.git?path=/Unity-MCP-Plugin/Packages/com.ivanmurzak.unity.mcp#0.71.0"
+    "com.unity.modules.xr": "1.0.0"
   },
   "scopedRegistries": [
     {
       "name": "package.openupm.com",
       "url": "https://package.openupm.com",
       "scopes": [
+        "com.ivanmurzak.unity.mcp",
         "extensions.unity"
       ]
     }

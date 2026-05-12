@@ -256,6 +256,33 @@ public class EggHatchingManager : MonoBehaviour
         return true;
     }
 
+    public bool TryReduceIncubation(string nestId, int seconds)
+    {
+        EnsureStateLoaded();
+
+        if (seconds <= 0)
+            return false;
+
+        EggNestState nest = GetNestState(nestId);
+        if (nest == null)
+            return false;
+
+        if (GetRemainingSeconds(nestId) <= 0)
+            return false;
+
+        long now = GetNowUnix();
+        nest.finishAtUnix = Math.Max(now, nest.finishAtUnix - seconds);
+
+        if (nest.finishAtUnix <= now)
+        {
+            nest.finishAtUnix = now;
+            nest.isReady = true;
+        }
+
+        SaveAndNotify();
+        return true;
+    }
+
     public bool TryPlaceReadyAnimal(string nestId)
     {
         return TryCollectReadyAnimal(nestId);

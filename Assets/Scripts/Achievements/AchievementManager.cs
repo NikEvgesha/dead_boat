@@ -53,6 +53,7 @@ public class AchievementManager : MonoBehaviour
 
         foreach (Achievement achievement in _achievements.Achievements)
         {
+                EnsureProgressEntry(achievement.type);
                 achievement.StartUnlock(achievement.requirement <= progress[achievement.type]);
                 //Debug.Log(achievement.id + ": " + achievement.Unlocked);
         }
@@ -60,6 +61,8 @@ public class AchievementManager : MonoBehaviour
 
     public void UpdateData(AchievementType type, int data = 0)
     {
+        EnsureProgressEntry(type);
+
         if (data == 0)
         {
             progress[type]++;
@@ -115,12 +118,22 @@ public class AchievementManager : MonoBehaviour
     {
         if (achievement == null) 
             return true;
+        EnsureProgressEntry(achievement.type);
         return (progress[achievement.type] >= achievement.requirement);
     }
 
     public int GetCurrentProgress(AchievementType type)
     {
+        EnsureProgressEntry(type);
         return progress[type];
+    }
+
+    private void EnsureProgressEntry(AchievementType type)
+    {
+        if (progress.ContainsKey(type))
+            return;
+
+        progress.Add(type, _resetProgress ? 0 : SaveManager.Instance.GetAchievementTypeProgress(type));
     }
 
 }

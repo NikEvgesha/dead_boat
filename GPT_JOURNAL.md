@@ -430,3 +430,9 @@ Open follow-up:
   - `AssetDatabase.Refresh` completed;
   - Unity state reports `IsCompiling=false`;
   - Unity Console is empty after clearing and refreshing.
+
+### 2026-05-12 (Unity-MCP workflow note)
+
+- Current Unity MCP workflow is IvanMurzak Unity-MCP `com.ivanmurzak.unity.mcp@0.72.0` on `http://localhost:22348`.
+- Use `npx.cmd unity-mcp-cli run-tool <tool> --input-file <utf8-no-bom-json>` from PowerShell when direct MCP tools are not exposed in Codex.
+- The old Unity Bridge ports `7777`/`7778` are obsolete for current work.

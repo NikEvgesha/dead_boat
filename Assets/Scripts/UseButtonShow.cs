@@ -11,6 +11,8 @@ public class UseButtonShow : MonoBehaviour
     [SerializeField] private Image _openProgress;
     [SerializeField] private AudioSource _source;
 
+    public bool UseButtonShowBool;
+
     private bool _active;
     private float _progress;
     private bool _openInProgress;
@@ -20,6 +22,7 @@ public class UseButtonShow : MonoBehaviour
     private void Start()
     {
         _touchPanel.PointerDown += OpenShop;
+        Hide();
     }
 
     private void OnDisable()
@@ -29,10 +32,9 @@ public class UseButtonShow : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.tag == "Player")
+        if (other.tag == "Player" && UseButtonShowBool)
         {
-            _infoCanvas.gameObject.SetActive(true);
-            _active = true;
+            Show();
         }
     }
 
@@ -40,16 +42,23 @@ public class UseButtonShow : MonoBehaviour
     {
         if (other.tag == "Player")
         {
-            _active = false;
-            _infoCanvas.gameObject.SetActive(false);
-            StopAllCoroutines();
-            _progress = 0;
-            _openProgress.fillAmount = _progress;
-            _openInProgress = false;
-
+            Hide();
         }
     }
-
+    private void Show()
+    {
+        _infoCanvas.gameObject.SetActive(true);
+        _active = true;
+    }
+    private void Hide()
+    {
+        _active = false;
+        _infoCanvas.gameObject.SetActive(false);
+        StopAllCoroutines();
+        _progress = 0;
+        _openProgress.fillAmount = _progress;
+        _openInProgress = false;
+    }
 
     private void Update()
     {

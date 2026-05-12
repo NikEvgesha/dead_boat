@@ -6,6 +6,8 @@ public class EggDefinition : EggNamedDefinition
 {
     public string eggId => Id;
     public string title;
+    public string rarity = "Common";
+    public Sprite icon;
     [Min(1)] public int incubationSeconds = 300;
     [Min(0)] public int skipCostGems = 10;
     public GameObject eggPreviewPrefab;

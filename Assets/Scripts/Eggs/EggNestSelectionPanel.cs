@@ -7,16 +7,20 @@ public class EggNestSelectionPanel : MonoBehaviour
     public static EggNestSelectionPanel Instance => _instance;
 
     [SerializeField] private GameObject _panel;
-    [SerializeField] private DynamicGridSpawner _grid;
+    [SerializeField] private ScrollRect _scrollRect;
+    [SerializeField] private RectTransform _slotsRoot;
     [SerializeField] private EggNestSelectionSlot _slotPrefab;
     [SerializeField] private Text _nestLabel;
     [SerializeField] private GameObject _emptyState;
+    [SerializeField] private Button _closeButton;
     [SerializeField] private bool _setCursorWhenOpen = true;
-    [SerializeField] private bool _createTemporaryUiIfMissing = true;
 
     private EggHatchingManager _manager;
     private string _currentNestId;
     private bool _opened;
+    private bool _selectingEgg;
+
+    public bool IsOpen => _opened;
 
     private void Awake()
     {
@@ -30,7 +34,7 @@ public class EggNestSelectionPanel : MonoBehaviour
         if (_panel == null)
             _panel = gameObject;
 
-        EnsureTemporaryUiIfNeeded();
+        ConfigurePrefabReferences();
         _panel.SetActive(false);
     }
 
@@ -87,6 +91,11 @@ public class EggNestSelectionPanel : MonoBehaviour
         Close(true);
     }
 
+    public void CloseFromExternal()
+    {
+        Close(false);
+    }
+
     private void CloseByOtherWindow(MonoBehaviour other)
     {
         if (!_opened)
@@ -109,6 +118,9 @@ public class EggNestSelectionPanel : MonoBehaviour
     private void HandleStateChanged()
     {
         if (!_opened)
+            return;
+
+        if (_selectingEgg)
             return;
 
         if (_manager == null || string.IsNullOrWhiteSpace(_currentNestId))
@@ -135,7 +147,7 @@ public class EggNestSelectionPanel : MonoBehaviour
 
         bool anyAvailable = false;
 
-        if (_manager != null && _grid != null && _slotPrefab != null)
+        if (_manager != null && _slotPrefab != null && TryGetSlotParent(out Transform slotParent))
         {
             foreach (EggInventoryEntry owned in _manager.GetOwnedEggs())
             {
@@ -145,7 +157,7 @@ public class EggNestSelectionPanel : MonoBehaviour
                 if (!_manager.TryGetDefinition(owned.eggId, out EggDefinition definition))
                     continue;
 
-                EggNestSelectionSlot slot = _grid.SpawnObject<EggNestSelectionSlot>(_slotPrefab.gameObject);
+                EggNestSelectionSlot slot = Instantiate(_slotPrefab, slotParent);
                 if (slot == null)
                     continue;
 
@@ -157,21 +169,19 @@ public class EggNestSelectionPanel : MonoBehaviour
         if (_emptyState != null)
             _emptyState.SetActive(!anyAvailable);
 
-        if (_grid != null)
-            _grid.RefreshLayout();
+        RefreshSlotsLayout();
     }
 
     private void ClearSlots()
     {
-        if (_grid == null)
+        if (!TryGetSlotParent(out Transform root))
             return;
 
-        Transform root = _grid.transform;
         for (int i = root.childCount - 1; i >= 0; i--)
         {
-            Transform row = root.GetChild(i);
-            row.SetParent(null, false);
-            Destroy(row.gameObject);
+            Transform child = root.GetChild(i);
+            child.SetParent(null, false);
+            Destroy(child.gameObject);
         }
     }
 
@@ -183,7 +193,18 @@ public class EggNestSelectionPanel : MonoBehaviour
         if (_manager == null || string.IsNullOrWhiteSpace(_currentNestId))
             return;
 
-        if (_manager.TryStartIncubation(_currentNestId, eggId))
+        bool started;
+        _selectingEgg = true;
+        try
+        {
+            started = _manager.TryStartIncubation(_currentNestId, eggId);
+        }
+        finally
+        {
+            _selectingEgg = false;
+        }
+
+        if (started)
         {
             Close(true);
             return;
@@ -205,24 +226,40 @@ public class EggNestSelectionPanel : MonoBehaviour
         _manager.StateChanged += HandleStateChanged;
     }
 
-    private void EnsureTemporaryUiIfNeeded()
+    private void ConfigurePrefabReferences()
     {
-        if (!_createTemporaryUiIfMissing || _panel == null)
+        EnsureCloseButton();
+    }
+
+    private bool TryGetSlotParent(out Transform slotParent)
+    {
+        if (_slotsRoot != null)
+        {
+            slotParent = _slotsRoot;
+            return true;
+        }
+
+        slotParent = null;
+        return false;
+    }
+
+    private void RefreshSlotsLayout()
+    {
+        if (_slotsRoot != null)
+        {
+            LayoutRebuilder.ForceRebuildLayoutImmediate(_slotsRoot);
+            if (_scrollRect != null)
+                _scrollRect.horizontalNormalizedPosition = 0f;
+        }
+    }
+
+    private void EnsureCloseButton()
+    {
+        if (_closeButton == null)
             return;
 
-        if (_grid == null)
-            _grid = EggTemporaryUIFactory.EnsureGrid(_panel, "TemporaryEggSelectionGrid");
-
-        if (_slotPrefab == null)
-            _slotPrefab = EggTemporaryUIFactory.EnsureEggSlotTemplate(this);
-
-        if (_emptyState == null)
-            _emptyState = EggTemporaryUIFactory.EnsureEmptyState(_panel, "No eggs in storage");
-
-        if (_nestLabel == null)
-            _nestLabel = EggTemporaryUIFactory.EnsureHeader(_panel, "TemporaryEggSelectionHeader", "Select egg");
-
-        EggTemporaryUIFactory.EnsureCloseButton(_panel, CloseFromButton);
+        _closeButton.onClick.RemoveListener(CloseFromButton);
+        _closeButton.onClick.AddListener(CloseFromButton);
     }
 
     private void BindWindowCloseEvent()
