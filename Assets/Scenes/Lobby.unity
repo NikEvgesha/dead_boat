@@ -2796,7 +2796,7 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 7807580744969159478, guid: 08de0991da87abf499f75a1a9087f75b, type: 3}
   m_PrefabInstance: {fileID: 563503559}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 637359569}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4efa439d67816de449e75de726fb06d4, type: 3}
@@ -16976,6 +16976,11 @@ Transform:
   m_Children: []
   m_Father: {fileID: 132006611}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &637359569 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3874871171476831092, guid: 08de0991da87abf499f75a1a9087f75b, type: 3}
+  m_PrefabInstance: {fileID: 563503559}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &641564069 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: f37505ba14a89034b9a91f0d23db900b, type: 3}
@@ -17464,6 +17469,11 @@ Mesh:
       - serializedVersion: 1
         m_IndexStart: 0
         m_IndexCount: 0
+--- !u!1 &653227354 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3874871171476831092, guid: 08de0991da87abf499f75a1a9087f75b, type: 3}
+  m_PrefabInstance: {fileID: 1342251795}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &662071060
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -18478,7 +18488,7 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 7807580744969159478, guid: 08de0991da87abf499f75a1a9087f75b, type: 3}
   m_PrefabInstance: {fileID: 1966066039}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 1791233557}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4efa439d67816de449e75de726fb06d4, type: 3}
@@ -31852,6 +31862,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1140787829}
   - component: {fileID: 1140787830}
+  - component: {fileID: 1140787831}
+  - component: {fileID: 1140787832}
   m_Layer: 0
   m_Name: EggSystem
   m_TagString: Untagged
@@ -31904,6 +31916,43 @@ MonoBehaviour:
   _resetAnimalLocalPoseWhenParented: 1
   _autoLoadOnStart: 1
   _autoCollectFinishedEggs: 1
+--- !u!114 &1140787831
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1140787828}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d8f1684aa0a87214295a909fc2a85ae6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EggFeatureUnlockVisibility
+  _eggNestObjects:
+  - {fileID: 1580794379}
+  - {fileID: 653227354}
+  - {fileID: 637359569}
+  - {fileID: 1791233557}
+  _animalPlacementObjects:
+  - {fileID: 1065672753}
+  - {fileID: 475898779}
+  - {fileID: 1766971257}
+  _animalMergeObjects: []
+--- !u!114 &1140787832
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1140787828}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b1654a77cca56554bb9a8d268e1c192e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EggDebugCheats
+  _enabled: 1
+  _grantRandomEggKey: 96
+  _amount: 1
 --- !u!43 &1148052505
 Mesh:
   m_ObjectHideFlags: 0
@@ -45651,6 +45700,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: f37505ba14a89034b9a91f0d23db900b, type: 3}
   m_PrefabInstance: {fileID: 1180002523}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1791233557 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3874871171476831092, guid: 08de0991da87abf499f75a1a9087f75b, type: 3}
+  m_PrefabInstance: {fileID: 1966066039}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1793916067
 GameObject:
   m_ObjectHideFlags: 0
@@ -51132,7 +51186,7 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 7807580744969159478, guid: 08de0991da87abf499f75a1a9087f75b, type: 3}
   m_PrefabInstance: {fileID: 1342251795}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 653227354}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4efa439d67816de449e75de726fb06d4, type: 3}

@@ -21,6 +21,8 @@ public class EggHatchingManager : MonoBehaviour
     [SerializeField] private bool _autoCollectFinishedEggs = false;
 
     public event Action StateChanged;
+    public event Action<int> EggsCollected;
+    public event Action<int> AnimalsCollected;
 
     private EggFeatureState _state;
     private readonly Dictionary<string, GameObject> _spawnedAnimals = new();
@@ -121,6 +123,24 @@ public class EggHatchingManager : MonoBehaviour
         return _state.ownedEggs;
     }
 
+    public bool HasDiscoveredEggs()
+    {
+        EnsureStateLoaded();
+        return _state.hasDiscoveredEggs;
+    }
+
+    public bool HasHatchedAnimal()
+    {
+        EnsureStateLoaded();
+        return _state.hasHatchedAnimal;
+    }
+
+    public int GetTotalEggCount()
+    {
+        EnsureStateLoaded();
+        return _state.ownedEggs.Sum(x => x != null ? Mathf.Max(0, x.amount) : 0);
+    }
+
     public IReadOnlyList<AnimalInventoryEntry> GetOwnedAnimals()
     {
         EnsureStateLoaded();
@@ -134,6 +154,15 @@ public class EggHatchingManager : MonoBehaviour
             return false;
 
         return _catalog.TryGet(eggId, out definition);
+    }
+
+    public bool TryGetAnimalDefinition(string animalId, out AnimalDefinition definition)
+    {
+        definition = null;
+        if (_catalog == null)
+            return false;
+
+        return _catalog.TryGetAnimal(animalId, out definition);
     }
 
     public bool TryGetAnimalDetails(string animalId, int stage, out string title, out string detail)
@@ -313,6 +342,7 @@ public class EggHatchingManager : MonoBehaviour
         _state.nests.Remove(nest);
 
         SaveAndNotify();
+        AnimalsCollected?.Invoke(1);
         return true;
     }
 
@@ -429,6 +459,7 @@ public class EggHatchingManager : MonoBehaviour
         _state.AddAnimal(animalId, safeStage + 1, 1);
         SpawnMergeFeedback(animalId, safeStage + 1);
         SaveAndNotify();
+        AnimalsCollected?.Invoke(1);
         return true;
     }
 
@@ -449,6 +480,25 @@ public class EggHatchingManager : MonoBehaviour
         return false;
     }
 
+    public bool TryGrantRandomEgg(int amount = 1)
+    {
+        EnsureCatalogAssigned();
+
+        if (_catalog == null || _catalog.Definitions == null || _catalog.Definitions.Count == 0)
+            return false;
+
+        List<EggDefinition> available = _catalog.Definitions
+            .Where(x => x != null && !string.IsNullOrWhiteSpace(x.eggId))
+            .ToList();
+
+        if (available.Count == 0)
+            return false;
+
+        EggDefinition definition = available[UnityEngine.Random.Range(0, available.Count)];
+        RegisterEggPickup(definition.eggId, Mathf.Max(1, amount));
+        return true;
+    }
+
     public bool IsAnimalPointOccupied(string pointId)
     {
         return TryGetPlacedAnimal(pointId, out _);
@@ -463,10 +513,30 @@ public class EggHatchingManager : MonoBehaviour
 
     public static void RegisterEggPickup(string eggId, int amount = 1)
     {
-        EggFeatureStorage.AddEgg(eggId, amount);
+        int safeAmount = amount > 0 ? amount : 1;
+        EggFeatureStorage.AddEgg(eggId, safeAmount);
 
         if (_instance != null)
+        {
             _instance.LoadState();
+            _instance.EggsCollected?.Invoke(safeAmount);
+        }
+    }
+
+    public static bool RegisterOneShotEggPickup(string collectibleId, string eggId, int amount = 1)
+    {
+        int safeAmount = amount > 0 ? amount : 1;
+        bool collected = EggFeatureStorage.TryAddOneShotEgg(collectibleId, eggId, safeAmount);
+        if (!collected)
+            return false;
+
+        if (_instance != null)
+        {
+            _instance.LoadState();
+            _instance.EggsCollected?.Invoke(safeAmount);
+        }
+
+        return true;
     }
 
     private void SaveAndNotify()

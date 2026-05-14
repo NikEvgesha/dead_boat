@@ -19,8 +19,10 @@ public class EggNestSelectionPanel : MonoBehaviour
     private string _currentNestId;
     private bool _opened;
     private bool _selectingEgg;
+    private bool _inventoryViewOnly;
 
     public bool IsOpen => _opened;
+    public bool IsInventoryViewOnly => _opened && _inventoryViewOnly;
 
     private void Awake()
     {
@@ -53,6 +55,9 @@ public class EggNestSelectionPanel : MonoBehaviour
     {
         if (PlayerInput.Instance != null)
             PlayerInput.Instance.AOpenWindow -= CloseByOtherWindow;
+
+        if (_opened)
+            ForceReleaseCursor();
     }
 
     private void OnDestroy()
@@ -86,6 +91,23 @@ public class EggNestSelectionPanel : MonoBehaviour
             PlayerInput.Instance.AOpenWindow?.Invoke(this);
     }
 
+    public void OpenInventory()
+    {
+        BindWindowCloseEvent();
+        TryBindManager();
+
+        if (_manager == null)
+            return;
+
+        _inventoryViewOnly = true;
+        _currentNestId = string.Empty;
+        SetOpen(true, true);
+        RebuildSlots();
+
+        if (PlayerInput.Instance != null)
+            PlayerInput.Instance.AOpenWindow?.Invoke(this);
+    }
+
     public void CloseFromButton()
     {
         Close(true);
@@ -94,6 +116,11 @@ public class EggNestSelectionPanel : MonoBehaviour
     public void CloseFromExternal()
     {
         Close(false);
+    }
+
+    public void CloseFromShortcut()
+    {
+        Close(true);
     }
 
     private void CloseByOtherWindow(MonoBehaviour other)
@@ -111,8 +138,18 @@ public class EggNestSelectionPanel : MonoBehaviour
             return;
 
         _currentNestId = string.Empty;
+        _inventoryViewOnly = false;
         ClearSlots();
         SetOpen(false, releaseCursor);
+    }
+
+    private void Update()
+    {
+        if (!_opened)
+            return;
+
+        if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Escape))
+            Close(true);
     }
 
     private void HandleStateChanged()
@@ -123,13 +160,13 @@ public class EggNestSelectionPanel : MonoBehaviour
         if (_selectingEgg)
             return;
 
-        if (_manager == null || string.IsNullOrWhiteSpace(_currentNestId))
+        if (!_inventoryViewOnly && (_manager == null || string.IsNullOrWhiteSpace(_currentNestId)))
         {
             Close(false);
             return;
         }
 
-        if (_manager.GetNestState(_currentNestId) != null)
+        if (!_inventoryViewOnly && _manager.GetNestState(_currentNestId) != null)
         {
             Close(false);
             return;
@@ -141,9 +178,6 @@ public class EggNestSelectionPanel : MonoBehaviour
     private void RebuildSlots()
     {
         ClearSlots();
-
-        if (_nestLabel != null)
-            _nestLabel.text = EggTemporaryUIFactory.FormatHeader("Select egg", _currentNestId);
 
         bool anyAvailable = false;
 
@@ -161,7 +195,7 @@ public class EggNestSelectionPanel : MonoBehaviour
                 if (slot == null)
                     continue;
 
-                slot.Init(definition, owned.amount, TrySelectEgg);
+                slot.Init(definition, owned.amount, _inventoryViewOnly ? null : TrySelectEgg, !_inventoryViewOnly);
                 anyAvailable = true;
             }
         }
@@ -190,7 +224,7 @@ public class EggNestSelectionPanel : MonoBehaviour
         if (string.IsNullOrWhiteSpace(eggId))
             return;
 
-        if (_manager == null || string.IsNullOrWhiteSpace(_currentNestId))
+        if (_inventoryViewOnly || _manager == null || string.IsNullOrWhiteSpace(_currentNestId))
             return;
 
         bool started;
@@ -281,7 +315,21 @@ public class EggNestSelectionPanel : MonoBehaviour
         if (!updateCursor || !_setCursorWhenOpen)
             return;
 
+        if (ControlManager.Instance == null || ControlManager.Instance.UseTouchControl)
+            return;
+
+        if (open)
+            ControlManager.Instance.CursorActive = true;
+        else
+            ForceReleaseCursor();
+    }
+
+    private static void ForceReleaseCursor()
+    {
         if (ControlManager.Instance != null && !ControlManager.Instance.UseTouchControl)
-            ControlManager.Instance.CursorActive = open;
+        {
+            for (int i = 0; i < 8 && ControlManager.Instance.CursorActive; i++)
+                ControlManager.Instance.CursorActive = false;
+        }
     }
 }

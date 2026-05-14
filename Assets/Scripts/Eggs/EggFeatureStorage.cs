@@ -45,6 +45,30 @@ public static class EggFeatureStorage
         Save(state);
     }
 
+    public static bool IsOneShotEggCollected(string collectibleId)
+    {
+        if (string.IsNullOrWhiteSpace(collectibleId))
+            return false;
+
+        EggFeatureState state = Load();
+        return state.collectedOneShotEggIds.Contains(collectibleId);
+    }
+
+    public static bool TryAddOneShotEgg(string collectibleId, string eggId, int amount)
+    {
+        if (string.IsNullOrWhiteSpace(collectibleId) || string.IsNullOrWhiteSpace(eggId))
+            return false;
+
+        EggFeatureState state = Load();
+        if (state.collectedOneShotEggIds.Contains(collectibleId))
+            return false;
+
+        state.collectedOneShotEggIds.Add(collectibleId);
+        state.AddEgg(eggId, amount);
+        Save(state);
+        return true;
+    }
+
     private static string LoadRaw()
     {
         try

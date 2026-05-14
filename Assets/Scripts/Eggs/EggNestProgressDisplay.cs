@@ -12,9 +12,14 @@ public class EggNestProgressDisplay : MonoBehaviour
     [SerializeField] private GameObject _incubatingRoot;
     [SerializeField] private GameObject _readyRoot;
     [SerializeField] private bool _createTemporaryUiIfMissing = true;
+    [SerializeField] private bool _faceCamera = true;
+    [SerializeField] private Vector3 _worldOffset = new(0f, 2.05f, 0f);
+    [SerializeField] private Font _font;
+    [SerializeField] private LocalizationData _localizationData;
 
     private EggHatchingManager _manager;
     private float _nextRefreshTime;
+    private Camera _camera;
 
     private void Awake()
     {
@@ -43,6 +48,22 @@ public class EggNestProgressDisplay : MonoBehaviour
 
         _nextRefreshTime = Time.unscaledTime + 1f;
         Refresh();
+    }
+
+    private void LateUpdate()
+    {
+        if (!_faceCamera || _canvas == null || !_canvas.gameObject.activeInHierarchy)
+            return;
+
+        if (_camera == null)
+            _camera = Camera.main;
+
+        if (_camera == null)
+            return;
+
+        Transform canvasTransform = _canvas.transform;
+        canvasTransform.position = transform.position + _worldOffset;
+        canvasTransform.LookAt(canvasTransform.position + _camera.transform.rotation * Vector3.forward, _camera.transform.rotation * Vector3.up);
     }
 
     private void OnDestroy()
@@ -83,7 +104,7 @@ public class EggNestProgressDisplay : MonoBehaviour
             _timerText.text = ready ? "Ready" : FormatSeconds(remaining);
 
         if (_titleText != null)
-            _titleText.text = ready ? "Ready to collect" : state.eggId;
+            _titleText.text = ready ? GetLocalizedText("Eggs/ReadyToCollect", "Ready") : GetEggTitle(state.eggId);
 
         if (_progressFill != null)
         {
@@ -119,7 +140,7 @@ public class EggNestProgressDisplay : MonoBehaviour
 
         GameObject root = new GameObject("EggNestProgress", typeof(RectTransform));
         root.transform.SetParent(transform, false);
-        root.transform.position = transform.position + Vector3.up * 2.05f;
+        root.transform.position = transform.position + _worldOffset;
         root.transform.localRotation = Quaternion.identity;
 
         _canvas = root.AddComponent<Canvas>();
@@ -127,7 +148,7 @@ public class EggNestProgressDisplay : MonoBehaviour
         _canvas.sortingOrder = 29;
 
         RectTransform canvasRect = root.GetComponent<RectTransform>();
-        canvasRect.sizeDelta = new Vector2(240f, 96f);
+        canvasRect.sizeDelta = new Vector2(220f, 88f);
         ApplyWorldSpaceCanvasScale(canvasRect, 0.01f);
 
         GameObject background = new GameObject("Background", typeof(RectTransform));
@@ -139,12 +160,14 @@ public class EggNestProgressDisplay : MonoBehaviour
         backgroundRect.offsetMax = Vector2.zero;
 
         Image backgroundImage = background.AddComponent<Image>();
-        backgroundImage.color = new Color(0.04f, 0.05f, 0.06f, 0.82f);
+        backgroundImage.sprite = Resources.Load<Sprite>("Components/Frame/BasicFrame_SquareSolid01_White");
+        backgroundImage.type = Image.Type.Sliced;
+        backgroundImage.color = new Color(0.03f, 0.04f, 0.05f, 0.88f);
 
         _incubatingRoot = background;
 
-        _titleText = CreateText(background.transform, "Title", new Vector2(0.08f, 0.56f), new Vector2(0.92f, 0.92f), "Egg");
-        _timerText = CreateText(background.transform, "Timer", new Vector2(0.08f, 0.3f), new Vector2(0.92f, 0.58f), "00:00:00");
+        _titleText = CreateText(background.transform, "Title", new Vector2(0.08f, 0.58f), new Vector2(0.92f, 0.9f), "Egg", 14, 22, _font);
+        _timerText = CreateText(background.transform, "Timer", new Vector2(0.08f, 0.32f), new Vector2(0.92f, 0.58f), "00:00:00", 16, 26, _font);
 
         GameObject progress = new GameObject("Progress", typeof(RectTransform));
         progress.transform.SetParent(background.transform, false);
@@ -155,7 +178,7 @@ public class EggNestProgressDisplay : MonoBehaviour
         progressRect.offsetMax = Vector2.zero;
 
         _progressFill = progress.AddComponent<Image>();
-        _progressFill.color = new Color(0.46f, 0.86f, 0.42f, 0.95f);
+        _progressFill.color = new Color(0.98f, 0.78f, 0.18f, 0.95f);
         _progressFill.type = Image.Type.Filled;
         _progressFill.fillMethod = Image.FillMethod.Horizontal;
         _progressFill.fillOrigin = (int)Image.OriginHorizontal.Left;
@@ -164,7 +187,7 @@ public class EggNestProgressDisplay : MonoBehaviour
         _canvas.gameObject.SetActive(false);
     }
 
-    private static Text CreateText(Transform parent, string name, Vector2 anchorMin, Vector2 anchorMax, string value)
+    private static Text CreateText(Transform parent, string name, Vector2 anchorMin, Vector2 anchorMax, string value, int minSize, int maxSize, Font font)
     {
         GameObject label = new GameObject(name, typeof(RectTransform));
         label.transform.SetParent(parent, false);
@@ -175,12 +198,12 @@ public class EggNestProgressDisplay : MonoBehaviour
         labelRect.offsetMax = Vector2.zero;
 
         Text text = label.AddComponent<Text>();
-        text.font = GetDefaultFont();
+        text.font = GetDefaultFont(font);
         text.text = value;
         text.alignment = TextAnchor.MiddleCenter;
         text.resizeTextForBestFit = true;
-        text.resizeTextMinSize = 10;
-        text.resizeTextMaxSize = 20;
+        text.resizeTextMinSize = minSize;
+        text.resizeTextMaxSize = maxSize;
         text.color = Color.white;
         text.raycastTarget = false;
         return text;
@@ -196,8 +219,36 @@ public class EggNestProgressDisplay : MonoBehaviour
         return $"{hours:00}:{minutes:00}:{secs:00}";
     }
 
-    private static Font GetDefaultFont()
+    private string GetEggTitle(string eggId)
     {
+        if (_manager != null && _manager.TryGetDefinition(eggId, out EggDefinition definition) && definition != null)
+        {
+            string titleKey = string.IsNullOrWhiteSpace(definition.title) ? definition.eggId : definition.title;
+            return GetLocalizedText(titleKey, titleKey);
+        }
+
+        return eggId;
+    }
+
+    private string GetLocalizedText(string key, string fallback)
+    {
+        if (_localizationData == null || string.IsNullOrWhiteSpace(key))
+            return fallback;
+
+        string language = LocalizationManager.Instance != null
+            ? LocalizationManager.Instance.CurrentLanguage
+            : "Ru";
+
+        return _localizationData.TryGetTranslation(key, language, out string value)
+            ? value
+            : fallback;
+    }
+
+    private static Font GetDefaultFont(Font configuredFont)
+    {
+        if (configuredFont != null)
+            return configuredFont;
+
         Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         if (font != null)
             return font;
