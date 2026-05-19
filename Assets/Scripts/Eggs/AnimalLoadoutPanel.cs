@@ -4,7 +4,20 @@ using UnityEngine.UI;
 public sealed class AnimalLoadoutPanel : MonoBehaviour
 {
     private static AnimalLoadoutPanel _instance;
-    public static AnimalLoadoutPanel Instance => _instance;
+    public static AnimalLoadoutPanel Instance
+    {
+        get
+        {
+            if (_instance == null)
+            {
+                _instance = FindFirstObjectByType<AnimalLoadoutPanel>(FindObjectsInactive.Include);
+                if (_instance != null)
+                    _instance.EnsureInitialized();
+            }
+
+            return _instance;
+        }
+    }
 
     [Header("Root")]
     [SerializeField] private GameObject _panel;
@@ -26,6 +39,7 @@ public sealed class AnimalLoadoutPanel : MonoBehaviour
     [SerializeField] private GameObject _inventoryEmptyState;
 
     private EggHatchingManager _manager;
+    private bool _initialized;
     private bool _opened;
     private bool _pickerOpen;
     private int _selectedSlotIndex = -1;
@@ -41,24 +55,19 @@ public sealed class AnimalLoadoutPanel : MonoBehaviour
         }
 
         _instance = this;
-        if (_panel == null)
-            _panel = gameObject;
-
-        BindButtons();
-        _panel.SetActive(false);
-
-        if (_inventoryRoot != null)
-            _inventoryRoot.SetActive(false);
+        EnsureInitialized();
     }
 
     private void Start()
     {
+        EnsureInitialized();
         BindWindowCloseEvent();
         TryBindManager();
     }
 
     private void OnEnable()
     {
+        EnsureInitialized();
         BindWindowCloseEvent();
     }
 
@@ -96,6 +105,7 @@ public sealed class AnimalLoadoutPanel : MonoBehaviour
 
     public void Open()
     {
+        EnsureInitialized();
         BindWindowCloseEvent();
         TryBindManager();
 
@@ -290,6 +300,23 @@ public sealed class AnimalLoadoutPanel : MonoBehaviour
 
         _manager = manager;
         _manager.StateChanged += HandleStateChanged;
+    }
+
+    private void EnsureInitialized()
+    {
+        if (_initialized)
+            return;
+
+        _initialized = true;
+
+        if (_panel == null)
+            _panel = gameObject;
+
+        BindButtons();
+        _panel.SetActive(false);
+
+        if (_inventoryRoot != null)
+            _inventoryRoot.SetActive(false);
     }
 
     private void BindButtons()

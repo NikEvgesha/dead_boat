@@ -10,6 +10,7 @@ public sealed class AnimalLoadoutHudButton : MonoBehaviour
     [SerializeField] private KeyCode _keyboardShortcut = KeyCode.Y;
 
     private EggHatchingManager _manager;
+    private bool _isSubscribedToManager;
 
     private void Awake()
     {
@@ -29,26 +30,20 @@ public sealed class AnimalLoadoutHudButton : MonoBehaviour
     private void OnEnable()
     {
         TryBindManager();
-
-        if (_manager != null)
-            _manager.StateChanged += Refresh;
-
         Refresh();
     }
 
     private void OnDisable()
     {
-        if (_manager != null)
-            _manager.StateChanged -= Refresh;
+        UnsubscribeFromManager();
     }
 
     private void Update()
     {
         if (_manager == null)
-        {
             TryBindManager();
-            Refresh();
-        }
+
+        Refresh();
 
         if (Input.GetKeyDown(_keyboardShortcut))
             ToggleLoadout();
@@ -56,6 +51,9 @@ public sealed class AnimalLoadoutHudButton : MonoBehaviour
 
     public void OpenLoadout()
     {
+        TryBindManager();
+        Refresh();
+
         if (!ShouldShow())
             return;
 
@@ -64,6 +62,9 @@ public sealed class AnimalLoadoutHudButton : MonoBehaviour
 
     private void ToggleLoadout()
     {
+        TryBindManager();
+        Refresh();
+
         if (!ShouldShow())
             return;
 
@@ -96,20 +97,39 @@ public sealed class AnimalLoadoutHudButton : MonoBehaviour
 
     private bool ShouldShow()
     {
-        if (_manager == null || !_manager.HasHatchedAnimal())
-            return false;
-
-        if (LoadingManager.Instance == null)
-            return true;
-
-        return LoadingManager.Instance.CurrentLocation == Location.Lobby;
+        return _manager != null && _manager.HasHatchedAnimal();
     }
 
     private void TryBindManager()
     {
-        if (_manager != null)
+        EggHatchingManager manager = EggHatchingManager.Instance;
+        if (manager == null)
             return;
 
-        _manager = EggHatchingManager.Instance;
+        if (_manager != manager)
+        {
+            UnsubscribeFromManager();
+            _manager = manager;
+        }
+
+        SubscribeToManager();
+    }
+
+    private void SubscribeToManager()
+    {
+        if (_manager == null || _isSubscribedToManager)
+            return;
+
+        _manager.StateChanged += Refresh;
+        _isSubscribedToManager = true;
+    }
+
+    private void UnsubscribeFromManager()
+    {
+        if (_manager == null || !_isSubscribedToManager)
+            return;
+
+        _manager.StateChanged -= Refresh;
+        _isSubscribedToManager = false;
     }
 }
