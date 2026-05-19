@@ -40,6 +40,17 @@ public class PlacedAnimalState
 }
 
 [Serializable]
+public class AnimalMergeState
+{
+    public string animalId;
+    public int stage = 1;
+    public long finishAtUnix;
+    public int durationSeconds;
+    public bool isReady;
+    public bool resultAnimationShown;
+}
+
+[Serializable]
 public class EggFeatureState
 {
     public bool hasDiscoveredEggs;
@@ -49,6 +60,7 @@ public class EggFeatureState
     public List<EggNestState> nests = new();
     public List<PlacedAnimalState> placedAnimals = new();
     public List<string> collectedOneShotEggIds = new();
+    public AnimalMergeState animalMerge;
 
     public int GetEggAmount(string eggId)
     {
@@ -164,6 +176,12 @@ public class EggFeatureState
         nests ??= new List<EggNestState>();
         placedAnimals ??= new List<PlacedAnimalState>();
         collectedOneShotEggIds ??= new List<string>();
+        if (animalMerge != null)
+        {
+            animalMerge.stage = Mathf.Max(1, animalMerge.stage);
+            if (string.IsNullOrWhiteSpace(animalMerge.animalId))
+                animalMerge = null;
+        }
 
         ownedEggs = ownedEggs
             .Where(x => x != null && !string.IsNullOrWhiteSpace(x.eggId) && x.amount > 0)
@@ -220,7 +238,7 @@ public class EggFeatureState
         if (ownedEggs.Count > 0 || nests.Count > 0 || ownedAnimals.Count > 0 || placedAnimals.Count > 0)
             hasDiscoveredEggs = true;
 
-        if (ownedAnimals.Count > 0 || placedAnimals.Count > 0)
+        if (ownedAnimals.Count > 0 || placedAnimals.Count > 0 || animalMerge != null)
             hasHatchedAnimal = true;
     }
 }

@@ -5,6 +5,16 @@ public class AnimalMergePoint : MonoBehaviour
 {
     [SerializeField] private AnimalMergeSelectionPanel _selectionPanel;
 
+    public void _Use()
+    {
+        MergeAction();
+    }
+
+    public void _RequestAction()
+    {
+        MergeAction();
+    }
+
     public void RequestAction()
     {
         MergeAction();

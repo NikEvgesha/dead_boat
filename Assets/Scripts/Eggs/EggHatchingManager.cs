@@ -6,6 +6,8 @@ using UnityEngine;
 public class EggHatchingManager : MonoBehaviour
 {
     private const string DefaultCatalogResourcePath = "Eggs/EggHatchingCatalog";
+    private const string AnimalLoadoutPointPrefix = "animal_loadout_";
+    private const int AnimalLoadoutSlotsCount = 3;
 
     private static EggHatchingManager _instance;
     public static EggHatchingManager Instance => _instance;
@@ -19,10 +21,15 @@ public class EggHatchingManager : MonoBehaviour
     [SerializeField] private bool _resetAnimalLocalPoseWhenParented = true;
     [SerializeField] private bool _autoLoadOnStart = true;
     [SerializeField] private bool _autoCollectFinishedEggs = false;
+    [Header("Animal Merge")]
+    [SerializeField, Min(1)] private int _animalMergeDurationSeconds = 1800;
+    [SerializeField, Min(0)] private int _animalMergeSkipCostCoins = 500;
 
     public event Action StateChanged;
     public event Action<int> EggsCollected;
     public event Action<int> AnimalsCollected;
+
+    public int AnimalLoadoutSlotCount => AnimalLoadoutSlotsCount;
 
     private EggFeatureState _state;
     private readonly Dictionary<string, GameObject> _spawnedAnimals = new();
@@ -74,6 +81,7 @@ public class EggHatchingManager : MonoBehaviour
         bool stateChanged = false;
 
         stateChanged = MarkFinishedNestsReadyInternal();
+        stateChanged |= MarkFinishedAnimalMergeReadyInternal();
 
         if (stateChanged)
             SaveAndNotify();
@@ -445,9 +453,82 @@ public class EggHatchingManager : MonoBehaviour
         return _state.GetAnimalAmount(animalId, safeStage) >= 2;
     }
 
-    public bool TryMergeAnimal(string animalId, int stage)
+    public AnimalMergeState GetAnimalMergeState()
     {
         EnsureStateLoaded();
+        return _state.animalMerge;
+    }
+
+    public int GetAnimalMergeRemainingSeconds()
+    {
+        EnsureStateLoaded();
+
+        if (_state.animalMerge == null)
+            return 0;
+
+        long remaining = _state.animalMerge.finishAtUnix - GetNowUnix();
+        return remaining > 0 ? (int)remaining : 0;
+    }
+
+    public bool IsAnimalMergeReady()
+    {
+        AnimalMergeState merge = GetAnimalMergeState();
+        return merge != null && GetAnimalMergeRemainingSeconds() <= 0;
+    }
+
+    public int GetAnimalMergeCandidateCount()
+    {
+        EnsureStateLoaded();
+
+        if (_state.animalMerge != null)
+            return 0;
+
+        int count = 0;
+        for (int i = 0; i < _state.ownedAnimals.Count; i++)
+        {
+            AnimalInventoryEntry owned = _state.ownedAnimals[i];
+            if (owned == null)
+                continue;
+
+            if (CanMergeAnimal(owned.animalId, Mathf.Max(1, owned.stage)))
+                count++;
+        }
+
+        return count;
+    }
+
+    public bool HasAnimalMergeCandidate()
+    {
+        return GetAnimalMergeCandidateCount() > 0;
+    }
+
+    public bool MarkAnimalMergeResultAnimationShown()
+    {
+        EnsureStateLoaded();
+
+        AnimalMergeState merge = _state.animalMerge;
+        if (merge == null || GetAnimalMergeRemainingSeconds() > 0)
+            return false;
+
+        if (merge.resultAnimationShown)
+            return true;
+
+        merge.resultAnimationShown = true;
+        EggFeatureStorage.Save(_state);
+        return true;
+    }
+
+    public int GetAnimalMergeSkipCostCoins()
+    {
+        return Mathf.Max(0, _animalMergeSkipCostCoins);
+    }
+
+    public bool TryStartAnimalMerge(string animalId, int stage)
+    {
+        EnsureStateLoaded();
+
+        if (_state.animalMerge != null)
+            return false;
 
         if (!CanMergeAnimal(animalId, stage))
             return false;
@@ -456,11 +537,97 @@ public class EggHatchingManager : MonoBehaviour
         if (!_state.TryConsumeAnimal(animalId, safeStage, 2))
             return false;
 
-        _state.AddAnimal(animalId, safeStage + 1, 1);
-        SpawnMergeFeedback(animalId, safeStage + 1);
+        _state.animalMerge = new AnimalMergeState
+        {
+            animalId = animalId,
+            stage = safeStage,
+            durationSeconds = Mathf.Max(1, _animalMergeDurationSeconds),
+            finishAtUnix = GetNowUnix() + Mathf.Max(1, _animalMergeDurationSeconds)
+        };
+
+        SaveAndNotify();
+        return true;
+    }
+
+    public bool TryCancelAnimalMerge()
+    {
+        EnsureStateLoaded();
+
+        AnimalMergeState merge = _state.animalMerge;
+        if (merge == null)
+            return false;
+
+        _state.AddAnimal(merge.animalId, Mathf.Max(1, merge.stage), 2);
+        _state.animalMerge = null;
+
+        SaveAndNotify();
+        return true;
+    }
+
+    public bool TrySkipAnimalMergeWithCoins()
+    {
+        EnsureStateLoaded();
+
+        if (_state.animalMerge == null)
+            return false;
+
+        if (GetAnimalMergeRemainingSeconds() <= 0)
+            return true;
+
+        int price = Mathf.Max(0, _animalMergeSkipCostCoins);
+        if (price > 0)
+        {
+            if (CurrencyManager.Instance == null)
+                return false;
+
+            if (!CurrencyManager.Instance.CheckEnoughCurrency(CurrencyType.Coins, price))
+                return false;
+
+            if (!CurrencyManager.Instance.RemoveCurrency(CurrencyType.Coins, price))
+                return false;
+        }
+
+        return TryFinishAnimalMergeNow();
+    }
+
+    public bool TryFinishAnimalMergeNow()
+    {
+        EnsureStateLoaded();
+
+        if (_state.animalMerge == null)
+            return false;
+
+        _state.animalMerge.finishAtUnix = GetNowUnix();
+        _state.animalMerge.isReady = true;
+
+        SaveAndNotify();
+        return true;
+    }
+
+    public bool TryCollectAnimalMergeResult()
+    {
+        EnsureStateLoaded();
+
+        AnimalMergeState merge = _state.animalMerge;
+        if (merge == null)
+            return false;
+
+        if (GetAnimalMergeRemainingSeconds() > 0)
+            return false;
+
+        int resultStage = Mathf.Max(1, merge.stage) + 1;
+        _state.AddAnimal(merge.animalId, resultStage, 1);
+        _state.animalMerge = null;
+
+        SpawnMergeFeedback(merge.animalId, resultStage);
         SaveAndNotify();
         AnimalsCollected?.Invoke(1);
         return true;
+    }
+
+    public bool TryMergeAnimal(string animalId, int stage)
+    {
+        return TryStartAnimalMerge(animalId, stage);
     }
 
     public bool TryMergeAnyAvailableAnimal()
@@ -478,6 +645,79 @@ public class EggHatchingManager : MonoBehaviour
         }
 
         return false;
+    }
+
+    public PlacedAnimalState GetAnimalLoadoutSlot(int slotIndex)
+    {
+        EnsureStateLoaded();
+
+        if (!IsValidAnimalLoadoutSlotIndex(slotIndex))
+            return null;
+
+        string pointId = MakeAnimalLoadoutPointId(slotIndex);
+        return _state.placedAnimals.Find(x => x != null && x.pointId == pointId);
+    }
+
+    public bool TryAssignAnimalToLoadoutSlot(int slotIndex, string animalId, int stage)
+    {
+        EnsureStateLoaded();
+
+        if (!IsValidAnimalLoadoutSlotIndex(slotIndex) || string.IsNullOrWhiteSpace(animalId))
+            return false;
+
+        if (_catalog == null)
+            return false;
+
+        int safeStage = Mathf.Max(1, stage);
+        if (_catalog.ResolveAnimalPrefab(animalId, safeStage) == null)
+            return false;
+
+        string pointId = MakeAnimalLoadoutPointId(slotIndex);
+        PlacedAnimalState existing = _state.placedAnimals.Find(x => x != null && x.pointId == pointId);
+        if (existing != null &&
+            existing.animalId == animalId &&
+            Mathf.Max(1, existing.stage) == safeStage)
+        {
+            return true;
+        }
+
+        if (!_state.TryConsumeAnimal(animalId, safeStage, 1))
+            return false;
+
+        if (existing != null)
+        {
+            _state.AddAnimal(existing.animalId, Mathf.Max(1, existing.stage), 1);
+            _state.placedAnimals.Remove(existing);
+        }
+
+        _state.placedAnimals.Add(new PlacedAnimalState
+        {
+            pointId = pointId,
+            animalId = animalId,
+            stage = safeStage,
+            lastIncomeUnix = GetNowUnix()
+        });
+
+        SaveAndNotify();
+        return true;
+    }
+
+    public bool TryClearAnimalLoadoutSlot(int slotIndex)
+    {
+        EnsureStateLoaded();
+
+        if (!IsValidAnimalLoadoutSlotIndex(slotIndex))
+            return false;
+
+        string pointId = MakeAnimalLoadoutPointId(slotIndex);
+        PlacedAnimalState existing = _state.placedAnimals.Find(x => x != null && x.pointId == pointId);
+        if (existing == null)
+            return false;
+
+        _state.AddAnimal(existing.animalId, Mathf.Max(1, existing.stage), 1);
+        _state.placedAnimals.Remove(existing);
+        SaveAndNotify();
+        return true;
     }
 
     public bool TryGrantRandomEgg(int amount = 1)
@@ -705,6 +945,16 @@ public class EggHatchingManager : MonoBehaviour
         return false;
     }
 
+    private static bool IsValidAnimalLoadoutSlotIndex(int slotIndex)
+    {
+        return slotIndex >= 0 && slotIndex < AnimalLoadoutSlotsCount;
+    }
+
+    private static string MakeAnimalLoadoutPointId(int slotIndex)
+    {
+        return $"{AnimalLoadoutPointPrefix}{slotIndex}";
+    }
+
     private bool MarkFinishedNestsReadyInternal()
     {
         if (_state == null || _state.nests == null || _state.nests.Count == 0)
@@ -739,6 +989,20 @@ public class EggHatchingManager : MonoBehaviour
         }
 
         return changed;
+    }
+
+    private bool MarkFinishedAnimalMergeReadyInternal()
+    {
+        if (_state?.animalMerge == null)
+            return false;
+
+        AnimalMergeState merge = _state.animalMerge;
+        if (merge.finishAtUnix > GetNowUnix() || merge.isReady)
+            return false;
+
+        merge.stage = Mathf.Max(1, merge.stage);
+        merge.isReady = true;
+        return true;
     }
 
     private void RefreshNestVisuals()

@@ -22,35 +22,8 @@ public static class AnimalMergeTemporaryUIBootstrap
 
     private static void TryCreateForActiveScene()
     {
-        Scene scene = SceneManager.GetActiveScene();
-        if (!string.Equals(scene.name, LobbySceneName, System.StringComparison.Ordinal))
-            return;
-
-        if (AnimalMergeSelectionPanel.Instance != null)
-            return;
-
-        if (Object.FindObjectsByType<AnimalMergeSelectionPanel>(FindObjectsInactive.Include, FindObjectsSortMode.None).Length > 0)
-            return;
-
-        if (GameObject.Find(RootName) != null)
-            return;
-
-        Canvas canvas = ResolveCanvas();
-        if (canvas == null)
-            canvas = CreateCanvas();
-
-        GameObject panelRoot = new GameObject(RootName, typeof(RectTransform));
-        panelRoot.layer = canvas.gameObject.layer;
-        panelRoot.transform.SetParent(canvas.transform, false);
-
-        RectTransform rect = panelRoot.GetComponent<RectTransform>();
-        rect.anchorMin = Vector2.zero;
-        rect.anchorMax = Vector2.one;
-        rect.offsetMin = Vector2.zero;
-        rect.offsetMax = Vector2.zero;
-
-        AnimalMergeSelectionPanel panel = panelRoot.AddComponent<AnimalMergeSelectionPanel>();
-        EggTemporaryUIFactory.EnsureFloatingMergeButton(canvas, panel.Open);
+        // Animal merge now uses the configured AnimalMergeSelectionPanel prefab in GameCanvas.
+        // Keep this bootstrap inert so an unbound temporary panel cannot shadow the prefab.
     }
 
     private static Canvas ResolveCanvas()
