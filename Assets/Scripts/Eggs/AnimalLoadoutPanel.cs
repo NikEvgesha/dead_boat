@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -28,6 +29,10 @@ public sealed class AnimalLoadoutPanel : MonoBehaviour
 
     [Header("Slots")]
     [SerializeField] private AnimalLoadoutSlotView[] _slotViews;
+
+    [Header("Actions")]
+    [SerializeField] private Button _selectBestButton;
+    [SerializeField] private Text _selectBestButtonText;
 
     [Header("Inventory Picker")]
     [SerializeField] private GameObject _inventoryRoot;
@@ -186,6 +191,9 @@ public sealed class AnimalLoadoutPanel : MonoBehaviour
 
         if (_emptyState != null)
             _emptyState.SetActive(!anyPlaced);
+
+        if (_selectBestButtonText != null)
+            _selectBestButtonText.text = EggFeatureLocalization.Text("UI/AnimalLoadout/SelectBest", "Выбрать лучших", "Select best");
     }
 
     private void OpenInventoryPicker(int slotIndex)
@@ -276,6 +284,94 @@ public sealed class AnimalLoadoutPanel : MonoBehaviour
             RefreshView();
     }
 
+    private void SelectBestAnimals()
+    {
+        if (_manager == null)
+            return;
+
+        int slotCount = Mathf.Max(0, _manager.AnimalLoadoutSlotCount);
+        if (slotCount == 0)
+            return;
+
+        List<AnimalCandidate> candidates = BuildAnimalCandidates(slotCount);
+        if (candidates.Count == 0)
+            return;
+
+        candidates.Sort(CompareAnimalCandidates);
+
+        int targetCount = Mathf.Min(slotCount, candidates.Count);
+        if (IsCurrentLoadoutSame(candidates, targetCount))
+            return;
+
+        CloseInventoryPicker();
+
+        for (int i = 0; i < slotCount; i++)
+        {
+            if (_manager.GetAnimalLoadoutSlot(i) != null)
+                _manager.TryClearAnimalLoadoutSlot(i);
+        }
+
+        for (int i = 0; i < targetCount; i++)
+        {
+            AnimalCandidate candidate = candidates[i];
+            _manager.TryAssignAnimalToLoadoutSlot(i, candidate.AnimalId, candidate.Stage);
+        }
+
+        RefreshView();
+    }
+
+    private List<AnimalCandidate> BuildAnimalCandidates(int slotCount)
+    {
+        List<AnimalCandidate> candidates = new();
+
+        foreach (AnimalInventoryEntry owned in _manager.GetOwnedAnimals())
+        {
+            if (owned == null || owned.amount <= 0 || string.IsNullOrWhiteSpace(owned.animalId))
+                continue;
+
+            int safeStage = Mathf.Max(1, owned.stage);
+            int amount = Mathf.Min(owned.amount, slotCount);
+            for (int i = 0; i < amount; i++)
+                candidates.Add(new AnimalCandidate(owned.animalId, safeStage));
+        }
+
+        for (int i = 0; i < slotCount; i++)
+        {
+            PlacedAnimalState placed = _manager.GetAnimalLoadoutSlot(i);
+            if (placed == null || string.IsNullOrWhiteSpace(placed.animalId))
+                continue;
+
+            candidates.Add(new AnimalCandidate(placed.animalId, Mathf.Max(1, placed.stage)));
+        }
+
+        return candidates;
+    }
+
+    private bool IsCurrentLoadoutSame(List<AnimalCandidate> sortedCandidates, int targetCount)
+    {
+        List<AnimalCandidate> currentCandidates = new();
+        for (int i = 0; i < _manager.AnimalLoadoutSlotCount; i++)
+        {
+            PlacedAnimalState placed = _manager.GetAnimalLoadoutSlot(i);
+            if (placed == null || string.IsNullOrWhiteSpace(placed.animalId))
+                continue;
+
+            currentCandidates.Add(new AnimalCandidate(placed.animalId, Mathf.Max(1, placed.stage)));
+        }
+
+        if (currentCandidates.Count != targetCount)
+            return false;
+
+        currentCandidates.Sort(CompareAnimalCandidates);
+        for (int i = 0; i < targetCount; i++)
+        {
+            if (!sortedCandidates[i].Matches(currentCandidates[i]))
+                return false;
+        }
+
+        return true;
+    }
+
     private void ClearInventorySlots()
     {
         if (_inventorySlotsRoot == null)
@@ -323,6 +419,7 @@ public sealed class AnimalLoadoutPanel : MonoBehaviour
     {
         BindButton(_closeButton, CloseFromButton);
         BindButton(_inventoryCloseButton, CloseInventoryPicker);
+        BindButton(_selectBestButton, SelectBestAnimals);
     }
 
     private void BindWindowCloseEvent()
@@ -369,5 +466,31 @@ public sealed class AnimalLoadoutPanel : MonoBehaviour
             for (int i = 0; i < 8 && ControlManager.Instance.CursorActive; i++)
                 ControlManager.Instance.CursorActive = false;
         }
+    }
+
+    private readonly struct AnimalCandidate
+    {
+        public AnimalCandidate(string animalId, int stage)
+        {
+            AnimalId = animalId;
+            Stage = Mathf.Max(1, stage);
+        }
+
+        public string AnimalId { get; }
+        public int Stage { get; }
+
+        public bool Matches(AnimalCandidate candidate)
+        {
+            return AnimalId == candidate.AnimalId &&
+                   Stage == candidate.Stage;
+        }
+    }
+
+    private static int CompareAnimalCandidates(AnimalCandidate left, AnimalCandidate right)
+    {
+        int stageCompare = right.Stage.CompareTo(left.Stage);
+        return stageCompare != 0
+            ? stageCompare
+            : string.CompareOrdinal(left.AnimalId, right.AnimalId);
     }
 }

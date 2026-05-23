@@ -28,6 +28,9 @@ public static class ProfessionTemporaryUIBootstrap
         if (ProfessionService.GetTotalProfessionCount() <= 0)
             return;
 
+        if (!IsLobbySceneActive())
+            return;
+
         ProfessionSelectionPanel panel = EnsurePanel();
         if (panel == null)
             return;
@@ -40,8 +43,7 @@ public static class ProfessionTemporaryUIBootstrap
 
     private static void TryCreateForActiveScene()
     {
-        Scene scene = SceneManager.GetActiveScene();
-        if (!string.Equals(scene.name, LobbySceneName, System.StringComparison.Ordinal))
+        if (!IsLobbySceneActive())
             return;
 
         ProfessionSelectionPanel panel = EnsurePanel();
@@ -54,6 +56,15 @@ public static class ProfessionTemporaryUIBootstrap
         Canvas canvas = ResolveCanvas();
         if (canvas != null)
             ProfessionTemporaryUIFactory.EnsureFloatingOpenButton(canvas, panel.Open);
+    }
+
+    private static bool IsLobbySceneActive()
+    {
+        if (LoadingManager.Instance != null)
+            return LoadingManager.Instance.CurrentLocation == Location.Lobby;
+
+        Scene scene = SceneManager.GetActiveScene();
+        return string.Equals(scene.name, LobbySceneName, System.StringComparison.Ordinal);
     }
 
     public static ProfessionSelectionPanel EnsurePanel()

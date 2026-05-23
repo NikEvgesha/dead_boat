@@ -1,8 +1,11 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public sealed class ProfessionHudButton : MonoBehaviour
 {
+    private const string LobbySceneName = "Lobby";
+
     [SerializeField] private GameObject _visualRoot;
     [SerializeField] private Button _button;
     [SerializeField] private GameObject _badgeRoot;
@@ -32,12 +35,15 @@ public sealed class ProfessionHudButton : MonoBehaviour
     {
         Refresh();
 
-        if (Input.GetKeyDown(_keyboardShortcut))
+        if (Input.GetKeyDown(_keyboardShortcut) && ShouldShow())
             ToggleProfessionPanel();
     }
 
     public void OpenProfessionPanel()
     {
+        if (!ShouldShow())
+            return;
+
         ProfessionSelectionPanel panel = ResolvePanel();
         if (panel == null)
             return;
@@ -48,6 +54,9 @@ public sealed class ProfessionHudButton : MonoBehaviour
 
     private void ToggleProfessionPanel()
     {
+        if (!ShouldShow())
+            return;
+
         ProfessionSelectionPanel panel = ResolvePanel();
         if (panel == null)
             return;
@@ -79,7 +88,14 @@ public sealed class ProfessionHudButton : MonoBehaviour
 
     private bool ShouldShow()
     {
-        return ProfessionService.GetTotalProfessionCount() > 0;
+        if (ProfessionService.GetTotalProfessionCount() <= 0)
+            return false;
+
+        if (LoadingManager.Instance != null)
+            return LoadingManager.Instance.CurrentLocation == Location.Lobby;
+
+        Scene scene = SceneManager.GetActiveScene();
+        return string.Equals(scene.name, LobbySceneName, System.StringComparison.Ordinal);
     }
 
     private static ProfessionSelectionPanel ResolvePanel()
