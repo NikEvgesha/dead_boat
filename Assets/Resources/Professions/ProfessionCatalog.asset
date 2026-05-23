@@ -15,7 +15,7 @@ MonoBehaviour:
   _definitions:
   - professionId: yunga
     title: Deckhand
-    description: Reliable baseline profession without risky tradeoffs.
+    description: Basic sailor with a small health bonus.
     icon: {fileID: 0}
     availableInRandomUnlockPool: 0
     randomUnlockWeight: 0
@@ -27,10 +27,9 @@ MonoBehaviour:
     startGemsBonus: 0
     defaultUnlocked: 1
     starterItems: []
-    perkLines:
-    - Stable default start
+    perkLines: []
     passiveBonuses:
-      maxHealthFlat: 0
+      maxHealthFlat: 10
       maxStaminaFlat: 0
       moveSpeedFlat: 0
       moveSpeedMultiplier: 1
@@ -77,8 +76,6 @@ MonoBehaviour:
     starterItems:
     - itemPrefab: {fileID: 421986717421339281, guid: 97e69bae6b2189a459e41c91c98a6e2a, type: 3}
       amount: 2
-    - itemPrefab: {fileID: 6427274643996943980, guid: ce0622221da92f545a38e85d07d54544, type: 3}
-      amount: 1
     perkLines:
     - Fuel lasts longer
     - Fuel cans restore more
@@ -336,9 +333,7 @@ MonoBehaviour:
     startCoinsBonus: 0
     startGemsBonus: 0
     defaultUnlocked: 0
-    starterItems:
-    - itemPrefab: {fileID: 5837536643105673945, guid: 3cca56fe7de35df4c98bb050788c0bb3, type: 3}
-      amount: 1
+    starterItems: []
     perkLines:
     - Heals after killing enemies
     - Constant HP drain keeps pressure high
@@ -388,9 +383,7 @@ MonoBehaviour:
     startCoinsBonus: 50
     startGemsBonus: 0
     defaultUnlocked: 0
-    starterItems:
-    - itemPrefab: {fileID: 3411018602687341552, guid: 833b43b5d0121334f822feb5e5a19c25, type: 3}
-      amount: 1
+    starterItems: []
     perkLines:
     - Rare low-weight loot rolls are boosted
     - Damage rolls swing high and low

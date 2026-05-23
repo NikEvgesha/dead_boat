@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -6,6 +7,7 @@ using UnityEngine.UI;
 public class ProfessionSelectionPanel : MonoBehaviour
 {
     private const float DefaultProfessionListButtonHeight = 88f;
+    private const float StarterItemRowHeight = 38f;
 
     private static ProfessionSelectionPanel _instance;
     public static ProfessionSelectionPanel Instance => _instance;
@@ -35,14 +37,19 @@ public class ProfessionSelectionPanel : MonoBehaviour
     [SerializeField] private Sprite _softCurrencyPriceIcon;
     [SerializeField] private GameObject _lockObject;
 
+    [Header("Starter Items")]
+    [SerializeField] private RectTransform _starterItemsRoot;
+
     [Header("Profession List")]
     [SerializeField] private RectTransform _professionListRoot;
     [SerializeField] private Button _professionListButtonPrefab;
     [SerializeField] private Color _professionListNormalColor = new(0.094f, 0.106f, 0.129f, 0.96f);
     [SerializeField] private Color _professionListSelectedColor = new(0.161f, 0.169f, 0.2f, 0.96f);
     [SerializeField] private Color _professionListLockedColor = new(0.094f, 0.106f, 0.129f, 0.66f);
+    [SerializeField] private Color _professionListRandomHighlightColor = new(0.12f, 0.68f, 0.2f, 0.96f);
     [SerializeField] private Color _professionListTextColor = Color.white;
     [SerializeField] private Color _professionListLockedTextColor = new(0.722f, 0.761f, 0.82f, 1f);
+    [SerializeField] private Color _professionListRandomHighlightTextColor = Color.white;
 
     [Header("Buttons")]
     [SerializeField] private Button _applyButton;
@@ -58,12 +65,19 @@ public class ProfessionSelectionPanel : MonoBehaviour
     [SerializeField] private bool _scaleUnlockPriceByOpenedCount;
     [SerializeField] private int _unlockPriceStepCoins = 100;
     [SerializeField] private int _unlockPriceMaxCoins = 2000;
+    [SerializeField] private int _randomUnlockMinHighlightSteps = 14;
+    [SerializeField] private float _randomUnlockStartDelay = 0.045f;
+    [SerializeField] private float _randomUnlockEndDelay = 0.32f;
 
     private readonly List<ProfessionDefinition> _definitions = new();
     private readonly List<Button> _professionListButtons = new();
     private readonly List<Text> _professionListLabels = new();
+    private readonly List<GameObject> _starterItemRows = new();
     private int _currentIndex;
     private bool _opened;
+    private Coroutine _randomUnlockRoutine;
+    private bool _randomUnlockInProgress;
+    private string _randomUnlockHighlightProfessionId;
 
     public bool IsOpen => _opened;
 
@@ -99,6 +113,8 @@ public class ProfessionSelectionPanel : MonoBehaviour
 
     private void OnDisable()
     {
+        ClearRandomUnlockAnimation();
+
         if (PlayerInput.Instance != null)
             PlayerInput.Instance.AOpenWindow -= CloseByOtherWindow;
     }
@@ -158,6 +174,9 @@ public class ProfessionSelectionPanel : MonoBehaviour
 
     private void ShowNextProfession()
     {
+        if (_randomUnlockInProgress)
+            return;
+
         if (_definitions.Count == 0)
             return;
 
@@ -170,6 +189,9 @@ public class ProfessionSelectionPanel : MonoBehaviour
 
     private void ShowPreviousProfession()
     {
+        if (_randomUnlockInProgress)
+            return;
+
         if (_definitions.Count == 0)
             return;
 
@@ -182,12 +204,12 @@ public class ProfessionSelectionPanel : MonoBehaviour
 
     private void ApplySelectedProfession()
     {
+        if (_randomUnlockInProgress)
+            return;
+
         ProfessionDefinition definition = GetCurrentDefinition();
         if (definition == null)
         {
-            ProfessionService.TrySelectNoProfession();
-            SetMessage(ProfessionLocalization.StatusNoProfession);
-            RefreshView();
             return;
         }
 
@@ -200,29 +222,49 @@ public class ProfessionSelectionPanel : MonoBehaviour
 
     private void UnlockRandomProfession()
     {
-        int unlockPrice = GetUnlockPrice();
+        if (_randomUnlockInProgress)
+            return;
 
-        if (!ProfessionService.HasRandomLockedProfessions())
+        int unlockPrice = GetUnlockPrice();
+        List<ProfessionDefinition> randomLockedDefinitions = BuildRandomLockedDefinitions();
+
+        if (randomLockedDefinitions.Count == 0)
         {
             SetMessage(ProfessionLocalization.MessageAllUnlocked);
             RefreshView();
             return;
         }
 
+        bool animateUnlock = randomLockedDefinitions.Count > 1;
+        if (animateUnlock)
+        {
+            _randomUnlockInProgress = true;
+            _randomUnlockHighlightProfessionId = string.Empty;
+            RefreshRandomUnlockControls();
+        }
+
         if (!ProfessionService.TryUnlockRandomLockedProfession(unlockPrice, _unlockRandomCurrencyType, out ProfessionDefinition unlockedDefinition))
         {
+            ClearRandomUnlockAnimation();
             SetMessage(ProfessionLocalization.MessageUnlockFailed);
             RefreshView();
             return;
         }
 
-        _currentIndex = FindProfessionIndex(unlockedDefinition.professionId);
-        SetMessage(ProfessionLocalization.FormatUnlockedProfession(ProfessionLocalization.DefinitionTitle(unlockedDefinition)));
-        RefreshView();
+        if (!animateUnlock)
+        {
+            CompleteRandomUnlock(unlockedDefinition);
+            return;
+        }
+
+        _randomUnlockRoutine = StartCoroutine(PlayRandomUnlockAnimation(randomLockedDefinitions, unlockedDefinition));
     }
 
     private void DirectBuyProfession()
     {
+        if (_randomUnlockInProgress)
+            return;
+
         ProfessionDefinition definition = GetCurrentDefinition();
         if (definition == null || ProfessionService.IsUnlocked(definition.professionId))
             return;
@@ -290,11 +332,13 @@ public class ProfessionSelectionPanel : MonoBehaviour
         if (_professionDescriptionText != null)
             _professionDescriptionText.text = ProfessionLocalization.DefinitionDescription(definition);
 
-        if (_starterItemsText != null)
-            _starterItemsText.text = ProfessionService.BuildStarterItemsSummary(definition);
+        RefreshStarterItems(definition);
 
         if (_perksText != null)
+        {
+            _perksText.supportRichText = true;
             _perksText.text = ProfessionService.BuildPerksSummary(definition);
+        }
 
         if (_statusText != null)
         {
@@ -320,7 +364,7 @@ public class ProfessionSelectionPanel : MonoBehaviour
         if (_applyButton != null)
         {
             _applyButton.gameObject.SetActive(unlocked);
-            _applyButton.interactable = unlocked && !selected;
+            _applyButton.interactable = unlocked && !selected && !_randomUnlockInProgress;
         }
 
         RefreshRandomUnlockControls();
@@ -333,7 +377,6 @@ public class ProfessionSelectionPanel : MonoBehaviour
     private void RebuildDefinitions()
     {
         _definitions.Clear();
-        _definitions.Add(null);
 
         IReadOnlyList<ProfessionDefinition> definitions = ProfessionService.GetDefinitions();
         for (int i = 0; i < definitions.Count; i++)
@@ -346,7 +389,7 @@ public class ProfessionSelectionPanel : MonoBehaviour
 
     private int FindProfessionIndex(string professionId)
     {
-        if (string.IsNullOrWhiteSpace(professionId) || ProfessionService.IsNoProfessionSelected())
+        if (string.IsNullOrWhiteSpace(professionId))
             return 0;
 
         for (int i = 0; i < _definitions.Count; i++)
@@ -406,6 +449,200 @@ public class ProfessionSelectionPanel : MonoBehaviour
         _messageText.text = message ?? string.Empty;
     }
 
+    private void RefreshStarterItems(ProfessionDefinition definition)
+    {
+        ClearStarterItemRows();
+
+        if (definition == null)
+        {
+            ShowStarterItemsText(ProfessionLocalization.NoStarterItems);
+            return;
+        }
+
+        List<StarterItemEntry> entries = BuildStarterItemEntries(definition);
+        if (entries.Count == 0)
+        {
+            ShowStarterItemsText(ProfessionLocalization.NoStarterItems);
+            return;
+        }
+
+        RectTransform root = ResolveStarterItemsRoot();
+        if (root == null)
+        {
+            ShowStarterItemsText(ProfessionService.BuildStarterItemsSummary(definition));
+            return;
+        }
+
+        if (_starterItemsText != null)
+            _starterItemsText.gameObject.SetActive(false);
+
+        for (int i = 0; i < entries.Count; i++)
+            CreateStarterItemRow(root, entries[i], i, entries.Count);
+    }
+
+    private List<StarterItemEntry> BuildStarterItemEntries(ProfessionDefinition definition)
+    {
+        List<StarterItemEntry> entries = new();
+        if (definition == null)
+            return entries;
+
+        if (definition.starterItems != null)
+        {
+            for (int i = 0; i < definition.starterItems.Count; i++)
+            {
+                ProfessionStarterItem starterItem = definition.starterItems[i];
+                if (starterItem == null || starterItem.itemPrefab == null)
+                    continue;
+
+                Sprite icon = starterItem.itemPrefab.Data != null ? starterItem.itemPrefab.Data.IMG : null;
+                int amount = Mathf.Max(1, starterItem.amount);
+                entries.Add(new StarterItemEntry(icon, $"x{amount}"));
+            }
+        }
+
+        if (definition.startCoinsBonus > 0)
+            entries.Add(new StarterItemEntry(ResolveSoftCurrencyIcon(CurrencyType.Coins), $"+{definition.startCoinsBonus}"));
+
+        if (definition.startGemsBonus > 0)
+            entries.Add(new StarterItemEntry(ResolveSoftCurrencyIcon(CurrencyType.Gems), $"+{definition.startGemsBonus}"));
+
+        return entries;
+    }
+
+    private void CreateStarterItemRow(RectTransform root, StarterItemEntry entry, int index, int total)
+    {
+        GameObject rowObject = new($"StarterItemRow_{index + 1}");
+        rowObject.layer = root.gameObject.layer;
+        rowObject.transform.SetParent(root, false);
+        _starterItemRows.Add(rowObject);
+
+        RectTransform rowRect = rowObject.AddComponent<RectTransform>();
+        ConfigureStarterItemRowRect(rowRect, root, index, total);
+
+        GameObject iconObject = new("Icon");
+        iconObject.layer = rowObject.layer;
+        iconObject.transform.SetParent(rowObject.transform, false);
+
+        Image iconImage = iconObject.AddComponent<Image>();
+        iconImage.sprite = entry.icon;
+        iconImage.preserveAspect = true;
+        iconImage.raycastTarget = false;
+        iconImage.enabled = entry.icon != null;
+
+        RectTransform iconRect = iconImage.GetComponent<RectTransform>();
+        iconRect.anchorMin = new Vector2(0.32f, 0.08f);
+        iconRect.anchorMax = new Vector2(0.48f, 0.92f);
+        iconRect.offsetMin = Vector2.zero;
+        iconRect.offsetMax = Vector2.zero;
+
+        GameObject amountObject = new("Amount");
+        amountObject.layer = rowObject.layer;
+        amountObject.transform.SetParent(rowObject.transform, false);
+
+        Text amountText = amountObject.AddComponent<Text>();
+        CopyStarterTextStyle(amountText);
+        amountText.text = entry.amountText;
+        amountText.alignment = TextAnchor.MiddleLeft;
+        amountText.raycastTarget = false;
+
+        RectTransform amountRect = amountText.GetComponent<RectTransform>();
+        amountRect.anchorMin = new Vector2(0.52f, 0f);
+        amountRect.anchorMax = new Vector2(0.8f, 1f);
+        amountRect.offsetMin = Vector2.zero;
+        amountRect.offsetMax = Vector2.zero;
+    }
+
+    private void ConfigureStarterItemRowRect(RectTransform rowRect, RectTransform root, int index, int total)
+    {
+        Vector2 areaMin = new(0.1f, 0.08f);
+        Vector2 areaMax = new(0.9f, 0.68f);
+
+        if (_starterItemsText != null && _starterItemsText.transform.parent == root)
+        {
+            RectTransform textRect = _starterItemsText.rectTransform;
+            areaMin = textRect.anchorMin;
+            areaMax = textRect.anchorMax;
+        }
+
+        int safeTotal = Mathf.Max(1, total);
+        float areaHeight = Mathf.Max(0.01f, areaMax.y - areaMin.y);
+        float gap = Mathf.Min(0.03f, areaHeight / (safeTotal * 5f));
+        float rowHeight = Mathf.Min(0.24f, (areaHeight - (gap * (safeTotal - 1))) / safeTotal);
+        float top = areaMax.y - (index * (rowHeight + gap));
+        float bottom = Mathf.Max(areaMin.y, top - rowHeight);
+
+        rowRect.anchorMin = new Vector2(areaMin.x, bottom);
+        rowRect.anchorMax = new Vector2(areaMax.x, top);
+        rowRect.offsetMin = Vector2.zero;
+        rowRect.offsetMax = Vector2.zero;
+
+        LayoutElement layoutElement = rowRect.gameObject.AddComponent<LayoutElement>();
+        layoutElement.minHeight = StarterItemRowHeight;
+        layoutElement.preferredHeight = StarterItemRowHeight;
+        layoutElement.flexibleHeight = 0f;
+    }
+
+    private void CopyStarterTextStyle(Text target)
+    {
+        if (target == null)
+            return;
+
+        if (_starterItemsText != null)
+        {
+            target.font = _starterItemsText.font;
+            target.fontSize = Mathf.Max(18, _starterItemsText.fontSize);
+            target.fontStyle = _starterItemsText.fontStyle;
+            target.color = _starterItemsText.color;
+            target.material = _starterItemsText.material;
+        }
+
+        if (target.font == null)
+            target.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+
+        target.supportRichText = false;
+        target.horizontalOverflow = HorizontalWrapMode.Overflow;
+        target.verticalOverflow = VerticalWrapMode.Overflow;
+    }
+
+    private RectTransform ResolveStarterItemsRoot()
+    {
+        if (_starterItemsRoot != null)
+            return _starterItemsRoot;
+
+        if (_starterItemsText != null && _starterItemsText.transform.parent is RectTransform parent)
+            return parent;
+
+        return null;
+    }
+
+    private void ShowStarterItemsText(string text)
+    {
+        ClearStarterItemRows();
+
+        if (_starterItemsText == null)
+            return;
+
+        _starterItemsText.gameObject.SetActive(true);
+        _starterItemsText.text = text ?? string.Empty;
+    }
+
+    private void ClearStarterItemRows()
+    {
+        for (int i = 0; i < _starterItemRows.Count; i++)
+        {
+            GameObject row = _starterItemRows[i];
+            if (row == null)
+                continue;
+
+            if (Application.isPlaying)
+                Destroy(row);
+            else
+                DestroyImmediate(row);
+        }
+
+        _starterItemRows.Clear();
+    }
+
     private int GetUnlockPrice()
     {
         int basePrice = Mathf.Max(0, _unlockRandomPriceCoins);
@@ -429,11 +666,13 @@ public class ProfessionSelectionPanel : MonoBehaviour
         if (_professionDescriptionText != null)
             _professionDescriptionText.text = ProfessionLocalization.NoProfessionDescription;
 
-        if (_starterItemsText != null)
-            _starterItemsText.text = ProfessionLocalization.NoStarterItems;
+        RefreshStarterItems(null);
 
         if (_perksText != null)
+        {
+            _perksText.supportRichText = true;
             _perksText.text = ProfessionLocalization.NoSpecialAbilities;
+        }
 
         if (_statusText != null)
             _statusText.text = selected ? ProfessionLocalization.StatusEquipped : ProfessionLocalization.StatusNoProfession;
@@ -467,16 +706,17 @@ public class ProfessionSelectionPanel : MonoBehaviour
     private void RefreshRandomUnlockControls()
     {
         bool hasRandomLockedProfessions = ProfessionService.HasRandomLockedProfessions();
+        bool showRandomPrice = hasRandomLockedProfessions || _randomUnlockInProgress;
 
         if (_unlockRandomButton != null)
-            _unlockRandomButton.interactable = hasRandomLockedProfessions;
+            _unlockRandomButton.interactable = hasRandomLockedProfessions && !_randomUnlockInProgress;
 
         SetSoftCurrencyPrice(
             _unlockRandomPriceText,
             _unlockRandomPriceIcon,
             GetUnlockPrice(),
             _unlockRandomCurrencyType,
-            hasRandomLockedProfessions);
+            showRandomPrice);
     }
 
     private void RefreshDirectBuyButton(ProfessionDefinition definition, bool unlocked)
@@ -484,7 +724,7 @@ public class ProfessionSelectionPanel : MonoBehaviour
         if (_directBuyButton == null)
             return;
 
-        bool canBuy = !unlocked && (CanUseRealPurchase(definition) || CanUseSoftCurrencyFallback(definition));
+        bool canBuy = !_randomUnlockInProgress && !unlocked && (CanUseRealPurchase(definition) || CanUseSoftCurrencyFallback(definition));
         _directBuyButton.gameObject.SetActive(canBuy);
         _directBuyButton.interactable = canBuy;
     }
@@ -597,11 +837,20 @@ public class ProfessionSelectionPanel : MonoBehaviour
 
         RebuildDefinitions();
         RebuildProfessionList();
+        if (_randomUnlockInProgress)
+        {
+            RefreshRandomUnlockControls();
+            return;
+        }
+
         RefreshView();
     }
 
     private void SelectProfessionIndex(int index)
     {
+        if (_randomUnlockInProgress)
+            return;
+
         if (_definitions.Count == 0)
             return;
 
@@ -692,9 +941,14 @@ public class ProfessionSelectionPanel : MonoBehaviour
             ProfessionDefinition definition = i >= 0 && i < _definitions.Count ? _definitions[i] : null;
             bool selected = i == _currentIndex;
             bool unlocked = definition == null || ProfessionService.IsUnlocked(definition.professionId);
+            bool randomHighlighted = definition != null &&
+                _randomUnlockInProgress &&
+                string.Equals(definition.professionId, _randomUnlockHighlightProfessionId, StringComparison.Ordinal);
 
             if (button.targetGraphic is Image image)
-                image.color = selected
+                image.color = randomHighlighted
+                    ? _professionListRandomHighlightColor
+                    : selected
                     ? _professionListSelectedColor
                     : unlocked ? _professionListNormalColor : _professionListLockedColor;
 
@@ -704,9 +958,121 @@ public class ProfessionSelectionPanel : MonoBehaviour
                 label.text = definition == null
                     ? ProfessionLocalization.NoProfessionTitle
                     : ProfessionLocalization.DefinitionTitle(definition);
-                label.color = unlocked ? _professionListTextColor : _professionListLockedTextColor;
+                label.color = randomHighlighted
+                    ? _professionListRandomHighlightTextColor
+                    : unlocked ? _professionListTextColor : _professionListLockedTextColor;
             }
         }
+    }
+
+    private List<ProfessionDefinition> BuildRandomLockedDefinitions()
+    {
+        List<ProfessionDefinition> result = new();
+        IReadOnlyList<ProfessionDefinition> definitions = ProfessionService.GetDefinitions();
+
+        for (int i = 0; i < definitions.Count; i++)
+        {
+            ProfessionDefinition definition = definitions[i];
+            if (definition == null)
+                continue;
+
+            if (!definition.availableInRandomUnlockPool || definition.randomUnlockWeight <= 0)
+                continue;
+
+            if (!ProfessionService.IsUnlocked(definition.professionId))
+                result.Add(definition);
+        }
+
+        return result;
+    }
+
+    private IEnumerator PlayRandomUnlockAnimation(List<ProfessionDefinition> candidates, ProfessionDefinition unlockedDefinition)
+    {
+        if (candidates == null || candidates.Count == 0 || unlockedDefinition == null)
+        {
+            _randomUnlockRoutine = null;
+            CompleteRandomUnlock(unlockedDefinition);
+            yield break;
+        }
+
+        int targetIndex = FindCandidateIndex(candidates, unlockedDefinition.professionId);
+        if (targetIndex < 0)
+            targetIndex = 0;
+
+        int minSteps = Mathf.Max(4, _randomUnlockMinHighlightSteps);
+        int maxSteps = Mathf.Max(minSteps, 28);
+        int steps = Mathf.Clamp((candidates.Count * 3) + 8, minSteps, maxSteps);
+        int cursor = Mod(targetIndex - steps, candidates.Count);
+
+        float startDelay = Mathf.Max(0.01f, _randomUnlockStartDelay);
+        float endDelay = Mathf.Max(startDelay, _randomUnlockEndDelay);
+
+        for (int i = 0; i < steps; i++)
+        {
+            cursor = (cursor + 1) % candidates.Count;
+            _randomUnlockHighlightProfessionId = candidates[cursor].professionId;
+            RefreshProfessionList();
+
+            float t = steps <= 1 ? 1f : i / (steps - 1f);
+            float eased = t * t;
+            yield return new WaitForSecondsRealtime(Mathf.Lerp(startDelay, endDelay, eased));
+        }
+
+        _randomUnlockHighlightProfessionId = unlockedDefinition.professionId;
+        RefreshProfessionList();
+        yield return new WaitForSecondsRealtime(0.25f);
+
+        _randomUnlockRoutine = null;
+        CompleteRandomUnlock(unlockedDefinition);
+    }
+
+    private int FindCandidateIndex(List<ProfessionDefinition> candidates, string professionId)
+    {
+        if (candidates == null || string.IsNullOrWhiteSpace(professionId))
+            return -1;
+
+        for (int i = 0; i < candidates.Count; i++)
+        {
+            ProfessionDefinition definition = candidates[i];
+            if (definition != null && string.Equals(definition.professionId, professionId, StringComparison.Ordinal))
+                return i;
+        }
+
+        return -1;
+    }
+
+    private static int Mod(int value, int length)
+    {
+        if (length <= 0)
+            return 0;
+
+        int result = value % length;
+        return result < 0 ? result + length : result;
+    }
+
+    private void CompleteRandomUnlock(ProfessionDefinition unlockedDefinition)
+    {
+        ClearRandomUnlockAnimation();
+
+        if (unlockedDefinition != null)
+        {
+            _currentIndex = FindProfessionIndex(unlockedDefinition.professionId);
+            SetMessage(ProfessionLocalization.FormatUnlockedProfession(ProfessionLocalization.DefinitionTitle(unlockedDefinition)));
+        }
+
+        RefreshView();
+    }
+
+    private void ClearRandomUnlockAnimation()
+    {
+        if (_randomUnlockRoutine != null)
+        {
+            StopCoroutine(_randomUnlockRoutine);
+            _randomUnlockRoutine = null;
+        }
+
+        _randomUnlockInProgress = false;
+        _randomUnlockHighlightProfessionId = null;
     }
 
     private void RefreshNavigationButtons()
@@ -814,5 +1180,17 @@ public class ProfessionSelectionPanel : MonoBehaviour
         _unlockRandomButton ??= refs.unlockRandomButton;
         _directBuyButton ??= refs.directBuyButton;
         _closeButton ??= refs.closeButton;
+    }
+
+    private struct StarterItemEntry
+    {
+        public readonly Sprite icon;
+        public readonly string amountText;
+
+        public StarterItemEntry(Sprite icon, string amountText)
+        {
+            this.icon = icon;
+            this.amountText = amountText;
+        }
     }
 }

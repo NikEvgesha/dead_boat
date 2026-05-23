@@ -52,13 +52,7 @@ public class ProfessionState
         unlockedProfessionIds = normalizedUnlocked;
         NormalizePurchased(validIds);
 
-        if (!hasExplicitProfessionChoice)
-        {
-            selectedProfessionId = string.Empty;
-            return;
-        }
-
-        if (string.IsNullOrWhiteSpace(selectedProfessionId) || !uniqueUnlocked.Contains(selectedProfessionId))
+        if (!hasExplicitProfessionChoice || string.IsNullOrWhiteSpace(selectedProfessionId) || !uniqueUnlocked.Contains(selectedProfessionId))
         {
             selectedProfessionId = defaultProfessionId;
 
@@ -66,6 +60,10 @@ public class ProfessionState
             {
                 selectedProfessionId = string.Empty;
                 hasExplicitProfessionChoice = false;
+            }
+            else
+            {
+                hasExplicitProfessionChoice = true;
             }
         }
     }

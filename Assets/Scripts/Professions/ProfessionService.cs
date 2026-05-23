@@ -563,118 +563,154 @@ public static class ProfessionService
 
     public static string BuildPerksSummary(ProfessionDefinition definition)
     {
-        StringBuilder builder = new();
-        if (definition != null && definition.perkLines != null)
+        if (definition == null)
+            return ProfessionLocalization.NoSpecialAbilities;
+
+        List<string> positiveLines = new();
+        List<string> negativeLines = new();
+        BuildPassivePerkLines(definition.passiveBonuses, positiveLines, negativeLines);
+
+        if (positiveLines.Count == 0 && negativeLines.Count == 0 && definition.perkLines != null)
         {
             for (int i = 0; i < definition.perkLines.Count; i++)
             {
                 string perkLine = definition.perkLines[i];
                 if (string.IsNullOrWhiteSpace(perkLine))
                     continue;
-                if (builder.Length > 0)
-                    builder.AppendLine();
-                builder.Append("- ");
-                builder.Append(ProfessionLocalization.DefinitionPerk(definition, i, perkLine.Trim()));
+
+                positiveLines.Add(ProfessionLocalization.DefinitionPerk(definition, i, perkLine.Trim()));
             }
         }
-        if (definition != null)
-        {
-            List<string> passiveLines = BuildPassivePerkLines(definition.passiveBonuses);
-            for (int i = 0; i < passiveLines.Count; i++)
-            {
-                if (builder.Length > 0)
-                    builder.AppendLine();
-                builder.Append("- ");
-                builder.Append(passiveLines[i]);
-            }
-        }
-        if (builder.Length == 0)
+
+        if (positiveLines.Count == 0 && negativeLines.Count == 0)
             return ProfessionLocalization.NoSpecialAbilities;
+
+        return BuildColoredPerkSummary(positiveLines, negativeLines);
+    }
+
+    private static void BuildPassivePerkLines(ProfessionPassiveBonuses bonuses, List<string> positiveLines, List<string> negativeLines)
+    {
+        if (bonuses == null || positiveLines == null || negativeLines == null)
+            return;
+
+        AppendFlatLine(positiveLines, negativeLines, ProfessionLocalization.PassiveMoveSpeedFlatLabel, bonuses.moveSpeedFlat);
+        AppendMultiplierLine(positiveLines, negativeLines, ProfessionLocalization.PassiveMoveSpeedMultLabel, bonuses.SafeMoveSpeedMultiplier);
+        AppendFlatLine(positiveLines, negativeLines, ProfessionLocalization.PassiveMaxHealthFlatLabel, bonuses.maxHealthFlat);
+        AppendFlatLine(positiveLines, negativeLines, ProfessionLocalization.PassiveMaxStaminaFlatLabel, bonuses.maxStaminaFlat);
+        AppendMultiplierLine(positiveLines, negativeLines, ProfessionLocalization.PassiveStaminaConsumptionMultLabel, bonuses.SafeStaminaConsumptionMultiplier, false);
+        AppendMultiplierLine(positiveLines, negativeLines, ProfessionLocalization.PassiveStaminaRestoreMultLabel, bonuses.SafeStaminaRestoreMultiplier);
+        AppendMultiplierLine(positiveLines, negativeLines, ProfessionLocalization.PassiveIncomingDamageMultLabel, bonuses.SafeIncomingDamageMultiplier, false);
+        AppendPercentLine(positiveLines, ProfessionLocalization.PassiveDodgeChanceLabel, bonuses.dodgeChance);
+        AppendFlatLine(positiveLines, negativeLines, ProfessionLocalization.PassiveHealOnKillFlatLabel, bonuses.healOnKillFlat);
+        AppendHealthDrainLine(negativeLines, ProfessionLocalization.PassiveHealthDrainPerSecondLabel, bonuses.healthDrainPerSecond);
+        AppendMultiplierLine(positiveLines, negativeLines, ProfessionLocalization.PassiveExperienceMultLabel, bonuses.SafeExperienceMultiplier);
+        AppendMultiplierLine(positiveLines, negativeLines, ProfessionLocalization.PassiveSaleRewardMultLabel, bonuses.SafeSaleRewardMultiplier);
+        AppendFlatLine(positiveLines, negativeLines, ProfessionLocalization.PassiveMaxFuelFlatLabel, bonuses.maxFuelFlat);
+        AppendMultiplierLine(positiveLines, negativeLines, ProfessionLocalization.PassiveFuelConsumptionMultLabel, bonuses.SafeFuelConsumptionMultiplier, false);
+        AppendMultiplierLine(positiveLines, negativeLines, ProfessionLocalization.PassiveFuelFillMultLabel, bonuses.SafeFuelFillMultiplier);
+        AppendFlatLine(positiveLines, negativeLines, ProfessionLocalization.PassiveBoatSpeedFlatLabel, bonuses.boatSpeedFlat);
+        AppendFlatLine(positiveLines, negativeLines, ProfessionLocalization.PassiveMeleeDamageFlatLabel, bonuses.meleeDamageFlat);
+        AppendMultiplierLine(positiveLines, negativeLines, ProfessionLocalization.PassiveMeleeAttackSpeedMultLabel, bonuses.SafeMeleeAttackSpeedMultiplier);
+        AppendFlatLine(positiveLines, negativeLines, ProfessionLocalization.PassiveRangedDamageFlatLabel, bonuses.rangedDamageFlat);
+        AppendMultiplierLine(positiveLines, negativeLines, ProfessionLocalization.PassiveRangedAttackSpeedMultLabel, bonuses.SafeRangedAttackSpeedMultiplier);
+        AppendMultiplierLine(positiveLines, negativeLines, ProfessionLocalization.PassiveRangedReloadMultLabel, bonuses.SafeRangedReloadSpeedMultiplier);
+        AppendMultiplierLine(positiveLines, negativeLines, ProfessionLocalization.PassiveOutgoingDamageMultLabel, bonuses.SafeOutgoingDamageMultiplier);
+        AppendMultiplierLine(positiveLines, negativeLines, ProfessionLocalization.PassiveLowHealthDamageMultLabel, bonuses.SafeLowHealthDamageMultiplier);
+        AppendPercentLine(positiveLines, ProfessionLocalization.PassiveCriticalChanceLabel, bonuses.criticalChance);
+        AppendMultiplierLine(positiveLines, negativeLines, ProfessionLocalization.PassiveCriticalDamageMultLabel, bonuses.SafeCriticalDamageMultiplier);
+        AppendDamageRangeLine(positiveLines, negativeLines, ProfessionLocalization.PassiveRandomDamageRangeLabel, bonuses.SafeRandomDamageMinMultiplier, bonuses.SafeRandomDamageMaxMultiplier);
+        AppendBurnLine(positiveLines, bonuses);
+        AppendMultiplierLine(positiveLines, negativeLines, ProfessionLocalization.PassiveRareLootChanceMultLabel, bonuses.SafeRareLootChanceMultiplier);
+    }
+
+    private static string BuildColoredPerkSummary(List<string> positiveLines, List<string> negativeLines)
+    {
+        StringBuilder builder = new();
+        AppendColoredLines(builder, positiveLines, "#5DFF83");
+
+        if (positiveLines.Count > 0 && negativeLines.Count > 0)
+        {
+            if (builder.Length > 0)
+                builder.AppendLine();
+            builder.Append("<color=#89909C>----------</color>");
+        }
+
+        AppendColoredLines(builder, negativeLines, "#FF6767");
         return builder.ToString();
     }
-    private static List<string> BuildPassivePerkLines(ProfessionPassiveBonuses bonuses)
+
+    private static void AppendColoredLines(StringBuilder builder, List<string> lines, string color)
     {
-        List<string> lines = new();
-        if (bonuses == null)
-            return lines;
-        AppendFlatLine(lines, ProfessionLocalization.PassiveMoveSpeedFlatLabel, bonuses.moveSpeedFlat);
-        AppendMultiplierLine(lines, ProfessionLocalization.PassiveMoveSpeedMultLabel, bonuses.SafeMoveSpeedMultiplier);
-        AppendFlatLine(lines, ProfessionLocalization.PassiveMaxHealthFlatLabel, bonuses.maxHealthFlat);
-        AppendFlatLine(lines, ProfessionLocalization.PassiveMaxStaminaFlatLabel, bonuses.maxStaminaFlat);
-        AppendMultiplierLine(lines, ProfessionLocalization.PassiveStaminaConsumptionMultLabel, bonuses.SafeStaminaConsumptionMultiplier);
-        AppendMultiplierLine(lines, ProfessionLocalization.PassiveStaminaRestoreMultLabel, bonuses.SafeStaminaRestoreMultiplier);
-        AppendMultiplierLine(lines, ProfessionLocalization.PassiveIncomingDamageMultLabel, bonuses.SafeIncomingDamageMultiplier);
-        AppendPercentLine(lines, ProfessionLocalization.PassiveDodgeChanceLabel, bonuses.dodgeChance);
-        AppendFlatLine(lines, ProfessionLocalization.PassiveHealOnKillFlatLabel, bonuses.healOnKillFlat);
-        AppendPerSecondLine(lines, ProfessionLocalization.PassiveHealthDrainPerSecondLabel, -bonuses.healthDrainPerSecond);
-        AppendMultiplierLine(lines, ProfessionLocalization.PassiveExperienceMultLabel, bonuses.SafeExperienceMultiplier);
-        AppendMultiplierLine(lines, ProfessionLocalization.PassiveSaleRewardMultLabel, bonuses.SafeSaleRewardMultiplier);
-        AppendFlatLine(lines, ProfessionLocalization.PassiveMaxFuelFlatLabel, bonuses.maxFuelFlat);
-        AppendMultiplierLine(lines, ProfessionLocalization.PassiveFuelConsumptionMultLabel, bonuses.SafeFuelConsumptionMultiplier);
-        AppendMultiplierLine(lines, ProfessionLocalization.PassiveFuelFillMultLabel, bonuses.SafeFuelFillMultiplier);
-        AppendFlatLine(lines, ProfessionLocalization.PassiveBoatSpeedFlatLabel, bonuses.boatSpeedFlat);
-        AppendFlatLine(lines, ProfessionLocalization.PassiveMeleeDamageFlatLabel, bonuses.meleeDamageFlat);
-        AppendMultiplierLine(lines, ProfessionLocalization.PassiveMeleeAttackSpeedMultLabel, bonuses.SafeMeleeAttackSpeedMultiplier);
-        AppendFlatLine(lines, ProfessionLocalization.PassiveRangedDamageFlatLabel, bonuses.rangedDamageFlat);
-        AppendMultiplierLine(lines, ProfessionLocalization.PassiveRangedAttackSpeedMultLabel, bonuses.SafeRangedAttackSpeedMultiplier);
-        AppendMultiplierLine(lines, ProfessionLocalization.PassiveRangedReloadMultLabel, bonuses.SafeRangedReloadSpeedMultiplier);
-        AppendMultiplierLine(lines, ProfessionLocalization.PassiveOutgoingDamageMultLabel, bonuses.SafeOutgoingDamageMultiplier);
-        AppendMultiplierLine(lines, ProfessionLocalization.PassiveLowHealthDamageMultLabel, bonuses.SafeLowHealthDamageMultiplier);
-        AppendPercentLine(lines, ProfessionLocalization.PassiveCriticalChanceLabel, bonuses.criticalChance);
-        AppendMultiplierLine(lines, ProfessionLocalization.PassiveCriticalDamageMultLabel, bonuses.SafeCriticalDamageMultiplier);
-        AppendDamageRangeLine(lines, ProfessionLocalization.PassiveRandomDamageRangeLabel, bonuses.SafeRandomDamageMinMultiplier, bonuses.SafeRandomDamageMaxMultiplier);
-        AppendBurnLine(lines, bonuses);
-        AppendMultiplierLine(lines, ProfessionLocalization.PassiveRareLootChanceMultLabel, bonuses.SafeRareLootChanceMultiplier);
-        return lines;
+        if (lines == null)
+            return;
+
+        for (int i = 0; i < lines.Count; i++)
+        {
+            if (string.IsNullOrWhiteSpace(lines[i]))
+                continue;
+
+            if (builder.Length > 0)
+                builder.AppendLine();
+
+            builder.Append("<color=");
+            builder.Append(color);
+            builder.Append(">- ");
+            builder.Append(lines[i]);
+            builder.Append("</color>");
+        }
     }
-    private static void AppendFlatLine(List<string> lines, string label, float value)
+
+    private static void AppendFlatLine(List<string> positiveLines, List<string> negativeLines, string label, float value, bool higherIsPositive = true)
     {
         if (Mathf.Approximately(value, 0f))
             return;
+
+        List<string> target = IsPositiveDelta(value, higherIsPositive) ? positiveLines : negativeLines;
         string sign = value > 0f ? "+" : string.Empty;
-        lines.Add($"{label}: {sign}{Mathf.RoundToInt(value)}");
+        target.Add($"{label}: {sign}{Mathf.RoundToInt(value)}");
     }
-    private static void AppendMultiplierLine(List<string> lines, string label, float multiplier, bool invertSign = false)
+
+    private static void AppendMultiplierLine(List<string> positiveLines, List<string> negativeLines, string label, float multiplier, bool higherIsPositive = true)
     {
         int deltaPercent = Mathf.RoundToInt((multiplier - 1f) * 100f);
         if (deltaPercent == 0)
             return;
-        if (invertSign)
-            deltaPercent *= -1;
+
+        List<string> target = IsPositiveDelta(deltaPercent, higherIsPositive) ? positiveLines : negativeLines;
         string sign = deltaPercent > 0 ? "+" : string.Empty;
-        lines.Add($"{label}: {sign}{deltaPercent}%");
+        target.Add($"{label}: {sign}{deltaPercent}%");
     }
 
-    private static void AppendPercentLine(List<string> lines, string label, float value)
+    private static void AppendPercentLine(List<string> positiveLines, string label, float value)
     {
         int percent = Mathf.RoundToInt(Mathf.Clamp01(value) * 100f);
         if (percent == 0)
             return;
 
-        lines.Add($"{label}: +{percent}%");
+        positiveLines.Add($"{label}: +{percent}%");
     }
 
-    private static void AppendPerSecondLine(List<string> lines, string label, float value)
+    private static void AppendHealthDrainLine(List<string> negativeLines, string label, float value)
     {
-        if (Mathf.Approximately(value, 0f))
+        if (value <= 0f)
             return;
 
-        string sign = value > 0f ? "+" : string.Empty;
         string formatted = value.ToString("0.#", CultureInfo.InvariantCulture);
-        lines.Add($"{label}: {sign}{formatted}/s");
+        negativeLines.Add($"{label}: -{formatted}/s");
     }
 
-    private static void AppendDamageRangeLine(List<string> lines, string label, float minMultiplier, float maxMultiplier)
+    private static void AppendDamageRangeLine(List<string> positiveLines, List<string> negativeLines, string label, float minMultiplier, float maxMultiplier)
     {
         if (Mathf.Approximately(minMultiplier, 1f) && Mathf.Approximately(maxMultiplier, 1f))
             return;
 
         int min = Mathf.RoundToInt(Mathf.Min(minMultiplier, maxMultiplier) * 100f);
         int max = Mathf.RoundToInt(Mathf.Max(minMultiplier, maxMultiplier) * 100f);
-        lines.Add($"{label}: {min}-{max}%");
+        List<string> target = minMultiplier >= 1f && maxMultiplier >= 1f ? positiveLines : negativeLines;
+        target.Add($"{label}: {min}-{max}%");
     }
 
-    private static void AppendBurnLine(List<string> lines, ProfessionPassiveBonuses bonuses)
+    private static void AppendBurnLine(List<string> positiveLines, ProfessionPassiveBonuses bonuses)
     {
         if (bonuses == null || bonuses.burnDamagePerSecond <= 0f || bonuses.burnDuration <= 0f)
             return;
@@ -682,7 +718,12 @@ public static class ProfessionService
         string damage = bonuses.burnDamagePerSecond.ToString("0.#", CultureInfo.InvariantCulture);
         string duration = bonuses.burnDuration.ToString("0.#", CultureInfo.InvariantCulture);
         int chance = Mathf.RoundToInt((bonuses.burnChance <= 0f ? 1f : Mathf.Clamp01(bonuses.burnChance)) * 100f);
-        lines.Add($"{ProfessionLocalization.PassiveBurnLabel}: {damage}/s, {duration}s, {chance}%");
+        positiveLines.Add($"{ProfessionLocalization.PassiveBurnLabel}: {damage}/s, {duration}s, {chance}%");
+    }
+
+    private static bool IsPositiveDelta(float delta, bool higherIsPositive)
+    {
+        return higherIsPositive ? delta > 0f : delta < 0f;
     }
 
     private static string ResolveItemDisplayName(PickableItem itemPrefab)
