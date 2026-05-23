@@ -58,6 +58,6 @@ public class LocationItemSpawnCollection : ScriptableObject
         if (entry.itemPrefab.TryGetComponent<EggCollectibleItem>(out _))
             return EggSpawnRuntimeState.GetEffectiveChance(chance);
 
-        return chance;
+        return ProfessionService.ApplyLocationItemSpawnChance(chance);
     }
 }

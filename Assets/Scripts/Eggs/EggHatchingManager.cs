@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using UnityEngine;
 
@@ -24,6 +25,9 @@ public class EggHatchingManager : MonoBehaviour
     [Header("Animal Merge")]
     [SerializeField, Min(1)] private int _animalMergeDurationSeconds = 1800;
     [SerializeField, Min(0)] private int _animalMergeSkipCostCoins = 500;
+    [Header("Reward Eggs")]
+    [SerializeField] private string _adRewardEggId = "egg_ad";
+    [SerializeField, Min(60)] private int _adRewardCooldownSeconds = 21600;
 
     public event Action StateChanged;
     public event Action<int> EggsCollected;
@@ -185,7 +189,7 @@ public class EggHatchingManager : MonoBehaviour
         if (_catalog.ResolveAnimalPrefab(animalId, safeStage) == null)
             return false;
 
-        title = _catalog.GetAnimalTitle(animalId);
+        title = EggFeatureLocalization.AnimalTitle(animalId, _catalog.GetAnimalTitle(animalId));
 
         AnimalRunBuffs buffs = _catalog.GetAnimalBuffs(animalId, safeStage);
         detail = FormatBuffSummary(buffs);
@@ -430,10 +434,7 @@ public class EggHatchingManager : MonoBehaviour
         _state.placedAnimals.Remove(placed);
 
         string key = MakePointAnimalKey(pointId);
-        if (_spawnedAnimals.TryGetValue(key, out GameObject oldAnimal) && oldAnimal != null)
-            Destroy(oldAnimal);
-
-        _spawnedAnimals.Remove(key);
+        RemoveSpawnedAnimal(key);
 
         SaveAndNotify();
         return true;
@@ -739,6 +740,51 @@ public class EggHatchingManager : MonoBehaviour
         return true;
     }
 
+    public bool TryGrantEgg(string eggId, int amount = 1)
+    {
+        EnsureCatalogAssigned();
+
+        if (_catalog == null || string.IsNullOrWhiteSpace(eggId))
+            return false;
+
+        if (!_catalog.TryGet(eggId, out _))
+            return false;
+
+        RegisterEggPickup(eggId, Mathf.Max(1, amount));
+        return true;
+    }
+
+    public bool TryGrantAdRewardEgg(int amount = 1)
+    {
+        EnsureStateLoaded();
+
+        if (!CanClaimAdRewardEgg())
+            return false;
+
+        if (!TryGrantEgg(_adRewardEggId, amount))
+            return false;
+
+        EggAdRewardStorage.SaveNextAvailableUnix(GetNowUnix() + Mathf.Max(60, _adRewardCooldownSeconds));
+        StateChanged?.Invoke();
+        return true;
+    }
+
+    public bool CanClaimAdRewardEgg()
+    {
+        return GetAdRewardRemainingSeconds() <= 0;
+    }
+
+    public int GetAdRewardRemainingSeconds()
+    {
+        long remaining = EggAdRewardStorage.LoadNextAvailableUnix() - GetNowUnix();
+        return remaining > 0 ? (int)remaining : 0;
+    }
+
+    public int GetAdRewardCooldownSeconds()
+    {
+        return Mathf.Max(60, _adRewardCooldownSeconds);
+    }
+
     public bool IsAnimalPointOccupied(string pointId)
     {
         return TryGetPlacedAnimal(pointId, out _);
@@ -804,7 +850,7 @@ public class EggHatchingManager : MonoBehaviour
         foreach (GameObject value in _spawnedAnimals.Values)
         {
             if (value != null)
-                Destroy(value);
+                DestroySpawnedAnimal(value);
         }
 
         _spawnedAnimals.Clear();
@@ -861,7 +907,7 @@ public class EggHatchingManager : MonoBehaviour
             return;
 
         if (_spawnedAnimals.TryGetValue(key, out GameObject oldAnimal) && oldAnimal != null)
-            Destroy(oldAnimal);
+            DestroySpawnedAnimal(oldAnimal);
 
         Transform parent = _parentAnimalsToAnchor
             ? anchor
@@ -953,6 +999,28 @@ public class EggHatchingManager : MonoBehaviour
     private static string MakeAnimalLoadoutPointId(int slotIndex)
     {
         return $"{AnimalLoadoutPointPrefix}{slotIndex}";
+    }
+
+    private void RemoveSpawnedAnimal(string key)
+    {
+        if (string.IsNullOrWhiteSpace(key))
+            return;
+
+        if (_spawnedAnimals.TryGetValue(key, out GameObject oldAnimal) && oldAnimal != null)
+            DestroySpawnedAnimal(oldAnimal);
+
+        _spawnedAnimals.Remove(key);
+    }
+
+    private void DestroySpawnedAnimal(GameObject animal)
+    {
+        if (animal == null)
+            return;
+
+        if (Application.isPlaying)
+            Destroy(animal);
+        else
+            DestroyImmediate(animal);
     }
 
     private bool MarkFinishedNestsReadyInternal()
@@ -1088,26 +1156,7 @@ public class EggHatchingManager : MonoBehaviour
 
     private static string FormatBuffSummary(AnimalRunBuffs buffs)
     {
-        if (buffs == null)
-            return "No buffs";
-
-        List<string> parts = new();
-        AppendFlat(parts, "HP", buffs.maxHealthFlat);
-        AppendFlat(parts, "Speed", buffs.moveSpeedFlat);
-        AppendMultiplier(parts, "Move", buffs.SafeMoveSpeedMultiplier);
-        AppendMultiplier(parts, "XP", buffs.SafeExperienceMultiplier);
-        AppendMultiplier(parts, "Sale", buffs.SafeSaleRewardMultiplier);
-        AppendFlat(parts, "Fuel", buffs.maxFuelFlat);
-        AppendMultiplier(parts, "Fuel use", buffs.SafeFuelConsumptionMultiplier, invertSign: true);
-        AppendMultiplier(parts, "Fuel fill", buffs.SafeFuelFillMultiplier);
-        AppendFlat(parts, "Boat", buffs.boatSpeedFlat);
-        AppendFlat(parts, "Melee", buffs.meleeDamageFlat);
-        AppendMultiplier(parts, "Melee spd", buffs.SafeMeleeAttackSpeedMultiplier);
-        AppendFlat(parts, "Ranged", buffs.rangedDamageFlat);
-        AppendMultiplier(parts, "Range spd", buffs.SafeRangedAttackSpeedMultiplier);
-        AppendMultiplier(parts, "Reload", buffs.SafeRangedReloadSpeedMultiplier, invertSign: true);
-
-        return parts.Count == 0 ? "No buffs" : string.Join(", ", parts);
+        return EggFeatureLocalization.FormatAnimalBuffSummary(buffs);
     }
 
     private static void AppendFlat(List<string> parts, string label, float value)
@@ -1116,7 +1165,11 @@ public class EggHatchingManager : MonoBehaviour
             return;
 
         string sign = value > 0f ? "+" : string.Empty;
-        parts.Add($"{label} {sign}{Mathf.RoundToInt(value)}");
+        float absolute = Mathf.Abs(value);
+        string formatted = absolute >= 10f || Mathf.Approximately(value, Mathf.Round(value))
+            ? Mathf.RoundToInt(value).ToString(CultureInfo.InvariantCulture)
+            : value.ToString("0.#", CultureInfo.InvariantCulture);
+        parts.Add($"{label} {sign}{formatted}");
     }
 
     private static void AppendMultiplier(List<string> parts, string label, float multiplier, bool invertSign = false)

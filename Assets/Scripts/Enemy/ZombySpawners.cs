@@ -4,23 +4,27 @@ using UnityEngine;
 
 public class ZombieSpawner : MonoBehaviour
 {
+    private const string DefaultBalanceProfileResourcePath = "LocationBalanceProfile";
+
     [Header("Player Reference")]
-    [Tooltip("Трансформ игрока, вокруг которого спавнить мобов")]
+    [Tooltip("Player transform used as the center for roaming enemy spawns")]
     [SerializeField] private Transform playerTransform;
     [SerializeField] private BoardController _boardController;
+
     [Header("Spawn Radius")]
-    [Tooltip("Минимальное расстояние от игрока")]
+    [Tooltip("Minimum distance from the player")]
     [SerializeField] private float minSpawnDistance = 5f;
-    [Tooltip("Максимальное расстояние от игрока")]
+    [Tooltip("Maximum distance from the player")]
     [SerializeField] private float maxSpawnDistance = 20f;
 
     [Header("Enemies")]
-    [Tooltip("Типы зомби")]
+    [Tooltip("Zombie prefabs")]
     [SerializeField] private List<ZombieController> enemyTypes = new List<ZombieController>();
-    [Tooltip("Сколько зомби спавнить за одну итерацию")]
+    [Tooltip("Enemies spawned per iteration")]
     [SerializeField] private int spawnCount = 3;
-    [Tooltip("Пауза между итерациями спавна (сек)")]
+    [Tooltip("Delay between spawn iterations in seconds")]
     [SerializeField] private float cooldown = 10f;
+    [SerializeField] private LocationBalanceProfile _balanceProfile;
 
     private int nextEnemyType = 0;
     private bool isNight = false;
@@ -28,6 +32,8 @@ public class ZombieSpawner : MonoBehaviour
 
     private void Start()
     {
+        EnsureBalanceProfile();
+
         if (!playerTransform)
             playerTransform = PlayerStatsManager.Instance.transform;
 
@@ -40,10 +46,12 @@ public class ZombieSpawner : MonoBehaviour
             DayTime.instanse.DayNightCycle += OnDayNightCycle;
             StartCoroutine(SpawnRoutine());
         }
-        
     }
+
     private void OnEnable()
     {
+        EnsureBalanceProfile();
+
         if (DayTime.instanse)
         {
             corutineStart = true;
@@ -54,7 +62,6 @@ public class ZombieSpawner : MonoBehaviour
 
     private void OnDisable()
     {
-
         corutineStart = false;
         StopAllCoroutines();
         if (DayTime.instanse != null)
@@ -64,11 +71,8 @@ public class ZombieSpawner : MonoBehaviour
     private void OnDayNightCycle()
     {
         isNight = DayTime.instanse.IsNight();
-        if (isNight)
-        {
-            // переключаем тип зомби каждый раз, когда наступает ночь
+        if (isNight && enemyTypes.Count > 0)
             nextEnemyType = (nextEnemyType + 1) % enemyTypes.Count;
-        }
     }
 
     private IEnumerator SpawnRoutine()
@@ -78,47 +82,81 @@ public class ZombieSpawner : MonoBehaviour
             if (isNight)
                 SpawnEnemies();
 
-            yield return new WaitForSeconds(cooldown);
+            yield return new WaitForSeconds(GetEffectiveCooldown());
         }
     }
 
     private void SpawnEnemies()
     {
-        if (playerTransform == null || enemyTypes.Count == 0)
+        if (playerTransform == null || enemyTypes.Count == 0 || _boardController == null)
             return;
+
         if (_boardController.TotalDistanceTraveled >= GameManager.Instance.PlayDistance - 500)
             return;
-        
-        var prefab = enemyTypes[nextEnemyType];
-        for (int i = 0; i < spawnCount; i++)
+
+        ZombieController prefab = enemyTypes[nextEnemyType];
+        if (prefab == null)
+            return;
+
+        int effectiveSpawnCount = GetEffectiveSpawnCount();
+        int enemyLevel = GetEffectiveEnemyLevel();
+        for (int i = 0; i < effectiveSpawnCount; i++)
         {
             Vector3 spawnPos = GetRandomPositionInAnnulus();
-            ZombieController zomby = Instantiate(prefab, spawnPos, prefab.transform.rotation, transform);
-            zomby.InitializeLevel(_boardController.GetLevel());
+            ZombieController zombie = Instantiate(prefab, spawnPos, prefab.transform.rotation, transform);
+            zombie.InitializeLevel(enemyLevel);
         }
+    }
+
+    private int GetEffectiveSpawnCount()
+    {
+        LocationSceneBalance balance = GetSceneBalance();
+        return balance != null ? balance.ResolveNightSpawnCount(spawnCount) : spawnCount;
+    }
+
+    private float GetEffectiveCooldown()
+    {
+        LocationSceneBalance balance = GetSceneBalance();
+        return balance != null ? balance.ResolveNightSpawnCooldown(cooldown) : cooldown;
+    }
+
+    private int GetEffectiveEnemyLevel()
+    {
+        int sourceLevel = _boardController != null ? _boardController.GetLevel() : 1;
+        LocationSceneBalance balance = GetSceneBalance();
+        return balance != null ? balance.ResolveEnemyLevel(sourceLevel) : sourceLevel;
+    }
+
+    private LocationSceneBalance GetSceneBalance()
+    {
+        EnsureBalanceProfile();
+        return _balanceProfile != null ? _balanceProfile.GetCurrentSceneBalance() : null;
+    }
+
+    private void EnsureBalanceProfile()
+    {
+        if (_balanceProfile != null)
+            return;
+
+        _balanceProfile = Resources.Load<LocationBalanceProfile>(DefaultBalanceProfileResourcePath);
     }
 
     private Vector3 GetRandomPositionInAnnulus()
     {
-        // случайный угол
         float angle = Random.Range(0f, Mathf.PI * 2f);
-        // случайная дистанция между min и max
         float dist = Random.Range(minSpawnDistance, maxSpawnDistance);
-        // смещение по XZ плоскости
         Vector3 offset = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * dist;
         return playerTransform.position + offset;
     }
 
-    // Рисуем в редакторе две окружности вокруг игрока
     private void OnDrawGizmosSelected()
     {
-        if (playerTransform == null) return;
+        if (playerTransform == null)
+            return;
 
-        // минимальная дистанция — жёлтая
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(playerTransform.position, minSpawnDistance);
 
-        // максимальная — красная
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(playerTransform.position, maxSpawnDistance);
     }

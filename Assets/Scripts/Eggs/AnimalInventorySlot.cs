@@ -3,13 +3,12 @@ using UnityEngine.UI;
 
 public class AnimalInventorySlot : MonoBehaviour
 {
-    [SerializeField] private LocalizationData _localizationData;
     [SerializeField] private Text _titleText;
     [SerializeField] private Text _countText;
     [SerializeField] private Text _detailText;
     [SerializeField] private Text _stageText;
+    [SerializeField] private Text _buffsLabelText;
     [SerializeField] private Image _animalIconImage;
-    [SerializeField] private GameObject _actionRoot;
     [SerializeField] private Button _button;
 
     public void Init(AnimalDefinition definition, int stage, int amount, string detail)
@@ -17,30 +16,25 @@ public class AnimalInventorySlot : MonoBehaviour
         int safeStage = Mathf.Max(1, stage);
 
         if (_titleText != null)
-        {
-            string titleKey = definition != null && !string.IsNullOrWhiteSpace(definition.title)
-                ? definition.title
-                : definition != null ? definition.animalId : string.Empty;
-            _titleText.text = GetLocalizedText(titleKey, titleKey);
-        }
+            _titleText.text = EggFeatureLocalization.AnimalTitle(definition);
 
         if (_countText != null)
             _countText.text = $"x{Mathf.Max(0, amount)}";
 
         if (_stageText != null)
-            _stageText.text = GetLocalizedText("Eggs/AnimalStage", "Stage") + $" {safeStage}";
+            _stageText.text = EggFeatureLocalization.StageLong(safeStage);
+
+        if (_buffsLabelText != null)
+            _buffsLabelText.text = EggFeatureLocalization.Text("UI/AnimalInventory/Buffs", "Умения", "Abilities");
 
         if (_detailText != null)
-            _detailText.text = string.IsNullOrWhiteSpace(detail) ? string.Empty : detail;
+            _detailText.text = FormatBuffText(detail);
 
         if (_animalIconImage != null)
         {
             _animalIconImage.sprite = definition != null ? definition.icon : null;
             _animalIconImage.enabled = _animalIconImage.sprite != null;
         }
-
-        if (_actionRoot != null)
-            _actionRoot.SetActive(false);
 
         if (_button != null)
         {
@@ -49,17 +43,11 @@ public class AnimalInventorySlot : MonoBehaviour
         }
     }
 
-    private string GetLocalizedText(string key, string fallback)
+    private static string FormatBuffText(string detail)
     {
-        if (_localizationData == null || string.IsNullOrWhiteSpace(key))
-            return fallback;
+        if (string.IsNullOrWhiteSpace(detail))
+            return EggFeatureLocalization.Text("UI/AnimalBuff/None", "Нет бонусов", "No buffs");
 
-        string language = LocalizationManager.Instance != null
-            ? LocalizationManager.Instance.CurrentLanguage
-            : "Ru";
-
-        return _localizationData.TryGetTranslation(key, language, out string value)
-            ? value
-            : fallback;
+        return detail.Replace(", ", "\n");
     }
 }

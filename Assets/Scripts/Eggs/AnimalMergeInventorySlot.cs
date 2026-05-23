@@ -33,18 +33,13 @@ public class AnimalMergeInventorySlot : MonoBehaviour
         _onSelect = onSelect;
 
         if (_titleText != null)
-        {
-            string key = definition != null && !string.IsNullOrWhiteSpace(definition.title)
-                ? definition.title
-                : _animalId;
-            _titleText.text = GetLocalizedText(key, key);
-        }
+            _titleText.text = EggFeatureLocalization.AnimalTitle(definition);
 
         if (_countText != null)
             _countText.text = $"x{Mathf.Max(0, amount)}";
 
         if (_stageText != null)
-            _stageText.text = GetLocalizedText("Eggs/AnimalStage", "Stage") + $" {_stage}";
+            _stageText.text = EggFeatureLocalization.StageLong(_stage);
 
         if (_detailText != null)
             _detailText.text = string.IsNullOrWhiteSpace(detail) ? string.Empty : detail;

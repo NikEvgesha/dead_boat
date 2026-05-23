@@ -36,8 +36,8 @@ public class AnimalPlacementSelectionSlot : MonoBehaviour
 
         if (_titleText != null)
         {
-            string safeTitle = string.IsNullOrWhiteSpace(title) ? _animalId : title;
-            _titleText.text = $"{safeTitle} S{_stage}";
+            string safeTitle = EggFeatureLocalization.AnimalTitle(_animalId, string.IsNullOrWhiteSpace(title) ? _animalId : title);
+            _titleText.text = $"{safeTitle} {EggFeatureLocalization.StageShort(_stage)}";
         }
 
         if (_countText != null)
@@ -45,7 +45,9 @@ public class AnimalPlacementSelectionSlot : MonoBehaviour
 
         if (_incomeText != null)
         {
-            _incomeText.text = string.IsNullOrWhiteSpace(detail) ? "Ready" : detail;
+            _incomeText.text = string.IsNullOrWhiteSpace(detail)
+                ? EggFeatureLocalization.Text("Eggs/ReadyToCollect", "Готово", "Ready")
+                : detail;
         }
 
         if (_button == null)

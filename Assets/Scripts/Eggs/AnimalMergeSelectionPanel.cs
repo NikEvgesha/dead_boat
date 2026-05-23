@@ -222,7 +222,7 @@ public class AnimalMergeSelectionPanel : MonoBehaviour
             StopResultAnimation();
 
         if (_headerLabel != null)
-            _headerLabel.text = "Merge animals";
+            _headerLabel.text = EggFeatureLocalization.Text("UI/AnimalMerge/Title", "Слияние животных", "Merge animals");
 
         if (hasMerge && ready)
         {
@@ -269,17 +269,17 @@ public class AnimalMergeSelectionPanel : MonoBehaviour
         }
 
         if (_centerButtonText != null)
-            _centerButtonText.text = "Select";
+            _centerButtonText.text = EggFeatureLocalization.Text("UI/AnimalMerge/Select", "Выбрать", "Select");
         if (_mergeButtonText != null)
-            _mergeButtonText.text = "Merge";
+            _mergeButtonText.text = EggFeatureLocalization.Text("UI/AnimalMerge/Merge", "Скрестить", "Merge");
         if (_collectButtonText != null)
-            _collectButtonText.text = "Collect";
+            _collectButtonText.text = EggFeatureLocalization.Text("UI/AnimalMerge/Collect", "Забрать", "Collect");
         if (_cancelButtonText != null)
-            _cancelButtonText.text = "Cancel";
+            _cancelButtonText.text = EggFeatureLocalization.Text("UI/AnimalMerge/Cancel", "Отмена", "Cancel");
         if (_skipAdButtonText != null)
-            _skipAdButtonText.text = "Skip ad";
+            _skipAdButtonText.text = EggFeatureLocalization.Text("UI/AnimalMerge/SkipAd", "Пропустить за рекламу", "Skip ad");
         if (_skipCoinsButtonText != null && _manager != null)
-            _skipCoinsButtonText.text = $"Skip {Mathf.Max(0, _manager.GetAnimalMergeSkipCostCoins())}";
+            _skipCoinsButtonText.text = EggFeatureLocalization.Format("UI/AnimalMerge/SkipCoinsFormat", "Пропустить {0}", "Skip {0}", Mathf.Max(0, _manager.GetAnimalMergeSkipCostCoins()));
 
         if (_emptyState != null)
             _emptyState.SetActive(!hasMerge && !HasAnyMergeCandidate());
@@ -480,7 +480,9 @@ public class AnimalMergeSelectionPanel : MonoBehaviour
         }
 
         int remaining = _manager.GetAnimalMergeRemainingSeconds();
-        _timerText.text = remaining <= 0 ? "Ready" : FormatSeconds(remaining);
+        _timerText.text = remaining <= 0
+            ? EggFeatureLocalization.Text("Eggs/ReadyToCollect", "Готово", "Ready")
+            : FormatSeconds(remaining);
     }
 
     private void OpenLeftPicker()
@@ -526,7 +528,7 @@ public class AnimalMergeSelectionPanel : MonoBehaviour
         ClearInventorySlots();
 
         if (_inventoryHeaderLabel != null)
-            _inventoryHeaderLabel.text = "Select animal";
+            _inventoryHeaderLabel.text = EggFeatureLocalization.Text("UI/AnimalMerge/SelectAnimal", "Выбери животное", "Select animal");
 
         bool anyAvailable = false;
 
@@ -687,10 +689,10 @@ public class AnimalMergeSelectionPanel : MonoBehaviour
             }
 
             if (title != null)
-                title.text = string.IsNullOrWhiteSpace(definition.title) ? definition.animalId : definition.title;
+                title.text = EggFeatureLocalization.AnimalTitle(definition);
 
             if (stageLabel != null)
-                stageLabel.text = $"S{Mathf.Max(1, stage)}";
+                stageLabel.text = EggFeatureLocalization.StageShort(stage);
 
             return;
         }
@@ -702,7 +704,7 @@ public class AnimalMergeSelectionPanel : MonoBehaviour
         }
 
         if (title != null)
-            title.text = "Select";
+            title.text = EggFeatureLocalization.Text("UI/AnimalMerge/Select", "Выбрать", "Select");
 
         if (stageLabel != null)
             stageLabel.text = string.Empty;

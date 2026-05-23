@@ -156,9 +156,9 @@ public class EggNestSelectionSlot : MonoBehaviour
 
     private static string GetAnimalDisplayText(AnimalDefinition animal)
     {
-        string title = animal != null && !string.IsNullOrWhiteSpace(animal.title)
-            ? animal.title
-            : animal != null ? animal.animalId : "?";
+        string title = animal != null
+            ? EggFeatureLocalization.AnimalTitle(animal)
+            : "?";
 
         if (string.IsNullOrWhiteSpace(title))
             return "?";

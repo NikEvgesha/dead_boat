@@ -1,5 +1,6 @@
 // EnemyCore.cs
 using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -24,6 +25,9 @@ public abstract class EnemyCore : MonoBehaviour
     protected int _maxHP;
     protected bool isDead;
     protected DamageFlash _damageFlash;
+    private Coroutine _burnRoutine;
+
+    public bool IsDead => isDead;
 
     protected virtual void Awake()
     {
@@ -66,6 +70,17 @@ public abstract class EnemyCore : MonoBehaviour
         _damageFlash?.Trigger();
     }
 
+    public void ApplyBurn(float duration, float damagePerSecond)
+    {
+        if (isDead || duration <= 0f || damagePerSecond <= 0f)
+            return;
+
+        if (_burnRoutine != null)
+            StopCoroutine(_burnRoutine);
+
+        _burnRoutine = StartCoroutine(BurnRoutine(duration, damagePerSecond));
+    }
+
     protected virtual void PlayDamageSound()
     {
         if (audioSourceEnemy && audioDamage)
@@ -78,10 +93,17 @@ public abstract class EnemyCore : MonoBehaviour
     protected virtual void Die()
     {
         isDead = true;
+        if (_burnRoutine != null)
+        {
+            StopCoroutine(_burnRoutine);
+            _burnRoutine = null;
+        }
+
         if (hpBar)
             hpBar.gameObject.SetActive(false);
 
         PlayDeathSound();
+        ProfessionService.HandleEnemyKilled(this);
         GameEvents.OnEnemyKilled?.Invoke(enemyType);
         Death?.Invoke();
     }
@@ -90,5 +112,29 @@ public abstract class EnemyCore : MonoBehaviour
     {
         if (audioSourceEnemy && audioDie)
             audioSourceEnemy.PlayOneShot(audioDie);
+    }
+
+    private IEnumerator BurnRoutine(float duration, float damagePerSecond)
+    {
+        float remaining = duration;
+        float accumulator = 0f;
+
+        while (!isDead && remaining > 0f)
+        {
+            float delta = Mathf.Min(Time.deltaTime, remaining);
+            remaining -= delta;
+            accumulator += damagePerSecond * delta;
+
+            int damage = Mathf.FloorToInt(accumulator);
+            if (damage > 0)
+            {
+                accumulator -= damage;
+                TakeDamage(damage);
+            }
+
+            yield return null;
+        }
+
+        _burnRoutine = null;
     }
 }

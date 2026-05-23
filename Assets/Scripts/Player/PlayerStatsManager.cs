@@ -98,6 +98,15 @@ public class PlayerStatsManager : MonoBehaviour
             return EggAnimalBuffService.ApplyMaxHealth(health);
         }
     }
+
+    public float MaxStamina
+    {
+        get
+        {
+            return Mathf.Max(1f, ProfessionService.ApplyMaxStamina(_maxStamina));
+        }
+    }
+
     public float Stamina
     {
         get
@@ -106,13 +115,12 @@ public class PlayerStatsManager : MonoBehaviour
         }
         private set
         {
-            //_stamina = Mathf.Clamp(value, 0, _maxStamina);
-            _stamina = _maxStamina;
+            _stamina = Mathf.Clamp(value, 0, MaxStamina);
             if (_stamina == 0)
             {
                 NoStamina?.Invoke();
             }
-            //StatChanged?.Invoke(PlayerStat.Stamina, _stamina, _maxStamina);
+            StatChanged?.Invoke(PlayerStat.Stamina, _stamina, MaxStamina);
 
         }
     }
@@ -172,7 +180,7 @@ public class PlayerStatsManager : MonoBehaviour
         _statsMax = new()
         {
             { PlayerStat.Health, MaxHealth},
-            { PlayerStat.Stamina, _maxStamina}
+            { PlayerStat.Stamina, MaxStamina}
         };
         _experience.ChangeExp.AddListener(ChangeExp);
         _stamina = _maxStamina;
@@ -186,14 +194,16 @@ public class PlayerStatsManager : MonoBehaviour
 
     private void FixedUpdate()
     {
+        ProfessionService.TickPlayerEffects(this, Time.fixedDeltaTime);
+
         if (PlayerInput.Instance.Sprint)
         {
             if (Stamina > 0)
-                Stamina -= _staminaConsumptionRate * Time.fixedDeltaTime;
+                Stamina -= ProfessionService.ApplyStaminaConsumption(_staminaConsumptionRate) * Time.fixedDeltaTime;
         } else
         {
-            if (Stamina < _maxStamina)
-                Stamina += _staminaRestoreRate * Time.fixedDeltaTime;
+            if (Stamina < MaxStamina)
+                Stamina += ProfessionService.ApplyStaminaRestore(_staminaRestoreRate) * Time.fixedDeltaTime;
         }
     }
 
@@ -211,8 +221,27 @@ public class PlayerStatsManager : MonoBehaviour
         if(_isDead || !InGame) 
             return;
 
+        int finalDamage = ProfessionService.ApplyIncomingDamage(damage);
+        ApplyDamageInternal(finalDamage, true);
+    }
+
+    public void TakeProfessionDrainDamage(int damage)
+    {
+        if (_isDead || !InGame)
+            return;
+
+        int safeDamage = Mathf.Min(Mathf.Max(0, damage), Mathf.Max(0, Mathf.CeilToInt(_health - 1f)));
+        ApplyDamageInternal(safeDamage, false);
+    }
+
+    private void ApplyDamageInternal(int damage, bool playAnimation)
+    {
+        if (damage <= 0)
+            return;
+
         Health = _health - damage;
-        _animator.SetTrigger(_animatorTrigger);
+        if (playAnimation && _animator != null)
+            _animator.SetTrigger(_animatorTrigger);
         if (_health <= 0)
             Dead();
     }

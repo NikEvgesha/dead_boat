@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AnimalDefinition
   _id: condor
   title: Condor
+  icon: {fileID: 0}
   maxStage: 3
   stages:
   - stage: 1
@@ -26,15 +27,15 @@ MonoBehaviour:
       moveSpeedMultiplier: 1
       experienceMultiplier: 1
       saleRewardMultiplier: 1
-      maxFuelFlat: 25
-      fuelConsumptionMultiplier: 0.98
+      maxFuelFlat: 0
+      fuelConsumptionMultiplier: 1
       fuelFillMultiplier: 1
-      boatSpeedFlat: 0
+      boatSpeedFlat: 1
       meleeDamageFlat: 0
       meleeAttackSpeedMultiplier: 1
-      rangedDamageFlat: 0
+      rangedDamageFlat: 1
       rangedAttackSpeedMultiplier: 1
-      rangedReloadSpeedMultiplier: 1
+      rangedReloadSpeedMultiplier: 1.08
   - stage: 2
     animalPrefab: {fileID: 1866390378080362, guid: ea09f74638baa144b976a6d30cfeb5c0, type: 3}
     tint: {r: 0.8, g: 0.95, b: 1, a: 1}
@@ -45,15 +46,15 @@ MonoBehaviour:
       moveSpeedMultiplier: 1
       experienceMultiplier: 1
       saleRewardMultiplier: 1
-      maxFuelFlat: 50
-      fuelConsumptionMultiplier: 0.95
+      maxFuelFlat: 0
+      fuelConsumptionMultiplier: 1
       fuelFillMultiplier: 1
-      boatSpeedFlat: 0
+      boatSpeedFlat: 3
       meleeDamageFlat: 0
       meleeAttackSpeedMultiplier: 1
-      rangedDamageFlat: 0
+      rangedDamageFlat: 3
       rangedAttackSpeedMultiplier: 1
-      rangedReloadSpeedMultiplier: 1
+      rangedReloadSpeedMultiplier: 1.16
   - stage: 3
     animalPrefab: {fileID: 1866390378080362, guid: ea09f74638baa144b976a6d30cfeb5c0, type: 3}
     tint: {r: 0.55, g: 0.8, b: 1, a: 1}
@@ -64,12 +65,12 @@ MonoBehaviour:
       moveSpeedMultiplier: 1
       experienceMultiplier: 1
       saleRewardMultiplier: 1
-      maxFuelFlat: 90
-      fuelConsumptionMultiplier: 0.9
+      maxFuelFlat: 0
+      fuelConsumptionMultiplier: 1
       fuelFillMultiplier: 1
-      boatSpeedFlat: 0
+      boatSpeedFlat: 5
       meleeDamageFlat: 0
       meleeAttackSpeedMultiplier: 1
-      rangedDamageFlat: 0
+      rangedDamageFlat: 6
       rangedAttackSpeedMultiplier: 1
-      rangedReloadSpeedMultiplier: 1
+      rangedReloadSpeedMultiplier: 1.3

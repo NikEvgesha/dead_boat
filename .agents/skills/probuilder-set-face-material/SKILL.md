@@ -63,7 +63,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
       "type": "string"
     },
     "faceIndices": {
-      "$ref": "#/$defs/System.Int32[]"
+      "$ref": "#/$defs/System.Int32%5B%5D"
     },
     "faceDirection": {
       "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Editor.API.FaceDirection"
@@ -140,7 +140,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
   "type": "object",
   "properties": {
     "result": {
-      "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder+SetFaceMaterialResponse"
+      "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder%2BSetFaceMaterialResponse"
     }
   },
   "$defs": {
@@ -153,7 +153,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
     "System.Collections.Generic.List<com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder+MaterialInfo>": {
       "type": "array",
       "items": {
-        "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder+MaterialInfo"
+        "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder%2BMaterialInfo"
       }
     },
     "com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder+MaterialInfo": {
@@ -183,10 +183,10 @@ Read the /unity-initial-setup skill for detailed installation instructions.
           "type": "string"
         },
         "facesUpdated": {
-          "$ref": "#/$defs/System.Int32[]"
+          "$ref": "#/$defs/System.Int32%5B%5D"
         },
         "meshMaterials": {
-          "$ref": "#/$defs/System.Collections.Generic.List<com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder+MaterialInfo>"
+          "$ref": "#/$defs/System.Collections.Generic.List%3Ccom.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder%2BMaterialInfo%3E"
         }
       },
       "required": [

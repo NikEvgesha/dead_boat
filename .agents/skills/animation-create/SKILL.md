@@ -44,7 +44,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
   "type": "object",
   "properties": {
     "sourcePaths": {
-      "$ref": "#/$defs/System.String[]"
+      "$ref": "#/$defs/System.String%5B%5D"
     }
   },
   "$defs": {
@@ -70,14 +70,14 @@ Read the /unity-initial-setup skill for detailed installation instructions.
   "type": "object",
   "properties": {
     "result": {
-      "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Animation.AnimationTools+CreateAnimationResponse"
+      "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Animation.AnimationTools%2BCreateAnimationResponse"
     }
   },
   "$defs": {
     "System.Collections.Generic.List<com.IvanMurzak.Unity.MCP.Animation.AnimationTools+CreatedAnimationInfo>": {
       "type": "array",
       "items": {
-        "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Animation.AnimationTools+CreatedAnimationInfo"
+        "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Animation.AnimationTools%2BCreatedAnimationInfo"
       }
     },
     "com.IvanMurzak.Unity.MCP.Animation.AnimationTools+CreatedAnimationInfo": {
@@ -107,10 +107,10 @@ Read the /unity-initial-setup skill for detailed installation instructions.
       "type": "object",
       "properties": {
         "createdAssets": {
-          "$ref": "#/$defs/System.Collections.Generic.List<com.IvanMurzak.Unity.MCP.Animation.AnimationTools+CreatedAnimationInfo>"
+          "$ref": "#/$defs/System.Collections.Generic.List%3Ccom.IvanMurzak.Unity.MCP.Animation.AnimationTools%2BCreatedAnimationInfo%3E"
         },
         "errors": {
-          "$ref": "#/$defs/System.Collections.Generic.List<System.String>"
+          "$ref": "#/$defs/System.Collections.Generic.List%3CSystem.String%3E"
         }
       }
     }

@@ -62,7 +62,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
       "$ref": "#/$defs/AIGD.GameObjectRef"
     },
     "faceIndices": {
-      "$ref": "#/$defs/System.Int32[]"
+      "$ref": "#/$defs/System.Int32%5B%5D"
     },
     "faceDirection": {
       "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Editor.API.FaceDirection"
@@ -149,7 +149,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
   "type": "object",
   "properties": {
     "result": {
-      "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder+ExtrudeResponse"
+      "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder%2BExtrudeResponse"
     }
   },
   "$defs": {
@@ -169,7 +169,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
           "type": "string"
         },
         "extrudedFaceIndices": {
-          "$ref": "#/$defs/System.Int32[]"
+          "$ref": "#/$defs/System.Int32%5B%5D"
         },
         "extrudeMethod": {
           "type": "string"
@@ -181,7 +181,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
           "type": "integer"
         },
         "newFaceIndices": {
-          "$ref": "#/$defs/System.Int32[]"
+          "$ref": "#/$defs/System.Int32%5B%5D"
         },
         "totalFaceCount": {
           "type": "integer"

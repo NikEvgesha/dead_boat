@@ -241,6 +241,8 @@ public static class EggTemporaryUIFactory
         button.targetGraphic = background;
         button.transition = Selectable.Transition.ColorTint;
 
+        ConfigureHover(slot);
+
         HorizontalLayoutGroup layout = slot.AddComponent<HorizontalLayoutGroup>();
         layout.padding = new RectOffset(14, 14, 10, 10);
         layout.spacing = 12f;
@@ -251,6 +253,24 @@ public static class EggTemporaryUIFactory
         layout.childForceExpandHeight = false;
 
         return slot;
+    }
+
+    private static void ConfigureHover(GameObject target)
+    {
+        if (target == null)
+            return;
+
+        UnityEngine.UI.Outline outline = target.GetComponent<UnityEngine.UI.Outline>();
+        if (outline == null)
+            outline = target.AddComponent<UnityEngine.UI.Outline>();
+
+        outline.enabled = false;
+        outline.effectColor = Color.white;
+        outline.effectDistance = new Vector2(2f, -2f);
+        outline.useGraphicAlpha = false;
+
+        if (target.GetComponent<EggSelectionSlotHover>() == null)
+            target.AddComponent<EggSelectionSlotHover>();
     }
 
     private static void BindSlotCommon(GameObject slot, out Text title, out Text count, out Text detail, out Button button)

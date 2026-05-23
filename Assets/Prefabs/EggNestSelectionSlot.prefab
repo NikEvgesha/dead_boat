@@ -10,6 +10,10 @@ GameObject:
   m_Component:
   - component: {fileID: 9014416595818739503}
   - component: {fileID: 4546985989476867571}
+  - component: {fileID: 6256046788238356984}
+  - component: {fileID: 1561958166508813034}
+  - component: {fileID: 5982603867436288613}
+  - component: {fileID: 1538409743004497004}
   m_Layer: 5
   m_Name: EggNestSelectionSlot
   m_TagString: Untagged
@@ -49,10 +53,85 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 48a68a0aaa116364bbcd4fc764797685, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _localizationData: {fileID: 0}
   _titleText: {fileID: 2905369701520746838}
   _countText: {fileID: 6551446230015366948}
   _durationText: {fileID: 3509115333176956759}
+  _rarityText: {fileID: 0}
+  _eggIconImage: {fileID: 0}
+  _possiblePetsRoot: {fileID: 0}
+  _possiblePetTemplate: {fileID: 0}
+  _defaultRarity: Common
+  _rarityLocalizationPrefix: Boost/RareType/
+  _maxPossiblePets: 3
   _button: {fileID: 1099052751233036657}
+  _actionRoot: {fileID: 0}
+--- !u!222 &6256046788238356984
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 891055651914846785}
+  m_CullTransparentMesh: 1
+--- !u!114 &1561958166508813034
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 891055651914846785}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 0}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!114 &5982603867436288613
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 891055651914846785}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Outline
+  m_EffectColor: {r: 1, g: 1, b: 1, a: 1}
+  m_EffectDistance: {x: 2, y: -2}
+  m_UseGraphicAlpha: 0
+--- !u!114 &1538409743004497004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 891055651914846785}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72e2b1dab841d3c419bbe882145de02a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EggSelectionSlotHover
+  _hoverScale: 1.04
 --- !u!1 &3825207584633457361
 GameObject:
   m_ObjectHideFlags: 0

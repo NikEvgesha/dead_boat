@@ -58,7 +58,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
       "$ref": "#/$defs/AIGD.GameObjectRef"
     },
     "faceIndices": {
-      "$ref": "#/$defs/System.Int32[]"
+      "$ref": "#/$defs/System.Int32%5B%5D"
     },
     "faceDirection": {
       "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Editor.API.FaceDirection"
@@ -134,7 +134,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
   "type": "object",
   "properties": {
     "result": {
-      "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder+DeleteFacesResponse"
+      "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder%2BDeleteFacesResponse"
     }
   },
   "$defs": {
@@ -154,7 +154,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
           "type": "string"
         },
         "deletedFaceIndices": {
-          "$ref": "#/$defs/System.Int32[]"
+          "$ref": "#/$defs/System.Int32%5B%5D"
         },
         "facesRemoved": {
           "type": "integer"

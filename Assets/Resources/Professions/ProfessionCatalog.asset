@@ -17,9 +17,9 @@ MonoBehaviour:
     title: Deckhand
     description: Reliable baseline profession without risky tradeoffs.
     icon: {fileID: 0}
-    availableInRandomUnlockPool: 1
-    randomUnlockWeight: 1
-    directSoftCurrencyCost: 500
+    availableInRandomUnlockPool: 0
+    randomUnlockWeight: 0
+    directSoftCurrencyCost: 0
     directSoftCurrencyType: 0
     purchaseProductId: 
     allowSoftCurrencyFallbackWhenPurchasesUnavailable: 1
@@ -31,9 +31,16 @@ MonoBehaviour:
     - Stable default start
     passiveBonuses:
       maxHealthFlat: 0
+      maxStaminaFlat: 0
       moveSpeedFlat: 0
       moveSpeedMultiplier: 1
+      staminaConsumptionMultiplier: 1
+      staminaRestoreMultiplier: 1
       experienceMultiplier: 1
+      incomingDamageMultiplier: 1
+      dodgeChance: 0
+      healthDrainPerSecond: 0
+      healOnKillFlat: 0
       saleRewardMultiplier: 1
       maxFuelFlat: 0
       fuelConsumptionMultiplier: 1
@@ -44,44 +51,77 @@ MonoBehaviour:
       rangedDamageFlat: 0
       rangedAttackSpeedMultiplier: 1
       rangedReloadSpeedMultiplier: 1
+      outgoingDamageMultiplier: 1
+      lowHealthDamageMultiplier: 1
+      criticalChance: 0
+      criticalDamageMultiplier: 1
+      randomDamageMinMultiplier: 1
+      randomDamageMaxMultiplier: 1
+      burnChance: 0
+      burnDamagePerSecond: 0
+      burnDuration: 0
+      rareLootChanceMultiplier: 1
   - professionId: mechanic
     title: Mechanic
-    description: Better fuel handling and a sturdier boat-focused start.
+    description: Boat-focused profession built around fuel economy and refuel tempo.
     icon: {fileID: 0}
     availableInRandomUnlockPool: 1
-    randomUnlockWeight: 1
-    directSoftCurrencyCost: 500
+    randomUnlockWeight: 2
+    directSoftCurrencyCost: 450
     directSoftCurrencyType: 0
     purchaseProductId: 
     allowSoftCurrencyFallbackWhenPurchasesUnavailable: 1
-    startCoinsBonus: 20
+    startCoinsBonus: 30
     startGemsBonus: 0
     defaultUnlocked: 0
-    starterItems: []
+    starterItems:
+    - itemPrefab: {fileID: 421986717421339281, guid: 97e69bae6b2189a459e41c91c98a6e2a, type: 3}
+      amount: 2
+    - itemPrefab: {fileID: 6427274643996943980, guid: ce0622221da92f545a38e85d07d54544, type: 3}
+      amount: 1
     perkLines:
     - Fuel lasts longer
-    - Better refuel efficiency
+    - Fuel cans restore more
+    - Bigger fuel reserve
     passiveBonuses:
       maxHealthFlat: 0
+      maxStaminaFlat: 0
       moveSpeedFlat: 0
       moveSpeedMultiplier: 1
+      staminaConsumptionMultiplier: 1
+      staminaRestoreMultiplier: 1
       experienceMultiplier: 1
+      incomingDamageMultiplier: 1
+      dodgeChance: 0
+      healthDrainPerSecond: 0
+      healOnKillFlat: 0
       saleRewardMultiplier: 1
-      maxFuelFlat: 15
-      fuelConsumptionMultiplier: 0.9
-      fuelFillMultiplier: 1.15
-      boatSpeedFlat: 0
+      maxFuelFlat: 150
+      fuelConsumptionMultiplier: 0.88
+      fuelFillMultiplier: 1.25
+      boatSpeedFlat: 2
       meleeDamageFlat: 0
       meleeAttackSpeedMultiplier: 1
       rangedDamageFlat: 0
       rangedAttackSpeedMultiplier: 1
       rangedReloadSpeedMultiplier: 1
+      outgoingDamageMultiplier: 1
+      lowHealthDamageMultiplier: 1
+      criticalChance: 0
+      criticalDamageMultiplier: 1
+      randomDamageMinMultiplier: 1
+      randomDamageMaxMultiplier: 1
+      burnChance: 0
+      burnDamagePerSecond: 0
+      burnDuration: 0
+      rareLootChanceMultiplier: 1
   - professionId: hunter
     title: Hunter
-    description: Combat profession for stronger early fights.
+    description: Clean combat starter with reliable weapon bonuses and no special
+      risk.
     icon: {fileID: 0}
     availableInRandomUnlockPool: 1
-    randomUnlockWeight: 1
+    randomUnlockWeight: 2
     directSoftCurrencyCost: 500
     directSoftCurrencyType: 0
     purchaseProductId: 
@@ -89,36 +129,57 @@ MonoBehaviour:
     startCoinsBonus: 0
     startGemsBonus: 0
     defaultUnlocked: 0
-    starterItems: []
+    starterItems:
+    - itemPrefab: {fileID: 5837536643105673945, guid: 7b2258fc4ca43c3468d3df51c39cc56e, type: 3}
+      amount: 1
+    - itemPrefab: {fileID: 8397905037114353727, guid: b620f7c3704de7648ba480dcf4b5fb26, type: 3}
+      amount: 2
     perkLines:
-    - Stronger weapon damage
-    - Faster reload tempo
+    - Better weapon damage
+    - Faster ranged tempo
     passiveBonuses:
       maxHealthFlat: 0
+      maxStaminaFlat: 0
       moveSpeedFlat: 0
       moveSpeedMultiplier: 1
+      staminaConsumptionMultiplier: 1
+      staminaRestoreMultiplier: 1
       experienceMultiplier: 1
+      incomingDamageMultiplier: 1
+      dodgeChance: 0
+      healthDrainPerSecond: 0
+      healOnKillFlat: 0
       saleRewardMultiplier: 1
       maxFuelFlat: 0
       fuelConsumptionMultiplier: 1
       fuelFillMultiplier: 1
       boatSpeedFlat: 0
       meleeDamageFlat: 2
-      meleeAttackSpeedMultiplier: 1.05
-      rangedDamageFlat: 2
-      rangedAttackSpeedMultiplier: 1.05
-      rangedReloadSpeedMultiplier: 1.1
+      meleeAttackSpeedMultiplier: 1.08
+      rangedDamageFlat: 3
+      rangedAttackSpeedMultiplier: 1.08
+      rangedReloadSpeedMultiplier: 1.18
+      outgoingDamageMultiplier: 1
+      lowHealthDamageMultiplier: 1
+      criticalChance: 0
+      criticalDamageMultiplier: 1
+      randomDamageMinMultiplier: 1
+      randomDamageMaxMultiplier: 1
+      burnChance: 0
+      burnDamagePerSecond: 0
+      burnDuration: 0
+      rareLootChanceMultiplier: 1
   - professionId: trader
     title: Trader
-    description: Economy profession with better sale rewards and a small coin start.
+    description: Economy profession for players who want faster money progression.
     icon: {fileID: 0}
     availableInRandomUnlockPool: 1
-    randomUnlockWeight: 1
+    randomUnlockWeight: 2
     directSoftCurrencyCost: 500
     directSoftCurrencyType: 0
     purchaseProductId: 
     allowSoftCurrencyFallbackWhenPurchasesUnavailable: 1
-    startCoinsBonus: 50
+    startCoinsBonus: 80
     startGemsBonus: 0
     defaultUnlocked: 0
     starterItems: []
@@ -127,10 +188,17 @@ MonoBehaviour:
     - Small coin head start
     passiveBonuses:
       maxHealthFlat: 0
+      maxStaminaFlat: 0
       moveSpeedFlat: 0
       moveSpeedMultiplier: 1
+      staminaConsumptionMultiplier: 1
+      staminaRestoreMultiplier: 1
       experienceMultiplier: 1
-      saleRewardMultiplier: 1.15
+      incomingDamageMultiplier: 1.05
+      dodgeChance: 0
+      healthDrainPerSecond: 0
+      healOnKillFlat: 0
+      saleRewardMultiplier: 1.25
       maxFuelFlat: 0
       fuelConsumptionMultiplier: 1
       fuelFillMultiplier: 1
@@ -140,3 +208,438 @@ MonoBehaviour:
       rangedDamageFlat: 0
       rangedAttackSpeedMultiplier: 1
       rangedReloadSpeedMultiplier: 1
+      outgoingDamageMultiplier: 1
+      lowHealthDamageMultiplier: 1
+      criticalChance: 0
+      criticalDamageMultiplier: 1
+      randomDamageMinMultiplier: 1
+      randomDamageMaxMultiplier: 1
+      burnChance: 0
+      burnDamagePerSecond: 0
+      burnDuration: 0
+      rareLootChanceMultiplier: 1.2
+  - professionId: scout
+    title: Scout
+    description: Fast runner with better stamina and reload speed, but lower survivability.
+    icon: {fileID: 0}
+    availableInRandomUnlockPool: 1
+    randomUnlockWeight: 2
+    directSoftCurrencyCost: 550
+    directSoftCurrencyType: 0
+    purchaseProductId: 
+    allowSoftCurrencyFallbackWhenPurchasesUnavailable: 1
+    startCoinsBonus: 0
+    startGemsBonus: 0
+    defaultUnlocked: 0
+    starterItems:
+    - itemPrefab: {fileID: 1160992267669844177, guid: 0b94a51814afd31408a7d1517f0b107d, type: 3}
+      amount: 1
+    perkLines:
+    - Immediately feels faster
+    - Good for looting and kiting
+    - Lower max HP
+    passiveBonuses:
+      maxHealthFlat: -15
+      maxStaminaFlat: 35
+      moveSpeedFlat: 0
+      moveSpeedMultiplier: 1.18
+      staminaConsumptionMultiplier: 0.8
+      staminaRestoreMultiplier: 1.2
+      experienceMultiplier: 1
+      incomingDamageMultiplier: 1
+      dodgeChance: 0
+      healthDrainPerSecond: 0
+      healOnKillFlat: 0
+      saleRewardMultiplier: 1
+      maxFuelFlat: 0
+      fuelConsumptionMultiplier: 1
+      fuelFillMultiplier: 1
+      boatSpeedFlat: 0
+      meleeDamageFlat: 0
+      meleeAttackSpeedMultiplier: 1
+      rangedDamageFlat: 0
+      rangedAttackSpeedMultiplier: 1
+      rangedReloadSpeedMultiplier: 1.2
+      outgoingDamageMultiplier: 1
+      lowHealthDamageMultiplier: 1
+      criticalChance: 0
+      criticalDamageMultiplier: 1
+      randomDamageMinMultiplier: 1
+      randomDamageMaxMultiplier: 1
+      burnChance: 0
+      burnDamagePerSecond: 0
+      burnDuration: 0
+      rareLootChanceMultiplier: 1
+  - professionId: berserk
+    title: Berserk
+    description: Risky melee-leaning class that becomes more dangerous as HP gets
+      lower.
+    icon: {fileID: 0}
+    availableInRandomUnlockPool: 1
+    randomUnlockWeight: 1
+    directSoftCurrencyCost: 650
+    directSoftCurrencyType: 0
+    purchaseProductId: 
+    allowSoftCurrencyFallbackWhenPurchasesUnavailable: 1
+    startCoinsBonus: 0
+    startGemsBonus: 0
+    defaultUnlocked: 0
+    starterItems:
+    - itemPrefab: {fileID: 5837536643105673945, guid: f36016d6f3f53c54dbbeadbbaf98b8d7, type: 3}
+      amount: 1
+    perkLines:
+    - Damage scales up as HP drops
+    - Best during clutch fights
+    - Lower max HP
+    passiveBonuses:
+      maxHealthFlat: -25
+      maxStaminaFlat: 0
+      moveSpeedFlat: 0
+      moveSpeedMultiplier: 1
+      staminaConsumptionMultiplier: 1
+      staminaRestoreMultiplier: 1
+      experienceMultiplier: 1
+      incomingDamageMultiplier: 1.05
+      dodgeChance: 0
+      healthDrainPerSecond: 0
+      healOnKillFlat: 0
+      saleRewardMultiplier: 1
+      maxFuelFlat: 0
+      fuelConsumptionMultiplier: 1
+      fuelFillMultiplier: 1
+      boatSpeedFlat: 0
+      meleeDamageFlat: 0
+      meleeAttackSpeedMultiplier: 1.1
+      rangedDamageFlat: 0
+      rangedAttackSpeedMultiplier: 1
+      rangedReloadSpeedMultiplier: 1
+      outgoingDamageMultiplier: 1
+      lowHealthDamageMultiplier: 1.85
+      criticalChance: 0
+      criticalDamageMultiplier: 1
+      randomDamageMinMultiplier: 1
+      randomDamageMaxMultiplier: 1
+      burnChance: 0
+      burnDamagePerSecond: 0
+      burnDuration: 0
+      rareLootChanceMultiplier: 1
+  - professionId: vampire
+    title: Vampire
+    description: 'Aggressive sustain class: lose health over time, heal from kills.'
+    icon: {fileID: 0}
+    availableInRandomUnlockPool: 1
+    randomUnlockWeight: 1
+    directSoftCurrencyCost: 700
+    directSoftCurrencyType: 0
+    purchaseProductId: 
+    allowSoftCurrencyFallbackWhenPurchasesUnavailable: 1
+    startCoinsBonus: 0
+    startGemsBonus: 0
+    defaultUnlocked: 0
+    starterItems:
+    - itemPrefab: {fileID: 5837536643105673945, guid: 3cca56fe7de35df4c98bb050788c0bb3, type: 3}
+      amount: 1
+    perkLines:
+    - Heals after killing enemies
+    - Constant HP drain keeps pressure high
+    - Small combat tempo bonus
+    passiveBonuses:
+      maxHealthFlat: -10
+      maxStaminaFlat: 0
+      moveSpeedFlat: 0
+      moveSpeedMultiplier: 1
+      staminaConsumptionMultiplier: 1
+      staminaRestoreMultiplier: 1
+      experienceMultiplier: 1
+      incomingDamageMultiplier: 1
+      dodgeChance: 0
+      healthDrainPerSecond: 0.45
+      healOnKillFlat: 12
+      saleRewardMultiplier: 1
+      maxFuelFlat: 0
+      fuelConsumptionMultiplier: 1
+      fuelFillMultiplier: 1
+      boatSpeedFlat: 0
+      meleeDamageFlat: 0
+      meleeAttackSpeedMultiplier: 1.07
+      rangedDamageFlat: 0
+      rangedAttackSpeedMultiplier: 1.05
+      rangedReloadSpeedMultiplier: 1
+      outgoingDamageMultiplier: 1
+      lowHealthDamageMultiplier: 1
+      criticalChance: 0
+      criticalDamageMultiplier: 1
+      randomDamageMinMultiplier: 1
+      randomDamageMaxMultiplier: 1
+      burnChance: 0
+      burnDamagePerSecond: 0
+      burnDuration: 0
+      rareLootChanceMultiplier: 1
+  - professionId: gambler
+    title: Gambler
+    description: Luck-based economy class with high upside and unstable damage.
+    icon: {fileID: 0}
+    availableInRandomUnlockPool: 1
+    randomUnlockWeight: 1
+    directSoftCurrencyCost: 700
+    directSoftCurrencyType: 0
+    purchaseProductId: 
+    allowSoftCurrencyFallbackWhenPurchasesUnavailable: 1
+    startCoinsBonus: 50
+    startGemsBonus: 0
+    defaultUnlocked: 0
+    starterItems:
+    - itemPrefab: {fileID: 3411018602687341552, guid: 833b43b5d0121334f822feb5e5a19c25, type: 3}
+      amount: 1
+    perkLines:
+    - Rare low-weight loot rolls are boosted
+    - Damage rolls swing high and low
+    - Takes slightly more damage
+    passiveBonuses:
+      maxHealthFlat: 0
+      maxStaminaFlat: 0
+      moveSpeedFlat: 0
+      moveSpeedMultiplier: 1
+      staminaConsumptionMultiplier: 1
+      staminaRestoreMultiplier: 1
+      experienceMultiplier: 1
+      incomingDamageMultiplier: 1.08
+      dodgeChance: 0
+      healthDrainPerSecond: 0
+      healOnKillFlat: 0
+      saleRewardMultiplier: 1.2
+      maxFuelFlat: 0
+      fuelConsumptionMultiplier: 1
+      fuelFillMultiplier: 1
+      boatSpeedFlat: 0
+      meleeDamageFlat: 0
+      meleeAttackSpeedMultiplier: 1
+      rangedDamageFlat: 0
+      rangedAttackSpeedMultiplier: 1
+      rangedReloadSpeedMultiplier: 1
+      outgoingDamageMultiplier: 1
+      lowHealthDamageMultiplier: 1
+      criticalChance: 0
+      criticalDamageMultiplier: 1
+      randomDamageMinMultiplier: 0.75
+      randomDamageMaxMultiplier: 1.55
+      burnChance: 0
+      burnDamagePerSecond: 0
+      burnDuration: 0
+      rareLootChanceMultiplier: 1.8
+  - professionId: pyro
+    title: Pyro
+    description: 'Burn-focused class: direct damage is lower, but every weapon hit
+      ignites enemies.'
+    icon: {fileID: 0}
+    availableInRandomUnlockPool: 1
+    randomUnlockWeight: 1
+    directSoftCurrencyCost: 750
+    directSoftCurrencyType: 0
+    purchaseProductId: 
+    allowSoftCurrencyFallbackWhenPurchasesUnavailable: 1
+    startCoinsBonus: 0
+    startGemsBonus: 0
+    defaultUnlocked: 0
+    starterItems:
+    - itemPrefab: {fileID: 8816934548089723754, guid: d883fcc845da4a440a1647f6351d3a22, type: 3}
+      amount: 1
+    - itemPrefab: {fileID: 421986717421339281, guid: 97e69bae6b2189a459e41c91c98a6e2a, type: 3}
+      amount: 1
+    perkLines:
+    - Weapon hits ignite enemies
+    - Great against tough enemies
+    - Lower direct weapon damage
+    passiveBonuses:
+      maxHealthFlat: 0
+      maxStaminaFlat: 0
+      moveSpeedFlat: 0
+      moveSpeedMultiplier: 1
+      staminaConsumptionMultiplier: 1
+      staminaRestoreMultiplier: 1
+      experienceMultiplier: 1
+      incomingDamageMultiplier: 1
+      dodgeChance: 0
+      healthDrainPerSecond: 0
+      healOnKillFlat: 0
+      saleRewardMultiplier: 1
+      maxFuelFlat: 0
+      fuelConsumptionMultiplier: 1
+      fuelFillMultiplier: 1
+      boatSpeedFlat: 0
+      meleeDamageFlat: 0
+      meleeAttackSpeedMultiplier: 1
+      rangedDamageFlat: 0
+      rangedAttackSpeedMultiplier: 1
+      rangedReloadSpeedMultiplier: 1
+      outgoingDamageMultiplier: 0.88
+      lowHealthDamageMultiplier: 1
+      criticalChance: 0
+      criticalDamageMultiplier: 1
+      randomDamageMinMultiplier: 1
+      randomDamageMaxMultiplier: 1
+      burnChance: 1
+      burnDamagePerSecond: 4.5
+      burnDuration: 4
+      rareLootChanceMultiplier: 1
+  - professionId: tank
+    title: Tank
+    description: Slow but safe profession with high HP and strong damage reduction.
+    icon: {fileID: 0}
+    availableInRandomUnlockPool: 1
+    randomUnlockWeight: 2
+    directSoftCurrencyCost: 650
+    directSoftCurrencyType: 0
+    purchaseProductId: 
+    allowSoftCurrencyFallbackWhenPurchasesUnavailable: 1
+    startCoinsBonus: 0
+    startGemsBonus: 0
+    defaultUnlocked: 0
+    starterItems:
+    - itemPrefab: {fileID: 1160992267669844177, guid: 0b94a51814afd31408a7d1517f0b107d, type: 3}
+      amount: 2
+    - itemPrefab: {fileID: 8816934548089723754, guid: 5a964ec75b3e2f64f8483a4779f30657, type: 3}
+      amount: 1
+    perkLines:
+    - Much harder to kill
+    - Slower movement and weapon tempo
+    passiveBonuses:
+      maxHealthFlat: 80
+      maxStaminaFlat: 0
+      moveSpeedFlat: 0
+      moveSpeedMultiplier: 0.85
+      staminaConsumptionMultiplier: 1
+      staminaRestoreMultiplier: 1
+      experienceMultiplier: 1
+      incomingDamageMultiplier: 0.72
+      dodgeChance: 0
+      healthDrainPerSecond: 0
+      healOnKillFlat: 0
+      saleRewardMultiplier: 1
+      maxFuelFlat: 0
+      fuelConsumptionMultiplier: 1
+      fuelFillMultiplier: 1
+      boatSpeedFlat: 0
+      meleeDamageFlat: 0
+      meleeAttackSpeedMultiplier: 0.92
+      rangedDamageFlat: 0
+      rangedAttackSpeedMultiplier: 0.92
+      rangedReloadSpeedMultiplier: 0.9
+      outgoingDamageMultiplier: 1
+      lowHealthDamageMultiplier: 1
+      criticalChance: 0
+      criticalDamageMultiplier: 1
+      randomDamageMinMultiplier: 1
+      randomDamageMaxMultiplier: 1
+      burnChance: 0
+      burnDamagePerSecond: 0
+      burnDuration: 0
+      rareLootChanceMultiplier: 1
+  - professionId: glass_cannon
+    title: Glass Cannon
+    description: Huge burst damage and crits, but very low durability.
+    icon: {fileID: 0}
+    availableInRandomUnlockPool: 1
+    randomUnlockWeight: 1
+    directSoftCurrencyCost: 850
+    directSoftCurrencyType: 0
+    purchaseProductId: 
+    allowSoftCurrencyFallbackWhenPurchasesUnavailable: 1
+    startCoinsBonus: 0
+    startGemsBonus: 0
+    defaultUnlocked: 0
+    starterItems:
+    - itemPrefab: {fileID: 5837536643105673945, guid: a05bdd26bb5c5874f9014b71fe95aad8, type: 3}
+      amount: 1
+    - itemPrefab: {fileID: 8397905037114353727, guid: 01a3235c7cb78c249927a66f756b46f8, type: 3}
+      amount: 2
+    perkLines:
+    - Very high burst damage
+    - Critical hits
+    - Dies very quickly
+    passiveBonuses:
+      maxHealthFlat: -45
+      maxStaminaFlat: 0
+      moveSpeedFlat: 0
+      moveSpeedMultiplier: 1
+      staminaConsumptionMultiplier: 1
+      staminaRestoreMultiplier: 1
+      experienceMultiplier: 1
+      incomingDamageMultiplier: 1.15
+      dodgeChance: 0
+      healthDrainPerSecond: 0
+      healOnKillFlat: 0
+      saleRewardMultiplier: 1
+      maxFuelFlat: 0
+      fuelConsumptionMultiplier: 1
+      fuelFillMultiplier: 1
+      boatSpeedFlat: 0
+      meleeDamageFlat: 0
+      meleeAttackSpeedMultiplier: 1
+      rangedDamageFlat: 0
+      rangedAttackSpeedMultiplier: 1
+      rangedReloadSpeedMultiplier: 1
+      outgoingDamageMultiplier: 1.45
+      lowHealthDamageMultiplier: 1
+      criticalChance: 0.22
+      criticalDamageMultiplier: 1.7
+      randomDamageMinMultiplier: 1
+      randomDamageMaxMultiplier: 1
+      burnChance: 0
+      burnDamagePerSecond: 0
+      burnDuration: 0
+      rareLootChanceMultiplier: 1
+  - professionId: ninja
+    title: Ninja
+    description: Light defensive skill class with dodge chance and fast melee tempo.
+    icon: {fileID: 0}
+    availableInRandomUnlockPool: 1
+    randomUnlockWeight: 1
+    directSoftCurrencyCost: 800
+    directSoftCurrencyType: 0
+    purchaseProductId: 
+    allowSoftCurrencyFallbackWhenPurchasesUnavailable: 1
+    startCoinsBonus: 0
+    startGemsBonus: 0
+    defaultUnlocked: 0
+    starterItems:
+    - itemPrefab: {fileID: 5837536643105673945, guid: 273ceb1fa3154a449a807fceb5f3f2c1, type: 3}
+      amount: 1
+    - itemPrefab: {fileID: 1160992267669844177, guid: 0b94a51814afd31408a7d1517f0b107d, type: 3}
+      amount: 1
+    perkLines:
+    - Chance to avoid incoming hits
+    - Fast movement and melee tempo
+    - Lower max HP
+    passiveBonuses:
+      maxHealthFlat: -25
+      maxStaminaFlat: 20
+      moveSpeedFlat: 0
+      moveSpeedMultiplier: 1.15
+      staminaConsumptionMultiplier: 0.9
+      staminaRestoreMultiplier: 1
+      experienceMultiplier: 1
+      incomingDamageMultiplier: 1
+      dodgeChance: 0.18
+      healthDrainPerSecond: 0
+      healOnKillFlat: 0
+      saleRewardMultiplier: 1
+      maxFuelFlat: 0
+      fuelConsumptionMultiplier: 1
+      fuelFillMultiplier: 1
+      boatSpeedFlat: 0
+      meleeDamageFlat: 0
+      meleeAttackSpeedMultiplier: 1.18
+      rangedDamageFlat: 0
+      rangedAttackSpeedMultiplier: 1
+      rangedReloadSpeedMultiplier: 1
+      outgoingDamageMultiplier: 1
+      lowHealthDamageMultiplier: 1
+      criticalChance: 0
+      criticalDamageMultiplier: 1
+      randomDamageMinMultiplier: 1
+      randomDamageMaxMultiplier: 1
+      burnChance: 0
+      burnDamagePerSecond: 0
+      burnDuration: 0
+      rareLootChanceMultiplier: 1

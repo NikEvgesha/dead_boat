@@ -378,7 +378,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
           "description": "Index of the ParticleSystem component in the GameObject's component list."
         },
         "logs": {
-          "$ref": "#/$defs/System.String[]",
+          "$ref": "#/$defs/System.String%5B%5D",
           "description": "Log of modifications made and any warnings/errors encountered."
         }
       },

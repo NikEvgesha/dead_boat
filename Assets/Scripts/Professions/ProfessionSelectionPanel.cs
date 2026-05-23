@@ -5,6 +5,8 @@ using UnityEngine.UI;
 
 public class ProfessionSelectionPanel : MonoBehaviour
 {
+    private const float DefaultProfessionListButtonHeight = 88f;
+
     private static ProfessionSelectionPanel _instance;
     public static ProfessionSelectionPanel Instance => _instance;
 
@@ -29,6 +31,15 @@ public class ProfessionSelectionPanel : MonoBehaviour
     [SerializeField] private Image _professionIcon;
     [SerializeField] private GameObject _lockObject;
 
+    [Header("Profession List")]
+    [SerializeField] private RectTransform _professionListRoot;
+    [SerializeField] private Button _professionListButtonPrefab;
+    [SerializeField] private Color _professionListNormalColor = new(0.05f, 0.06f, 0.07f, 0.9f);
+    [SerializeField] private Color _professionListSelectedColor = new(0.12f, 0.18f, 0.22f, 0.95f);
+    [SerializeField] private Color _professionListLockedColor = new(0.03f, 0.03f, 0.035f, 0.72f);
+    [SerializeField] private Color _professionListTextColor = Color.white;
+    [SerializeField] private Color _professionListLockedTextColor = new(0.7f, 0.72f, 0.76f, 1f);
+
     [Header("Buttons")]
     [SerializeField] private Button _applyButton;
     [SerializeField] private Button _nextButton;
@@ -45,6 +56,8 @@ public class ProfessionSelectionPanel : MonoBehaviour
     [SerializeField] private int _unlockPriceMaxCoins = 2000;
 
     private readonly List<ProfessionDefinition> _definitions = new();
+    private readonly List<Button> _professionListButtons = new();
+    private readonly List<Text> _professionListLabels = new();
     private int _currentIndex;
     private bool _opened;
 
@@ -122,6 +135,7 @@ public class ProfessionSelectionPanel : MonoBehaviour
 
         _currentIndex = Mathf.Clamp(FindProfessionIndex(ProfessionService.CurrentProfessionId), 0, _definitions.Count - 1);
         SetOpen(true, true);
+        RebuildProfessionList();
         RefreshView();
 
         if (PlayerInput.Instance != null)
@@ -176,7 +190,7 @@ public class ProfessionSelectionPanel : MonoBehaviour
         if (!ProfessionService.TrySelectProfession(definition.professionId))
             return;
 
-        SetMessage(ProfessionLocalization.FormatSelectedProfession(definition.title));
+        SetMessage(ProfessionLocalization.FormatSelectedProfession(ProfessionLocalization.DefinitionTitle(definition)));
         RefreshView();
     }
 
@@ -199,7 +213,7 @@ public class ProfessionSelectionPanel : MonoBehaviour
         }
 
         _currentIndex = FindProfessionIndex(unlockedDefinition.professionId);
-        SetMessage(ProfessionLocalization.FormatUnlockedProfession(unlockedDefinition.title));
+        SetMessage(ProfessionLocalization.FormatUnlockedProfession(ProfessionLocalization.DefinitionTitle(unlockedDefinition)));
         RefreshView();
     }
 
@@ -219,7 +233,7 @@ public class ProfessionSelectionPanel : MonoBehaviour
                     if (success)
                     {
                         ProfessionService.UnlockProfessionFromPurchase(definition.professionId);
-                        SetMessage(ProfessionLocalization.FormatUnlockedProfession(definition.title));
+                        SetMessage(ProfessionLocalization.FormatUnlockedProfession(ProfessionLocalization.DefinitionTitle(definition)));
                     }
                     else
                     {
@@ -249,7 +263,7 @@ public class ProfessionSelectionPanel : MonoBehaviour
             return;
         }
 
-        SetMessage(ProfessionLocalization.FormatUnlockedProfession(definition.title));
+        SetMessage(ProfessionLocalization.FormatUnlockedProfession(ProfessionLocalization.DefinitionTitle(definition)));
         RefreshView();
     }
 
@@ -267,12 +281,10 @@ public class ProfessionSelectionPanel : MonoBehaviour
             string.Equals(ProfessionService.CurrentProfessionId, definition.professionId, StringComparison.Ordinal);
 
         if (_professionTitleText != null)
-            _professionTitleText.text = string.IsNullOrWhiteSpace(definition.title) ? definition.professionId : definition.title;
+            _professionTitleText.text = ProfessionLocalization.DefinitionTitle(definition);
 
         if (_professionDescriptionText != null)
-            _professionDescriptionText.text = string.IsNullOrWhiteSpace(definition.description)
-                ? ProfessionLocalization.NoDescription
-                : definition.description;
+            _professionDescriptionText.text = ProfessionLocalization.DefinitionDescription(definition);
 
         if (_starterItemsText != null)
             _starterItemsText.text = ProfessionService.BuildStarterItemsSummary(definition);
@@ -290,14 +302,16 @@ public class ProfessionSelectionPanel : MonoBehaviour
                 _statusText.text = ProfessionLocalization.StatusLocked;
         }
 
+        bool hasIcon = definition.icon != null;
+
         if (_professionIcon != null)
         {
-            _professionIcon.enabled = definition.icon != null;
+            _professionIcon.enabled = hasIcon;
             _professionIcon.sprite = definition.icon;
         }
 
         if (_lockObject != null)
-            _lockObject.SetActive(!unlocked);
+            _lockObject.SetActive(!unlocked && hasIcon);
 
         if (_applyButton != null)
         {
@@ -312,6 +326,8 @@ public class ProfessionSelectionPanel : MonoBehaviour
             _unlockPriceText.text = BuildPriceText(definition, unlocked);
 
         RefreshDirectBuyButton(definition, unlocked);
+        RefreshProfessionList();
+        RefreshNavigationButtons();
     }
 
     private void RebuildDefinitions()
@@ -445,6 +461,9 @@ public class ProfessionSelectionPanel : MonoBehaviour
 
         if (_unlockPriceText != null)
             _unlockPriceText.text = ProfessionLocalization.FormatSoftPrice(GetUnlockPrice(), _unlockRandomCurrencyType);
+
+        RefreshProfessionList();
+        RefreshNavigationButtons();
     }
 
     private void RefreshDirectBuyButton(ProfessionDefinition definition, bool unlocked)
@@ -501,7 +520,128 @@ public class ProfessionSelectionPanel : MonoBehaviour
             return;
 
         RebuildDefinitions();
+        RebuildProfessionList();
         RefreshView();
+    }
+
+    private void SelectProfessionIndex(int index)
+    {
+        if (_definitions.Count == 0)
+            return;
+
+        _currentIndex = Mathf.Clamp(index, 0, _definitions.Count - 1);
+        SetMessage(string.Empty);
+        RefreshView();
+    }
+
+    private void RebuildProfessionList()
+    {
+        ClearProfessionList();
+
+        if (_professionListRoot == null || _professionListButtonPrefab == null)
+            return;
+
+        _professionListButtonPrefab.gameObject.SetActive(false);
+
+        for (int i = 0; i < _definitions.Count; i++)
+        {
+            int index = i;
+            Button button = Instantiate(_professionListButtonPrefab, _professionListRoot);
+            button.gameObject.SetActive(true);
+            EnsureProfessionListButtonLayout(button);
+            button.onClick.RemoveAllListeners();
+            button.onClick.AddListener(() => SelectProfessionIndex(index));
+
+            Text label = button.GetComponentInChildren<Text>(true);
+            _professionListButtons.Add(button);
+            _professionListLabels.Add(label);
+        }
+
+        RefreshProfessionList();
+        LayoutRebuilder.ForceRebuildLayoutImmediate(_professionListRoot);
+    }
+
+    private void EnsureProfessionListButtonLayout(Button button)
+    {
+        if (button == null)
+            return;
+
+        RectTransform rect = button.GetComponent<RectTransform>();
+        if (rect != null && rect.sizeDelta.y < 1f)
+            rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, DefaultProfessionListButtonHeight);
+
+        LayoutElement layoutElement = button.GetComponent<LayoutElement>();
+        if (layoutElement == null)
+            layoutElement = button.gameObject.AddComponent<LayoutElement>();
+
+        if (layoutElement.minHeight < 1f)
+            layoutElement.minHeight = DefaultProfessionListButtonHeight;
+
+        if (layoutElement.preferredHeight < 1f)
+            layoutElement.preferredHeight = DefaultProfessionListButtonHeight;
+
+        layoutElement.flexibleHeight = 0f;
+    }
+
+    private void ClearProfessionList()
+    {
+        for (int i = _professionListRoot != null ? _professionListRoot.childCount - 1 : -1; i >= 0; i--)
+        {
+            Transform child = _professionListRoot.GetChild(i);
+            if (_professionListButtonPrefab != null && child == _professionListButtonPrefab.transform)
+                continue;
+
+            child.SetParent(null, false);
+            if (Application.isPlaying)
+                Destroy(child.gameObject);
+            else
+                DestroyImmediate(child.gameObject);
+        }
+
+        _professionListButtons.Clear();
+        _professionListLabels.Clear();
+    }
+
+    private void RefreshProfessionList()
+    {
+        if (_professionListButtons.Count == 0)
+            return;
+
+        for (int i = 0; i < _professionListButtons.Count; i++)
+        {
+            Button button = _professionListButtons[i];
+            if (button == null)
+                continue;
+
+            ProfessionDefinition definition = i >= 0 && i < _definitions.Count ? _definitions[i] : null;
+            bool selected = i == _currentIndex;
+            bool unlocked = definition == null || ProfessionService.IsUnlocked(definition.professionId);
+
+            if (button.targetGraphic is Image image)
+                image.color = selected
+                    ? _professionListSelectedColor
+                    : unlocked ? _professionListNormalColor : _professionListLockedColor;
+
+            if (i < _professionListLabels.Count && _professionListLabels[i] != null)
+            {
+                Text label = _professionListLabels[i];
+                label.text = definition == null
+                    ? ProfessionLocalization.NoProfessionTitle
+                    : ProfessionLocalization.DefinitionTitle(definition);
+                label.color = unlocked ? _professionListTextColor : _professionListLockedTextColor;
+            }
+        }
+    }
+
+    private void RefreshNavigationButtons()
+    {
+        bool useListNavigation = _professionListRoot != null && _professionListButtonPrefab != null;
+
+        if (_prevButton != null)
+            _prevButton.gameObject.SetActive(!useListNavigation);
+
+        if (_nextButton != null)
+            _nextButton.gameObject.SetActive(!useListNavigation);
     }
 
     private void BindButtons()
@@ -571,7 +711,10 @@ public class ProfessionSelectionPanel : MonoBehaviour
             && _directBuyButton != null
             && _closeButton != null;
 
-        if (hasMainText && hasMainButtons)
+        bool hasList = _professionListRoot != null
+            && _professionListButtonPrefab != null;
+
+        if (hasMainText && hasMainButtons && hasList)
             return;
 
         ProfessionTemporaryUIFactory.PanelRefs refs = ProfessionTemporaryUIFactory.EnsurePanel(_panel, CloseFromButton);
@@ -587,6 +730,8 @@ public class ProfessionSelectionPanel : MonoBehaviour
         _unlockPriceText ??= refs.unlockPriceText;
         _professionIcon ??= refs.icon;
         _lockObject ??= refs.lockObject;
+        _professionListRoot ??= refs.professionListRoot;
+        _professionListButtonPrefab ??= refs.professionListButtonPrefab;
         _applyButton ??= refs.applyButton;
         _nextButton ??= refs.nextButton;
         _prevButton ??= refs.prevButton;

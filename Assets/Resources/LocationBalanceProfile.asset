@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 23469b9e588aabc40ad00655630c534c, type: 3}
+  m_Name: LocationBalanceProfile
+  m_EditorClassIdentifier: Assembly-CSharp::LocationBalanceProfile
+  _defaultBalance:
+    sceneName: 
+    itemCollectionOverride: {fileID: 0}
+    enemyLevelMultiplier: 1
+    enemyLevelOffset: 0
+    maxLocationEnemySpawns: 0
+    locationEnemySpawnChance: 1
+    nightSpawnCountMultiplier: 1
+    nightSpawnCooldownMultiplier: 1
+  _sceneBalances:
+  - sceneName: LevelForest
+    itemCollectionOverride: {fileID: 11400000, guid: 5a7eb9d5cd4410845be3a0bb1b90c8e6, type: 2}
+    enemyLevelMultiplier: 0.85
+    enemyLevelOffset: -1
+    maxLocationEnemySpawns: 5
+    locationEnemySpawnChance: 0.85
+    nightSpawnCountMultiplier: 0.75
+    nightSpawnCooldownMultiplier: 1.25
+  - sceneName: LevelDesert
+    itemCollectionOverride: {fileID: 11400000, guid: 4affa87779eff684d8f1c12eb66fa87a, type: 2}
+    enemyLevelMultiplier: 1
+    enemyLevelOffset: 0
+    maxLocationEnemySpawns: 6
+    locationEnemySpawnChance: 0.95
+    nightSpawnCountMultiplier: 1
+    nightSpawnCooldownMultiplier: 1
+  - sceneName: LevelWinter
+    itemCollectionOverride: {fileID: 11400000, guid: 2c8edefc7725f1146984c6b45e3bbc1a, type: 2}
+    enemyLevelMultiplier: 1.05
+    enemyLevelOffset: 0
+    maxLocationEnemySpawns: 0
+    locationEnemySpawnChance: 1
+    nightSpawnCountMultiplier: 1.1
+    nightSpawnCooldownMultiplier: 0.95

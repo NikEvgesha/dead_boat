@@ -160,7 +160,7 @@ public sealed class AnimalLoadoutPanel : MonoBehaviour
     private void RefreshView()
     {
         if (_headerLabel != null)
-            _headerLabel.text = "Animal team";
+            _headerLabel.text = EggFeatureLocalization.Text("UI/AnimalLoadout/Title", "Команда животных", "Animal team");
 
         int slotCount = _manager != null ? _manager.AnimalLoadoutSlotCount : 0;
         bool anyPlaced = false;
@@ -217,7 +217,7 @@ public sealed class AnimalLoadoutPanel : MonoBehaviour
         ClearInventorySlots();
 
         if (_inventoryHeaderLabel != null)
-            _inventoryHeaderLabel.text = "Select animal";
+            _inventoryHeaderLabel.text = EggFeatureLocalization.Text("UI/AnimalLoadout/SelectAnimal", "Выбери животное", "Select animal");
 
         bool anyAvailable = false;
         if (_manager != null && _inventorySlotPrefab != null && _inventorySlotsRoot != null)

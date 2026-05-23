@@ -132,7 +132,7 @@ public class AnimalPlacementSelectionPanel : MonoBehaviour
         ClearSlots();
 
         if (_pointLabel != null)
-            _pointLabel.text = EggTemporaryUIFactory.FormatHeader("Place animal", _currentPointId);
+            _pointLabel.text = EggFeatureLocalization.Format("UI/AnimalPlacement/TitleFormat", "Разместить животное: {0}", "Place animal: {0}", _currentPointId);
 
         bool anyAvailable = false;
 
@@ -220,10 +220,10 @@ public class AnimalPlacementSelectionPanel : MonoBehaviour
             _slotPrefab = EggTemporaryUIFactory.EnsureAnimalSlotTemplate(this);
 
         if (_emptyState == null)
-            _emptyState = EggTemporaryUIFactory.EnsureEmptyState(_panel, "No animals ready");
+            _emptyState = EggTemporaryUIFactory.EnsureEmptyState(_panel, EggFeatureLocalization.Text("UI/AnimalPlacement/NoAnimalsReady", "Нет доступных животных", "No animals ready"));
 
         if (_pointLabel == null)
-            _pointLabel = EggTemporaryUIFactory.EnsureHeader(_panel, "TemporaryAnimalSelectionHeader", "Place animal");
+            _pointLabel = EggTemporaryUIFactory.EnsureHeader(_panel, "TemporaryAnimalSelectionHeader", EggFeatureLocalization.Text("UI/AnimalPlacement/Title", "Разместить животное", "Place animal"));
 
         EggTemporaryUIFactory.EnsureCloseButton(_panel, CloseFromButton);
     }

@@ -130,7 +130,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
   "type": "object",
   "properties": {
     "result": {
-      "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder+GetMeshInfoResponse"
+      "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder%2BGetMeshInfoResponse"
     }
   },
   "$defs": {
@@ -154,7 +154,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
     "System.Collections.Generic.List<com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder+FaceDirectionInfo>": {
       "type": "array",
       "items": {
-        "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder+FaceDirectionInfo"
+        "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder%2BFaceDirectionInfo"
       }
     },
     "com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder+FaceDirectionInfo": {
@@ -164,7 +164,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
           "type": "string"
         },
         "faceIndices": {
-          "$ref": "#/$defs/System.Int32[]"
+          "$ref": "#/$defs/System.Int32%5B%5D"
         },
         "firstFaceCenter": {
           "type": "string"
@@ -180,7 +180,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
     "System.Collections.Generic.List<com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder+FaceInfo>": {
       "type": "array",
       "items": {
-        "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder+FaceInfo"
+        "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder%2BFaceInfo"
       }
     },
     "com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder+FaceInfo": {
@@ -199,10 +199,10 @@ Read the /unity-initial-setup skill for detailed installation instructions.
           "type": "string"
         },
         "vertices": {
-          "$ref": "#/$defs/System.Collections.Generic.List<com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder+VertexInfo>"
+          "$ref": "#/$defs/System.Collections.Generic.List%3Ccom.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder%2BVertexInfo%3E"
         },
         "edges": {
-          "$ref": "#/$defs/System.Collections.Generic.List<com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder+EdgeInfo>"
+          "$ref": "#/$defs/System.Collections.Generic.List%3Ccom.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder%2BEdgeInfo%3E"
         }
       },
       "required": [
@@ -214,7 +214,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
     "System.Collections.Generic.List<com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder+VertexInfo>": {
       "type": "array",
       "items": {
-        "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder+VertexInfo"
+        "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder%2BVertexInfo"
       }
     },
     "com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder+VertexInfo": {
@@ -234,7 +234,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
     "System.Collections.Generic.List<com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder+EdgeInfo>": {
       "type": "array",
       "items": {
-        "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder+EdgeInfo"
+        "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder%2BEdgeInfo"
       }
     },
     "com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder+EdgeInfo": {
@@ -280,13 +280,13 @@ Read the /unity-initial-setup skill for detailed installation instructions.
           "type": "integer"
         },
         "bounds": {
-          "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder+BoundsInfo"
+          "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder%2BBoundsInfo"
         },
         "faceDirections": {
-          "$ref": "#/$defs/System.Collections.Generic.List<com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder+FaceDirectionInfo>"
+          "$ref": "#/$defs/System.Collections.Generic.List%3Ccom.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder%2BFaceDirectionInfo%3E"
         },
         "faces": {
-          "$ref": "#/$defs/System.Collections.Generic.List<com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder+FaceInfo>"
+          "$ref": "#/$defs/System.Collections.Generic.List%3Ccom.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder%2BFaceInfo%3E"
         },
         "facesShown": {
           "type": "integer"

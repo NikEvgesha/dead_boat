@@ -47,10 +47,10 @@ public sealed class AnimalLoadoutSlotView : MonoBehaviour
             }
 
             if (_titleText != null)
-                _titleText.text = string.IsNullOrWhiteSpace(definition.title) ? definition.animalId : definition.title;
+                _titleText.text = EggFeatureLocalization.AnimalTitle(definition);
 
             if (_stageText != null)
-                _stageText.text = $"S{Mathf.Max(1, placed.stage)}";
+                _stageText.text = EggFeatureLocalization.StageShort(placed.stage);
         }
         else
         {
@@ -70,7 +70,7 @@ public sealed class AnimalLoadoutSlotView : MonoBehaviour
         if (_emptyText != null)
         {
             _emptyText.gameObject.SetActive(!hasAnimal);
-            _emptyText.text = "Select";
+            _emptyText.text = EggFeatureLocalization.Text("UI/AnimalLoadout/Select", "Выбрать", "Select");
         }
 
         if (_clearButton != null)

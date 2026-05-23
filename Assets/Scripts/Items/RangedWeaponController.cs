@@ -272,6 +272,7 @@ public class RangedWeaponController : MonoBehaviour
             if (targetHealth != null)
             {
                 targetHealth.TakeDamage((int)Damage);
+                ProfessionService.TryApplyOnHitEffect(targetHealth);
             }
             endPoint = hit.point;
 

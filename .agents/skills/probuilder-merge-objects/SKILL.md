@@ -51,7 +51,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
   "type": "object",
   "properties": {
     "gameObjectRefs": {
-      "$ref": "#/$defs/AIGD.GameObjectRef[]"
+      "$ref": "#/$defs/AIGD.GameObjectRef%5B%5D"
     },
     "deleteSourceObjects": {
       "type": "boolean"
@@ -117,14 +117,14 @@ Read the /unity-initial-setup skill for detailed installation instructions.
   "type": "object",
   "properties": {
     "result": {
-      "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder+MergeObjectsResponse"
+      "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder%2BMergeObjectsResponse"
     }
   },
   "$defs": {
     "System.Collections.Generic.List<com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder+SourceObjectInfo>": {
       "type": "array",
       "items": {
-        "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder+SourceObjectInfo"
+        "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder%2BSourceObjectInfo"
       }
     },
     "com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder+SourceObjectInfo": {
@@ -147,7 +147,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
     "System.Collections.Generic.List<com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder+AdditionalMeshInfo>": {
       "type": "array",
       "items": {
-        "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder+AdditionalMeshInfo"
+        "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder%2BAdditionalMeshInfo"
       }
     },
     "com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder+AdditionalMeshInfo": {
@@ -195,10 +195,10 @@ Read the /unity-initial-setup skill for detailed installation instructions.
           "type": "integer"
         },
         "sourceObjects": {
-          "$ref": "#/$defs/System.Collections.Generic.List<com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder+SourceObjectInfo>"
+          "$ref": "#/$defs/System.Collections.Generic.List%3Ccom.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder%2BSourceObjectInfo%3E"
         },
         "additionalMeshes": {
-          "$ref": "#/$defs/System.Collections.Generic.List<com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder+AdditionalMeshInfo>"
+          "$ref": "#/$defs/System.Collections.Generic.List%3Ccom.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder%2BAdditionalMeshInfo%3E"
         }
       },
       "required": [

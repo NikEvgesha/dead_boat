@@ -51,6 +51,7 @@ public class MeleWeapon : MonoBehaviour
 
             _zombies.Add(zombie);
             zombie.TakeDamage(Damage);
+            ProfessionService.TryApplyOnHitEffect(zombie);
 
             if (_audioSource)
                 if (_audioHit)

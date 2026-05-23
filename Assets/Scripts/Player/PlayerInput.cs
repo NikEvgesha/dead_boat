@@ -211,6 +211,10 @@ public class PlayerInput : MonoBehaviour
             _roulette = Input.GetKeyDown(KeyCode.K);
             _playtime = Input.GetKeyDown(KeyCode.L);
             _levelUp = Input.GetKeyDown(KeyCode.B);
+
+            if (Input.GetKeyDown(KeyCode.T))
+                ProfessionTemporaryUIBootstrap.TogglePanelFromShortcut();
+
             if (!ControlManager.Instance.CursorActive)
             {
                 _pickUp = Input.GetMouseButtonDown(1);

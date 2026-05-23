@@ -71,7 +71,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
   "type": "object",
   "properties": {
     "points": {
-      "$ref": "#/$defs/System.Single[][]"
+      "$ref": "#/$defs/System.Single%5B%5D%5B%5D"
     },
     "height": {
       "type": "number"
@@ -105,7 +105,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
     "System.Single[][]": {
       "type": "array",
       "items": {
-        "$ref": "#/$defs/System.Single[]"
+        "$ref": "#/$defs/System.Single%5B%5D"
       }
     },
     "System.Type": {
@@ -180,14 +180,14 @@ Read the /unity-initial-setup skill for detailed installation instructions.
   "type": "object",
   "properties": {
     "result": {
-      "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder+CreatePolyShapeResponse"
+      "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder%2BCreatePolyShapeResponse"
     }
   },
   "$defs": {
     "System.Collections.Generic.List<com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder+PointInfo>": {
       "type": "array",
       "items": {
-        "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder+PointInfo"
+        "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder%2BPointInfo"
       }
     },
     "com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder+PointInfo": {
@@ -246,7 +246,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
           "type": "integer"
         },
         "inputPoints": {
-          "$ref": "#/$defs/System.Collections.Generic.List<com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder+PointInfo>"
+          "$ref": "#/$defs/System.Collections.Generic.List%3Ccom.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder%2BPointInfo%3E"
         }
       },
       "required": [

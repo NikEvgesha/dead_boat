@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Text;
 using UnityEngine;
 
@@ -15,6 +16,7 @@ public static class ProfessionService
     private static readonly ProfessionPassiveBonuses _defaultPassiveBonuses = new();
     private static ProfessionState _state;
     private static bool _initialized;
+    private static float _healthDrainAccumulator;
 
     public static event Action StateChanged;
 
@@ -325,6 +327,24 @@ public static class ProfessionService
         return baseValue + bonuses.maxHealthFlat;
     }
 
+    public static float ApplyMaxStamina(float baseValue)
+    {
+        ProfessionPassiveBonuses bonuses = GetCurrentPassiveBonuses();
+        return baseValue + bonuses.maxStaminaFlat;
+    }
+
+    public static float ApplyStaminaConsumption(float baseValue)
+    {
+        ProfessionPassiveBonuses bonuses = GetCurrentPassiveBonuses();
+        return baseValue * bonuses.SafeStaminaConsumptionMultiplier;
+    }
+
+    public static float ApplyStaminaRestore(float baseValue)
+    {
+        ProfessionPassiveBonuses bonuses = GetCurrentPassiveBonuses();
+        return baseValue * bonuses.SafeStaminaRestoreMultiplier;
+    }
+
     public static int ApplyExperienceGain(int baseValue)
     {
         ProfessionPassiveBonuses bonuses = GetCurrentPassiveBonuses();
@@ -364,7 +384,7 @@ public static class ProfessionService
     public static float ApplyMeleeDamage(float baseValue)
     {
         ProfessionPassiveBonuses bonuses = GetCurrentPassiveBonuses();
-        return baseValue + bonuses.meleeDamageFlat;
+        return ApplyOutgoingDamageModifiers(baseValue + bonuses.meleeDamageFlat, bonuses);
     }
 
     public static float ApplyMeleeAttackSpeed(float baseValue)
@@ -376,7 +396,7 @@ public static class ProfessionService
     public static float ApplyRangedDamage(float baseValue)
     {
         ProfessionPassiveBonuses bonuses = GetCurrentPassiveBonuses();
-        return baseValue + bonuses.rangedDamageFlat;
+        return ApplyOutgoingDamageModifiers(baseValue + bonuses.rangedDamageFlat, bonuses);
     }
 
     public static float ApplyRangedAttackSpeed(float baseValue)
@@ -389,6 +409,118 @@ public static class ProfessionService
     {
         ProfessionPassiveBonuses bonuses = GetCurrentPassiveBonuses();
         return baseValue * bonuses.SafeRangedReloadSpeedMultiplier;
+    }
+
+    public static int ApplyIncomingDamage(int baseDamage)
+    {
+        ProfessionPassiveBonuses bonuses = GetCurrentPassiveBonuses();
+        int damage = Mathf.Max(0, baseDamage);
+        if (damage <= 0)
+            return 0;
+
+        if (bonuses.dodgeChance > 0f && UnityEngine.Random.value < Mathf.Clamp01(bonuses.dodgeChance))
+            return 0;
+
+        damage = Mathf.RoundToInt(damage * bonuses.SafeIncomingDamageMultiplier);
+        return Mathf.Max(0, damage);
+    }
+
+    public static void TickPlayerEffects(PlayerStatsManager player, float deltaTime)
+    {
+        if (player == null || deltaTime <= 0f)
+            return;
+
+        ProfessionPassiveBonuses bonuses = GetCurrentPassiveBonuses();
+        if (bonuses.healthDrainPerSecond <= 0f)
+        {
+            _healthDrainAccumulator = 0f;
+            return;
+        }
+
+        _healthDrainAccumulator += bonuses.healthDrainPerSecond * deltaTime;
+        int damage = Mathf.FloorToInt(_healthDrainAccumulator);
+        if (damage <= 0)
+            return;
+
+        _healthDrainAccumulator -= damage;
+        player.TakeProfessionDrainDamage(damage);
+    }
+
+    public static void HandleEnemyKilled(EnemyCore enemy)
+    {
+        ProfessionPassiveBonuses bonuses = GetCurrentPassiveBonuses();
+        if (bonuses.healOnKillFlat <= 0f)
+            return;
+
+        PlayerStatsManager player = PlayerStatsManager.Instance;
+        if (player == null)
+            return;
+
+        player.AddHealth(Mathf.RoundToInt(bonuses.healOnKillFlat));
+    }
+
+    public static void TryApplyOnHitEffect(EnemyCore enemy)
+    {
+        if (enemy == null || enemy.IsDead)
+            return;
+
+        ProfessionPassiveBonuses bonuses = GetCurrentPassiveBonuses();
+        if (bonuses.burnDamagePerSecond <= 0f || bonuses.burnDuration <= 0f)
+            return;
+
+        float chance = bonuses.burnChance <= 0f ? 1f : Mathf.Clamp01(bonuses.burnChance);
+        if (UnityEngine.Random.value > chance)
+            return;
+
+        enemy.ApplyBurn(bonuses.burnDuration, bonuses.burnDamagePerSecond);
+    }
+
+    public static float ApplyLocationItemSpawnChance(float baseChance)
+    {
+        ProfessionPassiveBonuses bonuses = GetCurrentPassiveBonuses();
+        float chance = Mathf.Max(0f, baseChance);
+        float multiplier = bonuses.SafeRareLootChanceMultiplier;
+        if (Mathf.Approximately(multiplier, 1f))
+            return chance;
+
+        if (chance <= 10f)
+            return chance * multiplier;
+
+        if (chance <= 30f)
+            return chance * Mathf.Lerp(1f, multiplier, 0.5f);
+
+        return chance;
+    }
+
+    private static float ApplyOutgoingDamageModifiers(float damage, ProfessionPassiveBonuses bonuses)
+    {
+        if (bonuses == null)
+            return damage;
+
+        damage *= bonuses.SafeOutgoingDamageMultiplier;
+
+        if (!Mathf.Approximately(bonuses.SafeLowHealthDamageMultiplier, 1f))
+        {
+            PlayerStatsManager player = PlayerStatsManager.Instance;
+            if (player != null && player.MaxHealth > 0f)
+            {
+                float missingHealthPercent = 1f - Mathf.Clamp01(player.Health / player.MaxHealth);
+                damage *= Mathf.Lerp(1f, bonuses.SafeLowHealthDamageMultiplier, missingHealthPercent);
+            }
+        }
+
+        if (!Mathf.Approximately(bonuses.SafeRandomDamageMinMultiplier, 1f) ||
+            !Mathf.Approximately(bonuses.SafeRandomDamageMaxMultiplier, 1f))
+        {
+            float min = Mathf.Min(bonuses.SafeRandomDamageMinMultiplier, bonuses.SafeRandomDamageMaxMultiplier);
+            float max = Mathf.Max(bonuses.SafeRandomDamageMinMultiplier, bonuses.SafeRandomDamageMaxMultiplier);
+            damage *= UnityEngine.Random.Range(min, max);
+        }
+
+        if (bonuses.criticalChance > 0f && UnityEngine.Random.value < Mathf.Clamp01(bonuses.criticalChance))
+            damage *= bonuses.SafeCriticalDamageMultiplier;
+
+        return Mathf.Max(0f, damage);
     }
 
     public static string BuildStarterItemsSummary(ProfessionDefinition definition)
@@ -442,7 +574,7 @@ public static class ProfessionService
                 if (builder.Length > 0)
                     builder.AppendLine();
                 builder.Append("- ");
-                builder.Append(perkLine.Trim());
+                builder.Append(ProfessionLocalization.DefinitionPerk(definition, i, perkLine.Trim()));
             }
         }
         if (definition != null)
@@ -468,17 +600,31 @@ public static class ProfessionService
         AppendFlatLine(lines, ProfessionLocalization.PassiveMoveSpeedFlatLabel, bonuses.moveSpeedFlat);
         AppendMultiplierLine(lines, ProfessionLocalization.PassiveMoveSpeedMultLabel, bonuses.SafeMoveSpeedMultiplier);
         AppendFlatLine(lines, ProfessionLocalization.PassiveMaxHealthFlatLabel, bonuses.maxHealthFlat);
+        AppendFlatLine(lines, ProfessionLocalization.PassiveMaxStaminaFlatLabel, bonuses.maxStaminaFlat);
+        AppendMultiplierLine(lines, ProfessionLocalization.PassiveStaminaConsumptionMultLabel, bonuses.SafeStaminaConsumptionMultiplier);
+        AppendMultiplierLine(lines, ProfessionLocalization.PassiveStaminaRestoreMultLabel, bonuses.SafeStaminaRestoreMultiplier);
+        AppendMultiplierLine(lines, ProfessionLocalization.PassiveIncomingDamageMultLabel, bonuses.SafeIncomingDamageMultiplier);
+        AppendPercentLine(lines, ProfessionLocalization.PassiveDodgeChanceLabel, bonuses.dodgeChance);
+        AppendFlatLine(lines, ProfessionLocalization.PassiveHealOnKillFlatLabel, bonuses.healOnKillFlat);
+        AppendPerSecondLine(lines, ProfessionLocalization.PassiveHealthDrainPerSecondLabel, -bonuses.healthDrainPerSecond);
         AppendMultiplierLine(lines, ProfessionLocalization.PassiveExperienceMultLabel, bonuses.SafeExperienceMultiplier);
         AppendMultiplierLine(lines, ProfessionLocalization.PassiveSaleRewardMultLabel, bonuses.SafeSaleRewardMultiplier);
         AppendFlatLine(lines, ProfessionLocalization.PassiveMaxFuelFlatLabel, bonuses.maxFuelFlat);
-        AppendMultiplierLine(lines, ProfessionLocalization.PassiveFuelConsumptionMultLabel, bonuses.SafeFuelConsumptionMultiplier, invertSign: true);
+        AppendMultiplierLine(lines, ProfessionLocalization.PassiveFuelConsumptionMultLabel, bonuses.SafeFuelConsumptionMultiplier);
         AppendMultiplierLine(lines, ProfessionLocalization.PassiveFuelFillMultLabel, bonuses.SafeFuelFillMultiplier);
         AppendFlatLine(lines, ProfessionLocalization.PassiveBoatSpeedFlatLabel, bonuses.boatSpeedFlat);
         AppendFlatLine(lines, ProfessionLocalization.PassiveMeleeDamageFlatLabel, bonuses.meleeDamageFlat);
         AppendMultiplierLine(lines, ProfessionLocalization.PassiveMeleeAttackSpeedMultLabel, bonuses.SafeMeleeAttackSpeedMultiplier);
         AppendFlatLine(lines, ProfessionLocalization.PassiveRangedDamageFlatLabel, bonuses.rangedDamageFlat);
         AppendMultiplierLine(lines, ProfessionLocalization.PassiveRangedAttackSpeedMultLabel, bonuses.SafeRangedAttackSpeedMultiplier);
-        AppendMultiplierLine(lines, ProfessionLocalization.PassiveRangedReloadMultLabel, bonuses.SafeRangedReloadSpeedMultiplier, invertSign: true);
+        AppendMultiplierLine(lines, ProfessionLocalization.PassiveRangedReloadMultLabel, bonuses.SafeRangedReloadSpeedMultiplier);
+        AppendMultiplierLine(lines, ProfessionLocalization.PassiveOutgoingDamageMultLabel, bonuses.SafeOutgoingDamageMultiplier);
+        AppendMultiplierLine(lines, ProfessionLocalization.PassiveLowHealthDamageMultLabel, bonuses.SafeLowHealthDamageMultiplier);
+        AppendPercentLine(lines, ProfessionLocalization.PassiveCriticalChanceLabel, bonuses.criticalChance);
+        AppendMultiplierLine(lines, ProfessionLocalization.PassiveCriticalDamageMultLabel, bonuses.SafeCriticalDamageMultiplier);
+        AppendDamageRangeLine(lines, ProfessionLocalization.PassiveRandomDamageRangeLabel, bonuses.SafeRandomDamageMinMultiplier, bonuses.SafeRandomDamageMaxMultiplier);
+        AppendBurnLine(lines, bonuses);
+        AppendMultiplierLine(lines, ProfessionLocalization.PassiveRareLootChanceMultLabel, bonuses.SafeRareLootChanceMultiplier);
         return lines;
     }
     private static void AppendFlatLine(List<string> lines, string label, float value)
@@ -497,6 +643,46 @@ public static class ProfessionService
             deltaPercent *= -1;
         string sign = deltaPercent > 0 ? "+" : string.Empty;
         lines.Add($"{label}: {sign}{deltaPercent}%");
+    }
+
+    private static void AppendPercentLine(List<string> lines, string label, float value)
+    {
+        int percent = Mathf.RoundToInt(Mathf.Clamp01(value) * 100f);
+        if (percent == 0)
+            return;
+
+        lines.Add($"{label}: +{percent}%");
+    }
+
+    private static void AppendPerSecondLine(List<string> lines, string label, float value)
+    {
+        if (Mathf.Approximately(value, 0f))
+            return;
+
+        string sign = value > 0f ? "+" : string.Empty;
+        string formatted = value.ToString("0.#", CultureInfo.InvariantCulture);
+        lines.Add($"{label}: {sign}{formatted}/s");
+    }
+
+    private static void AppendDamageRangeLine(List<string> lines, string label, float minMultiplier, float maxMultiplier)
+    {
+        if (Mathf.Approximately(minMultiplier, 1f) && Mathf.Approximately(maxMultiplier, 1f))
+            return;
+
+        int min = Mathf.RoundToInt(Mathf.Min(minMultiplier, maxMultiplier) * 100f);
+        int max = Mathf.RoundToInt(Mathf.Max(minMultiplier, maxMultiplier) * 100f);
+        lines.Add($"{label}: {min}-{max}%");
+    }
+
+    private static void AppendBurnLine(List<string> lines, ProfessionPassiveBonuses bonuses)
+    {
+        if (bonuses == null || bonuses.burnDamagePerSecond <= 0f || bonuses.burnDuration <= 0f)
+            return;
+
+        string damage = bonuses.burnDamagePerSecond.ToString("0.#", CultureInfo.InvariantCulture);
+        string duration = bonuses.burnDuration.ToString("0.#", CultureInfo.InvariantCulture);
+        int chance = Mathf.RoundToInt((bonuses.burnChance <= 0f ? 1f : Mathf.Clamp01(bonuses.burnChance)) * 100f);
+        lines.Add($"{ProfessionLocalization.PassiveBurnLabel}: {damage}/s, {duration}s, {chance}%");
     }
 
     private static string ResolveItemDisplayName(PickableItem itemPrefab)

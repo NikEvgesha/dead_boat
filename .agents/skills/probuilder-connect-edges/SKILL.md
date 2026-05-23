@@ -58,7 +58,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
       "$ref": "#/$defs/AIGD.GameObjectRef"
     },
     "edges": {
-      "$ref": "#/$defs/System.Int32[][]"
+      "$ref": "#/$defs/System.Int32%5B%5D%5B%5D"
     },
     "faceDirection": {
       "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Editor.API.FaceDirection"
@@ -110,7 +110,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
     "System.Int32[][]": {
       "type": "array",
       "items": {
-        "$ref": "#/$defs/System.Int32[]"
+        "$ref": "#/$defs/System.Int32%5B%5D"
       }
     },
     "com.IvanMurzak.Unity.MCP.Editor.API.FaceDirection": {
@@ -140,7 +140,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
   "type": "object",
   "properties": {
     "result": {
-      "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder+ConnectEdgesResponse"
+      "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Editor.API.Tool_ProBuilder%2BConnectEdgesResponse"
     }
   },
   "$defs": {

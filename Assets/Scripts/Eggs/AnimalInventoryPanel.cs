@@ -130,7 +130,7 @@ public class AnimalInventoryPanel : MonoBehaviour
         ClearSlots();
 
         if (_headerLabel != null)
-            _headerLabel.text = "Animals";
+            _headerLabel.text = EggFeatureLocalization.Text("UI/AnimalInventory/Title", "Животные", "Animals");
 
         bool anyAvailable = false;
 
