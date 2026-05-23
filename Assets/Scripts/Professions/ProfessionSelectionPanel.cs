@@ -25,10 +25,14 @@ public class ProfessionSelectionPanel : MonoBehaviour
     [SerializeField] private Text _perksText;
     [SerializeField] private Text _statusText;
     [SerializeField] private Text _messageText;
+    [SerializeField] private Text _unlockRandomPriceText;
     [SerializeField] private Text _unlockPriceText;
 
     [Header("Visuals")]
     [SerializeField] private Image _professionIcon;
+    [SerializeField] private Image _unlockRandomPriceIcon;
+    [SerializeField] private Image _unlockPriceIcon;
+    [SerializeField] private Sprite _softCurrencyPriceIcon;
     [SerializeField] private GameObject _lockObject;
 
     [Header("Profession List")]
@@ -51,7 +55,7 @@ public class ProfessionSelectionPanel : MonoBehaviour
     [Header("Unlock")]
     [SerializeField] private int _unlockRandomPriceCoins = 250;
     [SerializeField] private CurrencyType _unlockRandomCurrencyType = CurrencyType.Coins;
-    [SerializeField] private bool _scaleUnlockPriceByOpenedCount = true;
+    [SerializeField] private bool _scaleUnlockPriceByOpenedCount;
     [SerializeField] private int _unlockPriceStepCoins = 100;
     [SerializeField] private int _unlockPriceMaxCoins = 2000;
 
@@ -319,13 +323,9 @@ public class ProfessionSelectionPanel : MonoBehaviour
             _applyButton.interactable = unlocked && !selected;
         }
 
-        if (_unlockRandomButton != null)
-            _unlockRandomButton.interactable = ProfessionService.HasRandomLockedProfessions();
-
-        if (_unlockPriceText != null)
-            _unlockPriceText.text = BuildPriceText(definition, unlocked);
-
+        RefreshRandomUnlockControls();
         RefreshDirectBuyButton(definition, unlocked);
+        RefreshDirectBuyPrice(definition, unlocked);
         RefreshProfessionList();
         RefreshNavigationButtons();
     }
@@ -453,17 +453,30 @@ public class ProfessionSelectionPanel : MonoBehaviour
             _applyButton.interactable = !selected;
         }
 
-        if (_unlockRandomButton != null)
-            _unlockRandomButton.interactable = ProfessionService.HasRandomLockedProfessions();
+        RefreshRandomUnlockControls();
 
         if (_directBuyButton != null)
             _directBuyButton.gameObject.SetActive(false);
 
-        if (_unlockPriceText != null)
-            _unlockPriceText.text = ProfessionLocalization.FormatSoftPrice(GetUnlockPrice(), _unlockRandomCurrencyType);
+        SetPriceVisible(_unlockPriceText, _unlockPriceIcon, false);
 
         RefreshProfessionList();
         RefreshNavigationButtons();
+    }
+
+    private void RefreshRandomUnlockControls()
+    {
+        bool hasRandomLockedProfessions = ProfessionService.HasRandomLockedProfessions();
+
+        if (_unlockRandomButton != null)
+            _unlockRandomButton.interactable = hasRandomLockedProfessions;
+
+        SetSoftCurrencyPrice(
+            _unlockRandomPriceText,
+            _unlockRandomPriceIcon,
+            GetUnlockPrice(),
+            _unlockRandomCurrencyType,
+            hasRandomLockedProfessions);
     }
 
     private void RefreshDirectBuyButton(ProfessionDefinition definition, bool unlocked)
@@ -476,22 +489,85 @@ public class ProfessionSelectionPanel : MonoBehaviour
         _directBuyButton.interactable = canBuy;
     }
 
-    private string BuildPriceText(ProfessionDefinition definition, bool unlocked)
+    private void RefreshDirectBuyPrice(ProfessionDefinition definition, bool unlocked)
     {
-        if (unlocked)
-            return ProfessionLocalization.FormatSoftPrice(GetUnlockPrice(), _unlockRandomCurrencyType);
+        if (unlocked || definition == null)
+        {
+            SetPriceVisible(_unlockPriceText, _unlockPriceIcon, false);
+            return;
+        }
 
         if (CanUseRealPurchase(definition))
         {
             PurchaseData purchaseData = PurchasesManager.Instance.GetPurchaseData(definition.purchaseProductId);
             if (purchaseData != null && !string.IsNullOrWhiteSpace(purchaseData.Price))
-                return purchaseData.Price;
+            {
+                SetTextPrice(_unlockPriceText, _unlockPriceIcon, purchaseData.Price, true);
+                return;
+            }
         }
 
         if (CanUseSoftCurrencyFallback(definition))
-            return ProfessionLocalization.FormatSoftPrice(definition.directSoftCurrencyCost, definition.directSoftCurrencyType);
+        {
+            SetSoftCurrencyPrice(
+                _unlockPriceText,
+                _unlockPriceIcon,
+                definition.directSoftCurrencyCost,
+                definition.directSoftCurrencyType,
+                true);
+            return;
+        }
 
-        return ProfessionLocalization.FormatSoftPrice(GetUnlockPrice(), _unlockRandomCurrencyType);
+        SetPriceVisible(_unlockPriceText, _unlockPriceIcon, false);
+    }
+
+    private void SetSoftCurrencyPrice(Text priceText, Image priceIcon, int amount, CurrencyType currencyType, bool visible)
+    {
+        SetTextPrice(priceText, priceIcon, Mathf.Max(0, amount).ToString(), visible);
+
+        if (priceIcon == null)
+            return;
+
+        Sprite icon = ResolveSoftCurrencyIcon(currencyType);
+        priceIcon.sprite = icon;
+        priceIcon.preserveAspect = true;
+        priceIcon.gameObject.SetActive(visible && icon != null);
+        priceIcon.enabled = visible && icon != null;
+    }
+
+    private void SetTextPrice(Text priceText, Image priceIcon, string value, bool visible)
+    {
+        if (priceText != null)
+        {
+            priceText.gameObject.SetActive(visible);
+            priceText.text = visible ? value ?? string.Empty : string.Empty;
+        }
+
+        if (priceIcon != null)
+            priceIcon.gameObject.SetActive(false);
+    }
+
+    private void SetPriceVisible(Text priceText, Image priceIcon, bool visible)
+    {
+        if (priceText != null)
+        {
+            priceText.gameObject.SetActive(visible);
+            if (!visible)
+                priceText.text = string.Empty;
+        }
+
+        if (priceIcon != null)
+            priceIcon.gameObject.SetActive(visible && priceIcon.sprite != null);
+    }
+
+    private Sprite ResolveSoftCurrencyIcon(CurrencyType currencyType)
+    {
+        if (currencyType != CurrencyType.Real && _softCurrencyPriceIcon != null)
+            return _softCurrencyPriceIcon;
+
+        return CurrencyManager.Instance != null
+            ? CurrencyManager.Instance.GetCurrencyIcon(currencyType)
+            : null;
     }
 
     private bool CanUseRealPurchase(ProfessionDefinition definition)
