@@ -17,6 +17,7 @@ public class EggNestPoint : MonoBehaviour
 
     private GameObject _eggPreviewInstance;
     private bool _incubationBoostAdInProgress;
+    private int _lastAnimalCollectFrame = -1;
 
     public string NestId => _nestId;
     public Transform EggVisualAnchor => _eggVisualAnchor != null ? _eggVisualAnchor : transform;
@@ -86,7 +87,11 @@ public class EggNestPoint : MonoBehaviour
 
     public void PlaceAnimalAction()
     {
-        EggHatchingManager.Instance?.TryCollectReadyAnimal(_nestId);
+        if (EggHatchingManager.Instance != null &&
+            EggHatchingManager.Instance.TryCollectReadyAnimal(_nestId))
+        {
+            _lastAnimalCollectFrame = Time.frameCount;
+        }
     }
 
     public void SetEggPreview(GameObject previewPrefab)
@@ -140,6 +145,9 @@ public class EggNestPoint : MonoBehaviour
         EggNestState state = manager.GetNestState(_nestId);
         if (state == null)
         {
+            if (_lastAnimalCollectFrame == Time.frameCount)
+                return;
+
             PlaceEggAction();
             return;
         }

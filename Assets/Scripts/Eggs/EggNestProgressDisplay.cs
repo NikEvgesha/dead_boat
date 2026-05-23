@@ -9,6 +9,7 @@ public class EggNestProgressDisplay : MonoBehaviour
     [SerializeField] private Text _timerText;
     [SerializeField] private Text _titleText;
     [SerializeField] private Image _progressFill;
+    [SerializeField] private Sprite _progressFillSprite;
     [SerializeField] private GameObject _incubatingRoot;
     [SerializeField] private GameObject _readyRoot;
     [SerializeField] private bool _createTemporaryUiIfMissing = true;
@@ -27,6 +28,7 @@ public class EggNestProgressDisplay : MonoBehaviour
             _nest = GetComponent<EggNestPoint>();
 
         EnsureTemporaryUiIfNeeded();
+        ConfigureVisuals();
     }
 
     private void Start()
@@ -178,13 +180,69 @@ public class EggNestProgressDisplay : MonoBehaviour
         progressRect.offsetMax = Vector2.zero;
 
         _progressFill = progress.AddComponent<Image>();
+        _progressFill.sprite = ResolveProgressFillSprite();
         _progressFill.color = new Color(0.98f, 0.78f, 0.18f, 0.95f);
         _progressFill.type = Image.Type.Filled;
         _progressFill.fillMethod = Image.FillMethod.Horizontal;
         _progressFill.fillOrigin = (int)Image.OriginHorizontal.Left;
         _progressFill.fillAmount = 0f;
+        _progressFill.raycastTarget = false;
 
         _canvas.gameObject.SetActive(false);
+    }
+
+    private void ConfigureVisuals()
+    {
+        ConfigureProgressFill();
+        ConfigureText(_titleText);
+        ConfigureText(_timerText);
+    }
+
+    private void ConfigureProgressFill()
+    {
+        if (_progressFill == null)
+            return;
+
+        Sprite sprite = ResolveProgressFillSprite();
+        if (sprite != null)
+        {
+            _progressFill.sprite = sprite;
+            if (_progressFillSprite != null)
+                _progressFill.color = Color.white;
+        }
+
+        _progressFill.type = Image.Type.Filled;
+        _progressFill.fillMethod = Image.FillMethod.Horizontal;
+        _progressFill.fillOrigin = (int)Image.OriginHorizontal.Left;
+        _progressFill.fillClockwise = true;
+        _progressFill.raycastTarget = false;
+    }
+
+    private void ConfigureText(Text text)
+    {
+        if (text == null)
+            return;
+
+        text.font = GetDefaultFont(_font != null ? _font : text.font);
+        text.fontStyle = FontStyle.Normal;
+        text.resizeTextForBestFit = true;
+        text.raycastTarget = false;
+
+        UnityEngine.UI.Outline outline = text.GetComponent<UnityEngine.UI.Outline>();
+        if (outline == null)
+            outline = text.gameObject.AddComponent<UnityEngine.UI.Outline>();
+
+        outline.effectColor = Color.black;
+        outline.effectDistance = new Vector2(1.2f, -1.2f);
+        outline.useGraphicAlpha = true;
+    }
+
+    private Sprite ResolveProgressFillSprite()
+    {
+        if (_progressFillSprite != null)
+            return _progressFillSprite;
+
+        return Resources.Load<Sprite>("Components/Frame/BasicFrame_SquareSolid01_White");
     }
 
     private static Text CreateText(Transform parent, string name, Vector2 anchorMin, Vector2 anchorMax, string value, int minSize, int maxSize, Font font)

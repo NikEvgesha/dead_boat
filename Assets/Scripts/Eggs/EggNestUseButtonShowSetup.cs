@@ -74,7 +74,25 @@ public class EggNestUseButtonShowSetup : MonoBehaviour
         }
 
         activate.RemoveListener(_nestPoint._Use);
-        activate.AddListener(_nestPoint._Use);
+        if (!HasPersistentUseListener(activate, _nestPoint))
+            activate.AddListener(_nestPoint._Use);
+    }
+
+    private static bool HasPersistentUseListener(UnityEvent activate, EggNestPoint nestPoint)
+    {
+        if (activate == null || nestPoint == null)
+            return false;
+
+        for (int i = 0; i < activate.GetPersistentEventCount(); i++)
+        {
+            if (activate.GetPersistentTarget(i) == nestPoint &&
+                activate.GetPersistentMethodName(i) == nameof(EggNestPoint._Use))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static Image FindProgressImage(Transform root)
