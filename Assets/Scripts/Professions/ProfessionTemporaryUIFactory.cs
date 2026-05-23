@@ -39,7 +39,7 @@ public static class ProfessionTemporaryUIFactory
         Image background = panel.GetComponent<Image>();
         if (background == null)
             background = panel.AddComponent<Image>();
-        background.color = new Color(0.025f, 0.032f, 0.04f, 0.78f);
+        background.color = new Color(0f, 0f, 0f, 0.55f);
         background.raycastTarget = true;
 
         GameObject body = EnsurePanelObject(
@@ -47,15 +47,15 @@ public static class ProfessionTemporaryUIFactory
             "TemporaryProfessionBody",
             new Vector2(0.035f, 0.045f),
             new Vector2(0.965f, 0.955f),
-            new Color(0.03f, 0.04f, 0.05f, 0.88f));
-        AddOutline(body, new Color(1f, 1f, 1f, 0.16f), new Vector2(1.5f, -1.5f));
+            new Color(1f, 1f, 1f, 0.83f));
+        AddOutline(body, new Color(1f, 1f, 1f, 0.18f), new Vector2(1.5f, -1.5f));
 
         GameObject listPanel = EnsurePanelObject(
             body.transform,
             "ProfessionListPanel",
             new Vector2(0.015f, 0.035f),
             new Vector2(0.32f, 0.965f),
-            new Color(0f, 0f, 0f, 0.58f));
+            new Color(0.094f, 0.106f, 0.129f, 0.96f));
         AddOutline(listPanel, new Color(1f, 1f, 1f, 0.18f), new Vector2(1f, -1f));
 
         Text classHeader = EnsureText(
@@ -82,7 +82,7 @@ public static class ProfessionTemporaryUIFactory
             "ProfessionDetailPanel",
             new Vector2(0.35f, 0.19f),
             new Vector2(0.985f, 0.965f),
-            new Color(0f, 0f, 0f, 0.54f));
+            new Color(0.094f, 0.106f, 0.129f, 0.96f));
         AddOutline(detailPanel, new Color(1f, 1f, 1f, 0.16f), new Vector2(1f, -1f));
 
         Text title = EnsureText(
@@ -132,14 +132,14 @@ public static class ProfessionTemporaryUIFactory
             new Vector2(0.92f, 0.50f),
             TextAnchor.UpperCenter,
             22,
-            new Color(0.84f, 1f, 0.84f));
+            new Color(0.78f, 0.87f, 0.96f));
 
         GameObject starterPanel = EnsurePanelObject(
             detailPanel.transform,
             "StarterItemsPanel",
             new Vector2(0.08f, 0.045f),
             new Vector2(0.92f, 0.27f),
-            new Color(0f, 0f, 0f, 0.42f));
+            new Color(0.161f, 0.169f, 0.2f, 0.9f));
         AddOutline(starterPanel, new Color(1f, 1f, 1f, 0.12f), new Vector2(1f, -1f));
 
         Text starterHeader = EnsureText(
@@ -166,7 +166,7 @@ public static class ProfessionTemporaryUIFactory
             "ActionBar",
             new Vector2(0.35f, 0.035f),
             new Vector2(0.985f, 0.155f),
-            new Color(0f, 0f, 0f, 0.42f));
+            new Color(0.094f, 0.106f, 0.129f, 0.92f));
 
         Text message = EnsureText(
             actionBar.transform,
@@ -270,7 +270,7 @@ public static class ProfessionTemporaryUIFactory
             "Icon",
             new Vector2(0.43f, 0.70f),
             new Vector2(0.57f, 0.80f),
-            new Color(0.16f, 0.19f, 0.22f, 0.88f));
+            new Color(0.161f, 0.169f, 0.2f, 0.9f));
 
         Image image = iconObject.GetComponent<Image>();
         image.preserveAspect = true;
@@ -375,7 +375,7 @@ public static class ProfessionTemporaryUIFactory
 
         Image image = button.GetComponent<Image>();
         if (image != null)
-            image.color = new Color(0.04f, 0.045f, 0.05f, 0.9f);
+            image.color = new Color(0.094f, 0.106f, 0.129f, 0.96f);
 
         Text label = button.GetComponentInChildren<Text>(true);
         if (label != null)
@@ -403,7 +403,7 @@ public static class ProfessionTemporaryUIFactory
         Image image = root.GetComponent<Image>();
         if (image == null)
             image = root.AddComponent<Image>();
-        image.color = new Color(0.11f, 0.12f, 0.13f, 0.92f);
+        image.color = new Color(0.161f, 0.169f, 0.2f, 0.96f);
         image.raycastTarget = true;
 
         Button button = root.GetComponent<Button>();

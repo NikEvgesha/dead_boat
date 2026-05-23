@@ -34,11 +34,11 @@ public class ProfessionSelectionPanel : MonoBehaviour
     [Header("Profession List")]
     [SerializeField] private RectTransform _professionListRoot;
     [SerializeField] private Button _professionListButtonPrefab;
-    [SerializeField] private Color _professionListNormalColor = new(0.05f, 0.06f, 0.07f, 0.9f);
-    [SerializeField] private Color _professionListSelectedColor = new(0.12f, 0.18f, 0.22f, 0.95f);
-    [SerializeField] private Color _professionListLockedColor = new(0.03f, 0.03f, 0.035f, 0.72f);
+    [SerializeField] private Color _professionListNormalColor = new(0.094f, 0.106f, 0.129f, 0.96f);
+    [SerializeField] private Color _professionListSelectedColor = new(0.161f, 0.169f, 0.2f, 0.96f);
+    [SerializeField] private Color _professionListLockedColor = new(0.094f, 0.106f, 0.129f, 0.66f);
     [SerializeField] private Color _professionListTextColor = Color.white;
-    [SerializeField] private Color _professionListLockedTextColor = new(0.7f, 0.72f, 0.76f, 1f);
+    [SerializeField] private Color _professionListLockedTextColor = new(0.722f, 0.761f, 0.82f, 1f);
 
     [Header("Buttons")]
     [SerializeField] private Button _applyButton;

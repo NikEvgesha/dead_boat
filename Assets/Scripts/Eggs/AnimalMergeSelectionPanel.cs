@@ -80,6 +80,8 @@ public class AnimalMergeSelectionPanel : MonoBehaviour
     private Vector2 _rightSlotStartPosition;
     private Vector3 _leftSlotStartScale = Vector3.one;
     private Vector3 _rightSlotStartScale = Vector3.one;
+    private Sprite _leftEmptySlotSprite;
+    private Sprite _rightEmptySlotSprite;
     private bool _slotLayoutCaptured;
 
     public bool IsOpen => _opened;
@@ -96,6 +98,7 @@ public class AnimalMergeSelectionPanel : MonoBehaviour
         if (_panel == null)
             _panel = gameObject;
 
+        CaptureEmptySlotSprites();
         BindButtons();
         CaptureSlotLayout();
         _panel.SetActive(false);
@@ -159,7 +162,11 @@ public class AnimalMergeSelectionPanel : MonoBehaviour
         if (_manager == null || !_manager.HasHatchedAnimal())
             return;
 
+        RestoreSlotLayout();
         SetOpen(true, true);
+        Canvas.ForceUpdateCanvases();
+        CaptureSlotLayout(true);
+        RestoreSlotLayout();
         RefreshView();
 
         if (PlayerInput.Instance != null)
@@ -194,6 +201,7 @@ public class AnimalMergeSelectionPanel : MonoBehaviour
         _pickerOpen = false;
         ClearSelection();
         StopResultAnimation();
+        RestoreSlotLayout();
 
         if (_inventoryRoot != null)
             _inventoryRoot.SetActive(false);
@@ -304,11 +312,12 @@ public class AnimalMergeSelectionPanel : MonoBehaviour
 
     private IEnumerator PlayReadyResultAnimation(string animalId, int sourceStage)
     {
-        CaptureSlotLayout();
+        Canvas.ForceUpdateCanvases();
+        CaptureSlotLayout(true);
 
-        Vector2 leftStart = _leftSlotRect != null ? _leftSlotRect.anchoredPosition : _leftSlotStartPosition;
-        Vector2 rightStart = _rightSlotRect != null ? _rightSlotRect.anchoredPosition : _rightSlotStartPosition;
-        Vector2 center = Vector2.zero;
+        Vector3 leftStart = _leftSlotRect != null ? _leftSlotRect.position : Vector3.zero;
+        Vector3 rightStart = _rightSlotRect != null ? _rightSlotRect.position : Vector3.zero;
+        Vector3 center = GetSlotAnimationCenterWorld();
         float duration = Mathf.Max(0.05f, _resultMergeMoveDuration);
         float elapsed = 0f;
 
@@ -319,13 +328,13 @@ public class AnimalMergeSelectionPanel : MonoBehaviour
 
             if (_leftSlotRect != null)
             {
-                _leftSlotRect.anchoredPosition = Vector2.LerpUnclamped(leftStart, center, t);
+                _leftSlotRect.position = Vector3.LerpUnclamped(leftStart, center, t);
                 _leftSlotRect.localScale = _leftSlotStartScale * pulse;
             }
 
             if (_rightSlotRect != null)
             {
-                _rightSlotRect.anchoredPosition = Vector2.LerpUnclamped(rightStart, center, t);
+                _rightSlotRect.position = Vector3.LerpUnclamped(rightStart, center, t);
                 _rightSlotRect.localScale = _rightSlotStartScale * pulse;
             }
 
@@ -335,13 +344,13 @@ public class AnimalMergeSelectionPanel : MonoBehaviour
 
         if (_leftSlotRect != null)
         {
-            _leftSlotRect.anchoredPosition = center;
+            _leftSlotRect.position = center;
             _leftSlotRect.localScale = _leftSlotStartScale;
         }
 
         if (_rightSlotRect != null)
         {
-            _rightSlotRect.anchoredPosition = center;
+            _rightSlotRect.position = center;
             _rightSlotRect.localScale = _rightSlotStartScale;
         }
 
@@ -400,12 +409,13 @@ public class AnimalMergeSelectionPanel : MonoBehaviour
             return;
 
         CaptureSlotLayout();
+        Vector3 center = GetSlotAnimationCenterWorld();
         SetSlotVisual(_leftAnimalIcon, _leftAnimalLabel, _leftStageLabel, merge.animalId, merge.stage + 1);
         SetSlotVisual(_rightAnimalIcon, _rightAnimalLabel, _rightStageLabel, null, 1);
 
         if (_leftSlotRect != null)
         {
-            _leftSlotRect.anchoredPosition = Vector2.zero;
+            _leftSlotRect.position = center;
             _leftSlotRect.localScale = _leftSlotStartScale;
         }
 
@@ -427,9 +437,9 @@ public class AnimalMergeSelectionPanel : MonoBehaviour
         _resultAnimationPlaying = false;
     }
 
-    private void CaptureSlotLayout()
+    private void CaptureSlotLayout(bool force = false)
     {
-        if (_slotLayoutCaptured)
+        if (_slotLayoutCaptured && !force)
             return;
 
         _leftSlotRect = _leftSlotButton != null ? _leftSlotButton.transform as RectTransform : null;
@@ -699,8 +709,9 @@ public class AnimalMergeSelectionPanel : MonoBehaviour
 
         if (icon != null)
         {
-            icon.sprite = null;
-            icon.enabled = false;
+            Sprite emptySprite = GetEmptySlotSprite(icon);
+            icon.sprite = emptySprite;
+            icon.enabled = emptySprite != null;
         }
 
         if (title != null)
@@ -829,6 +840,47 @@ public class AnimalMergeSelectionPanel : MonoBehaviour
     private static float GetAnimationDeltaTime()
     {
         return Mathf.Max(Time.unscaledDeltaTime, 0.016f);
+    }
+
+    private void CaptureEmptySlotSprites()
+    {
+        if (_leftAnimalIcon != null)
+            _leftEmptySlotSprite = _leftAnimalIcon.sprite;
+
+        if (_rightAnimalIcon != null)
+            _rightEmptySlotSprite = _rightAnimalIcon.sprite;
+    }
+
+    private Sprite GetEmptySlotSprite(Image icon)
+    {
+        if (icon == _leftAnimalIcon)
+            return _leftEmptySlotSprite;
+
+        if (icon == _rightAnimalIcon)
+            return _rightEmptySlotSprite;
+
+        return null;
+    }
+
+    private Vector3 GetSlotAnimationCenterWorld()
+    {
+        RectTransform parent = _leftSlotRect != null
+            ? _leftSlotRect.parent as RectTransform
+            : _rightSlotRect != null ? _rightSlotRect.parent as RectTransform : null;
+
+        if (parent != null)
+            return parent.TransformPoint(parent.rect.center);
+
+        if (_leftSlotRect != null && _rightSlotRect != null)
+            return (_leftSlotRect.position + _rightSlotRect.position) * 0.5f;
+
+        if (_leftSlotRect != null)
+            return _leftSlotRect.position;
+
+        if (_rightSlotRect != null)
+            return _rightSlotRect.position;
+
+        return transform.position;
     }
 
     private static void ForceReleaseCursor()
