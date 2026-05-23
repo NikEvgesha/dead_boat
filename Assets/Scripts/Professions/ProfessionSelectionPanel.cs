@@ -7,7 +7,7 @@ using UnityEngine.UI;
 public class ProfessionSelectionPanel : MonoBehaviour
 {
     private const float DefaultProfessionListButtonHeight = 88f;
-    private const float StarterItemRowHeight = 38f;
+    private const float StarterItemRowHeight = 58f;
 
     private static ProfessionSelectionPanel _instance;
     public static ProfessionSelectionPanel Instance => _instance;
@@ -35,6 +35,8 @@ public class ProfessionSelectionPanel : MonoBehaviour
     [SerializeField] private Image _unlockRandomPriceIcon;
     [SerializeField] private Image _unlockPriceIcon;
     [SerializeField] private Sprite _softCurrencyPriceIcon;
+    [SerializeField] private Sprite _coinsCurrencyIcon;
+    [SerializeField] private Sprite _gemsCurrencyIcon;
     [SerializeField] private GameObject _lockObject;
 
     [Header("Starter Items")]
@@ -530,8 +532,8 @@ public class ProfessionSelectionPanel : MonoBehaviour
         iconImage.enabled = entry.icon != null;
 
         RectTransform iconRect = iconImage.GetComponent<RectTransform>();
-        iconRect.anchorMin = new Vector2(0.32f, 0.08f);
-        iconRect.anchorMax = new Vector2(0.48f, 0.92f);
+        iconRect.anchorMin = new Vector2(0.16f, 0.04f);
+        iconRect.anchorMax = new Vector2(0.43f, 0.96f);
         iconRect.offsetMin = Vector2.zero;
         iconRect.offsetMax = Vector2.zero;
 
@@ -546,8 +548,8 @@ public class ProfessionSelectionPanel : MonoBehaviour
         amountText.raycastTarget = false;
 
         RectTransform amountRect = amountText.GetComponent<RectTransform>();
-        amountRect.anchorMin = new Vector2(0.52f, 0f);
-        amountRect.anchorMax = new Vector2(0.8f, 1f);
+        amountRect.anchorMin = new Vector2(0.48f, 0f);
+        amountRect.anchorMax = new Vector2(0.92f, 1f);
         amountRect.offsetMin = Vector2.zero;
         amountRect.offsetMax = Vector2.zero;
     }
@@ -567,7 +569,7 @@ public class ProfessionSelectionPanel : MonoBehaviour
         int safeTotal = Mathf.Max(1, total);
         float areaHeight = Mathf.Max(0.01f, areaMax.y - areaMin.y);
         float gap = Mathf.Min(0.03f, areaHeight / (safeTotal * 5f));
-        float rowHeight = Mathf.Min(0.24f, (areaHeight - (gap * (safeTotal - 1))) / safeTotal);
+        float rowHeight = Mathf.Min(0.32f, (areaHeight - (gap * (safeTotal - 1))) / safeTotal);
         float top = areaMax.y - (index * (rowHeight + gap));
         float bottom = Mathf.Max(areaMin.y, top - rowHeight);
 
@@ -590,7 +592,7 @@ public class ProfessionSelectionPanel : MonoBehaviour
         if (_starterItemsText != null)
         {
             target.font = _starterItemsText.font;
-            target.fontSize = Mathf.Max(18, _starterItemsText.fontSize);
+            target.fontSize = Mathf.Max(24, _starterItemsText.fontSize);
             target.fontStyle = _starterItemsText.fontStyle;
             target.color = _starterItemsText.color;
             target.material = _starterItemsText.material;
@@ -802,7 +804,13 @@ public class ProfessionSelectionPanel : MonoBehaviour
 
     private Sprite ResolveSoftCurrencyIcon(CurrencyType currencyType)
     {
-        if (currencyType != CurrencyType.Real && _softCurrencyPriceIcon != null)
+        if (currencyType == CurrencyType.Coins && _coinsCurrencyIcon != null)
+            return _coinsCurrencyIcon;
+
+        if (currencyType == CurrencyType.Gems && _gemsCurrencyIcon != null)
+            return _gemsCurrencyIcon;
+
+        if (currencyType == CurrencyType.Gems && _softCurrencyPriceIcon != null)
             return _softCurrencyPriceIcon;
 
         return CurrencyManager.Instance != null
@@ -875,6 +883,7 @@ public class ProfessionSelectionPanel : MonoBehaviour
             button.gameObject.SetActive(true);
             EnsureProfessionListButtonLayout(button);
             button.onClick.RemoveAllListeners();
+            EnsureButtonSound(button);
             button.onClick.AddListener(() => SelectProfessionIndex(index));
 
             Text label = button.GetComponentInChildren<Text>(true);
@@ -1012,6 +1021,7 @@ public class ProfessionSelectionPanel : MonoBehaviour
             cursor = (cursor + 1) % candidates.Count;
             _randomUnlockHighlightProfessionId = candidates[cursor].professionId;
             RefreshProfessionList();
+            PlayRandomUnlockTickSound();
 
             float t = steps <= 1 ? 1f : i / (steps - 1f);
             float eased = t * t;
@@ -1020,10 +1030,17 @@ public class ProfessionSelectionPanel : MonoBehaviour
 
         _randomUnlockHighlightProfessionId = unlockedDefinition.professionId;
         RefreshProfessionList();
+        PlayRandomUnlockTickSound();
         yield return new WaitForSecondsRealtime(0.25f);
 
         _randomUnlockRoutine = null;
         CompleteRandomUnlock(unlockedDefinition);
+    }
+
+    private static void PlayRandomUnlockTickSound()
+    {
+        if (SoundManager.Instance != null)
+            SoundManager.Instance.PlayUIClick();
     }
 
     private int FindCandidateIndex(List<ProfessionDefinition> candidates, string professionId)
@@ -1092,39 +1109,57 @@ public class ProfessionSelectionPanel : MonoBehaviour
 
         if (_nextButton != null)
         {
+            EnsureButtonSound(_nextButton);
             _nextButton.onClick.RemoveListener(ShowNextProfession);
             _nextButton.onClick.AddListener(ShowNextProfession);
         }
 
         if (_prevButton != null)
         {
+            EnsureButtonSound(_prevButton);
             _prevButton.onClick.RemoveListener(ShowPreviousProfession);
             _prevButton.onClick.AddListener(ShowPreviousProfession);
         }
 
         if (_applyButton != null)
         {
+            EnsureButtonSound(_applyButton);
             _applyButton.onClick.RemoveListener(ApplySelectedProfession);
             _applyButton.onClick.AddListener(ApplySelectedProfession);
         }
 
         if (_unlockRandomButton != null)
         {
+            EnsureButtonSound(_unlockRandomButton);
             _unlockRandomButton.onClick.RemoveListener(UnlockRandomProfession);
             _unlockRandomButton.onClick.AddListener(UnlockRandomProfession);
         }
 
         if (_directBuyButton != null)
         {
+            EnsureButtonSound(_directBuyButton);
             _directBuyButton.onClick.RemoveListener(DirectBuyProfession);
             _directBuyButton.onClick.AddListener(DirectBuyProfession);
         }
 
         if (_closeButton != null)
         {
+            EnsureButtonSound(_closeButton);
             _closeButton.onClick.RemoveListener(CloseFromButton);
             _closeButton.onClick.AddListener(CloseFromButton);
         }
+    }
+
+    private static void EnsureButtonSound(Button button)
+    {
+        if (button == null)
+            return;
+
+        UISound sound = button.GetComponent<UISound>();
+        if (sound == null)
+            sound = button.gameObject.AddComponent<UISound>();
+
+        sound.Rebind();
     }
 
     private void BindWindowCloseEvent()

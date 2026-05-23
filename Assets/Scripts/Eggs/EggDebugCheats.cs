@@ -3,7 +3,7 @@ using UnityEngine;
 public class EggDebugCheats : MonoBehaviour
 {
     [SerializeField] private bool _enabled = true;
-    [SerializeField] private KeyCode _grantRandomEggKey = KeyCode.BackQuote;
+    [SerializeField] private KeyCode _grantRandomEggKey = KeyCode.None;
     [SerializeField] private int _amount = 1;
 
     private void Update()
@@ -11,7 +11,7 @@ public class EggDebugCheats : MonoBehaviour
         if (!_enabled)
             return;
 
-        if (!Input.GetKeyDown(_grantRandomEggKey))
+        if (_grantRandomEggKey == KeyCode.None || !Input.GetKeyDown(_grantRandomEggKey))
             return;
 
         EggHatchingManager manager = EggHatchingManager.Instance;

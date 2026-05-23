@@ -14,7 +14,9 @@ public class ProfessionPassiveBonuses
 {
     [Header("Player")]
     public float maxHealthFlat;
+    public float maxHealthMultiplier = 1f;
     public float maxStaminaFlat;
+    public float maxStaminaMultiplier = 1f;
     public float moveSpeedFlat;
     public float moveSpeedMultiplier = 1f;
     public float staminaConsumptionMultiplier = 1f;
@@ -27,12 +29,15 @@ public class ProfessionPassiveBonuses
 
     [Header("Economy")]
     public float saleRewardMultiplier = 1f;
+    public float winGemsRewardMultiplier = 1f;
 
     [Header("Boat")]
     public float maxFuelFlat;
+    public float maxFuelMultiplier = 1f;
     public float fuelConsumptionMultiplier = 1f;
     public float fuelFillMultiplier = 1f;
     public float boatSpeedFlat;
+    public float boatSpeedMultiplier = 1f;
 
     [Header("Combat")]
     public float meleeDamageFlat;
@@ -54,13 +59,18 @@ public class ProfessionPassiveBonuses
     public float rareLootChanceMultiplier = 1f;
 
     public float SafeMoveSpeedMultiplier => moveSpeedMultiplier > 0f ? moveSpeedMultiplier : 1f;
+    public float SafeMaxHealthMultiplier => maxHealthMultiplier > 0f ? maxHealthMultiplier : 1f;
+    public float SafeMaxStaminaMultiplier => maxStaminaMultiplier > 0f ? maxStaminaMultiplier : 1f;
     public float SafeStaminaConsumptionMultiplier => staminaConsumptionMultiplier > 0f ? staminaConsumptionMultiplier : 1f;
     public float SafeStaminaRestoreMultiplier => staminaRestoreMultiplier > 0f ? staminaRestoreMultiplier : 1f;
     public float SafeExperienceMultiplier => experienceMultiplier > 0f ? experienceMultiplier : 1f;
     public float SafeIncomingDamageMultiplier => incomingDamageMultiplier > 0f ? incomingDamageMultiplier : 1f;
     public float SafeSaleRewardMultiplier => saleRewardMultiplier > 0f ? saleRewardMultiplier : 1f;
+    public float SafeWinGemsRewardMultiplier => winGemsRewardMultiplier > 0f ? winGemsRewardMultiplier : 1f;
+    public float SafeMaxFuelMultiplier => maxFuelMultiplier > 0f ? maxFuelMultiplier : 1f;
     public float SafeFuelConsumptionMultiplier => fuelConsumptionMultiplier > 0f ? fuelConsumptionMultiplier : 1f;
     public float SafeFuelFillMultiplier => fuelFillMultiplier > 0f ? fuelFillMultiplier : 1f;
+    public float SafeBoatSpeedMultiplier => boatSpeedMultiplier > 0f ? boatSpeedMultiplier : 1f;
     public float SafeMeleeAttackSpeedMultiplier => meleeAttackSpeedMultiplier > 0f ? meleeAttackSpeedMultiplier : 1f;
     public float SafeRangedAttackSpeedMultiplier => rangedAttackSpeedMultiplier > 0f ? rangedAttackSpeedMultiplier : 1f;
     public float SafeRangedReloadSpeedMultiplier => rangedReloadSpeedMultiplier > 0f ? rangedReloadSpeedMultiplier : 1f;
@@ -84,7 +94,7 @@ public class ProfessionDefinition
     public bool availableInRandomUnlockPool = true;
     [Min(0)] public int randomUnlockWeight = 1;
     [Min(0)] public int directSoftCurrencyCost = 500;
-    public CurrencyType directSoftCurrencyType = CurrencyType.Coins;
+    public CurrencyType directSoftCurrencyType = CurrencyType.Gems;
     public string purchaseProductId;
     public bool allowSoftCurrencyFallbackWhenPurchasesUnavailable = true;
 

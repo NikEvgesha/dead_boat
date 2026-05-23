@@ -118,8 +118,8 @@ public static class ProfessionTemporaryUIFactory
         Text abilitiesHeader = EnsureText(
             detailPanel.transform,
             "AbilitiesHeader",
-            new Vector2(0.08f, 0.50f),
-            new Vector2(0.92f, 0.57f),
+            new Vector2(0.08f, 0.51f),
+            new Vector2(0.53f, 0.58f),
             TextAnchor.MiddleCenter,
             24,
             new Color(0.86f, 0.95f, 1f));
@@ -128,24 +128,24 @@ public static class ProfessionTemporaryUIFactory
         Text perks = EnsureText(
             detailPanel.transform,
             "Perks",
-            new Vector2(0.08f, 0.30f),
-            new Vector2(0.92f, 0.50f),
-            TextAnchor.UpperCenter,
+            new Vector2(0.08f, 0.06f),
+            new Vector2(0.53f, 0.50f),
+            TextAnchor.UpperLeft,
             22,
             new Color(0.78f, 0.87f, 0.96f));
 
         GameObject starterPanel = EnsurePanelObject(
             detailPanel.transform,
             "StarterItemsPanel",
-            new Vector2(0.08f, 0.045f),
-            new Vector2(0.92f, 0.27f),
+            new Vector2(0.56f, 0.06f),
+            new Vector2(0.92f, 0.58f),
             new Color(0.161f, 0.169f, 0.2f, 0.9f));
         AddOutline(starterPanel, new Color(1f, 1f, 1f, 0.12f), new Vector2(1f, -1f));
 
         Text starterHeader = EnsureText(
             starterPanel.transform,
             "StarterItemsHeader",
-            new Vector2(0.04f, 0.68f),
+            new Vector2(0.04f, 0.80f),
             new Vector2(0.96f, 0.96f),
             TextAnchor.MiddleCenter,
             22,
@@ -156,9 +156,9 @@ public static class ProfessionTemporaryUIFactory
             starterPanel.transform,
             "StarterItems",
             new Vector2(0.05f, 0.08f),
-            new Vector2(0.95f, 0.65f),
+            new Vector2(0.95f, 0.76f),
             TextAnchor.UpperLeft,
-            18,
+            24,
             new Color(0.86f, 0.94f, 1f));
 
         GameObject actionBar = EnsurePanelObject(
@@ -254,6 +254,7 @@ public static class ProfessionTemporaryUIFactory
         Transform existing = canvas.transform.Find("TemporaryProfessionOpenButton");
         if (existing != null && existing.TryGetComponent(out Button existingButton))
         {
+            EnsureUiSound(existingButton);
             existingButton.onClick.RemoveListener(openAction);
             existingButton.onClick.AddListener(openAction);
             return existingButton;
@@ -411,6 +412,7 @@ public static class ProfessionTemporaryUIFactory
             button = root.AddComponent<Button>();
         button.targetGraphic = image;
         button.transition = Selectable.Transition.ColorTint;
+        EnsureUiSound(button);
 
         ColorBlock colors = button.colors;
         colors.normalColor = Color.white;
@@ -429,6 +431,18 @@ public static class ProfessionTemporaryUIFactory
         }
 
         return button;
+    }
+
+    private static void EnsureUiSound(Button button)
+    {
+        if (button == null)
+            return;
+
+        UISound sound = button.GetComponent<UISound>();
+        if (sound == null)
+            sound = button.gameObject.AddComponent<UISound>();
+
+        sound.Rebind();
     }
 
     private static Text EnsureText(Transform parent, string name, Vector2 anchorMin, Vector2 anchorMax, TextAnchor alignment, int fontSize, Color color)

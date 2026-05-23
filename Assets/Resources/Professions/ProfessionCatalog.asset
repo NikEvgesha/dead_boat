@@ -20,7 +20,7 @@ MonoBehaviour:
     availableInRandomUnlockPool: 0
     randomUnlockWeight: 0
     directSoftCurrencyCost: 0
-    directSoftCurrencyType: 0
+    directSoftCurrencyType: 1
     purchaseProductId: 
     allowSoftCurrencyFallbackWhenPurchasesUnavailable: 1
     startCoinsBonus: 0
@@ -30,7 +30,9 @@ MonoBehaviour:
     perkLines: []
     passiveBonuses:
       maxHealthFlat: 10
+      maxHealthMultiplier: 1
       maxStaminaFlat: 0
+      maxStaminaMultiplier: 1
       moveSpeedFlat: 0
       moveSpeedMultiplier: 1
       staminaConsumptionMultiplier: 1
@@ -41,10 +43,13 @@ MonoBehaviour:
       healthDrainPerSecond: 0
       healOnKillFlat: 0
       saleRewardMultiplier: 1
+      winGemsRewardMultiplier: 1
       maxFuelFlat: 0
+      maxFuelMultiplier: 1
       fuelConsumptionMultiplier: 1
       fuelFillMultiplier: 1
       boatSpeedFlat: 0
+      boatSpeedMultiplier: 1
       meleeDamageFlat: 0
       meleeAttackSpeedMultiplier: 1
       rangedDamageFlat: 0
@@ -67,7 +72,7 @@ MonoBehaviour:
     availableInRandomUnlockPool: 1
     randomUnlockWeight: 2
     directSoftCurrencyCost: 450
-    directSoftCurrencyType: 0
+    directSoftCurrencyType: 1
     purchaseProductId: 
     allowSoftCurrencyFallbackWhenPurchasesUnavailable: 1
     startCoinsBonus: 30
@@ -82,7 +87,9 @@ MonoBehaviour:
     - Bigger fuel reserve
     passiveBonuses:
       maxHealthFlat: 0
+      maxHealthMultiplier: 1
       maxStaminaFlat: 0
+      maxStaminaMultiplier: 1
       moveSpeedFlat: 0
       moveSpeedMultiplier: 1
       staminaConsumptionMultiplier: 1
@@ -93,10 +100,13 @@ MonoBehaviour:
       healthDrainPerSecond: 0
       healOnKillFlat: 0
       saleRewardMultiplier: 1
+      winGemsRewardMultiplier: 1
       maxFuelFlat: 150
+      maxFuelMultiplier: 1
       fuelConsumptionMultiplier: 0.88
       fuelFillMultiplier: 1.25
       boatSpeedFlat: 2
+      boatSpeedMultiplier: 1
       meleeDamageFlat: 0
       meleeAttackSpeedMultiplier: 1
       rangedDamageFlat: 0
@@ -120,7 +130,7 @@ MonoBehaviour:
     availableInRandomUnlockPool: 1
     randomUnlockWeight: 2
     directSoftCurrencyCost: 500
-    directSoftCurrencyType: 0
+    directSoftCurrencyType: 1
     purchaseProductId: 
     allowSoftCurrencyFallbackWhenPurchasesUnavailable: 1
     startCoinsBonus: 0
@@ -136,7 +146,9 @@ MonoBehaviour:
     - Faster ranged tempo
     passiveBonuses:
       maxHealthFlat: 0
+      maxHealthMultiplier: 1
       maxStaminaFlat: 0
+      maxStaminaMultiplier: 1
       moveSpeedFlat: 0
       moveSpeedMultiplier: 1
       staminaConsumptionMultiplier: 1
@@ -147,10 +159,13 @@ MonoBehaviour:
       healthDrainPerSecond: 0
       healOnKillFlat: 0
       saleRewardMultiplier: 1
+      winGemsRewardMultiplier: 1
       maxFuelFlat: 0
+      maxFuelMultiplier: 1
       fuelConsumptionMultiplier: 1
       fuelFillMultiplier: 1
       boatSpeedFlat: 0
+      boatSpeedMultiplier: 1
       meleeDamageFlat: 2
       meleeAttackSpeedMultiplier: 1.08
       rangedDamageFlat: 3
@@ -173,7 +188,7 @@ MonoBehaviour:
     availableInRandomUnlockPool: 1
     randomUnlockWeight: 2
     directSoftCurrencyCost: 500
-    directSoftCurrencyType: 0
+    directSoftCurrencyType: 1
     purchaseProductId: 
     allowSoftCurrencyFallbackWhenPurchasesUnavailable: 1
     startCoinsBonus: 80
@@ -185,7 +200,9 @@ MonoBehaviour:
     - Small coin head start
     passiveBonuses:
       maxHealthFlat: 0
+      maxHealthMultiplier: 1
       maxStaminaFlat: 0
+      maxStaminaMultiplier: 1
       moveSpeedFlat: 0
       moveSpeedMultiplier: 1
       staminaConsumptionMultiplier: 1
@@ -196,10 +213,13 @@ MonoBehaviour:
       healthDrainPerSecond: 0
       healOnKillFlat: 0
       saleRewardMultiplier: 1.25
+      winGemsRewardMultiplier: 1
       maxFuelFlat: 0
+      maxFuelMultiplier: 1
       fuelConsumptionMultiplier: 1
       fuelFillMultiplier: 1
       boatSpeedFlat: 0
+      boatSpeedMultiplier: 1
       meleeDamageFlat: 0
       meleeAttackSpeedMultiplier: 1
       rangedDamageFlat: 0
@@ -222,7 +242,7 @@ MonoBehaviour:
     availableInRandomUnlockPool: 1
     randomUnlockWeight: 2
     directSoftCurrencyCost: 550
-    directSoftCurrencyType: 0
+    directSoftCurrencyType: 1
     purchaseProductId: 
     allowSoftCurrencyFallbackWhenPurchasesUnavailable: 1
     startCoinsBonus: 0
@@ -237,7 +257,9 @@ MonoBehaviour:
     - Lower max HP
     passiveBonuses:
       maxHealthFlat: -15
+      maxHealthMultiplier: 1
       maxStaminaFlat: 35
+      maxStaminaMultiplier: 1
       moveSpeedFlat: 0
       moveSpeedMultiplier: 1.18
       staminaConsumptionMultiplier: 0.8
@@ -248,10 +270,13 @@ MonoBehaviour:
       healthDrainPerSecond: 0
       healOnKillFlat: 0
       saleRewardMultiplier: 1
+      winGemsRewardMultiplier: 1
       maxFuelFlat: 0
+      maxFuelMultiplier: 1
       fuelConsumptionMultiplier: 1
       fuelFillMultiplier: 1
       boatSpeedFlat: 0
+      boatSpeedMultiplier: 1
       meleeDamageFlat: 0
       meleeAttackSpeedMultiplier: 1
       rangedDamageFlat: 0
@@ -275,7 +300,7 @@ MonoBehaviour:
     availableInRandomUnlockPool: 1
     randomUnlockWeight: 1
     directSoftCurrencyCost: 650
-    directSoftCurrencyType: 0
+    directSoftCurrencyType: 1
     purchaseProductId: 
     allowSoftCurrencyFallbackWhenPurchasesUnavailable: 1
     startCoinsBonus: 0
@@ -290,7 +315,9 @@ MonoBehaviour:
     - Lower max HP
     passiveBonuses:
       maxHealthFlat: -25
+      maxHealthMultiplier: 1
       maxStaminaFlat: 0
+      maxStaminaMultiplier: 1
       moveSpeedFlat: 0
       moveSpeedMultiplier: 1
       staminaConsumptionMultiplier: 1
@@ -301,10 +328,13 @@ MonoBehaviour:
       healthDrainPerSecond: 0
       healOnKillFlat: 0
       saleRewardMultiplier: 1
+      winGemsRewardMultiplier: 1
       maxFuelFlat: 0
+      maxFuelMultiplier: 1
       fuelConsumptionMultiplier: 1
       fuelFillMultiplier: 1
       boatSpeedFlat: 0
+      boatSpeedMultiplier: 1
       meleeDamageFlat: 0
       meleeAttackSpeedMultiplier: 1.1
       rangedDamageFlat: 0
@@ -327,7 +357,7 @@ MonoBehaviour:
     availableInRandomUnlockPool: 1
     randomUnlockWeight: 1
     directSoftCurrencyCost: 700
-    directSoftCurrencyType: 0
+    directSoftCurrencyType: 1
     purchaseProductId: 
     allowSoftCurrencyFallbackWhenPurchasesUnavailable: 1
     startCoinsBonus: 0
@@ -340,7 +370,9 @@ MonoBehaviour:
     - Small combat tempo bonus
     passiveBonuses:
       maxHealthFlat: -10
+      maxHealthMultiplier: 1
       maxStaminaFlat: 0
+      maxStaminaMultiplier: 1
       moveSpeedFlat: 0
       moveSpeedMultiplier: 1
       staminaConsumptionMultiplier: 1
@@ -351,10 +383,13 @@ MonoBehaviour:
       healthDrainPerSecond: 0.45
       healOnKillFlat: 12
       saleRewardMultiplier: 1
+      winGemsRewardMultiplier: 1
       maxFuelFlat: 0
+      maxFuelMultiplier: 1
       fuelConsumptionMultiplier: 1
       fuelFillMultiplier: 1
       boatSpeedFlat: 0
+      boatSpeedMultiplier: 1
       meleeDamageFlat: 0
       meleeAttackSpeedMultiplier: 1.07
       rangedDamageFlat: 0
@@ -377,7 +412,7 @@ MonoBehaviour:
     availableInRandomUnlockPool: 1
     randomUnlockWeight: 1
     directSoftCurrencyCost: 700
-    directSoftCurrencyType: 0
+    directSoftCurrencyType: 1
     purchaseProductId: 
     allowSoftCurrencyFallbackWhenPurchasesUnavailable: 1
     startCoinsBonus: 50
@@ -390,7 +425,9 @@ MonoBehaviour:
     - Takes slightly more damage
     passiveBonuses:
       maxHealthFlat: 0
+      maxHealthMultiplier: 1
       maxStaminaFlat: 0
+      maxStaminaMultiplier: 1
       moveSpeedFlat: 0
       moveSpeedMultiplier: 1
       staminaConsumptionMultiplier: 1
@@ -401,10 +438,13 @@ MonoBehaviour:
       healthDrainPerSecond: 0
       healOnKillFlat: 0
       saleRewardMultiplier: 1.2
+      winGemsRewardMultiplier: 1
       maxFuelFlat: 0
+      maxFuelMultiplier: 1
       fuelConsumptionMultiplier: 1
       fuelFillMultiplier: 1
       boatSpeedFlat: 0
+      boatSpeedMultiplier: 1
       meleeDamageFlat: 0
       meleeAttackSpeedMultiplier: 1
       rangedDamageFlat: 0
@@ -428,7 +468,7 @@ MonoBehaviour:
     availableInRandomUnlockPool: 1
     randomUnlockWeight: 1
     directSoftCurrencyCost: 750
-    directSoftCurrencyType: 0
+    directSoftCurrencyType: 1
     purchaseProductId: 
     allowSoftCurrencyFallbackWhenPurchasesUnavailable: 1
     startCoinsBonus: 0
@@ -445,7 +485,9 @@ MonoBehaviour:
     - Lower direct weapon damage
     passiveBonuses:
       maxHealthFlat: 0
+      maxHealthMultiplier: 1
       maxStaminaFlat: 0
+      maxStaminaMultiplier: 1
       moveSpeedFlat: 0
       moveSpeedMultiplier: 1
       staminaConsumptionMultiplier: 1
@@ -456,10 +498,13 @@ MonoBehaviour:
       healthDrainPerSecond: 0
       healOnKillFlat: 0
       saleRewardMultiplier: 1
+      winGemsRewardMultiplier: 1
       maxFuelFlat: 0
+      maxFuelMultiplier: 1
       fuelConsumptionMultiplier: 1
       fuelFillMultiplier: 1
       boatSpeedFlat: 0
+      boatSpeedMultiplier: 1
       meleeDamageFlat: 0
       meleeAttackSpeedMultiplier: 1
       rangedDamageFlat: 0
@@ -482,7 +527,7 @@ MonoBehaviour:
     availableInRandomUnlockPool: 1
     randomUnlockWeight: 2
     directSoftCurrencyCost: 650
-    directSoftCurrencyType: 0
+    directSoftCurrencyType: 1
     purchaseProductId: 
     allowSoftCurrencyFallbackWhenPurchasesUnavailable: 1
     startCoinsBonus: 0
@@ -498,7 +543,9 @@ MonoBehaviour:
     - Slower movement and weapon tempo
     passiveBonuses:
       maxHealthFlat: 80
+      maxHealthMultiplier: 1
       maxStaminaFlat: 0
+      maxStaminaMultiplier: 1
       moveSpeedFlat: 0
       moveSpeedMultiplier: 0.85
       staminaConsumptionMultiplier: 1
@@ -509,10 +556,13 @@ MonoBehaviour:
       healthDrainPerSecond: 0
       healOnKillFlat: 0
       saleRewardMultiplier: 1
+      winGemsRewardMultiplier: 1
       maxFuelFlat: 0
+      maxFuelMultiplier: 1
       fuelConsumptionMultiplier: 1
       fuelFillMultiplier: 1
       boatSpeedFlat: 0
+      boatSpeedMultiplier: 1
       meleeDamageFlat: 0
       meleeAttackSpeedMultiplier: 0.92
       rangedDamageFlat: 0
@@ -535,7 +585,7 @@ MonoBehaviour:
     availableInRandomUnlockPool: 1
     randomUnlockWeight: 1
     directSoftCurrencyCost: 850
-    directSoftCurrencyType: 0
+    directSoftCurrencyType: 1
     purchaseProductId: 
     allowSoftCurrencyFallbackWhenPurchasesUnavailable: 1
     startCoinsBonus: 0
@@ -552,7 +602,9 @@ MonoBehaviour:
     - Dies very quickly
     passiveBonuses:
       maxHealthFlat: -45
+      maxHealthMultiplier: 1
       maxStaminaFlat: 0
+      maxStaminaMultiplier: 1
       moveSpeedFlat: 0
       moveSpeedMultiplier: 1
       staminaConsumptionMultiplier: 1
@@ -563,10 +615,13 @@ MonoBehaviour:
       healthDrainPerSecond: 0
       healOnKillFlat: 0
       saleRewardMultiplier: 1
+      winGemsRewardMultiplier: 1
       maxFuelFlat: 0
+      maxFuelMultiplier: 1
       fuelConsumptionMultiplier: 1
       fuelFillMultiplier: 1
       boatSpeedFlat: 0
+      boatSpeedMultiplier: 1
       meleeDamageFlat: 0
       meleeAttackSpeedMultiplier: 1
       rangedDamageFlat: 0
@@ -589,7 +644,7 @@ MonoBehaviour:
     availableInRandomUnlockPool: 1
     randomUnlockWeight: 1
     directSoftCurrencyCost: 800
-    directSoftCurrencyType: 0
+    directSoftCurrencyType: 1
     purchaseProductId: 
     allowSoftCurrencyFallbackWhenPurchasesUnavailable: 1
     startCoinsBonus: 0
@@ -606,7 +661,9 @@ MonoBehaviour:
     - Lower max HP
     passiveBonuses:
       maxHealthFlat: -25
+      maxHealthMultiplier: 1
       maxStaminaFlat: 20
+      maxStaminaMultiplier: 1
       moveSpeedFlat: 0
       moveSpeedMultiplier: 1.15
       staminaConsumptionMultiplier: 0.9
@@ -617,10 +674,13 @@ MonoBehaviour:
       healthDrainPerSecond: 0
       healOnKillFlat: 0
       saleRewardMultiplier: 1
+      winGemsRewardMultiplier: 1
       maxFuelFlat: 0
+      maxFuelMultiplier: 1
       fuelConsumptionMultiplier: 1
       fuelFillMultiplier: 1
       boatSpeedFlat: 0
+      boatSpeedMultiplier: 1
       meleeDamageFlat: 0
       meleeAttackSpeedMultiplier: 1.18
       rangedDamageFlat: 0
@@ -636,3 +696,55 @@ MonoBehaviour:
       burnDamagePerSecond: 0
       burnDuration: 0
       rareLootChanceMultiplier: 1
+  - professionId: cursed
+    title: Cursed
+    description: Everything is weakened, but victory grants x20 hard currency.
+    icon: {fileID: 0}
+    availableInRandomUnlockPool: 1
+    randomUnlockWeight: 1
+    directSoftCurrencyCost: 1000
+    directSoftCurrencyType: 1
+    purchaseProductId:
+    allowSoftCurrencyFallbackWhenPurchasesUnavailable: 1
+    startCoinsBonus: 0
+    startGemsBonus: 0
+    defaultUnlocked: 0
+    starterItems: []
+    perkLines: []
+    passiveBonuses:
+      maxHealthFlat: 0
+      maxHealthMultiplier: 0.5
+      maxStaminaFlat: 0
+      maxStaminaMultiplier: 0.5
+      moveSpeedFlat: 0
+      moveSpeedMultiplier: 0.5
+      staminaConsumptionMultiplier: 1.5
+      staminaRestoreMultiplier: 0.5
+      experienceMultiplier: 0.5
+      incomingDamageMultiplier: 1.5
+      dodgeChance: 0
+      healthDrainPerSecond: 0
+      healOnKillFlat: 0
+      saleRewardMultiplier: 0.5
+      winGemsRewardMultiplier: 20
+      maxFuelFlat: 0
+      maxFuelMultiplier: 0.5
+      fuelConsumptionMultiplier: 1.5
+      fuelFillMultiplier: 0.5
+      boatSpeedFlat: 0
+      boatSpeedMultiplier: 0.5
+      meleeDamageFlat: 0
+      meleeAttackSpeedMultiplier: 0.5
+      rangedDamageFlat: 0
+      rangedAttackSpeedMultiplier: 0.5
+      rangedReloadSpeedMultiplier: 0.5
+      outgoingDamageMultiplier: 0.5
+      lowHealthDamageMultiplier: 1
+      criticalChance: 0
+      criticalDamageMultiplier: 1
+      randomDamageMinMultiplier: 1
+      randomDamageMaxMultiplier: 1
+      burnChance: 0
+      burnDamagePerSecond: 0
+      burnDuration: 0
+      rareLootChanceMultiplier: 0.5

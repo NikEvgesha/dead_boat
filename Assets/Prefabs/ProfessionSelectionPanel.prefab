@@ -245,6 +245,7 @@ GameObject:
   - component: {fileID: 7289230466854942925}
   - component: {fileID: 2185554087912939204}
   - component: {fileID: 2782715716206765245}
+  - component: {fileID: 7818421969515709910}
   m_Layer: 5
   m_Name: NextButton
   m_TagString: Untagged
@@ -354,6 +355,18 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &7818421969515709910
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 408748308961274929}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3bf0467eac44b314ab36d25440d72991, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::UISound
 --- !u!1 &904814635751890597
 GameObject:
   m_ObjectHideFlags: 0
@@ -676,8 +689,8 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 7770804963323830535}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.02, y: 0.55}
-  m_AnchorMax: {x: 0.98, y: 1}
+  m_AnchorMin: {x: 0.04, y: 0.8}
+  m_AnchorMax: {x: 0.96, y: 0.97}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -753,6 +766,7 @@ GameObject:
   - component: {fileID: 3678348410465704392}
   - component: {fileID: 4681489070033100161}
   - component: {fileID: 4368114517657360192}
+  - component: {fileID: 2878917277822700031}
   m_Layer: 5
   m_Name: ProfessionListButtonTemplate
   m_TagString: Untagged
@@ -910,6 +924,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EggSelectionSlotHover
   _hoverScale: 1.04
+--- !u!114 &2878917277822700031
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1882537777322138881}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3bf0467eac44b314ab36d25440d72991, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::UISound
 --- !u!1 &2270742614773480981
 GameObject:
   m_ObjectHideFlags: 0
@@ -978,7 +1004,7 @@ MonoBehaviour:
   m_FontData:
     m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
     m_FontSize: 21
-    m_FontStyle: 1
+    m_FontStyle: 0
     m_BestFit: 1
     m_MinSize: 10
     m_MaxSize: 21
@@ -1743,8 +1769,8 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 5437612166650689965}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.055, y: 0.19}
-  m_AnchorMax: {x: 0.945, y: 0.46}
+  m_AnchorMin: {x: 0.06, y: 0.06}
+  m_AnchorMax: {x: 0.53, y: 0.51}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -1897,6 +1923,7 @@ GameObject:
   - component: {fileID: 5665853604818450251}
   - component: {fileID: 5406414972186421032}
   - component: {fileID: 1359644818406566781}
+  - component: {fileID: 1076235753811695068}
   m_Layer: 5
   m_Name: ApplyButton
   m_TagString: Untagged
@@ -2006,6 +2033,18 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &1076235753811695068
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4188979826065422293}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3bf0467eac44b314ab36d25440d72991, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::UISound
 --- !u!1 &5020173671288978913
 GameObject:
   m_ObjectHideFlags: 0
@@ -2113,6 +2152,7 @@ GameObject:
   - component: {fileID: 5689907346159466430}
   - component: {fileID: 5877713379906709029}
   - component: {fileID: 1048861630121954800}
+  - component: {fileID: 755074124471275724}
   m_Layer: 5
   m_Name: PrevButton
   m_TagString: Untagged
@@ -2222,6 +2262,18 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &755074124471275724
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5025354694475454011}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3bf0467eac44b314ab36d25440d72991, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::UISound
 --- !u!1 &5271388314674627258
 GameObject:
   m_ObjectHideFlags: 0
@@ -2234,6 +2286,7 @@ GameObject:
   - component: {fileID: 4795026705252112347}
   - component: {fileID: 3851881312097571992}
   - component: {fileID: 3765724109174062588}
+  - component: {fileID: 8074539783362329705}
   m_Layer: 5
   m_Name: DirectBuyButton
   m_TagString: Untagged
@@ -2343,6 +2396,18 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &8074539783362329705
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5271388314674627258}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3bf0467eac44b314ab36d25440d72991, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::UISound
 --- !u!1 &5500424918710811916
 GameObject:
   m_ObjectHideFlags: 0
@@ -2610,8 +2675,8 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 5437612166650689965}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.055, y: 0.46}
-  m_AnchorMax: {x: 0.945, y: 0.52}
+  m_AnchorMin: {x: 0.06, y: 0.52}
+  m_AnchorMax: {x: 0.53, y: 0.59}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -2704,8 +2769,8 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 5437612166650689965}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.08, y: 0.58}
-  m_AnchorMax: {x: 0.92, y: 0.7}
+  m_AnchorMin: {x: 0.08, y: 0.65}
+  m_AnchorMax: {x: 0.92, y: 0.77}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -2953,8 +3018,8 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 7770804963323830535}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.04, y: 0.04}
-  m_AnchorMax: {x: 0.96, y: 0.58}
+  m_AnchorMin: {x: 0.05, y: 0.08}
+  m_AnchorMax: {x: 0.95, y: 0.76}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -2988,11 +3053,11 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 12800000, guid: f9c237cd8ce5acc488ae71578c0683f4, type: 3}
-    m_FontSize: 21
+    m_FontSize: 24
     m_FontStyle: 0
     m_BestFit: 1
     m_MinSize: 12
-    m_MaxSize: 21
+    m_MaxSize: 28
     m_Alignment: 0
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -3012,6 +3077,7 @@ GameObject:
   - component: {fileID: 8322441642423237877}
   - component: {fileID: 727246476815956037}
   - component: {fileID: 4879204246895894398}
+  - component: {fileID: 5819078660809483984}
   m_Layer: 5
   m_Name: UnlockRandomButton
   m_TagString: Untagged
@@ -3121,6 +3187,18 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &5819078660809483984
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6984477609918885902}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3bf0467eac44b314ab36d25440d72991, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::UISound
 --- !u!1 &7146405181298690050
 GameObject:
   m_ObjectHideFlags: 0
@@ -3133,6 +3211,7 @@ GameObject:
   - component: {fileID: 356871012962276623}
   - component: {fileID: 2690352311719425525}
   - component: {fileID: 9089509448298984969}
+  - component: {fileID: 6612356554572562820}
   m_Layer: 5
   m_Name: CloseButton
   m_TagString: Untagged
@@ -3242,6 +3321,18 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &6612356554572562820
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7146405181298690050}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3bf0467eac44b314ab36d25440d72991, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::UISound
 --- !u!1 &7311645448879731958
 GameObject:
   m_ObjectHideFlags: 0
@@ -3451,8 +3542,8 @@ RectTransform:
   - {fileID: 7860864262933249339}
   m_Father: {fileID: 5437612166650689965}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.055, y: 0.025}
-  m_AnchorMax: {x: 0.945, y: 0.17}
+  m_AnchorMin: {x: 0.56, y: 0.06}
+  m_AnchorMax: {x: 0.95, y: 0.59}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -3655,14 +3746,19 @@ MonoBehaviour:
   _unlockRandomPriceIcon: {fileID: 8191036781698473561}
   _unlockPriceIcon: {fileID: 4385797076920676125}
   _softCurrencyPriceIcon: {fileID: 21300000, guid: db445bdb34cc34ec78fc713c3278d6db, type: 3}
+  _coinsCurrencyIcon: {fileID: 21300000, guid: 9b2bc0b2a45c14f1cad7b6f4a7dbcaca, type: 3}
+  _gemsCurrencyIcon: {fileID: 21300000, guid: db445bdb34cc34ec78fc713c3278d6db, type: 3}
   _lockObject: {fileID: 5594053690554106508}
+  _starterItemsRoot: {fileID: 7770804963323830535}
   _professionListRoot: {fileID: 7292916978772025487}
   _professionListButtonPrefab: {fileID: 4836803788452704972}
   _professionListNormalColor: {r: 0.094, g: 0.106, b: 0.129, a: 0.96}
   _professionListSelectedColor: {r: 0.161, g: 0.169, b: 0.2, a: 0.96}
   _professionListLockedColor: {r: 0.094, g: 0.106, b: 0.129, a: 0.66}
+  _professionListRandomHighlightColor: {r: 0.12, g: 0.68, b: 0.2, a: 0.96}
   _professionListTextColor: {r: 1, g: 1, b: 1, a: 1}
   _professionListLockedTextColor: {r: 0.722, g: 0.761, b: 0.82, a: 1}
+  _professionListRandomHighlightTextColor: {r: 1, g: 1, b: 1, a: 1}
   _applyButton: {fileID: 1359644818406566781}
   _nextButton: {fileID: 2782715716206765245}
   _prevButton: {fileID: 1048861630121954800}
@@ -3670,10 +3766,13 @@ MonoBehaviour:
   _directBuyButton: {fileID: 3765724109174062588}
   _closeButton: {fileID: 9089509448298984969}
   _unlockRandomPriceCoins: 250
-  _unlockRandomCurrencyType: 0
+  _unlockRandomCurrencyType: 1
   _scaleUnlockPriceByOpenedCount: 0
   _unlockPriceStepCoins: 100
   _unlockPriceMaxCoins: 2000
+  _randomUnlockMinHighlightSteps: 14
+  _randomUnlockStartDelay: 0.045
+  _randomUnlockEndDelay: 0.32
 --- !u!222 &7201238241287331220
 CanvasRenderer:
   m_ObjectHideFlags: 0

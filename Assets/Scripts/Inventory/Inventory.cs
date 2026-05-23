@@ -85,6 +85,17 @@ public class Inventory : MonoBehaviour
 
     public void ResetInventory()
     {
+        ResetInventory(true);
+    }
+
+    public void ResetInventory(bool includeProfessionStarterItems)
+    {
+        ClearInventory();
+        SetStartItems(_starterPack.GetStartItems(includeProfessionStarterItems));
+    }
+
+    private void ClearInventory()
+    {
         _activeItemManager.SwitchActiveItem(null);
         _bagItems.Clear();
         _quickPanelItems.Clear();
@@ -93,7 +104,6 @@ public class Inventory : MonoBehaviour
         {
             DestroyImmediate(transform.GetChild(0).gameObject);
         }
-        SetStartItems(_starterPack.GetStartItems());
     }
 
     public void SetStartItems(ReadOnlyCollection<PickableItem> items)
@@ -347,13 +357,23 @@ public class Inventory : MonoBehaviour
 
     public void SetLoadedInventory(List<string> items = null)
     {
+        SetLoadedInventory(items, true);
+    }
+
+    public void SetLoadedInventory(List<string> items, bool includeProfessionStarterItems)
+    {
         List<PickableItem> itemPrefabs = new();
         if (items == null)
         {
-            ResetInventory();
+            ResetInventory(includeProfessionStarterItems);
             items = SaveManager.Instance.LoadLobbyItems();
             //SetStartItems(_starterPack.GetStartItems());
         }
+        else
+        {
+            ClearInventory();
+        }
+
         foreach (var id in items)
         {
             PickableItem item = ItemsManager.Instance.GetItem(id);

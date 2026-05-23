@@ -136,7 +136,8 @@ public class GameManager : MonoBehaviour
 
     public void AddReward()
     {
-        CurrencyManager.Instance.AddCurrency(CurrencyType.Gems, _reward);
+        int reward = ProfessionService.ApplyWinGemsReward(_reward);
+        CurrencyManager.Instance.AddCurrency(CurrencyType.Gems, reward);
     }
 }
 

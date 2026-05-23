@@ -30,7 +30,9 @@ public static class ProfessionLocalization
     public static string PassiveMoveSpeedFlatLabel => Translate("UI/Profession/Passive/MoveSpeedFlat", "Скорость", "Move speed");
     public static string PassiveMoveSpeedMultLabel => Translate("UI/Profession/Passive/MoveSpeedMult", "Множитель скорости", "Move speed multiplier");
     public static string PassiveMaxHealthFlatLabel => Translate("UI/Profession/Passive/MaxHealthFlat", "Макс. здоровье", "Max health");
+    public static string PassiveMaxHealthMultLabel => Translate("UI/Profession/Passive/MaxHealthMult", "Макс. здоровье", "Max health");
     public static string PassiveMaxStaminaFlatLabel => Translate("UI/Profession/Passive/MaxStaminaFlat", "Макс. стамина", "Max stamina");
+    public static string PassiveMaxStaminaMultLabel => Translate("UI/Profession/Passive/MaxStaminaMult", "Макс. стамина", "Max stamina");
     public static string PassiveStaminaConsumptionMultLabel => Translate("UI/Profession/Passive/StaminaConsumptionMult", "Расход стамины", "Stamina use");
     public static string PassiveStaminaRestoreMultLabel => Translate("UI/Profession/Passive/StaminaRestoreMult", "Восстановление стамины", "Stamina restore");
     public static string PassiveIncomingDamageMultLabel => Translate("UI/Profession/Passive/IncomingDamageMult", "Входящий урон", "Incoming damage");
@@ -39,10 +41,13 @@ public static class ProfessionLocalization
     public static string PassiveHealthDrainPerSecondLabel => Translate("UI/Profession/Passive/HealthDrainPerSecond", "Потеря здоровья", "Health drain");
     public static string PassiveExperienceMultLabel => Translate("UI/Profession/Passive/ExperienceMult", "Опыт", "Experience");
     public static string PassiveSaleRewardMultLabel => Translate("UI/Profession/Passive/SaleRewardMult", "Продажа", "Sell rewards");
+    public static string PassiveWinGemsRewardMultLabel => Translate("UI/Profession/Passive/WinGemsRewardMult", "Харда за победу", "Victory gems");
     public static string PassiveMaxFuelFlatLabel => Translate("UI/Profession/Passive/MaxFuelFlat", "Макс. топливо", "Max fuel");
+    public static string PassiveMaxFuelMultLabel => Translate("UI/Profession/Passive/MaxFuelMult", "Макс. топливо", "Max fuel");
     public static string PassiveFuelConsumptionMultLabel => Translate("UI/Profession/Passive/FuelConsumptionMult", "Расход топлива", "Fuel consumption");
     public static string PassiveFuelFillMultLabel => Translate("UI/Profession/Passive/FuelFillMult", "Заправка", "Fuel fill efficiency");
     public static string PassiveBoatSpeedFlatLabel => Translate("UI/Profession/Passive/BoatSpeedFlat", "Скорость корабля", "Boat speed");
+    public static string PassiveBoatSpeedMultLabel => Translate("UI/Profession/Passive/BoatSpeedMult", "Скорость корабля", "Boat speed");
     public static string PassiveMeleeDamageFlatLabel => Translate("UI/Profession/Passive/MeleeDamageFlat", "Урон ближнего боя", "Melee damage");
     public static string PassiveMeleeAttackSpeedMultLabel => Translate("UI/Profession/Passive/MeleeAttackSpeedMult", "Скорость ближнего боя", "Melee attack speed");
     public static string PassiveRangedDamageFlatLabel => Translate("UI/Profession/Passive/RangedDamageFlat", "Дальний урон", "Ranged damage");

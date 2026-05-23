@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class LobbyManager : MonoBehaviour
@@ -30,9 +31,9 @@ public class LobbyManager : MonoBehaviour
 
     private void Start()
     {
-        SaveManager.Instance.SaveGameProgress(-1, Inventory.Instance.GetItems());
         PlayerMovement.Instance.Teleport(_playerSpawnPoint);
-        Inventory.Instance.SetLoadedInventory();
+        Inventory.Instance.SetLoadedInventory(null, false);
+        SaveManager.Instance.SaveGameProgress(-1, new List<PickableItem>());
         //SaveManager.Instance.SaveGameProgress(-1, Inventory.Instance.GetItems());
         //PlayerManager.Instance.gameObject.transform.position = _playerSpawnPoint.position;
     }

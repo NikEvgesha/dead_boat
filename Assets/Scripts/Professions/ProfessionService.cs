@@ -324,13 +324,13 @@ public static class ProfessionService
     public static float ApplyMaxHealth(float baseValue)
     {
         ProfessionPassiveBonuses bonuses = GetCurrentPassiveBonuses();
-        return baseValue + bonuses.maxHealthFlat;
+        return (baseValue + bonuses.maxHealthFlat) * bonuses.SafeMaxHealthMultiplier;
     }
 
     public static float ApplyMaxStamina(float baseValue)
     {
         ProfessionPassiveBonuses bonuses = GetCurrentPassiveBonuses();
-        return baseValue + bonuses.maxStaminaFlat;
+        return (baseValue + bonuses.maxStaminaFlat) * bonuses.SafeMaxStaminaMultiplier;
     }
 
     public static float ApplyStaminaConsumption(float baseValue)
@@ -357,10 +357,16 @@ public static class ProfessionService
         return Mathf.Max(0, Mathf.RoundToInt(baseValue * bonuses.SafeSaleRewardMultiplier));
     }
 
+    public static int ApplyWinGemsReward(int baseValue)
+    {
+        ProfessionPassiveBonuses bonuses = GetCurrentPassiveBonuses();
+        return Mathf.Max(0, Mathf.RoundToInt(baseValue * bonuses.SafeWinGemsRewardMultiplier));
+    }
+
     public static float ApplyMaxFuel(float baseValue)
     {
         ProfessionPassiveBonuses bonuses = GetCurrentPassiveBonuses();
-        return baseValue + bonuses.maxFuelFlat;
+        return (baseValue + bonuses.maxFuelFlat) * bonuses.SafeMaxFuelMultiplier;
     }
 
     public static float ApplyFuelConsumption(float baseValue)
@@ -378,7 +384,7 @@ public static class ProfessionService
     public static float ApplyBoatMaxSpeed(float baseValue)
     {
         ProfessionPassiveBonuses bonuses = GetCurrentPassiveBonuses();
-        return baseValue + bonuses.boatSpeedFlat;
+        return (baseValue + bonuses.boatSpeedFlat) * bonuses.SafeBoatSpeedMultiplier;
     }
 
     public static float ApplyMeleeDamage(float baseValue)
@@ -596,7 +602,9 @@ public static class ProfessionService
         AppendFlatLine(positiveLines, negativeLines, ProfessionLocalization.PassiveMoveSpeedFlatLabel, bonuses.moveSpeedFlat);
         AppendMultiplierLine(positiveLines, negativeLines, ProfessionLocalization.PassiveMoveSpeedMultLabel, bonuses.SafeMoveSpeedMultiplier);
         AppendFlatLine(positiveLines, negativeLines, ProfessionLocalization.PassiveMaxHealthFlatLabel, bonuses.maxHealthFlat);
+        AppendMultiplierLine(positiveLines, negativeLines, ProfessionLocalization.PassiveMaxHealthMultLabel, bonuses.SafeMaxHealthMultiplier);
         AppendFlatLine(positiveLines, negativeLines, ProfessionLocalization.PassiveMaxStaminaFlatLabel, bonuses.maxStaminaFlat);
+        AppendMultiplierLine(positiveLines, negativeLines, ProfessionLocalization.PassiveMaxStaminaMultLabel, bonuses.SafeMaxStaminaMultiplier);
         AppendMultiplierLine(positiveLines, negativeLines, ProfessionLocalization.PassiveStaminaConsumptionMultLabel, bonuses.SafeStaminaConsumptionMultiplier, false);
         AppendMultiplierLine(positiveLines, negativeLines, ProfessionLocalization.PassiveStaminaRestoreMultLabel, bonuses.SafeStaminaRestoreMultiplier);
         AppendMultiplierLine(positiveLines, negativeLines, ProfessionLocalization.PassiveIncomingDamageMultLabel, bonuses.SafeIncomingDamageMultiplier, false);
@@ -605,10 +613,13 @@ public static class ProfessionService
         AppendHealthDrainLine(negativeLines, ProfessionLocalization.PassiveHealthDrainPerSecondLabel, bonuses.healthDrainPerSecond);
         AppendMultiplierLine(positiveLines, negativeLines, ProfessionLocalization.PassiveExperienceMultLabel, bonuses.SafeExperienceMultiplier);
         AppendMultiplierLine(positiveLines, negativeLines, ProfessionLocalization.PassiveSaleRewardMultLabel, bonuses.SafeSaleRewardMultiplier);
+        AppendMultiplierLine(positiveLines, negativeLines, ProfessionLocalization.PassiveWinGemsRewardMultLabel, bonuses.SafeWinGemsRewardMultiplier);
         AppendFlatLine(positiveLines, negativeLines, ProfessionLocalization.PassiveMaxFuelFlatLabel, bonuses.maxFuelFlat);
+        AppendMultiplierLine(positiveLines, negativeLines, ProfessionLocalization.PassiveMaxFuelMultLabel, bonuses.SafeMaxFuelMultiplier);
         AppendMultiplierLine(positiveLines, negativeLines, ProfessionLocalization.PassiveFuelConsumptionMultLabel, bonuses.SafeFuelConsumptionMultiplier, false);
         AppendMultiplierLine(positiveLines, negativeLines, ProfessionLocalization.PassiveFuelFillMultLabel, bonuses.SafeFuelFillMultiplier);
         AppendFlatLine(positiveLines, negativeLines, ProfessionLocalization.PassiveBoatSpeedFlatLabel, bonuses.boatSpeedFlat);
+        AppendMultiplierLine(positiveLines, negativeLines, ProfessionLocalization.PassiveBoatSpeedMultLabel, bonuses.SafeBoatSpeedMultiplier);
         AppendFlatLine(positiveLines, negativeLines, ProfessionLocalization.PassiveMeleeDamageFlatLabel, bonuses.meleeDamageFlat);
         AppendMultiplierLine(positiveLines, negativeLines, ProfessionLocalization.PassiveMeleeAttackSpeedMultLabel, bonuses.SafeMeleeAttackSpeedMultiplier);
         AppendFlatLine(positiveLines, negativeLines, ProfessionLocalization.PassiveRangedDamageFlatLabel, bonuses.rangedDamageFlat);

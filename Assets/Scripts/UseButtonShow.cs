@@ -16,6 +16,7 @@ public class UseButtonShow : MonoBehaviour
     private bool _active;
     private float _progress;
     private bool _openInProgress;
+    private bool _waitForRelease;
 
     public UnityEvent Activate;
 
@@ -58,11 +59,22 @@ public class UseButtonShow : MonoBehaviour
         _progress = 0;
         _openProgress.fillAmount = _progress;
         _openInProgress = false;
+        _waitForRelease = false;
     }
 
     private void Update()
     {
-        if (!_active || _openInProgress) return;
+        if (!_active) return;
+
+        if (_waitForRelease)
+        {
+            if (!IsInteractionHeld())
+                _waitForRelease = false;
+
+            return;
+        }
+
+        if (_openInProgress) return;
 
         if (PlayerInput.Instance.Interaction)
         {
@@ -73,6 +85,9 @@ public class UseButtonShow : MonoBehaviour
 
     private void OpenShop()
     {
+        if (!_active || _openInProgress || _waitForRelease)
+            return;
+
         _openInProgress = true;
         _progress = 0;
         StartCoroutine(OpenProcess());
@@ -92,9 +107,19 @@ public class UseButtonShow : MonoBehaviour
         {
             _source.Play();
             Activate?.Invoke();
+            _waitForRelease = true;
         }
         _progress = 0;
         _openProgress.fillAmount = _progress;
         _openInProgress = false;
+    }
+
+    private bool IsInteractionHeld()
+    {
+        bool touchHeld = _touchPanel != null && _touchPanel.Hold;
+        bool inputHeld = PlayerInput.Instance != null &&
+            (PlayerInput.Instance.Interaction || PlayerInput.Instance.InteractionHold);
+
+        return touchHeld || inputHeld;
     }
 }

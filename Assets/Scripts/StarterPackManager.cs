@@ -17,7 +17,14 @@ public class StarterPackManager : MonoBehaviour
 
     public ReadOnlyCollection<PickableItem> GetStartItems()
     {
+        return GetStartItems(true);
+    }
+
+    public ReadOnlyCollection<PickableItem> GetStartItems(bool includeProfessionStarterItems)
+    {
         ProfessionService.ConfigureCatalog(_professionCatalog);
-        return ProfessionService.BuildStarterPack(_starterPackItems, _includeProfessionStarterItems);
+        return ProfessionService.BuildStarterPack(
+            _starterPackItems,
+            _includeProfessionStarterItems && includeProfessionStarterItems);
     }
 }
