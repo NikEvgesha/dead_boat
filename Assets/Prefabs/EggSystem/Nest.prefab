@@ -143,12 +143,12 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: ff54a7fa593014e61afec778bfad0226, type: 3}
-  m_Type: 3
+  m_Sprite: {fileID: 21300000, guid: 547ac95e4b43c49108b320145ada6974, type: 3}
+  m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 0
-  m_FillAmount: 0
+  m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
@@ -340,7 +340,9 @@ MonoBehaviour:
   _timerText: {fileID: 4981787175287773831}
   _titleText: {fileID: 6288974303305381895}
   _progressFill: {fileID: 98641771483763952}
-  _progressFillSprite: {fileID: 21300000, guid: ff54a7fa593014e61afec778bfad0226, type: 3}
+  _progressBackground: {fileID: 98641771483763952}
+  _progressFillSprite: {fileID: 21300000, guid: c7e5d8a6b2f04f4b9a37d29e3c6a8f15, type: 3}
+  _progressBackgroundSprite: {fileID: 21300000, guid: 547ac95e4b43c49108b320145ada6974, type: 3}
   _incubatingRoot: {fileID: 775896769577553156}
   _readyRoot: {fileID: 0}
   _createTemporaryUiIfMissing: 0
@@ -366,6 +368,17 @@ MonoBehaviour:
   _touchPanel: {fileID: 0}
   _openProgress: {fileID: 0}
   _audioSource: {fileID: 0}
+  _raiseInfoCanvas: 0
+  _renderInfoCanvasOnTop: 1
+  _alwaysOnTopMaterial: {fileID: 2100000, guid: b1c4bccdbad94fa47b38a8814476a303, type: 2}
+  _infoCanvasMinLocalHeight: 0.2
+  _infoCanvasSortingOrder: 120
+  _showBoostAdHint: 1
+  _boostAdIconSprite: {fileID: 21300000, guid: d52e3868e3b711e44aba413c22326675, type: 3}
+  _font: {fileID: 12800000, guid: f9c237cd8ce5acc488ae71578c0683f4, type: 3}
+  _boostAdRoot: {fileID: 0}
+  _boostAdIcon: {fileID: 0}
+  _boostAdText: {fileID: 0}
 --- !u!1 &5206094080362307148
 GameObject:
   m_ObjectHideFlags: 0

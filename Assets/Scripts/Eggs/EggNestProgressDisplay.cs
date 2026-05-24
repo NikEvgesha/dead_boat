@@ -9,7 +9,9 @@ public class EggNestProgressDisplay : MonoBehaviour
     [SerializeField] private Text _timerText;
     [SerializeField] private Text _titleText;
     [SerializeField] private Image _progressFill;
+    [SerializeField] private Image _progressBackground;
     [SerializeField] private Sprite _progressFillSprite;
+    [SerializeField] private Sprite _progressBackgroundSprite;
     [SerializeField] private GameObject _incubatingRoot;
     [SerializeField] private GameObject _readyRoot;
     [SerializeField] private bool _createTemporaryUiIfMissing = true;
@@ -173,20 +175,8 @@ public class EggNestProgressDisplay : MonoBehaviour
 
         GameObject progress = new GameObject("Progress", typeof(RectTransform));
         progress.transform.SetParent(background.transform, false);
-        RectTransform progressRect = progress.GetComponent<RectTransform>();
-        progressRect.anchorMin = new Vector2(0.1f, 0.13f);
-        progressRect.anchorMax = new Vector2(0.9f, 0.25f);
-        progressRect.offsetMin = Vector2.zero;
-        progressRect.offsetMax = Vector2.zero;
-
-        _progressFill = progress.AddComponent<Image>();
-        _progressFill.sprite = ResolveProgressFillSprite();
-        _progressFill.color = new Color(0.98f, 0.78f, 0.18f, 0.95f);
-        _progressFill.type = Image.Type.Filled;
-        _progressFill.fillMethod = Image.FillMethod.Horizontal;
-        _progressFill.fillOrigin = (int)Image.OriginHorizontal.Left;
-        _progressFill.fillAmount = 0f;
-        _progressFill.raycastTarget = false;
+        _progressBackground = progress.AddComponent<Image>();
+        _progressBackground.raycastTarget = false;
 
         _canvas.gameObject.SetActive(false);
     }
@@ -200,22 +190,84 @@ public class EggNestProgressDisplay : MonoBehaviour
 
     private void ConfigureProgressFill()
     {
-        if (_progressFill == null)
+        Image background = _progressBackground != null ? _progressBackground : _progressFill;
+        if (background == null)
             return;
 
-        Sprite sprite = ResolveProgressFillSprite();
-        if (sprite != null)
+        float currentFillAmount = _progressFill != null && _progressFill != background
+            ? _progressFill.fillAmount
+            : 0f;
+
+        _progressBackground = background;
+        ConfigureProgressBackground(background);
+
+        _progressFill = EnsureProgressFillImage(background.transform);
+
+        RectTransform fillRect = _progressFill.rectTransform;
+        fillRect.anchorMin = new Vector2(0.205f, 0.335f);
+        fillRect.anchorMax = new Vector2(0.93f, 0.69f);
+        fillRect.offsetMin = Vector2.zero;
+        fillRect.offsetMax = Vector2.zero;
+
+        Sprite fillSprite = ResolveProgressFillSprite();
+        if (fillSprite != null)
         {
-            _progressFill.sprite = sprite;
-            if (_progressFillSprite != null)
-                _progressFill.color = Color.white;
+            _progressFill.sprite = fillSprite;
+            _progressFill.color = _progressFillSprite != null
+                ? Color.white
+                : new Color(0.98f, 0.78f, 0.18f, 0.95f);
+        }
+        else
+        {
+            _progressFill.color = new Color(0.98f, 0.78f, 0.18f, 0.95f);
         }
 
         _progressFill.type = Image.Type.Filled;
         _progressFill.fillMethod = Image.FillMethod.Horizontal;
         _progressFill.fillOrigin = (int)Image.OriginHorizontal.Left;
         _progressFill.fillClockwise = true;
+        _progressFill.fillAmount = Mathf.Clamp01(currentFillAmount);
         _progressFill.raycastTarget = false;
+    }
+
+    private void ConfigureProgressBackground(Image background)
+    {
+        RectTransform backgroundRect = background.rectTransform;
+        backgroundRect.anchorMin = new Vector2(0.07f, 0.08f);
+        backgroundRect.anchorMax = new Vector2(0.93f, 0.315f);
+        backgroundRect.offsetMin = Vector2.zero;
+        backgroundRect.offsetMax = Vector2.zero;
+
+        Sprite backgroundSprite = ResolveProgressBackgroundSprite();
+        if (backgroundSprite != null)
+        {
+            background.sprite = backgroundSprite;
+            background.color = _progressBackgroundSprite != null
+                ? Color.white
+                : new Color(0.03f, 0.035f, 0.045f, 0.92f);
+        }
+        else
+        {
+            background.color = new Color(0.03f, 0.035f, 0.045f, 0.92f);
+        }
+
+        background.type = Image.Type.Simple;
+        background.fillAmount = 1f;
+        background.raycastTarget = false;
+    }
+
+    private Image EnsureProgressFillImage(Transform background)
+    {
+        if (_progressFill != null && _progressFill.transform.parent == background && _progressFill != _progressBackground)
+            return _progressFill;
+
+        Transform existing = background.Find("ProgressFill");
+        if (existing != null && existing.TryGetComponent(out Image existingImage))
+            return existingImage;
+
+        GameObject fill = new GameObject("ProgressFill", typeof(RectTransform));
+        fill.transform.SetParent(background, false);
+        return fill.AddComponent<Image>();
     }
 
     private void ConfigureText(Text text)
@@ -241,6 +293,14 @@ public class EggNestProgressDisplay : MonoBehaviour
     {
         if (_progressFillSprite != null)
             return _progressFillSprite;
+
+        return Resources.Load<Sprite>("Components/Frame/BasicFrame_SquareSolid01_White");
+    }
+
+    private Sprite ResolveProgressBackgroundSprite()
+    {
+        if (_progressBackgroundSprite != null)
+            return _progressBackgroundSprite;
 
         return Resources.Load<Sprite>("Components/Frame/BasicFrame_SquareSolid01_White");
     }

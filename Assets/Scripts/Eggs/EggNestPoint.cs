@@ -22,6 +22,8 @@ public class EggNestPoint : MonoBehaviour
     public string NestId => _nestId;
     public Transform EggVisualAnchor => _eggVisualAnchor != null ? _eggVisualAnchor : transform;
     public IReadOnlyList<Transform> AnimalSpawnPoints => _animalSpawnPoints;
+    public bool BoostIncubationWithRewardedAd => _boostIncubationWithRewardedAd;
+    public int IncubationBoostSeconds => _incubationBoostSeconds;
 
     public event Action<EggNestPoint> NestActionRequested;
 
