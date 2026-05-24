@@ -11363,7 +11363,6 @@ GameObject:
   - component: {fileID: 475898783}
   - component: {fileID: 475898782}
   - component: {fileID: 475898781}
-  - component: {fileID: 475898784}
   m_Layer: 0
   m_Name: Animal_01
   m_TagString: Untagged
@@ -11464,21 +11463,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 475898779}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!114 &475898784
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 475898779}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 195c9fc19e314a21bf986ff6934c4fc5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _pointId: Animal_01
-  _spawnAnchor: {fileID: 475898780}
-  _selectionPanel: {fileID: 0}
 --- !u!4 &476312818 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: c47b26ca9058e3e46a79598681523536, type: 3}
@@ -14463,6 +14447,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 588510237}
+  - component: {fileID: 588510238}
   m_Layer: 0
   m_Name: AnimalPlacementPoints
   m_TagString: Untagged
@@ -14488,6 +14473,30 @@ Transform:
   - {fileID: 1065672754}
   m_Father: {fileID: 1140787829}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &588510238
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 588510236}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 28cc9b5cb9be3db4ba1f1009c2b0aaf8, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::AnimalPlacementPoints
+  _catalog: {fileID: 0}
+  _catalogResourcePath: Eggs/EggHatchingCatalog
+  _slotAnchors:
+  - {fileID: 475898780}
+  - {fileID: 1766971258}
+  - {fileID: 1065672754}
+  _spawnRoot: {fileID: 588510237}
+  _parentSpawnedToAnchor: 0
+  _resetLocalPoseWhenParented: 1
+  _spawnLocalOffset: {x: 0, y: 0, z: 0}
+  _spawnLocalEulerOffset: {x: 0, y: 0, z: 0}
+  _refreshInterval: 0.25
 --- !u!43 &592199941
 Mesh:
   m_ObjectHideFlags: 0
@@ -28099,7 +28108,6 @@ GameObject:
   - component: {fileID: 1065672757}
   - component: {fileID: 1065672756}
   - component: {fileID: 1065672755}
-  - component: {fileID: 1065672758}
   m_Layer: 0
   m_Name: Animal_03
   m_TagString: Untagged
@@ -28200,21 +28208,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1065672753}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!114 &1065672758
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1065672753}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 195c9fc19e314a21bf986ff6934c4fc5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _pointId: Animal_03
-  _spawnAnchor: {fileID: 1065672754}
-  _selectionPanel: {fileID: 0}
 --- !u!1001 &1066884072
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -31559,10 +31552,7 @@ MonoBehaviour:
   - {fileID: 108883998}
   - {fileID: 2072473575}
   - {fileID: 755740293}
-  _animalPoints:
-  - {fileID: 475898784}
-  - {fileID: 1766971262}
-  - {fileID: 1065672758}
+  _animalPoints: []
   _animalsRoot: {fileID: 0}
   _parentAnimalsToAnchor: 1
   _resetAnimalLocalPoseWhenParented: 1
@@ -31570,6 +31560,8 @@ MonoBehaviour:
   _autoCollectFinishedEggs: 1
   _animalMergeDurationSeconds: 1800
   _animalMergeSkipCostCoins: 500
+  _adRewardEggId: egg_ad
+  _adRewardCooldownSeconds: 21600
 --- !u!114 &1140787831
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -44317,7 +44309,6 @@ GameObject:
   - component: {fileID: 1766971261}
   - component: {fileID: 1766971260}
   - component: {fileID: 1766971259}
-  - component: {fileID: 1766971262}
   m_Layer: 0
   m_Name: Animal_02
   m_TagString: Untagged
@@ -44418,21 +44409,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1766971257}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!114 &1766971262
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1766971257}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 195c9fc19e314a21bf986ff6934c4fc5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _pointId: Animal_02
-  _spawnAnchor: {fileID: 1766971258}
-  _selectionPanel: {fileID: 0}
 --- !u!1 &1767534637
 GameObject:
   m_ObjectHideFlags: 0
