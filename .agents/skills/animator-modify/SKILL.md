@@ -1,9 +1,31 @@
 ---
 name: animator-modify
-description: Modify Unity's AnimatorController asset. Apply an array of modifications including adding/removing parameters, layers, states, and transitions. Use 'animator-get-data' tool to get valid names and parameters for modifications.
+description: Apply a batch of modifications to a Unity `AnimatorController` — add/remove parameters, layers, states, and transitions; set default states; set state motion/speed. Use 'animator-get-data' first to discover valid names.
 ---
 
 # Animator / Modify
+
+Apply a batch of modifications to a Unity `AnimatorController` asset. Each modification is dispatched by its `AnimatorModificationType` discriminator. Use 'animator-get-data' first to discover valid names so the diff is targeted.
+
+## Inputs
+
+- `animatorRef` — reference to the `AnimatorController` asset (path must start with `Assets/` and end with `.controller`).
+- `modifications` — array of `AnimatorModification` entries.
+
+## Supported modification types
+
+- `AddParameter` / `RemoveParameter` — manage controller parameters (float, int, bool, trigger).
+- `AddLayer` / `RemoveLayer` — manage animator layers.
+- `AddState` / `RemoveState` — manage states inside a specific layer.
+- `SetDefaultState` — pick the default state for a layer.
+- `AddTransition` / `RemoveTransition` — manage state-to-state transitions.
+- `AddAnyStateTransition` — add a transition from Any State.
+- `SetStateMotion` — assign an `AnimationClip` as a state's motion.
+- `SetStateSpeed` — set a state's speed multiplier.
+
+## Behavior
+
+Per-modification errors are accumulated in the response's `errors` array instead of aborting the whole batch. The controller asset is marked dirty and saved after the modifications complete.
 
 ## How to Call
 
@@ -49,7 +71,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
       "$ref": "#/$defs/AIGD.AssetObjectRef"
     },
     "modifications": {
-      "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Animation.AnimatorModification%5B%5D"
+      "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Animation.AnimatorModification-1"
     }
   },
   "$defs": {
@@ -163,7 +185,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
           "description": "Whether duration is in seconds (true) or normalized (false). Optional for: AddTransition, AddAnyStateTransition."
         },
         "conditions": {
-          "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Animation.AnimatorConditionData%5B%5D",
+          "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Animation.AnimatorConditionData-1",
           "description": "Transition conditions. Optional for: AddTransition, AddAnyStateTransition."
         }
       },
@@ -171,7 +193,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
         "type"
       ]
     },
-    "com.IvanMurzak.Unity.MCP.Animation.AnimatorConditionData[]": {
+    "com.IvanMurzak.Unity.MCP.Animation.AnimatorConditionData-1": {
       "type": "array",
       "items": {
         "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Animation.AnimatorConditionData"
@@ -194,7 +216,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
         }
       }
     },
-    "com.IvanMurzak.Unity.MCP.Animation.AnimatorModification[]": {
+    "com.IvanMurzak.Unity.MCP.Animation.AnimatorModification-1": {
       "type": "array",
       "items": {
         "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Animation.AnimatorModification"
@@ -217,7 +239,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
   "type": "object",
   "properties": {
     "result": {
-      "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Animation.AnimatorTools%2BModifyAnimatorResponse"
+      "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Animation.AnimatorTools-ModifyAnimatorResponse"
     }
   },
   "$defs": {
@@ -238,20 +260,20 @@ Read the /unity-initial-setup skill for detailed installation instructions.
         "instanceId"
       ]
     },
-    "System.Collections.Generic.List<System.String>": {
+    "System.Collections.Generic.List(System.String)": {
       "type": "array",
       "items": {
         "type": "string"
       }
     },
-    "com.IvanMurzak.Unity.MCP.Animation.AnimatorTools+ModifyAnimatorResponse": {
+    "com.IvanMurzak.Unity.MCP.Animation.AnimatorTools-ModifyAnimatorResponse": {
       "type": "object",
       "properties": {
         "modifiedAsset": {
           "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Animation.ModifyAnimatorInfo"
         },
         "errors": {
-          "$ref": "#/$defs/System.Collections.Generic.List%3CSystem.String%3E"
+          "$ref": "#/$defs/System.Collections.Generic.List(System.String)"
         }
       }
     }

@@ -10,26 +10,26 @@ public class SeeInCamera : MonoBehaviour
     private void OnEnable()
     {
         _canvas = gameObject.GetComponent<Canvas>();
-        _mainCamera = FindObjectOfType<Camera>();
-        Camera[] cameras = FindObjectsOfType<Camera>();
-        foreach (var camera in cameras)
-        {
-            if(camera.tag == "MainCamera") 
-            {
-                _mainCamera = camera;
-            }
-        }
-        _canvas.worldCamera = _mainCamera;
+        ResolveMainCamera();
+
+        if (_canvas != null)
+            _canvas.worldCamera = _mainCamera;
         
     }
     private void Update()
     {
+        if (_mainCamera == null)
+            ResolveMainCamera();
+
+        if (_mainCamera == null)
+            return;
+
         Vector3 testV = Vector3.zero;
         switch (testVector)
         {
             case 0:
-                if (_mainCamera)
-                    gameObject.transform.LookAt(_mainCamera.transform.position);
+                gameObject.transform.LookAt(_mainCamera.transform.position);
+                Vector3Test = _mainCamera.transform.position;
                 return;
             case 1:
                 testV = Vector3.left;
@@ -64,10 +64,43 @@ public class SeeInCamera : MonoBehaviour
             case 11:
                 testV = Vector3.right;
                 break;
+            case 12:
+                FaceCamera();
+                return;
             default:
                 break;
         }
         gameObject.transform.LookAt(-_mainCamera.transform.position, testV);
+        Vector3Test = _mainCamera.transform.position;
+    }
+
+    private void ResolveMainCamera()
+    {
+        _mainCamera = Camera.main;
+        if (_mainCamera != null)
+            return;
+
+        Camera[] cameras = FindObjectsByType<Camera>(FindObjectsSortMode.None);
+        foreach (Camera camera in cameras)
+        {
+            if (camera != null && camera.CompareTag("MainCamera"))
+            {
+                _mainCamera = camera;
+                return;
+            }
+        }
+
+        if (cameras.Length > 0)
+            _mainCamera = cameras[0];
+    }
+
+    private void FaceCamera()
+    {
+        Vector3 directionFromCamera = transform.position - _mainCamera.transform.position;
+        if (directionFromCamera.sqrMagnitude <= 0.0001f)
+            return;
+
+        transform.rotation = Quaternion.LookRotation(directionFromCamera, Vector3.up);
         Vector3Test = _mainCamera.transform.position;
     }
 }

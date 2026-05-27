@@ -4,6 +4,11 @@ using UnityEngine.UI;
 [DisallowMultipleComponent]
 public class EggNestProgressDisplay : MonoBehaviour
 {
+    private const float ProgressFillMinX = 0f;
+    private const float ProgressFillMaxX = 1f;
+    private static readonly Vector2 ProgressFillAnchorMin = new(ProgressFillMinX, 0f);
+    private static readonly Vector2 ProgressFillAnchorMax = new(ProgressFillMaxX, 1f);
+
     [SerializeField] private EggNestPoint _nest;
     [SerializeField] private Canvas _canvas;
     [SerializeField] private Text _timerText;
@@ -114,7 +119,7 @@ public class EggNestProgressDisplay : MonoBehaviour
         {
             int duration = Mathf.Max(1, state.durationSeconds);
             float progress = ready ? 1f : Mathf.Clamp01(1f - remaining / (float)duration);
-            _progressFill.fillAmount = progress;
+            SetProgress(progress);
         }
     }
 
@@ -194,18 +199,22 @@ public class EggNestProgressDisplay : MonoBehaviour
         if (background == null)
             return;
 
-        float currentFillAmount = _progressFill != null && _progressFill != background
-            ? _progressFill.fillAmount
-            : 0f;
+        float currentProgress = GetCurrentProgress(background);
 
         _progressBackground = background;
         ConfigureProgressBackground(background);
 
-        _progressFill = EnsureProgressFillImage(background.transform);
+        _progressFill = ResolveProgressFillImage(background);
+        if (_progressFill == null)
+        {
+            _progressFill = background;
+            SetProgress(currentProgress);
+            return;
+        }
 
         RectTransform fillRect = _progressFill.rectTransform;
-        fillRect.anchorMin = new Vector2(0.205f, 0.335f);
-        fillRect.anchorMax = new Vector2(0.93f, 0.69f);
+        fillRect.anchorMin = ProgressFillAnchorMin;
+        fillRect.anchorMax = ProgressFillAnchorMax;
         fillRect.offsetMin = Vector2.zero;
         fillRect.offsetMax = Vector2.zero;
 
@@ -222,12 +231,11 @@ public class EggNestProgressDisplay : MonoBehaviour
             _progressFill.color = new Color(0.98f, 0.78f, 0.18f, 0.95f);
         }
 
-        _progressFill.type = Image.Type.Filled;
-        _progressFill.fillMethod = Image.FillMethod.Horizontal;
-        _progressFill.fillOrigin = (int)Image.OriginHorizontal.Left;
-        _progressFill.fillClockwise = true;
-        _progressFill.fillAmount = Mathf.Clamp01(currentFillAmount);
+        _progressFill.type = Image.Type.Sliced;
+        _progressFill.fillAmount = 1f;
         _progressFill.raycastTarget = false;
+
+        SetProgress(currentProgress);
     }
 
     private void ConfigureProgressBackground(Image background)
@@ -251,23 +259,65 @@ public class EggNestProgressDisplay : MonoBehaviour
             background.color = new Color(0.03f, 0.035f, 0.045f, 0.92f);
         }
 
-        background.type = Image.Type.Simple;
+        background.type = Image.Type.Sliced;
         background.fillAmount = 1f;
         background.raycastTarget = false;
     }
 
-    private Image EnsureProgressFillImage(Transform background)
+    private void SetProgress(float progress)
     {
-        if (_progressFill != null && _progressFill.transform.parent == background && _progressFill != _progressBackground)
+        if (_progressFill == null)
+            return;
+
+        progress = Mathf.Clamp01(progress);
+
+        if (_progressFill == _progressBackground)
+        {
+            _progressFill.type = Image.Type.Filled;
+            _progressFill.fillMethod = Image.FillMethod.Horizontal;
+            _progressFill.fillOrigin = (int)Image.OriginHorizontal.Left;
+            _progressFill.fillClockwise = true;
+            _progressFill.fillAmount = progress;
+            return;
+        }
+
+        RectTransform fillRect = _progressFill.rectTransform;
+        fillRect.anchorMin = ProgressFillAnchorMin;
+        fillRect.anchorMax = new Vector2(Mathf.Lerp(ProgressFillMinX, ProgressFillMaxX, progress), ProgressFillAnchorMax.y);
+        fillRect.offsetMin = Vector2.zero;
+        fillRect.offsetMax = Vector2.zero;
+        _progressFill.enabled = progress > 0.001f;
+    }
+
+    private float GetCurrentProgress(Image background)
+    {
+        if (_progressFill == null)
+            return 0f;
+
+        if (_progressFill == background)
+            return Mathf.Clamp01(_progressFill.fillAmount);
+
+        RectTransform fillRect = _progressFill.rectTransform;
+        float width = ProgressFillMaxX - ProgressFillMinX;
+        if (width <= 0.0001f)
+            return Mathf.Clamp01(_progressFill.fillAmount);
+
+        return Mathf.Clamp01((fillRect.anchorMax.x - ProgressFillMinX) / width);
+    }
+
+    private Image ResolveProgressFillImage(Image background)
+    {
+        if (background == null)
+            return null;
+
+        if (_progressFill != null && _progressFill.transform.parent == background.transform && _progressFill != _progressBackground)
             return _progressFill;
 
-        Transform existing = background.Find("ProgressFill");
+        Transform existing = background.transform.Find("ProgressFill");
         if (existing != null && existing.TryGetComponent(out Image existingImage))
             return existingImage;
 
-        GameObject fill = new GameObject("ProgressFill", typeof(RectTransform));
-        fill.transform.SetParent(background, false);
-        return fill.AddComponent<Image>();
+        return null;
     }
 
     private void ConfigureText(Text text)
@@ -294,7 +344,7 @@ public class EggNestProgressDisplay : MonoBehaviour
         if (_progressFillSprite != null)
             return _progressFillSprite;
 
-        return Resources.Load<Sprite>("Components/Frame/BasicFrame_SquareSolid01_White");
+        return Resources.Load<Sprite>("Components/Slider/Slider_Basic02_White_Fill");
     }
 
     private Sprite ResolveProgressBackgroundSprite()
@@ -302,7 +352,7 @@ public class EggNestProgressDisplay : MonoBehaviour
         if (_progressBackgroundSprite != null)
             return _progressBackgroundSprite;
 
-        return Resources.Load<Sprite>("Components/Frame/BasicFrame_SquareSolid01_White");
+        return Resources.Load<Sprite>("Components/Slider/Slider_Basic02_Demo_Bg");
     }
 
     private static Text CreateText(Transform parent, string name, Vector2 anchorMin, Vector2 anchorMax, string value, int minSize, int maxSize, Font font)

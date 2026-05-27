@@ -124,6 +124,16 @@ public sealed class AnimalLoadoutPanel : MonoBehaviour
             PlayerInput.Instance.AOpenWindow?.Invoke(this);
     }
 
+    public void OpenForSlot(int slotIndex)
+    {
+        Open();
+
+        if (!_opened)
+            return;
+
+        OpenInventoryPicker(slotIndex);
+    }
+
     public void CloseFromButton()
     {
         Close(true);

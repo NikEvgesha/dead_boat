@@ -1,9 +1,19 @@
 ---
 name: animation-create
-description: Create Unity's Animation asset files (AnimationClip). Creates folders recursively if they do not exist. Each path should start with 'Assets/' and end with '.anim'.
+description: Create empty Unity `AnimationClip` assets at the given project paths. Each path must start with `Assets/` and end with `.anim`. Missing intermediate folders are created recursively. Pair with 'animation-modify' to populate curves and events.
 ---
 
 # Animation / Create
+
+Create empty Unity `AnimationClip` assets at the given project paths. Each path must start with `Assets/` and end with `.anim`. Missing intermediate folders are created recursively, then `AssetDatabase.Refresh()` runs and the Editor windows repaint. Pair with 'animation-modify' to populate curves and events afterwards.
+
+## Inputs
+
+- `sourcePaths` — array of project-relative `.anim` paths to create.
+
+## Behavior
+
+Each path is validated independently: empty / non-`Assets/` / non-`.anim` paths are skipped and appended to `errors` instead of aborting the whole batch. Successfully created clips are returned in `createdAssets` with their path, instance ID, and name.
 
 ## How to Call
 
@@ -44,11 +54,11 @@ Read the /unity-initial-setup skill for detailed installation instructions.
   "type": "object",
   "properties": {
     "sourcePaths": {
-      "$ref": "#/$defs/System.String%5B%5D"
+      "$ref": "#/$defs/System.String-1"
     }
   },
   "$defs": {
-    "System.String[]": {
+    "System.String-1": {
       "type": "array",
       "items": {
         "type": "string"
@@ -70,17 +80,17 @@ Read the /unity-initial-setup skill for detailed installation instructions.
   "type": "object",
   "properties": {
     "result": {
-      "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Animation.AnimationTools%2BCreateAnimationResponse"
+      "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Animation.AnimationTools-CreateAnimationResponse"
     }
   },
   "$defs": {
-    "System.Collections.Generic.List<com.IvanMurzak.Unity.MCP.Animation.AnimationTools+CreatedAnimationInfo>": {
+    "System.Collections.Generic.List(com.IvanMurzak.Unity.MCP.Animation.AnimationTools-CreatedAnimationInfo)": {
       "type": "array",
       "items": {
-        "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Animation.AnimationTools%2BCreatedAnimationInfo"
+        "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Animation.AnimationTools-CreatedAnimationInfo"
       }
     },
-    "com.IvanMurzak.Unity.MCP.Animation.AnimationTools+CreatedAnimationInfo": {
+    "com.IvanMurzak.Unity.MCP.Animation.AnimationTools-CreatedAnimationInfo": {
       "type": "object",
       "properties": {
         "path": {
@@ -97,20 +107,20 @@ Read the /unity-initial-setup skill for detailed installation instructions.
         "instanceId"
       ]
     },
-    "System.Collections.Generic.List<System.String>": {
+    "System.Collections.Generic.List(System.String)": {
       "type": "array",
       "items": {
         "type": "string"
       }
     },
-    "com.IvanMurzak.Unity.MCP.Animation.AnimationTools+CreateAnimationResponse": {
+    "com.IvanMurzak.Unity.MCP.Animation.AnimationTools-CreateAnimationResponse": {
       "type": "object",
       "properties": {
         "createdAssets": {
-          "$ref": "#/$defs/System.Collections.Generic.List%3Ccom.IvanMurzak.Unity.MCP.Animation.AnimationTools%2BCreatedAnimationInfo%3E"
+          "$ref": "#/$defs/System.Collections.Generic.List(com.IvanMurzak.Unity.MCP.Animation.AnimationTools-CreatedAnimationInfo)"
         },
         "errors": {
-          "$ref": "#/$defs/System.Collections.Generic.List%3CSystem.String%3E"
+          "$ref": "#/$defs/System.Collections.Generic.List(System.String)"
         }
       }
     }

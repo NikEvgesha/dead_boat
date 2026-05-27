@@ -1,9 +1,23 @@
 ---
 name: animator-get-data
-description: Get data about a Unity AnimatorController asset file. Returns information such as name, layers, parameters, and states.
+description: Inspect a Unity `AnimatorController` asset — controller name, every parameter (name, type, defaults), every layer with its state machine, every state, and every transition. Pair with 'animator-modify' to write changes back.
 ---
 
 # Animator / Get Data
+
+Inspect a Unity `AnimatorController` asset. Returns the controller's name plus the full set of parameters, layers, states, and transitions — enough to drive a follow-up 'animator-modify' call with valid names.
+
+## Inputs
+
+- `animatorRef` — reference to the `AnimatorController` asset (path must start with `Assets/` and end with `.controller`).
+
+## Returned fields
+
+- `name` — controller asset name.
+- `parameters` — every parameter (name, type, default value).
+- `layers` — every layer with its state machine, default state, and weight.
+- `states` — every state across all layers (name, speed, motion).
+- `transitions` — every transition with its conditions, source, and destination.
 
 ## How to Call
 
@@ -92,11 +106,11 @@ Read the /unity-initial-setup skill for detailed installation instructions.
   "type": "object",
   "properties": {
     "result": {
-      "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Animation.AnimatorTools%2BGetAnimatorDataResponse"
+      "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Animation.AnimatorTools-GetAnimatorDataResponse"
     }
   },
   "$defs": {
-    "System.Collections.Generic.List<com.IvanMurzak.Unity.MCP.Animation.AnimatorParameterInfo>": {
+    "System.Collections.Generic.List(com.IvanMurzak.Unity.MCP.Animation.AnimatorParameterInfo)": {
       "type": "array",
       "items": {
         "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Animation.AnimatorParameterInfo"
@@ -127,7 +141,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
         "defaultBool"
       ]
     },
-    "System.Collections.Generic.List<com.IvanMurzak.Unity.MCP.Animation.AnimatorLayerInfo>": {
+    "System.Collections.Generic.List(com.IvanMurzak.Unity.MCP.Animation.AnimatorLayerInfo)": {
       "type": "array",
       "items": {
         "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Animation.AnimatorLayerInfo"
@@ -155,13 +169,13 @@ Read the /unity-initial-setup skill for detailed installation instructions.
           "type": "string"
         },
         "states": {
-          "$ref": "#/$defs/System.Collections.Generic.List%3Ccom.IvanMurzak.Unity.MCP.Animation.AnimatorStateInfo%3E"
+          "$ref": "#/$defs/System.Collections.Generic.List(com.IvanMurzak.Unity.MCP.Animation.AnimatorStateInfo)"
         },
         "subStateMachines": {
-          "$ref": "#/$defs/System.Collections.Generic.List%3CSystem.String%3E"
+          "$ref": "#/$defs/System.Collections.Generic.List(System.String)"
         },
         "anyStateTransitions": {
-          "$ref": "#/$defs/System.Collections.Generic.List%3Ccom.IvanMurzak.Unity.MCP.Animation.AnimatorTransitionInfo%3E"
+          "$ref": "#/$defs/System.Collections.Generic.List(com.IvanMurzak.Unity.MCP.Animation.AnimatorTransitionInfo)"
         }
       },
       "required": [
@@ -170,7 +184,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
         "iKPass"
       ]
     },
-    "System.Collections.Generic.List<com.IvanMurzak.Unity.MCP.Animation.AnimatorStateInfo>": {
+    "System.Collections.Generic.List(com.IvanMurzak.Unity.MCP.Animation.AnimatorStateInfo)": {
       "type": "array",
       "items": {
         "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Animation.AnimatorStateInfo"
@@ -219,7 +233,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
           "type": "string"
         },
         "transitions": {
-          "$ref": "#/$defs/System.Collections.Generic.List%3Ccom.IvanMurzak.Unity.MCP.Animation.AnimatorTransitionInfo%3E"
+          "$ref": "#/$defs/System.Collections.Generic.List(com.IvanMurzak.Unity.MCP.Animation.AnimatorTransitionInfo)"
         }
       },
       "required": [
@@ -232,7 +246,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
         "writeDefaultValues"
       ]
     },
-    "System.Collections.Generic.List<com.IvanMurzak.Unity.MCP.Animation.AnimatorTransitionInfo>": {
+    "System.Collections.Generic.List(com.IvanMurzak.Unity.MCP.Animation.AnimatorTransitionInfo)": {
       "type": "array",
       "items": {
         "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Animation.AnimatorTransitionInfo"
@@ -263,7 +277,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
           "type": "boolean"
         },
         "conditions": {
-          "$ref": "#/$defs/System.Collections.Generic.List%3Ccom.IvanMurzak.Unity.MCP.Animation.AnimatorConditionInfo%3E"
+          "$ref": "#/$defs/System.Collections.Generic.List(com.IvanMurzak.Unity.MCP.Animation.AnimatorConditionInfo)"
         }
       },
       "required": [
@@ -275,7 +289,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
         "canTransitionToSelf"
       ]
     },
-    "System.Collections.Generic.List<com.IvanMurzak.Unity.MCP.Animation.AnimatorConditionInfo>": {
+    "System.Collections.Generic.List(com.IvanMurzak.Unity.MCP.Animation.AnimatorConditionInfo)": {
       "type": "array",
       "items": {
         "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Animation.AnimatorConditionInfo"
@@ -298,23 +312,23 @@ Read the /unity-initial-setup skill for detailed installation instructions.
         "threshold"
       ]
     },
-    "System.Collections.Generic.List<System.String>": {
+    "System.Collections.Generic.List(System.String)": {
       "type": "array",
       "items": {
         "type": "string"
       }
     },
-    "com.IvanMurzak.Unity.MCP.Animation.AnimatorTools+GetAnimatorDataResponse": {
+    "com.IvanMurzak.Unity.MCP.Animation.AnimatorTools-GetAnimatorDataResponse": {
       "type": "object",
       "properties": {
         "name": {
           "type": "string"
         },
         "parameters": {
-          "$ref": "#/$defs/System.Collections.Generic.List%3Ccom.IvanMurzak.Unity.MCP.Animation.AnimatorParameterInfo%3E"
+          "$ref": "#/$defs/System.Collections.Generic.List(com.IvanMurzak.Unity.MCP.Animation.AnimatorParameterInfo)"
         },
         "layers": {
-          "$ref": "#/$defs/System.Collections.Generic.List%3Ccom.IvanMurzak.Unity.MCP.Animation.AnimatorLayerInfo%3E"
+          "$ref": "#/$defs/System.Collections.Generic.List(com.IvanMurzak.Unity.MCP.Animation.AnimatorLayerInfo)"
         }
       }
     }

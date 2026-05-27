@@ -1,9 +1,31 @@
 ---
 name: animation-modify
-description: Modify Unity's AnimationClip asset. Apply an array of modifications including setting curves, clearing curves, setting properties, and managing animation events. Use 'animation-get-data' tool to get valid property names and existing curves for modifications.
+description: Apply a batch of modifications to a Unity `AnimationClip` — set/remove float curves, clear all curves, set frame rate / wrap mode / legacy flag, add or clear animation events. Use 'animation-get-data' first to discover valid curve bindings.
 ---
 
 # Animation / Modify
+
+Apply a batch of modifications to a Unity `AnimationClip` asset. Each modification is dispatched by its `ModificationType` discriminator. Use 'animation-get-data' first to discover valid property names and existing curves so the diff is targeted.
+
+## Inputs
+
+- `animRef` — reference to the `AnimationClip` asset (path must start with `Assets/` and end with `.anim`).
+- `modifications` — array of `AnimationModification` entries.
+
+## Supported modification types
+
+- `SetCurve` — add or replace a float animation curve (`path`, `propertyName`, `type`, `keyframes`).
+- `RemoveCurve` — remove a specific binding.
+- `ClearCurves` — remove every curve from the clip.
+- `SetFrameRate` — set the clip's frame rate.
+- `SetWrapMode` — set the clip's `WrapMode`.
+- `SetLegacy` — toggle the legacy animation flag.
+- `AddEvent` — append an animation event (`time`, `functionName`, `intParameter`, `floatParameter`, `stringParameter`).
+- `ClearEvents` — remove every animation event.
+
+## Behavior
+
+Per-modification errors are accumulated in the response's `errors` array instead of aborting the whole batch. Events are applied as a single rewrite after all per-entry mutations finish.
 
 ## How to Call
 
@@ -49,7 +71,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
       "$ref": "#/$defs/AIGD.AssetObjectRef"
     },
     "modifications": {
-      "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Animation.AnimationModification%5B%5D"
+      "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Animation.AnimationModification-1"
     }
   },
   "$defs": {
@@ -111,7 +133,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
           "description": "Property to animate (e.g., 'localPosition.x', 'm_LocalScale.y'). Required for: SetCurve, RemoveCurve."
         },
         "keyframes": {
-          "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Animation.AnimationKeyframe%5B%5D",
+          "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Animation.AnimationKeyframe-1",
           "description": "Keyframes for the curve. Required for: SetCurve."
         },
         "frameRate": {
@@ -159,7 +181,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
         "type"
       ]
     },
-    "com.IvanMurzak.Unity.MCP.Animation.AnimationKeyframe[]": {
+    "com.IvanMurzak.Unity.MCP.Animation.AnimationKeyframe-1": {
       "type": "array",
       "items": {
         "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Animation.AnimationKeyframe"
@@ -208,7 +230,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
         "value"
       ]
     },
-    "com.IvanMurzak.Unity.MCP.Animation.AnimationModification[]": {
+    "com.IvanMurzak.Unity.MCP.Animation.AnimationModification-1": {
       "type": "array",
       "items": {
         "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Animation.AnimationModification"
@@ -231,11 +253,11 @@ Read the /unity-initial-setup skill for detailed installation instructions.
   "type": "object",
   "properties": {
     "result": {
-      "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Animation.AnimationTools%2BModifyAnimationResponse"
+      "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Animation.AnimationTools-ModifyAnimationResponse"
     }
   },
   "$defs": {
-    "com.IvanMurzak.Unity.MCP.Animation.AnimationTools+ModifyAnimationInfo": {
+    "com.IvanMurzak.Unity.MCP.Animation.AnimationTools-ModifyAnimationInfo": {
       "type": "object",
       "properties": {
         "path": {
@@ -252,20 +274,20 @@ Read the /unity-initial-setup skill for detailed installation instructions.
         "instanceId"
       ]
     },
-    "System.Collections.Generic.List<System.String>": {
+    "System.Collections.Generic.List(System.String)": {
       "type": "array",
       "items": {
         "type": "string"
       }
     },
-    "com.IvanMurzak.Unity.MCP.Animation.AnimationTools+ModifyAnimationResponse": {
+    "com.IvanMurzak.Unity.MCP.Animation.AnimationTools-ModifyAnimationResponse": {
       "type": "object",
       "properties": {
         "modifiedAsset": {
-          "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Animation.AnimationTools%2BModifyAnimationInfo"
+          "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Animation.AnimationTools-ModifyAnimationInfo"
         },
         "errors": {
-          "$ref": "#/$defs/System.Collections.Generic.List%3CSystem.String%3E"
+          "$ref": "#/$defs/System.Collections.Generic.List(System.String)"
         }
       }
     }
