@@ -55,6 +55,8 @@ public class EggFeatureState
 {
     public bool hasDiscoveredEggs;
     public bool hasHatchedAnimal;
+    public bool hasUnlockedAnimalMerge;
+    public bool hasUsedAnimalLoadout;
     public List<EggInventoryEntry> ownedEggs = new();
     public List<AnimalInventoryEntry> ownedAnimals = new();
     public List<EggNestState> nests = new();
@@ -240,5 +242,11 @@ public class EggFeatureState
 
         if (ownedAnimals.Count > 0 || placedAnimals.Count > 0 || animalMerge != null)
             hasHatchedAnimal = true;
+
+        if (animalMerge != null)
+            hasUnlockedAnimalMerge = true;
+
+        if (placedAnimals.Any(x => x != null && !string.IsNullOrWhiteSpace(x.pointId) && x.pointId.StartsWith("animal_loadout_")))
+            hasUsedAnimalLoadout = true;
     }
 }

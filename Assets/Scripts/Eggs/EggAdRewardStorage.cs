@@ -46,4 +46,11 @@ public static class EggAdRewardStorage
         PlayerPrefs.SetString(NextAvailableUnixKey, safeValue.ToString());
         PlayerPrefs.Save();
     }
+
+    public static void Reset()
+    {
+        SaveNextAvailableUnix(0);
+        PlayerPrefs.DeleteKey(NextAvailableUnixKey);
+        PlayerPrefs.Save();
+    }
 }

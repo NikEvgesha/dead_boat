@@ -12,11 +12,15 @@ public class EggInventoryHudButton : MonoBehaviour
     [SerializeField] private KeyCode _keyboardShortcut = KeyCode.G;
     [SerializeField] private float _punchScale = 1.18f;
     [SerializeField] private float _punchDuration = 0.18f;
+    [SerializeField] private Vector2 _gameAnchor = new Vector2(0.05052081f, 0.43870366f);
 
     private EggHatchingManager _manager;
     private Coroutine _punchRoutine;
     private Vector3 _baseScale = Vector3.one;
     private int _newEggsCount;
+    private RectTransform _rectTransform;
+    private RectSnapshot _defaultRect;
+    private bool _hasDefaultRect;
 
     private void Awake()
     {
@@ -25,6 +29,9 @@ public class EggInventoryHudButton : MonoBehaviour
 
         if (_animateRoot == null)
             _animateRoot = transform as RectTransform;
+
+        _rectTransform = transform as RectTransform;
+        CaptureDefaultRect();
 
         if (_animateRoot != null)
             _baseScale = _animateRoot.localScale;
@@ -51,10 +58,9 @@ public class EggInventoryHudButton : MonoBehaviour
     private void Update()
     {
         if (_manager == null)
-        {
             TryBindManager();
-            Refresh();
-        }
+
+        Refresh();
 
         if (_newEggsCount > 0 && EggNestSelectionPanel.Instance != null && EggNestSelectionPanel.Instance.IsOpen)
         {
@@ -73,7 +79,9 @@ public class EggInventoryHudButton : MonoBehaviour
 
     public void Refresh()
     {
-        bool discovered = _manager != null && _manager.HasDiscoveredEggs();
+        bool discovered = ShouldShow();
+        ApplyLocationPosition();
+
         if (_visualRoot != null)
             _visualRoot.SetActive(discovered);
 
@@ -89,7 +97,7 @@ public class EggInventoryHudButton : MonoBehaviour
 
     private void OpenInventory()
     {
-        if (_manager == null || !_manager.HasDiscoveredEggs())
+        if (!ShouldShow())
             return;
 
         _newEggsCount = 0;
@@ -109,6 +117,21 @@ public class EggInventoryHudButton : MonoBehaviour
         OpenInventory();
     }
 
+    private bool ShouldShow()
+    {
+        if (_manager == null || !_manager.HasDiscoveredEggs())
+            return false;
+
+        if (LoadingManager.Instance == null)
+            return true;
+
+        Location currentLocation = LoadingManager.Instance.CurrentLocation;
+        if (currentLocation == Location.Game)
+            return EggSpawnRuntimeState.CollectedInRun > 0;
+
+        return currentLocation == Location.Lobby;
+    }
+
     private void HandleEggsCollected(int amount)
     {
         _newEggsCount += Mathf.Max(1, amount);
@@ -119,6 +142,9 @@ public class EggInventoryHudButton : MonoBehaviour
     private void TryBindManager()
     {
         EggHatchingManager manager = EggHatchingManager.Instance;
+        if (manager == null && ShouldCreateRuntimeManager())
+            manager = CreateRuntimeManager();
+
         if (manager == null || manager == _manager)
             return;
 
@@ -131,6 +157,47 @@ public class EggInventoryHudButton : MonoBehaviour
         _manager = manager;
         _manager.StateChanged += Refresh;
         _manager.EggsCollected += HandleEggsCollected;
+    }
+
+    private bool ShouldCreateRuntimeManager()
+    {
+        if (LoadingManager.Instance == null)
+            return false;
+
+        return LoadingManager.Instance.CurrentLocation == Location.Game &&
+               EggSpawnRuntimeState.CollectedInRun > 0;
+    }
+
+    private EggHatchingManager CreateRuntimeManager()
+    {
+        GameObject root = new GameObject("RuntimeEggHatchingManager");
+        root.transform.SetParent(transform, false);
+        return root.AddComponent<EggHatchingManager>();
+    }
+
+    private void CaptureDefaultRect()
+    {
+        if (_rectTransform == null || _hasDefaultRect)
+            return;
+
+        _defaultRect = new RectSnapshot(_rectTransform);
+        _hasDefaultRect = true;
+    }
+
+    private void ApplyLocationPosition()
+    {
+        if (_rectTransform == null || !_hasDefaultRect || LoadingManager.Instance == null)
+            return;
+
+        if (LoadingManager.Instance.CurrentLocation == Location.Game)
+        {
+            _rectTransform.anchorMin = _gameAnchor;
+            _rectTransform.anchorMax = _gameAnchor;
+            _rectTransform.anchoredPosition = Vector2.zero;
+            return;
+        }
+
+        _defaultRect.ApplyTo(_rectTransform);
     }
 
     private void PlayPunch()
@@ -163,5 +230,32 @@ public class EggInventoryHudButton : MonoBehaviour
 
         _animateRoot.localScale = _baseScale;
         _punchRoutine = null;
+    }
+
+    private readonly struct RectSnapshot
+    {
+        private readonly Vector2 _anchorMin;
+        private readonly Vector2 _anchorMax;
+        private readonly Vector2 _anchoredPosition;
+        private readonly Vector2 _sizeDelta;
+        private readonly Vector2 _pivot;
+
+        public RectSnapshot(RectTransform rect)
+        {
+            _anchorMin = rect.anchorMin;
+            _anchorMax = rect.anchorMax;
+            _anchoredPosition = rect.anchoredPosition;
+            _sizeDelta = rect.sizeDelta;
+            _pivot = rect.pivot;
+        }
+
+        public void ApplyTo(RectTransform rect)
+        {
+            rect.anchorMin = _anchorMin;
+            rect.anchorMax = _anchorMax;
+            rect.anchoredPosition = _anchoredPosition;
+            rect.sizeDelta = _sizeDelta;
+            rect.pivot = _pivot;
+        }
     }
 }

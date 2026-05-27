@@ -26,6 +26,9 @@ public class AnimalMergePoint : MonoBehaviour
         if (manager == null)
             return;
 
+        if (!manager.HasUnlockedAnimalMerge())
+            return;
+
         AnimalMergeSelectionPanel panel = _selectionPanel != null ? _selectionPanel : AnimalMergeSelectionPanel.Instance;
         if (panel != null)
         {

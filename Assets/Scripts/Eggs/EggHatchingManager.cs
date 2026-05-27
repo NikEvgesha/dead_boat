@@ -64,6 +64,12 @@ public class EggHatchingManager : MonoBehaviour
             _animalPoints = _animalPoints.Where(x => x != null).Distinct().ToList();
     }
 
+    private void OnDestroy()
+    {
+        if (_instance == this)
+            _instance = null;
+    }
+
     private void Start()
     {
         if (!_autoLoadOnStart)
@@ -145,6 +151,29 @@ public class EggHatchingManager : MonoBehaviour
     {
         EnsureStateLoaded();
         return _state.hasHatchedAnimal;
+    }
+
+    public bool HasUnlockedAnimalMerge()
+    {
+        EnsureStateLoaded();
+
+        if (_state.hasUnlockedAnimalMerge)
+            return true;
+
+        if (_state.animalMerge != null || GetAnimalMergeCandidateCount() > 0)
+        {
+            _state.hasUnlockedAnimalMerge = true;
+            EggFeatureStorage.Save(_state);
+            return true;
+        }
+
+        return false;
+    }
+
+    public bool HasUsedAnimalLoadout()
+    {
+        EnsureStateLoaded();
+        return _state.hasUsedAnimalLoadout || HasAnyAnimalLoadoutSlotAssigned();
     }
 
     public int GetTotalEggCount()
@@ -538,6 +567,7 @@ public class EggHatchingManager : MonoBehaviour
         if (!_state.TryConsumeAnimal(animalId, safeStage, 2))
             return false;
 
+        _state.hasUnlockedAnimalMerge = true;
         _state.animalMerge = new AnimalMergeState
         {
             animalId = animalId,
@@ -698,6 +728,7 @@ public class EggHatchingManager : MonoBehaviour
             stage = safeStage,
             lastIncomeUnix = GetNowUnix()
         });
+        _state.hasUsedAnimalLoadout = true;
 
         SaveAndNotify();
         return true;
@@ -828,6 +859,7 @@ public class EggHatchingManager : MonoBehaviour
     private void SaveAndNotify()
     {
         _state.Normalize();
+        UnlockAnimalMergeIfAvailable();
         EggFeatureStorage.Save(_state);
         EggAnimalBuffService.MarkDirty();
         RefreshNestVisuals();
@@ -843,6 +875,31 @@ public class EggHatchingManager : MonoBehaviour
     private void CleanupInvalidData()
     {
         _state.Normalize();
+        UnlockAnimalMergeIfAvailable();
+    }
+
+    private bool HasAnyAnimalLoadoutSlotAssigned()
+    {
+        if (_state?.placedAnimals == null)
+            return false;
+
+        for (int i = 0; i < AnimalLoadoutSlotsCount; i++)
+        {
+            string pointId = MakeAnimalLoadoutPointId(i);
+            if (_state.placedAnimals.Any(x => x != null && x.pointId == pointId))
+                return true;
+        }
+
+        return false;
+    }
+
+    private void UnlockAnimalMergeIfAvailable()
+    {
+        if (_state == null || _state.hasUnlockedAnimalMerge)
+            return;
+
+        if (_state.animalMerge != null || GetAnimalMergeCandidateCount() > 0)
+            _state.hasUnlockedAnimalMerge = true;
     }
 
     private void RestoreSpawnedAnimals()

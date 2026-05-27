@@ -38,6 +38,13 @@ public static class EggFeatureStorage
         SaveRaw(json);
     }
 
+    public static void Reset()
+    {
+        SaveRaw(string.Empty);
+        PlayerPrefs.DeleteKey(StorageKey);
+        PlayerPrefs.Save();
+    }
+
     public static void AddEgg(string eggId, int amount)
     {
         EggFeatureState state = Load();

@@ -51,10 +51,9 @@ public class AnimalInventoryHudButton : MonoBehaviour
     private void Update()
     {
         if (_manager == null)
-        {
             TryBindManager();
-            Refresh();
-        }
+
+        Refresh();
 
         if (_newAnimalsCount > 0 && AnimalInventoryPanel.Instance != null && AnimalInventoryPanel.Instance.IsOpen)
         {
@@ -73,7 +72,7 @@ public class AnimalInventoryHudButton : MonoBehaviour
 
     public void Refresh()
     {
-        bool discovered = _manager != null && _manager.HasHatchedAnimal();
+        bool discovered = ShouldShow();
 
         if (_visualRoot != null)
             _visualRoot.SetActive(discovered);
@@ -90,7 +89,7 @@ public class AnimalInventoryHudButton : MonoBehaviour
 
     private void OpenInventory()
     {
-        if (_manager == null || !_manager.HasHatchedAnimal())
+        if (!ShouldShow())
             return;
 
         _newAnimalsCount = 0;
@@ -108,6 +107,17 @@ public class AnimalInventoryHudButton : MonoBehaviour
         }
 
         OpenInventory();
+    }
+
+    private bool ShouldShow()
+    {
+        if (_manager == null || !_manager.HasHatchedAnimal())
+            return false;
+
+        if (LoadingManager.Instance == null)
+            return true;
+
+        return LoadingManager.Instance.CurrentLocation == Location.Lobby;
     }
 
     private void HandleAnimalsCollected(int amount)

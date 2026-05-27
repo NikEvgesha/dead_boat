@@ -43,6 +43,13 @@ public static class ProfessionStorage
         SaveRaw(json);
     }
 
+    public static void Reset()
+    {
+        SaveRaw(string.Empty);
+        PlayerPrefs.DeleteKey(StorageKey);
+        PlayerPrefs.Save();
+    }
+
     private static string LoadRaw()
     {
         try

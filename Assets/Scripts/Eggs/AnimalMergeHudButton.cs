@@ -121,7 +121,7 @@ public sealed class AnimalMergeHudButton : MonoBehaviour
 
     private bool ShouldShow()
     {
-        if (_manager == null || !_manager.HasHatchedAnimal())
+        if (_manager == null || !_manager.HasUnlockedAnimalMerge())
             return false;
 
         if (LoadingManager.Instance == null)

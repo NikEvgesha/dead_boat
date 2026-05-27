@@ -97,7 +97,13 @@ public sealed class AnimalLoadoutHudButton : MonoBehaviour
 
     private bool ShouldShow()
     {
-        return _manager != null && _manager.HasHatchedAnimal();
+        if (_manager == null || !_manager.HasHatchedAnimal())
+            return false;
+
+        if (LoadingManager.Instance == null)
+            return true;
+
+        return LoadingManager.Instance.CurrentLocation == Location.Lobby;
     }
 
     private void TryBindManager()
