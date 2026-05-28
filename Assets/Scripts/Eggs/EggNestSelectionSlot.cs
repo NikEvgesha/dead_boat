@@ -40,12 +40,7 @@ public class EggNestSelectionSlot : MonoBehaviour
         _onSelect = onSelect;
 
         if (_titleText != null)
-        {
-            string titleKey = definition != null ? definition.title : string.Empty;
-            _titleText.text = string.IsNullOrWhiteSpace(titleKey)
-                ? _eggId
-                : GetLocalizedText(titleKey, titleKey);
-        }
+            _titleText.text = definition != null ? EggFeatureLocalization.EggTitle(definition) : _eggId;
 
         if (_countText != null)
             _countText.text = $"x{Mathf.Max(0, amount)}";
@@ -93,7 +88,7 @@ public class EggNestSelectionSlot : MonoBehaviour
         Init(definition, 1, null, false);
 
         if (_countText != null)
-            _countText.text = "В гнезде";
+            _countText.text = EggFeatureLocalization.Text("Egg/UI/InNest", "\u0412 \u0433\u043D\u0435\u0437\u0434\u0435", "In nest");
 
         if (_durationText != null)
             _durationText.text = FormatSeconds(Mathf.Max(0, remainingSeconds));

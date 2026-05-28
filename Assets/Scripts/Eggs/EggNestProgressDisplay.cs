@@ -392,10 +392,7 @@ public class EggNestProgressDisplay : MonoBehaviour
     private string GetEggTitle(string eggId)
     {
         if (_manager != null && _manager.TryGetDefinition(eggId, out EggDefinition definition) && definition != null)
-        {
-            string titleKey = string.IsNullOrWhiteSpace(definition.title) ? definition.eggId : definition.title;
-            return GetLocalizedText(titleKey, titleKey);
-        }
+            return EggFeatureLocalization.EggTitle(definition);
 
         return eggId;
     }

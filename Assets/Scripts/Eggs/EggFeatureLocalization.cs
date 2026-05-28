@@ -34,6 +34,15 @@ public static class EggFeatureLocalization
         return AnimalTitle(definition.animalId, string.IsNullOrWhiteSpace(definition.title) ? definition.animalId : definition.title);
     }
 
+    public static string EggTitle(EggDefinition definition)
+    {
+        if (definition == null)
+            return string.Empty;
+
+        string fallback = string.IsNullOrWhiteSpace(definition.title) ? definition.eggId : definition.title;
+        return Text(fallback, fallback, fallback);
+    }
+
     public static string AnimalTitle(string animalId, string fallback)
     {
         if (string.IsNullOrWhiteSpace(animalId))

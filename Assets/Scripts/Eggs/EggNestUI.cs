@@ -58,9 +58,7 @@ public class EggNestUI : MonoBehaviour
         SetState(false, !ready, ready);
 
         if (_eggNameText != null)
-            _eggNameText.text = ready && !string.IsNullOrWhiteSpace(nestState.hatchedAnimalId)
-                ? nestState.hatchedAnimalId
-                : nestState.eggId;
+            _eggNameText.text = GetNestDisplayName(nestState, ready);
 
         if (_timerText != null)
             _timerText.text = ready
@@ -78,6 +76,33 @@ public class EggNestUI : MonoBehaviour
 
         if (_readyState != null)
             _readyState.SetActive(ready);
+    }
+
+    private string GetNestDisplayName(EggNestState nestState, bool ready)
+    {
+        if (nestState == null)
+            return string.Empty;
+
+        if (ready && !string.IsNullOrWhiteSpace(nestState.hatchedAnimalId))
+        {
+            if (_manager != null &&
+                _manager.TryGetAnimalDefinition(nestState.hatchedAnimalId, out AnimalDefinition animal) &&
+                animal != null)
+            {
+                return EggFeatureLocalization.AnimalTitle(animal);
+            }
+
+            return nestState.hatchedAnimalId;
+        }
+
+        if (_manager != null &&
+            _manager.TryGetDefinition(nestState.eggId, out EggDefinition egg) &&
+            egg != null)
+        {
+            return EggFeatureLocalization.EggTitle(egg);
+        }
+
+        return nestState.eggId;
     }
 
     private static string FormatSeconds(int totalSeconds)

@@ -79,6 +79,13 @@ public static class EggAnimalBuffService
         return baseValue * GetCurrentBuffs().SafeRangedReloadSpeedMultiplier;
     }
 
+    public static AnimalRunBuffs GetCurrentBuffsSnapshot()
+    {
+        AnimalRunBuffs snapshot = new();
+        snapshot.Add(GetCurrentBuffs());
+        return snapshot;
+    }
+
     private static AnimalRunBuffs GetCurrentBuffs()
     {
         if (!_dirty && _cachedBuffs != null)
