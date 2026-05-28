@@ -63,7 +63,9 @@ public class EggNestUI : MonoBehaviour
                 : nestState.eggId;
 
         if (_timerText != null)
-            _timerText.text = ready ? "Ready" : FormatSeconds(remaining);
+            _timerText.text = ready
+                ? EggFeatureLocalization.Text("Eggs/ReadyToCollect", "\u0413\u043E\u0442\u043E\u0432\u043E", "Ready")
+                : FormatSeconds(remaining);
     }
 
     private void SetState(bool empty, bool incubating, bool ready)

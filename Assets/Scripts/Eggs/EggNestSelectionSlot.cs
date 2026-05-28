@@ -75,6 +75,8 @@ public class EggNestSelectionSlot : MonoBehaviour
 
         if (_actionRoot != null)
             _actionRoot.SetActive(canSelect);
+        else if (_button != null)
+            _button.gameObject.SetActive(canSelect);
 
         if (_button == null)
             return;
@@ -84,6 +86,17 @@ public class EggNestSelectionSlot : MonoBehaviour
             _button.onClick.AddListener(OnButtonClicked);
 
         _button.interactable = canSelect && definition != null && amount > 0 && !string.IsNullOrWhiteSpace(_eggId);
+    }
+
+    public void InitIncubating(EggDefinition definition, int remainingSeconds)
+    {
+        Init(definition, 1, null, false);
+
+        if (_countText != null)
+            _countText.text = "В гнезде";
+
+        if (_durationText != null)
+            _durationText.text = FormatSeconds(Mathf.Max(0, remainingSeconds));
     }
 
     private void OnDisable()

@@ -39,7 +39,7 @@ public sealed class AnimalLoadoutPointInfoCard : MonoBehaviour
             _countText.text = "x1";
 
         if (_abilitiesHeaderText != null)
-            _abilitiesHeaderText.text = EggFeatureLocalization.Text("UI/AnimalInventory/Buffs", "Abilities", "Abilities");
+            _abilitiesHeaderText.text = EggFeatureLocalization.Text("UI/AnimalInventory/Buffs", "\u0423\u043C\u0435\u043D\u0438\u044F", "Abilities");
 
         if (_detailText != null)
             _detailText.text = FormatBuffText(detail);
@@ -69,7 +69,7 @@ public sealed class AnimalLoadoutPointInfoCard : MonoBehaviour
             _countText.text = string.Empty;
 
         if (_abilitiesHeaderText != null)
-            _abilitiesHeaderText.text = EggFeatureLocalization.Text("UI/AnimalInventory/Buffs", "Abilities", "Abilities");
+            _abilitiesHeaderText.text = EggFeatureLocalization.Text("UI/AnimalInventory/Buffs", "\u0423\u043C\u0435\u043D\u0438\u044F", "Abilities");
 
         if (_detailText != null)
             _detailText.text = EggFeatureLocalization.Text("UI/AnimalLoadout/HoldToSelect", "\u0423\u0434\u0435\u0440\u0436\u0438\u0432\u0430\u0439 E, \u0447\u0442\u043e\u0431\u044b \u0432\u044b\u0431\u0440\u0430\u0442\u044c", "Hold E to select");

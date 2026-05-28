@@ -24,7 +24,7 @@ public class AnimalPlacementSelectionSlot : MonoBehaviour
     public void Init(EggDefinition definition, int amount, Action<string> onSelect)
     {
         string animalId = definition != null ? definition.eggId : string.Empty;
-        Init(animalId, 1, definition != null ? definition.title : animalId, "No income", amount,
+        Init(animalId, 1, definition != null ? definition.title : animalId, EggFeatureLocalization.Text("UI/AnimalBuff/None", "\u041D\u0435\u0442 \u0431\u043E\u043D\u0443\u0441\u043E\u0432", "No buffs"), amount,
             (selectedAnimalId, _) => onSelect?.Invoke(selectedAnimalId));
     }
 

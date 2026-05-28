@@ -8,6 +8,9 @@ public class ProfessionSelectionPanel : MonoBehaviour
 {
     private const float DefaultProfessionListButtonHeight = 88f;
     private const float StarterItemRowHeight = 58f;
+    private static readonly Color ActionButtonTextColor = Color.white;
+    private static readonly Color ActionButtonTextOutlineColor = Color.black;
+    private static readonly Vector2 ActionButtonTextOutlineDistance = new Vector2(1.8f, -1.8f);
 
     private static ProfessionSelectionPanel _instance;
     public static ProfessionSelectionPanel Instance => _instance;
@@ -294,7 +297,7 @@ public class ProfessionSelectionPanel : MonoBehaviour
             return;
         }
 
-        if (!CanUseSoftCurrencyFallback(definition))
+        if (!CanUseSoftCurrencyDirectPurchase(definition))
         {
             SetMessage(ProfessionLocalization.MessagePurchaseUnavailable);
             RefreshView();
@@ -599,7 +602,11 @@ public class ProfessionSelectionPanel : MonoBehaviour
         }
 
         if (target.font == null)
-            target.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+        {
+            target.font = Resources.Load<Font>("Fonts/RussoOne-Regular");
+            if (target.font == null)
+                target.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+        }
 
         target.supportRichText = false;
         target.horizontalOverflow = HorizontalWrapMode.Overflow;
@@ -726,7 +733,7 @@ public class ProfessionSelectionPanel : MonoBehaviour
         if (_directBuyButton == null)
             return;
 
-        bool canBuy = !_randomUnlockInProgress && !unlocked && (CanUseRealPurchase(definition) || CanUseSoftCurrencyFallback(definition));
+        bool canBuy = !_randomUnlockInProgress && !unlocked && (CanUseRealPurchase(definition) || CanUseSoftCurrencyDirectPurchase(definition));
         _directBuyButton.gameObject.SetActive(canBuy);
         _directBuyButton.interactable = canBuy;
     }
@@ -749,7 +756,7 @@ public class ProfessionSelectionPanel : MonoBehaviour
             }
         }
 
-        if (CanUseSoftCurrencyFallback(definition))
+        if (CanUseSoftCurrencyDirectPurchase(definition))
         {
             SetSoftCurrencyPrice(
                 _unlockPriceText,
@@ -826,7 +833,7 @@ public class ProfessionSelectionPanel : MonoBehaviour
                !string.IsNullOrWhiteSpace(definition.purchaseProductId);
     }
 
-    private bool CanUseSoftCurrencyFallback(ProfessionDefinition definition)
+    private bool CanUseSoftCurrencyDirectPurchase(ProfessionDefinition definition)
     {
         if (definition == null || !definition.allowSoftCurrencyFallbackWhenPurchasesUnavailable)
             return false;
@@ -834,8 +841,7 @@ public class ProfessionSelectionPanel : MonoBehaviour
         if (definition.directSoftCurrencyType == CurrencyType.Real)
             return false;
 
-        bool purchasesAvailable = PurchasesManager.Instance != null && PurchasesManager.Instance.PurchasesAvailable();
-        return !purchasesAvailable && definition.directSoftCurrencyCost >= 0;
+        return definition.directSoftCurrencyCost >= 0;
     }
 
     private void HandleProfessionStateChanged()
@@ -884,6 +890,7 @@ public class ProfessionSelectionPanel : MonoBehaviour
             EnsureProfessionListButtonLayout(button);
             button.onClick.RemoveAllListeners();
             EnsureButtonSound(button);
+            EnsureButtonLabelStyle(button);
             button.onClick.AddListener(() => SelectProfessionIndex(index));
 
             Text label = button.GetComponentInChildren<Text>(true);
@@ -1110,6 +1117,7 @@ public class ProfessionSelectionPanel : MonoBehaviour
         if (_nextButton != null)
         {
             EnsureButtonSound(_nextButton);
+            EnsureButtonLabelStyle(_nextButton);
             _nextButton.onClick.RemoveListener(ShowNextProfession);
             _nextButton.onClick.AddListener(ShowNextProfession);
         }
@@ -1117,6 +1125,7 @@ public class ProfessionSelectionPanel : MonoBehaviour
         if (_prevButton != null)
         {
             EnsureButtonSound(_prevButton);
+            EnsureButtonLabelStyle(_prevButton);
             _prevButton.onClick.RemoveListener(ShowPreviousProfession);
             _prevButton.onClick.AddListener(ShowPreviousProfession);
         }
@@ -1124,6 +1133,7 @@ public class ProfessionSelectionPanel : MonoBehaviour
         if (_applyButton != null)
         {
             EnsureButtonSound(_applyButton);
+            EnsureButtonLabelStyle(_applyButton);
             _applyButton.onClick.RemoveListener(ApplySelectedProfession);
             _applyButton.onClick.AddListener(ApplySelectedProfession);
         }
@@ -1131,6 +1141,7 @@ public class ProfessionSelectionPanel : MonoBehaviour
         if (_unlockRandomButton != null)
         {
             EnsureButtonSound(_unlockRandomButton);
+            EnsureButtonLabelStyle(_unlockRandomButton);
             _unlockRandomButton.onClick.RemoveListener(UnlockRandomProfession);
             _unlockRandomButton.onClick.AddListener(UnlockRandomProfession);
         }
@@ -1138,6 +1149,7 @@ public class ProfessionSelectionPanel : MonoBehaviour
         if (_directBuyButton != null)
         {
             EnsureButtonSound(_directBuyButton);
+            EnsureButtonLabelStyle(_directBuyButton);
             _directBuyButton.onClick.RemoveListener(DirectBuyProfession);
             _directBuyButton.onClick.AddListener(DirectBuyProfession);
         }
@@ -1145,6 +1157,7 @@ public class ProfessionSelectionPanel : MonoBehaviour
         if (_closeButton != null)
         {
             EnsureButtonSound(_closeButton);
+            EnsureButtonLabelStyle(_closeButton);
             _closeButton.onClick.RemoveListener(CloseFromButton);
             _closeButton.onClick.AddListener(CloseFromButton);
         }
@@ -1160,6 +1173,33 @@ public class ProfessionSelectionPanel : MonoBehaviour
             sound = button.gameObject.AddComponent<UISound>();
 
         sound.Rebind();
+    }
+
+    private static void EnsureButtonLabelStyle(Button button)
+    {
+        if (button == null)
+            return;
+
+        Text[] labels = button.GetComponentsInChildren<Text>(true);
+        for (int i = 0; i < labels.Length; i++)
+        {
+            Text label = labels[i];
+            if (label == null)
+                continue;
+
+            label.color = ActionButtonTextColor;
+            label.fontStyle = FontStyle.Normal;
+            label.resizeTextForBestFit = true;
+            label.raycastTarget = false;
+
+            UnityEngine.UI.Outline outline = label.GetComponent<UnityEngine.UI.Outline>();
+            if (outline == null)
+                outline = label.gameObject.AddComponent<UnityEngine.UI.Outline>();
+
+            outline.effectColor = ActionButtonTextOutlineColor;
+            outline.effectDistance = ActionButtonTextOutlineDistance;
+            outline.useGraphicAlpha = true;
+        }
     }
 
     private void BindWindowCloseEvent()

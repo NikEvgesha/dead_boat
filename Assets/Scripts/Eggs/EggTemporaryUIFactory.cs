@@ -43,7 +43,10 @@ public static class EggTemporaryUIFactory
 
         Transform existing = panel.transform.Find("TemporaryEmptyState");
         if (existing != null)
+        {
+            ConfigureEmptyStateLabel(existing.gameObject, text);
             return existing.gameObject;
+        }
 
         GameObject root = CreateRectObject("TemporaryEmptyState", panel.transform);
         RectTransform rect = root.GetComponent<RectTransform>();
@@ -52,14 +55,8 @@ public static class EggTemporaryUIFactory
         rect.offsetMin = Vector2.zero;
         rect.offsetMax = Vector2.zero;
 
-        Text label = root.AddComponent<Text>();
-        label.font = GetDefaultFont();
-        label.alignment = TextAnchor.MiddleCenter;
-        label.resizeTextForBestFit = true;
-        label.resizeTextMinSize = 14;
-        label.resizeTextMaxSize = 26;
-        label.color = Color.white;
-        label.text = text;
+        root.AddComponent<Text>();
+        ConfigureEmptyStateLabel(root, text);
 
         return root;
     }
@@ -182,9 +179,28 @@ public static class EggTemporaryUIFactory
         labelRect.anchorMax = Vector2.one;
         labelRect.offsetMin = Vector2.zero;
         labelRect.offsetMax = Vector2.zero;
-        label.text = "Merge Pets";
+        label.text = EggFeatureLocalization.Text("UI/AnimalMerge/Title", "\u0421\u043B\u0438\u044F\u043D\u0438\u0435 \u0436\u0438\u0432\u043E\u0442\u043D\u044B\u0445", "Merge animals");
 
         return button;
+    }
+
+    private static void ConfigureEmptyStateLabel(GameObject root, string text)
+    {
+        if (root == null)
+            return;
+
+        Text label = root.GetComponent<Text>();
+        if (label == null)
+            label = root.AddComponent<Text>();
+
+        label.font = GetDefaultFont();
+        label.alignment = TextAnchor.MiddleCenter;
+        label.resizeTextForBestFit = true;
+        label.resizeTextMinSize = 14;
+        label.resizeTextMaxSize = 28;
+        label.color = Color.white;
+        label.raycastTarget = false;
+        label.text = text;
     }
 
     public static EggNestSelectionSlot EnsureEggSlotTemplate(MonoBehaviour owner)
@@ -322,7 +338,11 @@ public static class EggTemporaryUIFactory
 
     private static Font GetDefaultFont()
     {
-        Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        Font font = Resources.Load<Font>("Fonts/RussoOne-Regular");
+        if (font != null)
+            return font;
+
+        font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         if (font != null)
             return font;
 

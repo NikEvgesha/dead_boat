@@ -28,6 +28,8 @@ public class MirraSDKLocalizationProvider : LocalizationProvider
         {
             // устанавливаем начальное значение
             lastLangCode = GetCurrentLanguage();
+            if (!string.IsNullOrEmpty(lastLangCode))
+                OnSwitchLang?.Invoke(lastLangCode);
         });
     }
     private void CheckLeng()
@@ -51,7 +53,7 @@ public class MirraSDKLocalizationProvider : LocalizationProvider
     /// </summary>
     public override string GetCurrentLanguage()
     {
-        if (!MirraSDK.IsInitialized) return "en";
+        if (!MirraSDK.IsInitialized) return string.Empty;
         string name = MirraSDK.Language.Current.ToString();
 
         //Debug.Log(name + " = Берем значение языка из СДК ");

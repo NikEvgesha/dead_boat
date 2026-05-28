@@ -109,11 +109,13 @@ public class EggNestProgressDisplay : MonoBehaviour
         if (_readyRoot != null)
             _readyRoot.SetActive(ready);
 
+        string readyText = EggFeatureLocalization.Text("Eggs/ReadyToCollect", "\u0413\u043E\u0442\u043E\u0432\u043E", "Ready");
+
         if (_timerText != null)
-            _timerText.text = ready ? "Ready" : FormatSeconds(remaining);
+            _timerText.text = ready ? readyText : FormatSeconds(remaining);
 
         if (_titleText != null)
-            _titleText.text = ready ? GetLocalizedText("Eggs/ReadyToCollect", "Ready") : GetEggTitle(state.eggId);
+            _titleText.text = ready ? readyText : GetEggTitle(state.eggId);
 
         if (_progressFill != null)
         {
@@ -417,7 +419,11 @@ public class EggNestProgressDisplay : MonoBehaviour
         if (configuredFont != null)
             return configuredFont;
 
-        Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        Font font = Resources.Load<Font>("Fonts/RussoOne-Regular");
+        if (font != null)
+            return font;
+
+        font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         if (font != null)
             return font;
 

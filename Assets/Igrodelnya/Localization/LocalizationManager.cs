@@ -97,8 +97,19 @@ public class LocalizationManager : MonoBehaviour
             return;
         }
         //Debug.LogWarning("ѕолучен код €зыка!" + langCode);
-        // ѕриводим код к нужному формату (например, перва€ буква в верхнем регистре)
-        string formattedLang = char.ToUpper(langCode[0]) + langCode.Substring(1);
+        string formattedLang = NormalizeLanguageCode(langCode);
         ChangeLanguage(formattedLang);
+    }
+    private static string NormalizeLanguageCode(string langCode)
+    {
+        string normalized = langCode.Trim();
+        int separatorIndex = normalized.IndexOfAny(new[] { '-', '_' });
+        if (separatorIndex > 0)
+            normalized = normalized.Substring(0, separatorIndex);
+
+        if (normalized.Length >= 2)
+            normalized = normalized.Substring(0, 2);
+
+        return char.ToUpperInvariant(normalized[0]) + normalized.Substring(1).ToLowerInvariant();
     }
 }

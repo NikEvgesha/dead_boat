@@ -141,6 +141,12 @@ public class EggHatchingManager : MonoBehaviour
         return _state.ownedEggs;
     }
 
+    public IReadOnlyList<EggNestState> GetActiveNests()
+    {
+        EnsureStateLoaded();
+        return _state.nests;
+    }
+
     public bool HasDiscoveredEggs()
     {
         EnsureStateLoaded();

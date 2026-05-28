@@ -10,6 +10,7 @@ public class AnimalInventoryHudButton : MonoBehaviour
     [SerializeField] private Text _badgeText;
     [SerializeField] private RectTransform _animateRoot;
     [SerializeField] private KeyCode _keyboardShortcut = KeyCode.O;
+    [SerializeField] private bool _showButton;
     [SerializeField] private float _punchScale = 1.18f;
     [SerializeField] private float _punchDuration = 0.18f;
 
@@ -61,7 +62,7 @@ public class AnimalInventoryHudButton : MonoBehaviour
             Refresh();
         }
 
-        if (Input.GetKeyDown(_keyboardShortcut))
+        if (_showButton && Input.GetKeyDown(_keyboardShortcut))
             ToggleInventory();
     }
 
@@ -111,6 +112,9 @@ public class AnimalInventoryHudButton : MonoBehaviour
 
     private bool ShouldShow()
     {
+        if (!_showButton)
+            return false;
+
         if (_manager == null || !_manager.HasHatchedAnimal())
             return false;
 

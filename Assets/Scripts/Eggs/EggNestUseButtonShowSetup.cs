@@ -161,7 +161,33 @@ public class EggNestUseButtonShowSetup : MonoBehaviour
             _boostAdIcon.raycastTarget = false;
         }
 
+        ConfigureBoostAdHintLayout();
         ConfigureBoostAdText();
+    }
+
+    private void ConfigureBoostAdHintLayout()
+    {
+        if (_boostAdRoot == null)
+            return;
+
+        RectTransform rootRect = _boostAdRoot.transform as RectTransform;
+        if (rootRect != null)
+        {
+            rootRect.anchorMin = new Vector2(0.56f, 0.58f);
+            rootRect.anchorMax = new Vector2(1.08f, 1.08f);
+            rootRect.anchoredPosition = Vector2.zero;
+            rootRect.sizeDelta = Vector2.zero;
+            rootRect.pivot = new Vector2(0.5f, 0.5f);
+        }
+
+        RectTransform iconRect = _boostAdIcon != null ? _boostAdIcon.transform as RectTransform : null;
+        if (iconRect != null)
+        {
+            iconRect.anchorMin = new Vector2(0f, 0.12f);
+            iconRect.anchorMax = new Vector2(0.55f, 0.9f);
+            iconRect.anchoredPosition = Vector2.zero;
+            iconRect.sizeDelta = Vector2.zero;
+        }
     }
 
     private void RefreshBoostAdHint()
@@ -287,7 +313,11 @@ public class EggNestUseButtonShowSetup : MonoBehaviour
         if (configuredFont != null)
             return configuredFont;
 
-        Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        Font font = Resources.Load<Font>("Fonts/RussoOne-Regular");
+        if (font != null)
+            return font;
+
+        font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         if (font != null)
             return font;
 

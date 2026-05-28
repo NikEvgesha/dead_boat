@@ -102,10 +102,10 @@ public sealed class EggAdRewardHudButton : MonoBehaviour
             _button.interactable = visible && ready && !_adInProgress;
 
         if (_badgeRoot != null)
-            _badgeRoot.SetActive(visible);
+            _badgeRoot.SetActive(visible && ready);
 
         if (_badgeText != null)
-            _badgeText.text = ready ? "AD" : "6H";
+            _badgeText.text = string.Empty;
 
         if (_statusText != null)
             _statusText.text = ready ? "6H" : FormatRemaining(remainingSeconds);
