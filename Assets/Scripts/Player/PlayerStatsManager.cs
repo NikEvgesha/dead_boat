@@ -75,6 +75,7 @@ public class PlayerStatsManager : MonoBehaviour
     [SerializeField] private Experience _experience = new();
     [SerializeField] private float _staminaConsumptionRate = 1f;
     [SerializeField] private float _staminaRestoreRate = 5f;
+    [SerializeField] private bool _consumeStaminaOnSprint = false;
     [SerializeField] private Animator _animator;
     public bool InGame = true;
     private string _animatorTrigger = "Damage";
@@ -84,6 +85,7 @@ public class PlayerStatsManager : MonoBehaviour
 
     private Dictionary<PlayerStat, float> _stats;
     private Dictionary<PlayerStat, float> _statsMax;
+    private EggHatchingManager _eggHatchingManager;
 
     public Action NoStamina;
     public Action NoHealth;
@@ -116,6 +118,7 @@ public class PlayerStatsManager : MonoBehaviour
         private set
         {
             _stamina = Mathf.Clamp(value, 0, MaxStamina);
+            UpdateStatCaches();
             if (_stamina == 0)
             {
                 NoStamina?.Invoke();
@@ -134,6 +137,7 @@ public class PlayerStatsManager : MonoBehaviour
         private set
         {
             _health = Mathf.Clamp(value, 0, MaxHealth);
+            UpdateStatCaches();
 
             if (_health == 0)
             {
@@ -183,18 +187,39 @@ public class PlayerStatsManager : MonoBehaviour
             { PlayerStat.Stamina, MaxStamina}
         };
         _experience.ChangeExp.AddListener(ChangeExp);
-        _stamina = _maxStamina;
-        _health = MaxHealth; 
+        _stamina = MaxStamina;
+        _health = MaxHealth;
+        UpdateStatCaches();
     }
     private void Start()
     {
+        ProfessionService.StateChanged += RefreshDerivedStats;
+        TryBindEggHatchingManager();
         LoadHealth(SaveManager.Instance.LoadPlayerHealth());
         LoadExp(SaveManager.Instance.LoadPlayerExperience().Item1, SaveManager.Instance.LoadPlayerExperience().Item2);
+        RefreshDerivedStats();
+    }
+
+    private void OnDisable()
+    {
+        ProfessionService.StateChanged -= RefreshDerivedStats;
+
+        if (_eggHatchingManager != null)
+            _eggHatchingManager.StateChanged -= RefreshDerivedStats;
     }
 
     private void FixedUpdate()
     {
+        TryBindEggHatchingManager();
         ProfessionService.TickPlayerEffects(this, Time.fixedDeltaTime);
+
+        if (!_consumeStaminaOnSprint)
+        {
+            if (!Mathf.Approximately(Stamina, MaxStamina))
+                Stamina = MaxStamina;
+
+            return;
+        }
 
         if (PlayerInput.Instance.Sprint)
         {
@@ -216,6 +241,48 @@ public class PlayerStatsManager : MonoBehaviour
     {
         return _statsMax[stat];
     }
+
+    private void TryBindEggHatchingManager()
+    {
+        EggHatchingManager manager = EggHatchingManager.Instance;
+        if (manager == null || manager == _eggHatchingManager)
+            return;
+
+        if (_eggHatchingManager != null)
+            _eggHatchingManager.StateChanged -= RefreshDerivedStats;
+
+        _eggHatchingManager = manager;
+        _eggHatchingManager.StateChanged += RefreshDerivedStats;
+    }
+
+    private void RefreshDerivedStats()
+    {
+        float maxHealth = MaxHealth;
+        float maxStamina = MaxStamina;
+        bool healthClamped = _health > maxHealth;
+
+        _health = Mathf.Clamp(_health, 0, maxHealth);
+        _stamina = Mathf.Clamp(_stamina, 0, maxStamina);
+        UpdateStatCaches();
+
+        StatChanged?.Invoke(PlayerStat.Health, _health, maxHealth);
+        StatChanged?.Invoke(PlayerStat.Stamina, _stamina, maxStamina);
+
+        if (healthClamped && SaveManager.Instance != null)
+            SaveManager.Instance.SavePlayerHealth(_health);
+    }
+
+    private void UpdateStatCaches()
+    {
+        if (_stats == null || _statsMax == null)
+            return;
+
+        _stats[PlayerStat.Health] = _health;
+        _stats[PlayerStat.Stamina] = _stamina;
+        _statsMax[PlayerStat.Health] = MaxHealth;
+        _statsMax[PlayerStat.Stamina] = MaxStamina;
+    }
+
     public void TakeDamage( int damage)
     {
         if(_isDead || !InGame) 

@@ -39,15 +39,17 @@ public class ControlManager : MonoBehaviour
 
             if (_provider && _provider.IsInitialized())
             {
-                    _cursorActive = value;
-                _provider.SetCursorLockState(value ? CursorLockMode.None : CursorLockMode.Locked);
+                _cursorActive = value;
+                CursorLockMode lockState = value ? CursorLockMode.None : GetGameplayCursorLockMode();
+                _provider.SetCursorLockState(lockState);
                 _provider.SetCursorVisible(value);
             } 
             else
             {
                 _cursorActive = value;
+                CursorLockMode lockState = value ? CursorLockMode.None : GetGameplayCursorLockMode();
+                Cursor.lockState = lockState;
                 Cursor.visible = value;
-                Cursor.lockState = value ? CursorLockMode.None : CursorLockMode.Locked;
             }
 
             /*if (_moveActive)
@@ -67,6 +69,16 @@ public class ControlManager : MonoBehaviour
             _moveActive = value;
         }
     }
+
+    private static CursorLockMode GetGameplayCursorLockMode()
+    {
+#if UNITY_WEBGL && !UNITY_EDITOR
+        return CursorLockMode.None;
+#else
+        return CursorLockMode.Locked;
+#endif
+    }
+
     private void Awake()
     {
         if (_instance == null)

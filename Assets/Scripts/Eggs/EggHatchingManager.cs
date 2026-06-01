@@ -54,12 +54,12 @@ public class EggHatchingManager : MonoBehaviour
             _animalsRoot = transform;
 
         if (_nests == null || _nests.Count == 0)
-            _nests = FindObjectsByType<EggNestPoint>(FindObjectsSortMode.None).ToList();
+            _nests = FindObjectsByType<EggNestPoint>(FindObjectsInactive.Include, FindObjectsSortMode.None).ToList();
         else
             _nests = _nests.Where(x => x != null).Distinct().ToList();
 
         if (_animalPoints == null || _animalPoints.Count == 0)
-            _animalPoints = FindObjectsByType<AnimalPlacementPoint>(FindObjectsSortMode.None).ToList();
+            _animalPoints = FindObjectsByType<AnimalPlacementPoint>(FindObjectsInactive.Include, FindObjectsSortMode.None).ToList();
         else
             _animalPoints = _animalPoints.Where(x => x != null).Distinct().ToList();
     }
@@ -834,9 +834,12 @@ public class EggHatchingManager : MonoBehaviour
         return placed != null;
     }
 
-    public static void RegisterEggPickup(string eggId, int amount = 1)
+    public static void RegisterEggPickup(string eggId, int amount = 1, bool countInRun = false)
     {
         int safeAmount = amount > 0 ? amount : 1;
+        if (countInRun)
+            EggSpawnRuntimeState.OnEggCollected();
+
         EggFeatureStorage.AddEgg(eggId, safeAmount);
 
         if (_instance != null)
@@ -846,12 +849,15 @@ public class EggHatchingManager : MonoBehaviour
         }
     }
 
-    public static bool RegisterOneShotEggPickup(string collectibleId, string eggId, int amount = 1)
+    public static bool RegisterOneShotEggPickup(string collectibleId, string eggId, int amount = 1, bool countInRun = false)
     {
         int safeAmount = amount > 0 ? amount : 1;
         bool collected = EggFeatureStorage.TryAddOneShotEgg(collectibleId, eggId, safeAmount);
         if (!collected)
             return false;
+
+        if (countInRun)
+            EggSpawnRuntimeState.OnEggCollected();
 
         if (_instance != null)
         {
@@ -1197,12 +1203,12 @@ public class EggHatchingManager : MonoBehaviour
     private void RefreshSceneReferencesIfNeeded()
     {
         if (_nests == null || _nests.Count == 0 || _nests.Any(x => x == null))
-            _nests = FindObjectsByType<EggNestPoint>(FindObjectsSortMode.None).ToList();
+            _nests = FindObjectsByType<EggNestPoint>(FindObjectsInactive.Include, FindObjectsSortMode.None).ToList();
         else
             _nests = _nests.Where(x => x != null).Distinct().ToList();
 
         if (_animalPoints == null || _animalPoints.Count == 0 || _animalPoints.Any(x => x == null))
-            _animalPoints = FindObjectsByType<AnimalPlacementPoint>(FindObjectsSortMode.None).ToList();
+            _animalPoints = FindObjectsByType<AnimalPlacementPoint>(FindObjectsInactive.Include, FindObjectsSortMode.None).ToList();
         else
             _animalPoints = _animalPoints.Where(x => x != null).Distinct().ToList();
     }

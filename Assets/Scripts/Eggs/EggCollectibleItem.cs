@@ -34,18 +34,18 @@ public class EggCollectibleItem : MonoBehaviour
         int amount = _amount > 0 ? _amount : 1;
         bool collected;
 
+        bool countInRun = LoadingManager.Instance == null ||
+                          LoadingManager.Instance.CurrentLocation == Location.Game;
+
         if (_collectOnce)
         {
-            collected = EggHatchingManager.RegisterOneShotEggPickup(ResolveUniqueCollectibleId(), _eggId, amount);
+            collected = EggHatchingManager.RegisterOneShotEggPickup(ResolveUniqueCollectibleId(), _eggId, amount, countInRun);
         }
         else
         {
-            EggHatchingManager.RegisterEggPickup(_eggId, amount);
+            EggHatchingManager.RegisterEggPickup(_eggId, amount, countInRun);
             collected = true;
         }
-
-        if (collected)
-            EggSpawnRuntimeState.OnEggCollected();
 
         return collected;
     }

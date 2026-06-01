@@ -33,17 +33,42 @@ public class EggFeatureUnlockVisibility : MonoBehaviour
 
     public void Refresh()
     {
-        bool showEggNests = _manager != null && _manager.HasDiscoveredEggs();
-        bool showAnimalMeta = _manager != null && _manager.HasHatchedAnimal();
-        bool showAnimalMerge = _manager != null && _manager.HasUnlockedAnimalMerge();
+        EggFeatureState storedState = EggFeatureStorage.Load();
+        bool showEggNests = HasDiscoveredEggs(storedState);
+        bool showAnimalMeta = HasHatchedAnimal(storedState);
+        bool showAnimalMerge = HasUnlockedAnimalMerge(storedState);
         bool showEggNestTutorial = showEggNests && !showAnimalMeta;
-        bool showAnimalPlacementTutorial = showAnimalMeta && _manager != null && !_manager.HasUsedAnimalLoadout();
+        bool showAnimalPlacementTutorial = showAnimalMeta && !HasUsedAnimalLoadout(storedState);
 
         SetActive(_eggNestObjects, showEggNests);
         SetActive(_animalPlacementObjects, showAnimalMeta);
         SetActive(_animalMergeObjects, showAnimalMerge);
         SetActive(_eggNestTutorialObjects, showEggNestTutorial);
         SetActive(_animalPlacementTutorialObjects, showAnimalPlacementTutorial);
+    }
+
+    private bool HasDiscoveredEggs(EggFeatureState storedState)
+    {
+        return _manager != null && _manager.HasDiscoveredEggs() ||
+               storedState != null && storedState.hasDiscoveredEggs;
+    }
+
+    private bool HasHatchedAnimal(EggFeatureState storedState)
+    {
+        return _manager != null && _manager.HasHatchedAnimal() ||
+               storedState != null && storedState.hasHatchedAnimal;
+    }
+
+    private bool HasUnlockedAnimalMerge(EggFeatureState storedState)
+    {
+        return _manager != null && _manager.HasUnlockedAnimalMerge() ||
+               storedState != null && storedState.hasUnlockedAnimalMerge;
+    }
+
+    private bool HasUsedAnimalLoadout(EggFeatureState storedState)
+    {
+        return _manager != null && _manager.HasUsedAnimalLoadout() ||
+               storedState != null && storedState.hasUsedAnimalLoadout;
     }
 
     private void TryBindManager()

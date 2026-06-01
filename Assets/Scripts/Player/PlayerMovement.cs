@@ -158,7 +158,7 @@ public class PlayerMovement : MonoBehaviour
 
         Vector3 horizontalMovement = moveDirection * MoveSpeed;
 
-        if (PlayerInput.Instance.Sprint && _playerStats.Stamina > 0)
+        if (PlayerInput.Instance.Sprint)
         {
             horizontalMovement *= _sprintMultiplier;
         }

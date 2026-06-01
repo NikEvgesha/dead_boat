@@ -38,15 +38,53 @@ public class LocationContentSpawner : MonoBehaviour
         if (activeItemCollection == null || itemSpawnPoints == null)
             return;
 
-        foreach (LocationSpawnPoint spawnPoint in itemSpawnPoints)
+        int guaranteedEggSpawnPointIndex = FindGuaranteedEggSpawnPointIndex(activeItemCollection);
+
+        for (int i = 0; i < itemSpawnPoints.Count; i++)
         {
+            LocationSpawnPoint spawnPoint = itemSpawnPoints[i];
             if (spawnPoint == null || spawnPoint.spawnTransform == null)
                 continue;
 
-            PickableItem itemPrefab = activeItemCollection.GetRandomItem(spawnPoint.allowedType, spawnPoint.allowedSize);
-            if (itemPrefab != null)
-                Instantiate(itemPrefab.gameObject, spawnPoint.spawnTransform.position, spawnPoint.spawnTransform.rotation, transform);
+            PickableItem itemPrefab = null;
+            bool forceEgg = i == guaranteedEggSpawnPointIndex;
+            if (forceEgg)
+                activeItemCollection.TryGetRandomEggItem(spawnPoint.allowedType, spawnPoint.allowedSize, out itemPrefab);
+
+            itemPrefab ??= activeItemCollection.GetRandomItem(spawnPoint.allowedType, spawnPoint.allowedSize);
+            if (itemPrefab == null)
+                continue;
+
+            Instantiate(itemPrefab.gameObject, spawnPoint.spawnTransform.position, spawnPoint.spawnTransform.rotation, transform);
+
+            if (LocationItemSpawnCollection.IsEggPrefab(itemPrefab))
+                EggSpawnRuntimeState.OnEggSpawned();
         }
+    }
+
+    private int FindGuaranteedEggSpawnPointIndex(LocationItemSpawnCollection activeItemCollection)
+    {
+        if (!EggSpawnRuntimeState.ShouldGuaranteeFirstEggSpawn)
+            return -1;
+
+        if (activeItemCollection == null || itemSpawnPoints == null || itemSpawnPoints.Count == 0)
+            return -1;
+
+        List<int> candidateIndexes = new List<int>();
+        for (int i = 0; i < itemSpawnPoints.Count; i++)
+        {
+            LocationSpawnPoint spawnPoint = itemSpawnPoints[i];
+            if (spawnPoint == null || spawnPoint.spawnTransform == null)
+                continue;
+
+            if (activeItemCollection.HasEggItem(spawnPoint.allowedType, spawnPoint.allowedSize))
+                candidateIndexes.Add(i);
+        }
+
+        if (candidateIndexes.Count == 0)
+            return -1;
+
+        return candidateIndexes[Random.Range(0, candidateIndexes.Count)];
     }
 
     private void SpawnEnemies(LocationSceneBalance balance)

@@ -12,7 +12,7 @@ public class EggInventoryHudButton : MonoBehaviour
     [SerializeField] private KeyCode _keyboardShortcut = KeyCode.G;
     [SerializeField] private float _punchScale = 1.18f;
     [SerializeField] private float _punchDuration = 0.18f;
-    [SerializeField] private Vector2 _gameAnchor = new Vector2(0.05052081f, 0.43870366f);
+    [SerializeField] private Vector2 _gameAnchor = new Vector2(0.05052081f, 0.535f);
 
     private EggHatchingManager _manager;
     private Coroutine _punchRoutine;
@@ -119,7 +119,7 @@ public class EggInventoryHudButton : MonoBehaviour
 
     private bool ShouldShow()
     {
-        if (_manager == null || !_manager.HasDiscoveredEggs())
+        if (!HasDiscoveredEggs())
             return false;
 
         if (LoadingManager.Instance == null)
@@ -130,6 +130,15 @@ public class EggInventoryHudButton : MonoBehaviour
             return EggSpawnRuntimeState.CollectedInRun > 0;
 
         return currentLocation == Location.Lobby;
+    }
+
+    private bool HasDiscoveredEggs()
+    {
+        if (_manager != null && _manager.HasDiscoveredEggs())
+            return true;
+
+        EggFeatureState state = EggFeatureStorage.Load();
+        return state != null && state.hasDiscoveredEggs;
     }
 
     private void HandleEggsCollected(int amount)
