@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using System.Collections;
 using System;
 using MirraGames.SDK;
+using MirraGames.SDK.Common;
 
 // Перечисление состояний конца игры
 public enum EndGameState
@@ -36,10 +37,13 @@ public class EndGameUIManager : MonoBehaviour
 
     [Header("Элементы возрождения")]
     [SerializeField] private Button reviveButton;      // Кнопка возрождения (поведение зависит от состояния: оплата монетами или через рекламу)
+    [SerializeField, Min(0f)] private float _buttonEnableDelay = 1.25f;
 
     // Время отсчёта
     private float timerDuration;
     private float timerRemaining;
+    private Coroutine _enableButtonsRoutine;
+    private bool _suppressLobbyInterstitial;
     public static Action<EndGameState> EndGame;
     private void Awake()
     {
@@ -57,7 +61,7 @@ public class EndGameUIManager : MonoBehaviour
     private EndGameState currentState = EndGameState.None;
     private void ShowEndGameUIAction(EndGameState state)
     {
-        MirraSDK.Analytics.GameplayStop();
+        TryGameplayStop();
         //Debug.Log("GameplayStop");
         ShowEndGameUI(state);
     }
@@ -73,6 +77,19 @@ public class EndGameUIManager : MonoBehaviour
         currentState = state;
         timerDuration = duration;
         timerRemaining = duration;
+
+        if (_enableButtonsRoutine != null)
+        {
+            StopCoroutine(_enableButtonsRoutine);
+            _enableButtonsRoutine = null;
+        }
+
+        SetButtonsInteractable(state == EndGameState.None);
+
+        if (state == EndGameState.Faint)
+            _suppressLobbyInterstitial = true;
+        else if (state == EndGameState.Win || state == EndGameState.None)
+            _suppressLobbyInterstitial = false;
 
         // Настройка слайдера: задаём максимальное значение и устанавливаем текущее значение
         timerSlider.maxValue = timerDuration;
@@ -158,6 +175,9 @@ public class EndGameUIManager : MonoBehaviour
             timerMessageText.text = string.Format(tagText, Mathf.Ceil(timerRemaining));
             StartCoroutine(WinLoseStateTimer());
         }
+
+        if (state != EndGameState.None)
+            _enableButtonsRoutine = StartCoroutine(EnableButtonsAfterDelay());
     }
 
     // Обратный отсчёт для состояния обморока (Faint)
@@ -243,19 +263,40 @@ public class EndGameUIManager : MonoBehaviour
     private void LoadLobby()
     {
         StopAllCoroutines();
+        bool withInterstitial = !_suppressLobbyInterstitial && currentState != EndGameState.Faint;
+        _suppressLobbyInterstitial = false;
+
         if (!PurchasesManager.Instance.PurchasesAvailable())
         {
-            GameManager.Instance.EndGame(true, currentState != EndGameState.Faint);
+            GameManager.Instance.EndGame(true, withInterstitial);
         }
         else
         {
-            GameManager.Instance.EndGame(true);
+            GameManager.Instance.EndGame(true, withInterstitial);
         }
         ShowEndGameUI(EndGameState.None);
         // Замените "LobbyScene" на имя вашей сцены лобби
         //SceneManager.LoadScene("SampleScene");
     }
 
+    private IEnumerator EnableButtonsAfterDelay()
+    {
+        yield return new WaitForSecondsRealtime(Mathf.Max(0f, _buttonEnableDelay));
+        SetButtonsInteractable(true);
+        _enableButtonsRoutine = null;
+    }
+
+    private void SetButtonsInteractable(bool interactable)
+    {
+        if (lobbyButton != null)
+            lobbyButton.interactable = interactable;
+
+        if (playAgainButton != null)
+            playAgainButton.interactable = interactable;
+
+        if (reviveButton != null)
+            reviveButton.interactable = interactable;
+    }
     // Пример метода списания монет для возрождения
     private bool DeductCoinsForRevive()
     {
@@ -295,5 +336,32 @@ public class EndGameUIManager : MonoBehaviour
     public EndGameState GetState()
     {
         return currentState;
+    }
+
+    private static void TryGameplayStop()
+    {
+        if (!MirraSDK.IsInitialized)
+            return;
+
+        try
+        {
+            DeploymentType deployment = MirraSDK.Platform.Deployment;
+            PlatformType platform = MirraSDK.Platform.Current;
+            if (deployment == DeploymentType.Editor ||
+                platform == PlatformType.Editor ||
+                platform == PlatformType.Localhost ||
+                platform == PlatformType.Unknown ||
+                platform == PlatformType.Playgama ||
+                platform == PlatformType.PlaygamaBridge)
+            {
+                return;
+            }
+
+            MirraSDK.Analytics.GameplayStop();
+        }
+        catch (Exception exception)
+        {
+            Debug.LogWarning($"EndGameUIManager: failed to send GameplayStop ({exception.Message})");
+        }
     }
 }

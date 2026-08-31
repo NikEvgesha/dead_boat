@@ -12,10 +12,10 @@ public class TimerAd : MonoBehaviour
 
     private int _adsInterval = 60;
     private PlayerStatsManager _playerStats;
-    private bool _timerReady;
     private bool _canShowAd = true;
     private IEnumerator _damageTimer;
     private IEnumerator _adTimer;
+
     private void Start()
     {
         if (!PurchasesManager.Instance.PurchasesAvailable())
@@ -27,13 +27,15 @@ public class TimerAd : MonoBehaviour
 
         _playerStats = PlayerManager.Instance.StatsManager;
         _playerStats.StatChanged += OnPlayerStatChange;
-        LoadingManager.Instance.LocationChanged += OnLocationChanged;
+        if (LoadingManager.Instance != null)
+            LoadingManager.Instance.LocationChanged += OnLocationChanged;
+
         _adsInterval = MirraSDK.Flags.GetInt("AdsInterval", _adsInterval);
         if (MirraSDK.Platform.Current == MirraGames.SDK.Common.PlatformType.Y8)
             _adsInterval = 121;
 
-        _adTimer = AdTimer();
-        StartCoroutine(_adTimer);
+        if (LoadingManager.Instance == null || LoadingManager.Instance.CurrentLocation == Location.Game)
+            StartAdTimer();
     }
 
     private void OnDisable()
@@ -42,7 +44,8 @@ public class TimerAd : MonoBehaviour
             _playerStats.StatChanged -= OnPlayerStatChange;
         if (_boardController != null)
             _boardController.EndGame -= OnEndGame;
-        LoadingManager.Instance.LocationChanged -= OnLocationChanged;
+        if (LoadingManager.Instance != null)
+            LoadingManager.Instance.LocationChanged -= OnLocationChanged;
     }
 
 
@@ -60,25 +63,44 @@ public class TimerAd : MonoBehaviour
     private void OnEndGame()
     {
         _canShowAd = false;
-        StopAllCoroutines();
+        StopAdTimer();
     }
 
     private void OnLocationChanged(Location location)
     {
+        StopAdTimer();
+
         if (_boardController != null)
         {
             _boardController.EndGame -= OnEndGame;
             _boardController = null;
         }
+
+        _canShowAd = location == Location.Game;
         if (location == Location.Game)
         {
             StartCoroutine(BoardAwait());
+            StartAdTimer();
         }
-        StopAllCoroutines();
-        _canShowAd = true;
+    }
+
+    private void StartAdTimer()
+    {
+        if (_adTimer != null)
+            return;
+
         _adTimer = AdTimer();
         StartCoroutine(_adTimer);
+    }
 
+    private void StopAdTimer()
+    {
+        StopAllCoroutines();
+        _adTimer = null;
+        _damageTimer = null;
+
+        if (_adPanel != null)
+            _adPanel.SetActive(false);
     }
 
     private void OnPlayerStatChange(PlayerStat stat, float current, float max)

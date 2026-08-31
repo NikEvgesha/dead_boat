@@ -9,6 +9,7 @@
 */
 
 #nullable enable
+#if UNITY_6000_5_OR_NEWER
 
 using System;
 using System.Collections.Generic;
@@ -26,7 +27,7 @@ namespace com.IvanMurzak.Unity.MCP.Editor.API
     public partial class Tool_ProBuilder
     {
         public const string ProBuilderGetMeshInfoToolId = "probuilder-get-mesh-info";
-        [McpPluginTool
+        [AiTool
         (
             ProBuilderGetMeshInfoToolId,
             Title = "Get ProBuilder mesh information",
@@ -35,6 +36,23 @@ namespace com.IvanMurzak.Unity.MCP.Editor.API
             IdempotentHint = true,
             OpenWorldHint = false
         )]
+        [AiSkillDescription("Inspect a `ProBuilderMesh` — face/vertex/edge counts plus optional face-by-face " +
+            "detail. Use `detail=\"summary\"` for a token-efficient overview, `detail=\"full\"` for detailed " +
+            "face data. Often skippable when other tools accept `faceDirection` semantic selection.")]
+        [AiSkillBody("Inspect a `ProBuilderMesh` — totals (face/vertex/edge counts) plus optional " +
+            "face-by-face detail (per-face vertex positions, edges, semantic direction). The other ProBuilder " +
+            "tools accept `faceDirection` (semantic selection like `\"up\"`, `\"down\"`) — when that suffices, " +
+            "you can skip this call entirely.\n\n" +
+            "## Inputs\n\n" +
+            "- `gameObjectRef` — the GameObject hosting the `ProBuilderMesh` component.\n" +
+            "- `detail` — `Summary` (default, cheap overview with face directions) or `Full` (per-face data).\n" +
+            "- `includeVertexPositions` — `Full` only. Include each face's vertex positions in the response.\n" +
+            "- `includeEdges` — `Full` only. Include each face's edges. Default `true`.\n" +
+            "- `maxFacesToShow` — `Full` only. Cap on face-detail entries (default `20`; pass `-1` for all). " +
+            "Keeps the response small for high-face meshes.\n\n" +
+            "## Tip\n\n" +
+            "With semantic face selection (`faceDirection`) available on Extrude / DeleteFaces / SetFaceMaterial " +
+            "and friends, you often don't need this tool — just pass `faceDirection=\"up\"` etc. directly.")]
         [Description(@"Retrieves information about a ProBuilder mesh including faces, vertices, and edges.
 Use detail=""summary"" for a token-efficient overview showing face directions.
 Use detail=""full"" for detailed face-by-face information.
@@ -72,13 +90,13 @@ you often don't need GetMeshInfo at all - just use faceDirection=""up"" etc. dir
 
                 var proBuilderMesh = go.GetComponent<ProBuilderMesh>();
                 if (proBuilderMesh == null)
-                    throw new Exception(Error.ProBuilderMeshNotFound(go.GetInstanceID()));
+                    throw new Exception(Error.ProBuilderMeshNotFound(go.GetEntityId()));
 
                 var response = new GetMeshInfoResponse();
 
                 // Basic info
                 response.gameObjectName = go.name;
-                response.instanceId = go.GetInstanceID();
+                response.instanceId = go.GetEntityId();
                 response.faceCount = proBuilderMesh.faceCount;
                 response.vertexCount = proBuilderMesh.vertexCount;
                 response.edgeCount = proBuilderMesh.edgeCount;
@@ -220,7 +238,7 @@ you often don't need GetMeshInfo at all - just use faceDirection=""up"" etc. dir
         public class GetMeshInfoResponse
         {
             public string gameObjectName = string.Empty;
-            public int instanceId;
+            public UnityEngine.EntityId instanceId;
             public int faceCount;
             public int vertexCount;
             public int edgeCount;
@@ -275,3 +293,4 @@ you often don't need GetMeshInfo at all - just use faceDirection=""up"" etc. dir
         #endregion
     }
 }
+#endif

@@ -9,16 +9,17 @@
 */
 
 #nullable enable
+#if UNITY_6000_5_OR_NEWER
 using com.IvanMurzak.McpPlugin;
 
 namespace com.IvanMurzak.Unity.MCP.Editor.API
 {
-    [McpPluginToolType]
+    [AiToolType]
     public partial class Tool_ProBuilder
     {
         public static class Error
         {
-            public static string ProBuilderMeshNotFound(int instanceID)
+            public static string ProBuilderMeshNotFound(UnityEngine.EntityId instanceID)
                 => $"[Error] ProBuilderMesh component not found on GameObject with instanceID '{instanceID}'. " +
                    "Make sure the GameObject has a ProBuilderMesh component attached.";
 
@@ -55,3 +56,4 @@ namespace com.IvanMurzak.Unity.MCP.Editor.API
         }
     }
 }
+#endif

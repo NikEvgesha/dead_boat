@@ -9,6 +9,7 @@ public class ControlManager : MonoBehaviour
     [SerializeField] private DeviceProvider _provider;
     private bool _cursorActive;
     private bool _moveActive = true;
+    private bool _blockPrimaryActionUntilMouseUp;
     public bool UseTouchControl { get { return _useTouchControls; } private set { } }
 
     private int _activeWindows = 0;
@@ -16,45 +17,12 @@ public class ControlManager : MonoBehaviour
     {
         get
         {
-            if (_provider && _provider.IsInitialized())
-                return _provider.IsCursorVisible();
-
             return _cursorActive;
         }
 
         set
         {
-            if (_useTouchControls)
-                return;
-
-            if (value)
-            {
-                _activeWindows++;
-            }
-            else
-            {
-                _activeWindows = _activeWindows > 0 ? _activeWindows - 1 : 0 ;
-                if (_activeWindows > 0) return;
-            }
-
-            if (_provider && _provider.IsInitialized())
-            {
-                _cursorActive = value;
-                CursorLockMode lockState = value ? CursorLockMode.None : GetGameplayCursorLockMode();
-                _provider.SetCursorLockState(lockState);
-                _provider.SetCursorVisible(value);
-            } 
-            else
-            {
-                _cursorActive = value;
-                CursorLockMode lockState = value ? CursorLockMode.None : GetGameplayCursorLockMode();
-                Cursor.lockState = lockState;
-                Cursor.visible = value;
-            }
-
-            /*if (_moveActive)
-                InventoryUI.Instance.ToggleOpen(false);*/
-
+            SetCursorActive(value, false);
         }
     }
     public bool MoveActive
@@ -70,13 +38,100 @@ public class ControlManager : MonoBehaviour
         }
     }
 
+    public bool BlocksPrimaryAction
+    {
+        get
+        {
+            if (_useTouchControls)
+                return false;
+
+            return _blockPrimaryActionUntilMouseUp ||
+                   _cursorActive ||
+                   GetCurrentCursorLockState() != GetGameplayCursorLockMode();
+        }
+    }
+
     private static CursorLockMode GetGameplayCursorLockMode()
     {
-#if UNITY_WEBGL && !UNITY_EDITOR
-        return CursorLockMode.None;
-#else
         return CursorLockMode.Locked;
+    }
+
+    private static bool IsWebGLPlayer()
+    {
+#if UNITY_WEBGL && !UNITY_EDITOR
+        return true;
+#else
+        return false;
 #endif
+    }
+
+    private CursorLockMode GetCurrentCursorLockState()
+    {
+        if (_provider && _provider.IsInitialized())
+            return _provider.GetCursorLockState();
+
+        return Cursor.lockState;
+    }
+
+    public void ForceGameplayCursor()
+    {
+        SetCursorActive(false, true);
+    }
+
+    private void SetCursorActive(bool value, bool force)
+    {
+        if (_useTouchControls)
+            return;
+
+        if (value)
+        {
+            if (force)
+                _activeWindows = Mathf.Max(_activeWindows, 1);
+            else
+                _activeWindows++;
+        }
+        else
+        {
+            if (force)
+            {
+                _activeWindows = 0;
+            }
+            else
+            {
+                _activeWindows = _activeWindows > 0 ? _activeWindows - 1 : 0;
+                if (_activeWindows > 0)
+                {
+                    _cursorActive = true;
+                    ApplyCursorState(true);
+                    return;
+                }
+            }
+        }
+
+        _cursorActive = value;
+        ApplyCursorState(value);
+
+        /*if (_moveActive)
+            InventoryUI.Instance.ToggleOpen(false);*/
+    }
+
+    private void ApplyCursorState(bool active, bool requestLock = true)
+    {
+        CursorLockMode lockState = active || !requestLock ? CursorLockMode.None : GetGameplayCursorLockMode();
+
+        if (!active && requestLock && Input.GetMouseButton(0))
+            _blockPrimaryActionUntilMouseUp = true;
+
+        if (_provider && _provider.IsInitialized())
+        {
+            _provider.SetCursorLockState(lockState);
+            _provider.SetCursorVisible(active);
+        }
+        else
+        {
+            Cursor.lockState = lockState;
+            Cursor.visible = active;
+        }
     }
 
     private void Awake()
@@ -110,10 +165,28 @@ public class ControlManager : MonoBehaviour
         }
         if (!_useTouchControls)
         {
-            CursorActive = false;  
+            _activeWindows = 0;
+            _cursorActive = false;
+            ApplyCursorState(false, !IsWebGLPlayer());
         }
     }
 
+    private void Update()
+    {
+        if (_blockPrimaryActionUntilMouseUp && !Input.GetMouseButton(0))
+            _blockPrimaryActionUntilMouseUp = false;
 
+        if (_useTouchControls || _cursorActive)
+            return;
+
+        if (GetCurrentCursorLockState() == GetGameplayCursorLockMode())
+            return;
+
+        if (Input.GetMouseButtonDown(0))
+        {
+            _blockPrimaryActionUntilMouseUp = true;
+            ApplyCursorState(false);
+        }
+    }
 
 }

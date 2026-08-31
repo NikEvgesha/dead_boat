@@ -9,6 +9,7 @@
 */
 
 #nullable enable
+#if UNITY_6000_5_OR_NEWER
 
 using System;
 using System.ComponentModel;
@@ -40,7 +41,7 @@ namespace com.IvanMurzak.Unity.MCP.Editor.API
     public partial class Tool_ProBuilder
     {
         public const string ProBuilderSetPivotToolId = "probuilder-set-pivot";
-        [McpPluginTool
+        [AiTool
         (
             ProBuilderSetPivotToolId,
             Title = "Set the pivot point of a ProBuilder mesh",
@@ -50,6 +51,24 @@ namespace com.IvanMurzak.Unity.MCP.Editor.API
             IdempotentHint = true,
             OpenWorldHint = false
         )]
+        [AiSkillDescription("Move the pivot (origin) of a `ProBuilderMesh` without shifting the visible " +
+            "geometry. Choose `Center` (mesh bounds), `FirstVertex`, or `Custom` (world-space position). The " +
+            "mesh data is rebaked so the visual position stays fixed.")]
+        [AiSkillBody("Move the pivot (origin) of a `ProBuilderMesh` without shifting the visible " +
+            "geometry. The mesh data is rebaked so the visual position stays fixed while the GameObject's " +
+            "transform origin moves to the new pivot.\n\n" +
+            "## Inputs\n\n" +
+            "- `gameObjectRef` — the GameObject hosting the `ProBuilderMesh` component.\n" +
+            "- `pivotLocation` — `MeshPivotLocation` enum: `Center` (mesh bounds center), `FirstVertex`, or " +
+            "`Custom`.\n" +
+            "- `customPosition` — required when `pivotLocation = Custom`. World-space pivot position.\n\n" +
+            "## Examples\n\n" +
+            "- Center the pivot: `pivotLocation=Center`.\n" +
+            "- Set pivot to first vertex: `pivotLocation=FirstVertex`.\n" +
+            "- Set custom pivot: `pivotLocation=Custom`, `customPosition=(0, 0, 0)`.\n\n" +
+            "## Behavior\n\n" +
+            "The mesh is rebuilt (`ToMesh` → `Refresh`), dirty-flagged, and the Editor repaints. The whole call " +
+            "runs on the Unity main thread.")]
         [Description(@"Changes the pivot (origin) point of a ProBuilder mesh.
 The mesh geometry is adjusted so the pivot moves without changing the visual position.
 
@@ -84,7 +103,7 @@ Examples:
 
                 var proBuilderMesh = go.GetComponent<ProBuilderMesh>();
                 if (proBuilderMesh == null)
-                    throw new Exception(Error.ProBuilderMeshNotFound(go.GetInstanceID()));
+                    throw new Exception(Error.ProBuilderMeshNotFound(go.GetEntityId()));
 
                 var oldPivot = go.transform.position;
                 Vector3 newPivotWorld;
@@ -174,3 +193,4 @@ Examples:
         #endregion
     }
 }
+#endif

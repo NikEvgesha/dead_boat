@@ -211,11 +211,11 @@ public class PlayerInput : MonoBehaviour
             _roulette = Input.GetKeyDown(KeyCode.K);
             _playtime = Input.GetKeyDown(KeyCode.L);
             _levelUp = Input.GetKeyDown(KeyCode.B);
+            _pickUp = false;
+            _attack = false;
+            _healing = false;
 
-            if (Input.GetKeyDown(KeyCode.T))
-                ProfessionTemporaryUIBootstrap.TogglePanelFromShortcut();
-
-            if (!ControlManager.Instance.CursorActive)
+            if (!ControlManager.Instance.BlocksPrimaryAction)
             {
                 _pickUp = Input.GetMouseButtonDown(1);
                 //_useItem = Input.GetMouseButtonDown(0);

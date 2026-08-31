@@ -13,6 +13,7 @@ public class EggInventoryHudButton : MonoBehaviour
     [SerializeField] private float _punchScale = 1.18f;
     [SerializeField] private float _punchDuration = 0.18f;
     [SerializeField] private Vector2 _gameAnchor = new Vector2(0.05052081f, 0.535f);
+    [SerializeField] private Vector2 _gameSize = new Vector2(92f, 92f);
 
     private EggHatchingManager _manager;
     private Coroutine _punchRoutine;
@@ -203,10 +204,21 @@ public class EggInventoryHudButton : MonoBehaviour
             _rectTransform.anchorMin = _gameAnchor;
             _rectTransform.anchorMax = _gameAnchor;
             _rectTransform.anchoredPosition = Vector2.zero;
+            _rectTransform.sizeDelta = GetGameSize();
             return;
         }
 
         _defaultRect.ApplyTo(_rectTransform);
+    }
+
+    private Vector2 GetGameSize()
+    {
+        if (_gameSize.x > 1f && _gameSize.y > 1f)
+            return _gameSize;
+
+        return _defaultRect.Size.x > 1f && _defaultRect.Size.y > 1f
+            ? _defaultRect.Size
+            : new Vector2(92f, 92f);
     }
 
     private void PlayPunch()
@@ -247,6 +259,7 @@ public class EggInventoryHudButton : MonoBehaviour
         private readonly Vector2 _anchorMax;
         private readonly Vector2 _anchoredPosition;
         private readonly Vector2 _sizeDelta;
+        private readonly Vector2 _size;
         private readonly Vector2 _pivot;
 
         public RectSnapshot(RectTransform rect)
@@ -255,8 +268,11 @@ public class EggInventoryHudButton : MonoBehaviour
             _anchorMax = rect.anchorMax;
             _anchoredPosition = rect.anchoredPosition;
             _sizeDelta = rect.sizeDelta;
+            _size = rect.rect.size;
             _pivot = rect.pivot;
         }
+
+        public Vector2 Size => _size;
 
         public void ApplyTo(RectTransform rect)
         {

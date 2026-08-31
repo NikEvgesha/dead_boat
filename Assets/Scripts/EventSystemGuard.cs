@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 
-[DefaultExecutionOrder(10000)]
+[DefaultExecutionOrder(-10000)]
 public sealed class EventSystemGuard : MonoBehaviour
 {
     private const string EventSystemName = "EventSystem";
@@ -29,6 +29,11 @@ public sealed class EventSystemGuard : MonoBehaviour
     private void OnDisable()
     {
         SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void Update()
+    {
+        EnsureSingleEventSystem();
     }
 
     private void LateUpdate()
@@ -83,16 +88,32 @@ public sealed class EventSystemGuard : MonoBehaviour
     {
         GameObject eventSystemObject = new GameObject(EventSystemName);
         EventSystem eventSystem = eventSystemObject.AddComponent<EventSystem>();
-        eventSystemObject.AddComponent<StandaloneInputModule>();
+        StandaloneInputModule inputModule = eventSystemObject.AddComponent<StandaloneInputModule>();
+        EnsureSafeInput(eventSystem, inputModule);
         EventSystem.current = eventSystem;
         return eventSystem;
     }
 
     private static void EnsureInputModule(EventSystem eventSystem)
     {
-        if (eventSystem == null || eventSystem.GetComponent<BaseInputModule>() != null)
+        if (eventSystem == null)
             return;
 
-        eventSystem.gameObject.AddComponent<StandaloneInputModule>();
+        StandaloneInputModule standaloneInputModule = eventSystem.GetComponent<StandaloneInputModule>();
+        if (eventSystem.GetComponent<BaseInputModule>() == null)
+            standaloneInputModule = eventSystem.gameObject.AddComponent<StandaloneInputModule>();
+
+        if (standaloneInputModule != null)
+            EnsureSafeInput(eventSystem, standaloneInputModule);
+    }
+
+    private static void EnsureSafeInput(EventSystem eventSystem, StandaloneInputModule standaloneInputModule)
+    {
+        SafeEventSystemInput safeInput = eventSystem.GetComponent<SafeEventSystemInput>();
+        if (safeInput == null)
+            safeInput = eventSystem.gameObject.AddComponent<SafeEventSystemInput>();
+
+        if (standaloneInputModule.inputOverride != safeInput)
+            standaloneInputModule.inputOverride = safeInput;
     }
 }

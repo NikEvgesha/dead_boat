@@ -10,7 +10,6 @@ public sealed class ProfessionHudButton : MonoBehaviour
     [SerializeField] private Button _button;
     [SerializeField] private GameObject _badgeRoot;
     [SerializeField] private Text _badgeText;
-    [SerializeField] private KeyCode _keyboardShortcut = KeyCode.T;
 
     private void Awake()
     {
@@ -34,9 +33,6 @@ public sealed class ProfessionHudButton : MonoBehaviour
     private void Update()
     {
         Refresh();
-
-        if (Input.GetKeyDown(_keyboardShortcut) && ShouldShow())
-            ToggleProfessionPanel();
     }
 
     public void OpenProfessionPanel()
@@ -49,23 +45,6 @@ public sealed class ProfessionHudButton : MonoBehaviour
             return;
 
         panel.Open();
-        Refresh();
-    }
-
-    private void ToggleProfessionPanel()
-    {
-        if (!ShouldShow())
-            return;
-
-        ProfessionSelectionPanel panel = ResolvePanel();
-        if (panel == null)
-            return;
-
-        if (panel.IsOpen)
-            panel.CloseFromButton();
-        else
-            panel.Open();
-
         Refresh();
     }
 

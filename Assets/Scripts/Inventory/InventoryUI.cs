@@ -215,6 +215,25 @@ public class InventoryUI : MonoBehaviour
 
     }
 
+    public void RemoveItem(PickableItem item)
+    {
+        if (ReferenceEquals(item, null))
+            return;
+
+        for (int i = 0; i < _quickSlots.Count; i++)
+        {
+            InventorySlot slot = _quickSlots[i];
+            if (slot != null && slot.CurrentItem == item)
+                slot.InitSlot(null);
+        }
+
+        for (int i = 0; i < _mainSlots.Count; i++)
+        {
+            InventorySlot slot = _mainSlots[i];
+            if (slot != null && slot.CurrentItem == item)
+                slot.InitSlot(null);
+        }
+    }
 
     public void UpdateCapacity(int occupied, int total)
     {

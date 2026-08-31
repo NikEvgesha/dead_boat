@@ -459,11 +459,25 @@ window.hideBanner = function() {
 }
 
 window.showInterstitial = function(placement) {
-    bridge.advertisement.showInterstitial(placement)
+    try {
+        const result = bridge.advertisement.showInterstitial(placement)
+        if (result && typeof result.catch === 'function') {
+            result.catch(error => console.warn('Playgama Bridge: showInterstitial failed', error))
+        }
+    } catch (error) {
+        console.warn('Playgama Bridge: showInterstitial failed', error)
+    }
 }
 
 window.showRewarded = function(placement) {
-    bridge.advertisement.showRewarded(placement)
+    try {
+        const result = bridge.advertisement.showRewarded(placement)
+        if (result && typeof result.catch === 'function') {
+            result.catch(error => console.warn('Playgama Bridge: showRewarded failed', error))
+        }
+    } catch (error) {
+        console.warn('Playgama Bridge: showRewarded failed', error)
+    }
 }
 
 window.getIsAdvancedBannersSupported = function() {

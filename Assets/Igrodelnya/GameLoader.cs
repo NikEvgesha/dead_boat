@@ -39,10 +39,6 @@ public class GameLoader : MonoBehaviour
     {
         //_currentSceneName = _gameOptions.LobbySceneName;
         //SceneManager.LoadScene(_currentSceneName);
-        if (PurchasesManager.Instance.PurchasesAvailable())
-        {
-            _startLoadingFinished = true;
-        }
     }
 
     public void LoadNextScene(string SceneName, bool asyncMode,bool withAds = true)

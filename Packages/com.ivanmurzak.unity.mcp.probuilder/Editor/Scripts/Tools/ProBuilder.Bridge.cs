@@ -9,6 +9,7 @@
 */
 
 #nullable enable
+#if UNITY_6000_5_OR_NEWER
 
 using System;
 using System.ComponentModel;
@@ -26,7 +27,7 @@ namespace com.IvanMurzak.Unity.MCP.Editor.API
     public partial class Tool_ProBuilder
     {
         public const string ProBuilderBridgeToolId = "probuilder-bridge";
-        [McpPluginTool
+        [AiTool
         (
             ProBuilderBridgeToolId,
             Title = "Bridge two edges in a ProBuilder mesh",
@@ -36,6 +37,25 @@ namespace com.IvanMurzak.Unity.MCP.Editor.API
             IdempotentHint = false,
             OpenWorldHint = false
         )]
+        [AiSkillDescription("Create a single new face that bridges two existing edges of a `ProBuilderMesh`. " +
+            "Useful for connecting separate parts of geometry or filling gaps. Pair with " +
+            "'" + ProBuilderGetMeshInfoToolId + "' to discover valid edges.")]
+        [AiSkillBody("Create a single new face that bridges two existing edges of a `ProBuilderMesh`. " +
+            "Useful for connecting separate parts of geometry or filling gaps between disjoint sections. Pair " +
+            "with '" + ProBuilderGetMeshInfoToolId + "' to discover valid edges first.\n\n" +
+            "## Inputs\n\n" +
+            "- `gameObjectRef` — the GameObject hosting the `ProBuilderMesh` component.\n" +
+            "- `edgeA` — first edge as `[vertexA, vertexB]`.\n" +
+            "- `edgeB` — second edge as `[vertexA, vertexB]`.\n" +
+            "- `allowNonManifold` — when `true`, permits the bridge to share an edge with more than two faces. " +
+            "Defaults to `false`.\n\n" +
+            "## Example\n\n" +
+            "`edgeA=[0,1]`, `edgeB=[4,5]` creates a quad face between the two edges.\n\n" +
+            "## Behavior\n\n" +
+            "The mesh is rebuilt (`ToMesh` → `Refresh`), dirty-flagged, and the Editor repaints. Returns the " +
+            "index of the new face, before/after face counts, and post-op vertex/edge counts. Throws when the " +
+            "bridge cannot be formed (e.g., edges already connected or non-manifold check blocked it). The whole " +
+            "call runs on the Unity main thread.")]
         [Description(@"Creates a new face connecting two edges.
 Useful for connecting separate parts of geometry or filling gaps.
 
@@ -70,7 +90,7 @@ Example:
 
                 var proBuilderMesh = go.GetComponent<ProBuilderMesh>();
                 if (proBuilderMesh == null)
-                    throw new Exception(Error.ProBuilderMeshNotFound(go.GetInstanceID()));
+                    throw new Exception(Error.ProBuilderMeshNotFound(go.GetEntityId()));
 
                 // Validate edges
                 if (edgeA == null || edgeA.Length < 2)
@@ -153,3 +173,4 @@ Example:
         #endregion
     }
 }
+#endif

@@ -31,7 +31,7 @@ public class GameStartPoint : MonoBehaviour
     {
         PlayerMovement.Instance.Teleport(_outsidePoint);
         _canvas.SetActive(false);
-        ControlManager.Instance.CursorActive = false;
+        ControlManager.Instance.ForceGameplayCursor();
     }
 
     private void ShowCanvas()

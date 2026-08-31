@@ -99,7 +99,27 @@ public class PurchasesManager : MonoBehaviour
             return;
         }
 
-        provider.BuyPurchase(purchaseId, onComplete);
+        bool releaseCursorAfterPurchase = false;
+        if (ControlManager.Instance != null && !ControlManager.Instance.UseTouchControl)
+        {
+            ControlManager.Instance.CursorActive = true;
+            releaseCursorAfterPurchase = true;
+        }
+
+        provider.BuyPurchase(
+            purchaseId,
+            success =>
+            {
+                try
+                {
+                    onComplete?.Invoke(success);
+                }
+                finally
+                {
+                    if (releaseCursorAfterPurchase && ControlManager.Instance != null)
+                        ControlManager.Instance.CursorActive = false;
+                }
+            });
     }
 
     // Получение данных о покупке

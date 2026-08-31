@@ -9,6 +9,7 @@
 */
 
 #nullable enable
+#if UNITY_6000_5_OR_NEWER
 
 using System;
 using System.Collections.Generic;
@@ -29,7 +30,7 @@ namespace com.IvanMurzak.Unity.MCP.Editor.API
     public partial class Tool_ProBuilder
     {
         public const string ProBuilderMergeObjectsToolId = "probuilder-merge-objects";
-        [McpPluginTool
+        [AiTool
         (
             ProBuilderMergeObjectsToolId,
             Title = "Merge multiple ProBuilder meshes into one",
@@ -39,6 +40,22 @@ namespace com.IvanMurzak.Unity.MCP.Editor.API
             IdempotentHint = false,
             OpenWorldHint = false
         )]
+        [AiSkillDescription("Combine multiple `ProBuilderMesh` GameObjects into one merged mesh. The first " +
+            "GameObject in the list becomes the merge target. Source GameObjects are deleted by default. " +
+            "Useful for optimizing draw calls and unifying composite props.")]
+        [AiSkillBody("Combine multiple `ProBuilderMesh` GameObjects into a single merged mesh. The first " +
+            "GameObject in `gameObjectRefs` becomes the merge target — subsequent meshes are absorbed into it. " +
+            "Useful for optimizing draw calls or creating a unified object from parts.\n\n" +
+            "## Inputs\n\n" +
+            "- `gameObjectRefs` — array of GameObject references (≥2). Each must carry a `ProBuilderMesh` " +
+            "component. The first reference is the merge target.\n" +
+            "- `deleteSourceObjects` — when `true` (default), delete the non-target source GameObjects after " +
+            "merging. Set `false` to keep them in the scene.\n\n" +
+            "## Example\n\n" +
+            "Merge a table assembled from four leg meshes and a top into a single GameObject for shipping.\n\n" +
+            "## Behavior\n\n" +
+            "All meshes are rebuilt (`ToMesh` → `Refresh`), the resulting GameObject is marked dirty, and the " +
+            "Editor repaints. The whole call runs on the Unity main thread.")]
         [Description(@"Combines multiple ProBuilder meshes into a single mesh.
 Useful for optimizing draw calls or creating a unified object from parts.
 The first mesh in the list becomes the target that others merge into.
@@ -164,7 +181,7 @@ Example: Merge a table made of separate leg and top meshes into one object.")]
                         additionalMeshes.Add(new AdditionalMeshInfo
                         {
                             name = resultMeshes[i].gameObject.name,
-                            instanceId = resultMeshes[i].gameObject.GetInstanceID()
+                            instanceId = resultMeshes[i].gameObject.GetEntityId()
                         });
                     }
                 }
@@ -174,7 +191,7 @@ Example: Merge a table made of separate leg and top meshes into one object.")]
                     mergedMeshCount = meshes.Count,
                     resultMeshCount = resultMeshes.Count,
                     targetObjectName = targetGo.name,
-                    targetInstanceId = targetGo.GetInstanceID(),
+                    targetInstanceId = targetGo.GetEntityId(),
                     objectsDeleted = deletedCount,
                     totalFacesBefore = totalFacesBefore,
                     totalFacesAfter = resultMeshes.Sum(m => m.faceCount),
@@ -193,7 +210,7 @@ Example: Merge a table made of separate leg and top meshes into one object.")]
             public int mergedMeshCount;
             public int resultMeshCount;
             public string targetObjectName = string.Empty;
-            public int targetInstanceId;
+            public UnityEngine.EntityId targetInstanceId;
             public int objectsDeleted;
             public int totalFacesBefore;
             public int totalFacesAfter;
@@ -213,9 +230,10 @@ Example: Merge a table made of separate leg and top meshes into one object.")]
         public class AdditionalMeshInfo
         {
             public string name = string.Empty;
-            public int instanceId;
+            public UnityEngine.EntityId instanceId;
         }
 
         #endregion
     }
 }
+#endif

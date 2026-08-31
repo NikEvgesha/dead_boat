@@ -152,6 +152,12 @@ public class ProfessionSelectionPanel : MonoBehaviour
 
     public void Open()
     {
+        if (_opened)
+        {
+            RefreshView();
+            return;
+        }
+
         ProfessionService.ConfigureCatalog(_catalog);
         RebuildDefinitions();
 
@@ -429,7 +435,10 @@ public class ProfessionSelectionPanel : MonoBehaviour
         if (!_opened)
             return;
 
-        SetOpen(false, releaseCursor);
+        ClearRandomUnlockAnimation();
+        SetOpen(false, false);
+
+        ReleaseCursor(releaseCursor);
     }
 
     private void SetOpen(bool open, bool updateCursor)
@@ -444,6 +453,17 @@ public class ProfessionSelectionPanel : MonoBehaviour
 
         if (ControlManager.Instance != null && !ControlManager.Instance.UseTouchControl)
             ControlManager.Instance.CursorActive = open;
+    }
+
+    private static void ReleaseCursor(bool forceGameplay)
+    {
+        if (ControlManager.Instance == null || ControlManager.Instance.UseTouchControl)
+            return;
+
+        if (forceGameplay)
+            ControlManager.Instance.ForceGameplayCursor();
+        else
+            ControlManager.Instance.CursorActive = false;
     }
 
     private void SetMessage(string message)

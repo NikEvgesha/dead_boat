@@ -465,6 +465,9 @@ public class PickableItem : MonoBehaviour
 
     private void OnDestroy()
     {
+        if (Inventory.Instance != null)
+            Inventory.Instance.RemoveDestroyedItem(this);
+
         if (ControlUI.Instance == null) return;
 
         ControlUI.Instance.ShowAttachButton(false);

@@ -213,6 +213,30 @@ public class Inventory : MonoBehaviour
 
 
 
+
+    public void RemoveDestroyedItem(PickableItem item)
+    {
+        if (ReferenceEquals(item, null))
+            return;
+
+        bool removedFromQuick = _quickPanelItems.Remove(item);
+        bool removedFromBag = _bagItems.Remove(item);
+
+        if (!removedFromQuick && !removedFromBag)
+            return;
+
+        if (_activeItemManager != null && _activeItemManager.Active == item)
+        {
+            PickableItem nextItem = _quickPanelItems.Count > 0 ? _quickPanelItems[0] : null;
+            _activeItemManager.SwitchActiveItem(nextItem);
+        }
+
+        if (InventoryUI.Instance != null)
+        {
+            InventoryUI.Instance.RemoveItem(item);
+            InventoryUI.Instance.UpdateCapacity(_bagItems.Count, _capacity);
+        }
+    }
     public void TrySwitch(InventorySlot dropped, InventorySlot origin)
     {
         bool activeUpdated = false;

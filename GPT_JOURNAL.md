@@ -436,3 +436,26 @@ Open follow-up:
 - Current Unity MCP workflow is IvanMurzak Unity-MCP `com.ivanmurzak.unity.mcp@0.72.0` on `http://localhost:22348`.
 - Use `npx.cmd unity-mcp-cli run-tool <tool> --input-file <utf8-no-bom-json>` from PowerShell when direct MCP tools are not exposed in Codex.
 - The old Unity Bridge ports `7777`/`7778` are obsolete for current work.
+
+### 2026-07-21 (Unity-MCP extensions update)
+
+- Verified the project through the live Unity-MCP connection at `http://localhost:22348` on Unity `6000.3.9f1`.
+- Confirmed the core package and CLI are on `com.ivanmurzak.unity.mcp@0.86.0` / `unity-mcp-cli@0.86.0`.
+- Updated the installed MCP extensions to `1.2.28`:
+  - `com.ivanmurzak.unity.mcp.animation`;
+  - `com.ivanmurzak.unity.mcp.particlesystem`;
+  - `com.ivanmurzak.unity.mcp.probuilder`.
+- Animation and ParticleSystem resolve from OpenUPM. ProBuilder remains project-embedded and its checked-in package contents were updated from `1.0.72` to the published `1.2.28` package.
+- Verification after the domain reload:
+  - Unity reports `IsCompiling=false` and `IsUpdating=false`;
+  - the MCP registry reports 94 tools;
+  - the active scene is `Assets/Scenes/Lobby.unity` and is not dirty;
+  - there are no extension compilation errors. The existing `com.mirrasdk.playgama.api/package.png` missing-meta error and obsolete Unity API warnings remain unrelated follow-ups.
+
+### 2026-07-21 (GameDistribution WebGL startup fix)
+
+- Diagnosed the GameDistribution `SyntaxError: Invalid or unexpected token` before Unity startup.
+- The rejected Mirra-template build (`ObbyDeadRiver[139]-mirraSDK[5.1.20].zip`) contains Brotli payloads with raw `.br` extensions. Its loader requires the host to return `Content-Encoding: br`; without that header, the browser parses the compressed framework bytes as JavaScript.
+- Restored `PlayerSettings.WebGL.decompressionFallback = true` (`webGLDecompressionFallback: 1`) through the live Unity-MCP connection.
+- Future Brotli WebGL builds use `.unityweb` payloads with Unity's JavaScript decompressor and no longer depend on GameDistribution's compression headers. The current `PROJECT:Bridge` template and the other pending WebGL/Playgama changes were preserved.
+- A control `BuildPipeline.BuildPlayer` did not produce an artifact because Unity's `Unity.ILPP.Runner` stalled during build-time processing. The stalled child process and orphaned MCP server were cleaned up, Unity was restarted, and the editor returned with `IsCompiling=false` / `IsUpdating=false`. No temporary verification scripts remain in `Assets`.
