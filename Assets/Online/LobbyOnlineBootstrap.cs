@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Fusion;
 using UnityEngine;
@@ -8,10 +9,10 @@ namespace DeadBoat.Online
 {
     public sealed class LobbyOnlineBootstrap : MonoBehaviour
     {
-        private const string SessionName = "river-lobby-prototype-v1";
-        private const int LobbyCapacity = 10;
+        private const string MatchmakingLobbyName = "river-public-lobby-v1";
 
         [SerializeField] private NetworkObject avatarPrefab;
+        [SerializeField, Min(1)] private int lobbyCapacity = 10;
 
         private NetworkRunner runner;
         private string status = "Ожидание игрока";
@@ -19,6 +20,9 @@ namespace DeadBoat.Online
         private bool connectedOnce;
 
         public string Status => status;
+        public string CurrentSessionName => runner != null && runner.SessionInfo.IsValid
+            ? runner.SessionInfo.Name
+            : null;
 
         private IEnumerator Start()
         {
@@ -53,7 +57,7 @@ namespace DeadBoat.Online
             }
 
             status = "Подключение к лобби";
-            Debug.Log("[Lobby online] Connecting to Fusion Shared lobby.");
+            Debug.Log($"[Lobby online] Looking for a room with capacity {lobbyCapacity}.");
             var runnerObject = new GameObject("Lobby Photon Runner");
             runner = runnerObject.AddComponent<NetworkRunner>();
             var sceneManager = runnerObject.AddComponent<NetworkSceneManagerDefault>();
@@ -66,8 +70,14 @@ namespace DeadBoat.Online
                 var startTask = runner.StartGame(new StartGameArgs
                 {
                     GameMode = GameMode.Shared,
-                    SessionName = SessionName,
-                    PlayerCount = LobbyCapacity,
+                    CustomLobbyName = MatchmakingLobbyName,
+                    MatchmakingMode = Photon.Realtime.MatchmakingMode.SerialMatching,
+                    EnableClientSessionCreation = true,
+                    PlayerCount = lobbyCapacity,
+                    SessionProperties = new Dictionary<string, SessionProperty>
+                    {
+                        { "cap", lobbyCapacity }
+                    },
                     IsOpen = true,
                     IsVisible = true,
                     SceneManager = sceneManager,
@@ -87,7 +97,7 @@ namespace DeadBoat.Online
 
                 status = result.Ok ? "Онлайн-лобби" : "Одиночный режим";
                 connectedOnce = result.Ok;
-                Debug.Log($"[Lobby online] StartGame: {result.Ok}; {result.ShutdownReason}");
+                Debug.Log($"[Lobby online] StartGame: {result.Ok}; {result.ShutdownReason}; session={CurrentSessionName}");
                 if (!result.Ok)
                 {
                     Debug.LogWarning($"[Lobby online] {result.ShutdownReason}: {result.ErrorMessage}");
