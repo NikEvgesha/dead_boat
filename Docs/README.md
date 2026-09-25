@@ -10,4 +10,5 @@
 - `WEB_FUSION_SHARED_FEASIBILITY.md` - проверка применимости Fusion Shared ко всем требованиям игры и критерии WebGL-прототипа.
 - `WEB_MULTIPLAYER_PLAYER_FLOW.md` - сценарий входа, распределения лобби, отправлений, забега, животных и рекламы.
 - `WEB_MULTIPLAYER_IMPLEMENTATION_ROADMAP.md` - необходимые сервисы, доступы и последовательность внедрения онлайн-режима.
+- `PHOTON_FUSION_LOCAL_SETUP.md` - установка Fusion SDK 2.1.3 и локальная настройка App ID для публичного репозитория.
 - `DOC_WORKFLOW_TEMPLATE.md` - шаблон процесса TODO/Docs/Journal для других проектов.
