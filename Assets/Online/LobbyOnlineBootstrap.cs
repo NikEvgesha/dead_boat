@@ -60,7 +60,7 @@ namespace DeadBoat.Online
             Debug.Log($"[Lobby online] Looking for a room with capacity {lobbyCapacity}.");
             var runnerObject = new GameObject("Lobby Photon Runner");
             runner = runnerObject.AddComponent<NetworkRunner>();
-            var sceneManager = runnerObject.AddComponent<NetworkSceneManagerDefault>();
+            var sceneManager = runnerObject.AddComponent<LobbySceneManager>();
             var objectProvider = runnerObject.AddComponent<NetworkObjectProviderDefault>();
             var spawner = runnerObject.AddComponent<LobbyAvatarSpawner>();
             spawner.AvatarPrefab = avatarPrefab;
