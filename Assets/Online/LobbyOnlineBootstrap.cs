@@ -9,7 +9,7 @@ namespace DeadBoat.Online
 {
     public sealed class LobbyOnlineBootstrap : MonoBehaviour
     {
-        private const string MatchmakingLobbyName = "river-public-lobby-v1";
+        private const string MatchmakingLobbyName = "river-public-lobby-v2";
 
         [SerializeField] private NetworkObject avatarPrefab;
         [SerializeField, Min(1)] private int lobbyCapacity = 10;
