@@ -33,8 +33,8 @@ public class LobbyManager : MonoBehaviour
     {
         PlayerMovement.Instance.Teleport(_playerSpawnPoint);
         Inventory.Instance.SetLoadedInventory(null, false);
-        SaveManager.Instance.SaveGameProgress(-1, new List<PickableItem>());
-        //SaveManager.Instance.SaveGameProgress(-1, Inventory.Instance.GetItems());
+        // Entering the lobby (including an online connection failure) must not
+        // discard an unfinished solo run. GameManager.EndGame clears it explicitly.
         //PlayerManager.Instance.gameObject.transform.position = _playerSpawnPoint.position;
     }
 
@@ -42,6 +42,9 @@ public class LobbyManager : MonoBehaviour
     public void StartGame()
     {
         ControlManager.Instance.ForceGameplayCursor();
+        // The player explicitly starts a new solo run here. Merely entering
+        // the lobby must leave any unfinished saved run intact.
+        SaveManager.Instance.SaveGameProgress(-1, new List<PickableItem>());
         LoadingManager.Instance.LoadLocation(Location.Game);
     }
 }
