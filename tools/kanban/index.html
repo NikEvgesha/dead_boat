@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="ru">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dead Boat — задачи</title>
+<style>
+  :root { font: 15px/1.45 system-ui, sans-serif; color: #e8eef5; background: #0e1723; }
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+  button, input, select, textarea { font: inherit; }
+  button { cursor: pointer; }
+  header { display: flex; align-items: center; flex-wrap: wrap; gap: 14px; padding: 16px 24px; border-bottom: 1px solid #304052; background: #172536; }
+  header h1 { margin: 0; font-size: 1.3rem; }
+  header small { color: #aabbd0; }
+  .spacer { flex: 1; }
+  .primary { border: 0; border-radius: 8px; padding: 9px 15px; background: #6ab6eb; color: #09131e; font-weight: 700; }
+  .secondary { border: 1px solid #4c6178; border-radius: 8px; padding: 8px 12px; background: #213247; color: #e8eef5; }
+  .filters { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; padding: 12px 24px; }
+  .filters input, .filters select, dialog input, dialog select, dialog textarea { border: 1px solid #52667b; border-radius: 7px; padding: 8px 10px; background: #132132; color: #f0f5fa; }
+  .filters input { min-width: 240px; }
+  #message { padding: 0 24px; min-height: 24px; color: #f8c878; }
+  .board { display: grid; grid-template-columns: repeat(5, minmax(235px, 1fr)); gap: 12px; padding: 8px 20px 24px; overflow-x: auto; min-height: calc(100vh - 155px); }
+  .column { min-width: 235px; padding: 12px; border: 1px solid #304052; border-radius: 12px; background: #172536; }
+  .column.over { outline: 2px solid #6ab6eb; }
+  .column h2 { display: flex; justify-content: space-between; gap: 10px; margin: 2px 2px 14px; font-size: 1rem; }
+  .count { color: #aabbd0; font-weight: 400; }
+  .card { width: 100%; margin-bottom: 10px; padding: 12px; text-align: left; color: inherit; background: #213247; border: 1px solid #42556b; border-radius: 9px; }
+  .card:hover, .card:focus-visible { border-color: #82c3ef; }
+  .card.dragging { opacity: .45; }
+  .card strong { display: block; margin: 6px 0; font-weight: 600; }
+  .id { color: #9eb0c4; font-size: .79rem; }
+  .badges { display: flex; gap: 6px; flex-wrap: wrap; }
+  .badge { border: 1px solid #5f7184; border-radius: 999px; padding: 1px 7px; font-size: .75rem; }
+  .now { color: #ffab9d; border-color: #a65a52; }
+  .next { color: #ffd17a; border-color: #a27a39; }
+  .later { color: #a8c9ed; border-color: #557da2; }
+  .ai { color: #b6ddbd; border-color: #628e68; }
+  dialog { width: min(720px, calc(100vw - 24px)); max-height: calc(100vh - 24px); overflow: auto; color: #e8eef5; background: #172536; border: 1px solid #52667b; border-radius: 12px; padding: 22px; }
+  dialog::backdrop { background: #000a; }
+  dialog h2 { margin: 0 0 16px; }
+  form { display: grid; gap: 13px; }
+  label { display: grid; gap: 5px; font-weight: 600; }
+  textarea { width: 100%; min-height: 72px; resize: vertical; }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .row label { flex: 1; min-width: 150px; }
+  .actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 10px; }
+  .hint { color: #aabbd0; font-size: .85rem; }
+  @media (max-width: 850px) { .board { grid-template-columns: repeat(5, minmax(270px, 270px)); } }
+</style>
+<header>
+  <div><h1>Dead Boat — онлайн</h1><small>Локальная доска · карточки хранятся в Git</small></div>
+  <span class="spacer"></span>
+  <button class="secondary" id="refresh">Обновить</button>
+  <button class="primary" id="create">+ Задача</button>
+</header>
+<div class="filters">
+  <input id="search" type="search" placeholder="Поиск по номеру и названию" aria-label="Поиск">
+  <select id="horizon" aria-label="Когда делать"><option value="all">Все этапы</option><option value="now">Сейчас</option><option value="next">Следом</option><option value="later">Позже</option></select>
+  <select id="aiFilter" aria-label="Для ИИ"><option value="all">Все задачи</option><option value="true">Для ИИ</option><option value="false">Для человека</option></select>
+</div>
+<div id="message" role="status"></div>
+<main id="board" class="board"></main>
+<dialog id="editor">
+  <form id="taskForm">
+    <h2 id="formTitle">Задача</h2>
+    <label>Название<input name="title" maxlength="160" required></label>
+    <div class="row">
+      <label>Статус<select name="status"><option value="backlog">План</option><option value="ready">Готово к работе</option><option value="in_progress">В работе</option><option value="in_review">Проверка</option><option value="done">Сделано</option></select></label>
+      <label>Когда делать<select name="when"><option value="now">Сейчас</option><option value="next">Следом</option><option value="later">Позже</option></select></label>
+      <label>Исполнитель<select name="ai"><option value="true">ИИ</option><option value="false">Человек</option></select></label>
+    </div>
+    <label>Контекст<textarea name="Контекст" required placeholder="Что нужно и почему"></textarea></label>
+    <label>Готово, когда<textarea name="Готово, когда" required placeholder="Проверяемый результат, по одному пункту на строку"></textarea></label>
+    <label>Подсказки ИИ<textarea name="Подсказки ИИ" required placeholder="Где искать код, ограничения, следующий шаг"></textarea></label>
+    <label>Источники<textarea name="Источники" required placeholder="Пути к документации и коду"></textarea></label>
+    <div class="hint">Изменения сразу записываются в Markdown-файл. Перед передачей другим разработчикам сделайте commit и push.</div>
+    <div class="actions"><button type="button" class="secondary" id="cancel">Отмена</button><button type="submit" class="primary">Сохранить</button></div>
+  </form>
+</dialog>
+<script>
+const columns = [['backlog','План'],['ready','Готово к работе'],['in_progress','В работе'],['in_review','Проверка'],['done','Сделано']];
+const horizonLabels = {now:'Сейчас', next:'Следом', later:'Позже'};
+const sections = ['Контекст','Готово, когда','Подсказки ИИ','Источники'];
+let tasks = [], editing = null, dragged = null;
+const $ = id => document.getElementById(id);
+function message(value) { $('message').textContent = value; }
+async function request(url, options={}) {
+  const response = await fetch(url, {cache:'no-store', ...options});
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
+  return data;
+}
+async function load() {
+  try { tasks = await request('/api/tasks'); render(); message(''); }
+  catch (error) { message(`Не удалось открыть карточки: ${error.message}`); }
+}
+function render() {
+  const search = $('search').value.trim().toLocaleLowerCase('ru');
+  const horizon = $('horizon').value, ai = $('aiFilter').value;
+  const board = $('board'); board.replaceChildren();
+  for (const [status, label] of columns) {
+    const column = document.createElement('section'); column.className='column'; column.dataset.status=status;
+    const all = tasks.filter(t=>t.status===status);
+    const visible = all.filter(t=>(horizon==='all'||t.when===horizon) && (ai==='all'||t.ai===ai) && (`${t.id} ${t.title}`.toLocaleLowerCase('ru').includes(search)));
+    const heading = document.createElement('h2'); heading.textContent=label;
+    const count = document.createElement('span'); count.className='count'; count.textContent=`${visible.length}${visible.length===all.length?'':` / ${all.length}`}`; heading.append(count); column.append(heading);
+    for (const task of visible) {
+      const card = document.createElement('button'); card.type='button'; card.className='card'; card.draggable=true; card.dataset.id=task.id;
+      const id = document.createElement('span'); id.className='id'; id.textContent=task.id;
+      const title = document.createElement('strong'); title.textContent=task.title;
+      const badges = document.createElement('span'); badges.className='badges';
+      const when = document.createElement('span'); when.className=`badge ${task.when}`; when.textContent=horizonLabels[task.when]; badges.append(when);
+      if (task.ai==='true') { const a=document.createElement('span'); a.className='badge ai'; a.textContent='Для ИИ'; badges.append(a); }
+      card.append(id,title,badges); card.addEventListener('click',()=>openEditor(task));
+      card.addEventListener('dragstart', event=>{dragged=task.id; card.classList.add('dragging'); event.dataTransfer.setData('text/plain',task.id); event.dataTransfer.effectAllowed='move';});
+      card.addEventListener('dragend',()=>{dragged=null; card.classList.remove('dragging');});
+      column.append(card);
+    }
+    column.addEventListener('dragover',event=>{event.preventDefault(); column.classList.add('over');});
+    column.addEventListener('dragleave',event=>{if(!column.contains(event.relatedTarget)) column.classList.remove('over');});
+    column.addEventListener('drop',async event=>{
+      event.preventDefault(); column.classList.remove('over');
+      const id=dragged || event.dataTransfer.getData('text/plain'); const task=tasks.find(t=>t.id===id);
+      if (!task || task.status===status) return;
+      try { const saved=await request(`/api/tasks/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({...task,status})}); tasks=tasks.map(t=>t.id===id?saved:t); render(); message(`${id} → ${label}`); }
+      catch(error) { message(error.message); await load(); }
+    });
+    board.append(column);
+  }
+}
+function openEditor(task=null) {
+  editing=task;
+  $('formTitle').textContent=task?`${task.id} · изменить`:'Новая задача';
+  const form=$('taskForm'); form.reset();
+  form.elements.title.value=task?.title||''; form.elements.status.value=task?.status||'backlog'; form.elements.when.value=task?.when||'later'; form.elements.ai.value=task?.ai||'true';
+  for(const section of sections) form.elements[section].value=task?.[section]||'';
+  $('editor').showModal();
+}
+$('taskForm').addEventListener('submit',async event=>{
+  event.preventDefault(); const form=event.currentTarget;
+  const data={title:form.elements.title.value.trim(),status:form.elements.status.value,when:form.elements.when.value,ai:form.elements.ai.value};
+  for(const section of sections) data[section]=form.elements[section].value.trim();
+  try {
+    const saved=await request(editing?`/api/tasks/${editing.id}`:'/api/tasks',{method:editing?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(editing?{...data,revision:editing.revision}:data)});
+    tasks=editing?tasks.map(t=>t.id===saved.id?saved:t):[...tasks,saved]; $('editor').close(); render(); message(`${saved.id} сохранена`);
+  } catch(error) { message(error.message); }
+});
+$('create').addEventListener('click',()=>openEditor()); $('cancel').addEventListener('click',()=>$('editor').close()); $('refresh').addEventListener('click',load);
+for(const id of ['search','horizon','aiFilter']) $(id).addEventListener(id==='search'?'input':'change',render);
+load();
+</script>
+</html>
