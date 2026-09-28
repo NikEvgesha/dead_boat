@@ -16,18 +16,28 @@ namespace DeadBoat.Online
         [SerializeField, Min(1)] private int lobbyCapacity = 10;
 
         private NetworkRunner runner;
-        private string status = "Ожидание игрока";
+        private string status = "Waiting for player";
         private bool leaving;
         private bool connectedOnce;
         private bool connecting;
         private bool stopping;
         private string lastFailure;
+#if UNITY_EDITOR || DEADBOAT_ONLINE_DIAGNOSTICS
+        private bool diagnosticsLogged;
+        private GUIStyle diagnosticsLabelStyle;
+        private GUIStyle diagnosticsButtonStyle;
+#endif
 
         public string Status => status;
         public string LastFailure => lastFailure;
         public string CurrentSessionName => runner != null && runner.SessionInfo.IsValid
             ? runner.SessionInfo.Name
             : null;
+
+        private void Awake()
+        {
+            Debug.Log("[Lobby online] Bootstrap active.");
+        }
 
         private IEnumerator Start()
         {
@@ -47,8 +57,8 @@ namespace DeadBoat.Online
             if (connectedOnce && !leaving && runner != null && !runner.IsConnectedToServer)
             {
                 connectedOnce = false;
-                status = "Одиночный режим: связь потеряна";
-                lastFailure = "Соединение потеряно";
+                status = "Solo mode: disconnected";
+                lastFailure = "Connection lost";
                 _ = StopRunnerAsync();
             }
         }
@@ -70,13 +80,13 @@ namespace DeadBoat.Online
             {
                 if (avatarPrefab == null)
                 {
-                    status = "Одиночный режим";
-                    lastFailure = "Отсутствует префаб аватара";
+                    status = "Solo mode";
+                    lastFailure = "Avatar prefab missing";
                     Debug.LogError("[Lobby online] Avatar prefab is missing.");
                     return;
                 }
 
-                status = "Подключение к лобби";
+                status = "Connecting to lobby";
                 Debug.Log($"[Lobby online] Looking for a room with capacity {lobbyCapacity}.");
                 var runnerObject = new GameObject("Lobby Photon Runner");
                 runner = runnerObject.AddComponent<NetworkRunner>();
@@ -104,8 +114,8 @@ namespace DeadBoat.Online
 
                 if (await Task.WhenAny(startTask, Task.Delay(TimeSpan.FromSeconds(20))) != startTask)
                 {
-                    status = "Одиночный режим: нет связи";
-                    lastFailure = "Тайм-аут подключения (20 с)";
+                    status = "Solo mode: no connection";
+                    lastFailure = "Connection timed out (20 s)";
                     await StopRunnerAsync();
                     return;
                 }
@@ -114,7 +124,7 @@ namespace DeadBoat.Online
                 if (leaving)
                     return;
 
-                status = result.Ok ? "Онлайн-лобби" : "Одиночный режим";
+                status = result.Ok ? "Online lobby" : "Solo mode";
                 connectedOnce = result.Ok;
                 Debug.Log($"[Lobby online] StartGame: {result.Ok}; {result.ShutdownReason}; session={CurrentSessionName}");
                 if (!result.Ok)
@@ -126,7 +136,7 @@ namespace DeadBoat.Online
             }
             catch (Exception exception)
             {
-                status = "Одиночный режим";
+                status = "Solo mode";
                 lastFailure = exception.GetType().Name;
                 Debug.LogWarning($"[Lobby online] Connection failed: {exception.Message}");
                 await StopRunnerAsync();
@@ -160,19 +170,47 @@ namespace DeadBoat.Online
             if (leaving)
                 return;
 
-            GUILayout.BeginArea(new Rect(16, 16, 390, 180), GUI.skin.box);
-            GUILayout.Label($"Photon lobby: {status}");
+            if (!diagnosticsLogged)
+            {
+                diagnosticsLogged = true;
+                Debug.Log("[Lobby online] Diagnostics overlay active.");
+            }
+
+            if (diagnosticsLabelStyle == null)
+            {
+                diagnosticsLabelStyle = new GUIStyle(GUI.skin.label)
+                {
+                    fontSize = 18,
+                    wordWrap = true
+                };
+                diagnosticsLabelStyle.normal.textColor = Color.white;
+                diagnosticsButtonStyle = new GUIStyle(GUI.skin.button) { fontSize = 18 };
+            }
+
+            var previousDepth = GUI.depth;
+            var previousColor = GUI.color;
+            GUI.depth = -10000;
+            var panel = new Rect(16, Mathf.Max(16, Screen.height - 220),
+                Mathf.Min(500, Screen.width - 32), 204);
+            GUI.color = new Color(0.04f, 0.07f, 0.11f, 0.92f);
+            GUI.DrawTexture(panel, Texture2D.whiteTexture);
+            GUI.color = Color.white;
+            GUILayout.BeginArea(new Rect(panel.x + 12, panel.y + 8, panel.width - 24, panel.height - 16));
+            GUILayout.Label($"Photon lobby: {status}", diagnosticsLabelStyle);
             if (runner != null && runner.IsConnectedToServer && runner.SessionInfo.IsValid)
             {
-                GUILayout.Label($"Регион: {runner.SessionInfo.Region}");
-                GUILayout.Label($"Комната: {runner.SessionInfo.Name}");
-                GUILayout.Label($"Игроки: {runner.ActivePlayers.Count()}/{lobbyCapacity}");
+                GUILayout.Label($"Region: {runner.SessionInfo.Region}", diagnosticsLabelStyle);
+                GUILayout.Label($"Room: {runner.SessionInfo.Name}", diagnosticsLabelStyle);
+                GUILayout.Label($"Players: {runner.ActivePlayers.Count()}/{lobbyCapacity}", diagnosticsLabelStyle);
             }
             if (!string.IsNullOrEmpty(lastFailure))
-                GUILayout.Label($"Причина: {lastFailure}");
-            if (!connecting && !stopping && runner == null && GUILayout.Button("Повторить подключение"))
+                GUILayout.Label($"Reason: {lastFailure}", diagnosticsLabelStyle);
+            if (!connecting && !stopping && runner == null &&
+                GUILayout.Button("Reconnect", diagnosticsButtonStyle, GUILayout.Height(36)))
                 RetryConnection();
             GUILayout.EndArea();
+            GUI.depth = previousDepth;
+            GUI.color = previousColor;
         }
 #endif
 
