@@ -21,6 +21,14 @@
 
 Модель `character-a` взята из Kenney Blocky Characters; условия использования находятся в `Avatars/Kenney/License.txt`.
 
+## Mirra Cloud: отдельная проверка WebGL
+
+Пакет `com.mirrahub.cloud-sdk` закреплён на версии `v0.10.0`. Он отличается от установленного `MirraSDK 5` для площадок и рекламы. Для теста создан отдельный проект Mirra Cloud `Dead Boat`, ветка `main`, платформа `yandex-games` типа Web с гостевым входом. Гостевой аккаунт нужен только для первой проверки соединения: он привязан к локальным данным браузера и не решает задачу постоянной личности между устройствами.
+
+В `Assets/Online/SmokeTest/MirraCloudConnectionSmokeTest.unity` проверяется только гостевой вход. Сцена не включена в обычный маршрут игры. После настройки локального `Assets/MirraCloud/Resources/Configuration.asset` собрать её через `Tools > Dead Boat > Build Mirra Cloud Smoke Test` или `-executeMethod DeadBoat.Online.SmokeTest.Editor.MirraCloudSmokeBuild.Build`. Результат помещается в игнорируемую Git папку `Builds/MirraCloudSmokeTest`. В конфигурации нужны Project ID, `BranchId = main`, `PlatformKey = yandex-games` и API token. Конфигурация и её `.meta` исключены из Git, поскольку токен попадает в WebGL-билд; серверные ключи и секрет Яндекс Игр в Unity не добавлять.
+
+Проверка в черновике Яндекс Игр должна показать `Guest login OK`; при ошибке сцена показывает HTTP-код и краткую причину. Для постоянных друзей потребуется отдельно настроить подтверждённый вход Яндекс Игр: интеграция Mirra Cloud запрашивает ID приложения и секретный ключ, который хранится только на стороне Mirra Cloud. После проверки тестовая сцена не заменяет основной билд игры.
+
 ## Предметы в руке
 
 Каталог `Assets/Online/Avatars/HeldItems/LobbyHeldItems.asset` связывает сетевые ID с визуальными префабами. При добавлении нового используемого предмета в `Assets/Prefabs/Items` запустите `Tools > Online > Rebuild Held Item Visuals`. Скрипт создаёт только модель с материалами, без скриптов и физики, и сохраняет уже настроенные ID, масштаб и положение. Если предмет остаётся без записи в каталоге, другие игроки увидят пустую руку; настройте его позу в каталоге.
