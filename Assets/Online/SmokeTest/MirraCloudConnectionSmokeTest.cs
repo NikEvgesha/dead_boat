@@ -32,8 +32,7 @@ namespace DeadBoat.Online.SmokeTest
                 var configuration = Configuration.Load();
                 if (string.IsNullOrWhiteSpace(configuration.ProjectId) ||
                     string.IsNullOrWhiteSpace(configuration.BranchId) ||
-                    string.IsNullOrWhiteSpace(configuration.PlatformKey) ||
-                    string.IsNullOrWhiteSpace(configuration.Token))
+                    string.IsNullOrWhiteSpace(configuration.PlatformKey))
                 {
                     status = "Missing local Mirra Cloud configuration";
                     return;
