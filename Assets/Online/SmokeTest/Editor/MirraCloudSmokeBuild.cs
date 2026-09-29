@@ -1,3 +1,4 @@
+using System.Linq;
 using System.IO;
 using UnityEditor;
 using UnityEditor.Build;
@@ -9,32 +10,50 @@ namespace DeadBoat.Online.SmokeTest.Editor
     {
         private const string Scene = "Assets/Online/SmokeTest/MirraCloudConnectionSmokeTest.unity";
         private const string Output = "Builds/MirraCloudSmokeTest";
+        private const string GameOutput = "Builds/MirraCloudPlayableDraft";
 
         [MenuItem("Tools/Dead Boat/Build Mirra Cloud Smoke Test")]
         public static void Build()
+        {
+            BuildPlayer(Output, new[] { Scene }, null);
+        }
+
+        [MenuItem("Tools/Dead Boat/Build Mirra Cloud Playable Draft")]
+        public static void BuildPlayableDraft()
+        {
+            var scenes = EditorBuildSettings.scenes.Where(scene => scene.enabled)
+                .Select(scene => scene.path).ToArray();
+            if (scenes.Length == 0)
+                throw new BuildFailedException("No enabled scenes in Editor Build Settings");
+
+            BuildPlayer(GameOutput, scenes, new[] { "DEADBOAT_MIRRA_DIAGNOSTICS" });
+        }
+
+        private static void BuildPlayer(string output, string[] scenes, string[] scriptingDefines)
         {
             // The SDK uses Token in editor tooling only. A nonempty value in Resources
             // would be embedded in the publicly downloadable WebGL data file.
             if (!string.IsNullOrEmpty(MirraCloud.Configuration.Load().Token))
                 throw new BuildFailedException("Remove Mirra Cloud API token from Configuration.asset before WebGL build");
 
-            Directory.CreateDirectory(Output);
+            Directory.CreateDirectory(output);
 
             var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
             {
-                scenes = new[] { Scene },
-                locationPathName = Output,
+                scenes = scenes,
+                locationPathName = output,
                 target = BuildTarget.WebGL,
-                options = BuildOptions.None
+                options = BuildOptions.None,
+                extraScriptingDefines = scriptingDefines
             });
 
             if (report.summary.result != BuildResult.Succeeded)
-                throw new BuildFailedException($"Mirra Cloud smoke build: {report.summary.result}");
+                throw new BuildFailedException($"Mirra Cloud WebGL build: {report.summary.result}");
 
-            AddWebViewScripts();
+            AddWebViewScripts(output);
         }
 
-        private static void AddWebViewScripts()
+        private static void AddWebViewScripts(string output)
         {
             // SDK v0.10.0 initializes UnityWebView even for guest authentication.
             // Its WebGL plugin expects these scripts to exist in the page before Unity starts.
@@ -49,10 +68,10 @@ namespace DeadBoat.Online.SmokeTest.Editor
             if (!File.Exists(webViewSource) || !File.Exists(jquerySource))
                 throw new BuildFailedException("Mirra Cloud WebGL WebView dependencies not found");
 
-            File.Copy(webViewSource, Path.Combine(Output, "unity-webview.js"), true);
-            File.Copy(jquerySource, Path.Combine(Output, "jquery.min.js"), true);
+            File.Copy(webViewSource, Path.Combine(output, "unity-webview.js"), true);
+            File.Copy(jquerySource, Path.Combine(output, "jquery.min.js"), true);
 
-            var index = Path.Combine(Output, "index.html");
+            var index = Path.Combine(output, "index.html");
             var html = File.ReadAllText(index);
             const string loader = "<script src=\"unityApp.js\"></script>";
             if (!html.Contains(loader))
