@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class LevelManager : MonoBehaviour
@@ -10,6 +11,7 @@ public class LevelManager : MonoBehaviour
     private LevelMapUI _mapUI;
     private static LevelManager _instance;
     public static LevelManager Instance { get { return _instance; } }
+    public IReadOnlyList<LevelData> Levels => _levels != null ? _levels.Levels : null;
 
     private LevelData _currentLevel;
 

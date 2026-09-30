@@ -14,6 +14,7 @@ namespace DeadBoat.Online
     public sealed class LobbyOnlineBootstrap : MonoBehaviour
     {
         private const string MatchmakingLobbyName = "river-public-lobby-v2";
+        private const string DepartureLobbyName = "river-departures-v1";
         private const string ModePreferenceKey = "DeadBoat.OnlineMode.v1";
 
         [SerializeField] private NetworkObject avatarPrefab;
@@ -35,6 +36,13 @@ namespace DeadBoat.Online
         private DateTime lastActivityUtc;
         private bool idleDisconnected;
         private bool startingSoloRun;
+        private bool departureTransition;
+        private bool browsingDepartures;
+        private bool inDepartureRoom;
+        private LobbySessionBrowser departureBrowser;
+        private string departureSessionName;
+        private int departureLevelId = -1;
+        private int departureTargetPlayers;
 #if UNITY_EDITOR || DEADBOAT_ONLINE_DIAGNOSTICS
         private bool diagnosticsLogged;
         private GUIStyle diagnosticsLabelStyle;
@@ -45,13 +53,19 @@ namespace DeadBoat.Online
         public string LastFailure => lastFailure;
         public LobbyOnlineMode Mode => mode;
         public LobbyConnectionFailure Failure => failure;
-        public bool IsConnecting => mode == LobbyOnlineMode.Online && (connecting || stopping);
+        public bool IsConnecting => mode == LobbyOnlineMode.Online && (connecting || stopping || departureTransition);
         public bool IsOnline => connectedOnce && runner != null && runner.IsConnectedToServer;
+        public bool IsBrowsingDepartures => browsingDepartures;
+        public bool IsInDepartureRoom => inDepartureRoom && IsOnline;
+        public string DepartureSessionName => departureSessionName;
+        public int DepartureLevelId => departureLevelId;
+        public int DepartureTargetPlayers => departureTargetPlayers;
+        public int DeparturePlayerCount => IsInDepartureRoom ? runner.ActivePlayers.Count() : 0;
         public bool IdleDisconnected => idleDisconnected;
-        public int IdleSecondsRemaining => IsOnline
+        public int IdleSecondsRemaining => IsOnline || browsingDepartures
             ? Mathf.Max(0, idleDisconnectSeconds - (int)(DateTime.UtcNow - lastActivityUtc).TotalSeconds)
             : 0;
-        public bool IdleWarning => IsOnline && IdleSecondsRemaining <= idleWarningSeconds;
+        public bool IdleWarning => (IsOnline || browsingDepartures) && IdleSecondsRemaining <= idleWarningSeconds;
         public string CurrentSessionName => runner != null && runner.SessionInfo.IsValid
             ? runner.SessionInfo.Name
             : null;
@@ -84,7 +98,17 @@ namespace DeadBoat.Online
 
         private void Update()
         {
-            if (IsOnline)
+            if (browsingDepartures && departureBrowser != null && departureBrowser.Disconnected)
+            {
+                browsingDepartures = false;
+                departureBrowser = null;
+                lastFailure = "Departure directory disconnected";
+                failure = LobbyConnectionFailure.Other;
+                status = "Solo mode: disconnected";
+                _ = StopRunnerAsync();
+            }
+
+            if (IsOnline || browsingDepartures)
             {
                 if (Input.anyKeyDown || Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(1) ||
                     Input.touchCount > 0 || Mathf.Abs(Input.GetAxisRaw("Mouse X")) > 0.01f ||
@@ -105,13 +129,15 @@ namespace DeadBoat.Online
                 status = "Solo mode: disconnected";
                 lastFailure = "Connection lost";
                 failure = LobbyConnectionFailure.Other;
+                browsingDepartures = false;
+                inDepartureRoom = false;
                 _ = StopRunnerAsync();
             }
         }
 
         public void SelectOnline()
         {
-            if (leaving || startingSoloRun)
+            if (leaving || startingSoloRun || departureTransition || browsingDepartures || inDepartureRoom)
                 return;
 
             mode = LobbyOnlineMode.Online;
@@ -127,7 +153,7 @@ namespace DeadBoat.Online
 
         public void SelectOffline()
         {
-            if (leaving || startingSoloRun)
+            if (leaving || startingSoloRun || departureTransition || browsingDepartures || inDepartureRoom)
                 return;
 
             mode = LobbyOnlineMode.Offline;
@@ -136,6 +162,9 @@ namespace DeadBoat.Online
             ++connectionRevision;
             reconnectRequested = false;
             connectedOnce = false;
+            browsingDepartures = false;
+            inDepartureRoom = false;
+            departureBrowser = null;
             idleDisconnected = false;
             failure = LobbyConnectionFailure.None;
             lastFailure = null;
@@ -157,11 +186,232 @@ namespace DeadBoat.Online
             ++connectionRevision;
             reconnectRequested = false;
             connectedOnce = false;
+            browsingDepartures = false;
+            inDepartureRoom = false;
             status = "Solo run";
             var modeUI = GetComponent<LobbyOnlineModeUI>();
             if (modeUI != null)
                 Destroy(modeUI);
             await StopRunnerAsync();
+        }
+
+        public List<DepartureListing> GetAvailableDepartures()
+        {
+            var listings = new List<DepartureListing>();
+            if (!browsingDepartures || departureBrowser == null)
+                return listings;
+
+            foreach (var session in departureBrowser.LatestSessions)
+                if (DepartureListing.TryFromSession(session, out var listing))
+                    listings.Add(listing);
+            return listings;
+        }
+
+        public async Task<bool> OpenDepartureBrowserAsync()
+        {
+            if (leaving || startingSoloRun || departureTransition || connecting ||
+                mode != LobbyOnlineMode.Online || browsingDepartures || inDepartureRoom)
+                return false;
+
+            departureTransition = true;
+            int revision = ++connectionRevision;
+            connectedOnce = false;
+            status = "Finding departures";
+            try
+            {
+                await StopRunnerAsync();
+                if (leaving || revision != connectionRevision || mode != LobbyOnlineMode.Online)
+                    return false;
+
+                departureBrowser = CreateRunner();
+                var joinTask = runner.JoinSessionLobby(SessionLobby.Custom, DepartureLobbyName);
+                if (await Task.WhenAny(joinTask, Task.Delay(TimeSpan.FromSeconds(12))) != joinTask)
+                {
+                    RecordTimeout(revision);
+                    await StopRunnerAsync();
+                    return false;
+                }
+
+                var result = await joinTask;
+                if (leaving || revision != connectionRevision || mode != LobbyOnlineMode.Online)
+                {
+                    await StopRunnerAsync();
+                    return false;
+                }
+                if (!result.Ok)
+                {
+                    lastFailure = result.ShutdownReason.ToString();
+                    failure = ClassifyFailure(lastFailure, result.ErrorMessage);
+                    status = "Solo mode";
+                    await StopRunnerAsync();
+                    return false;
+                }
+
+                browsingDepartures = true;
+                StayOnline();
+                status = "Departure browser";
+                return true;
+            }
+            catch (Exception exception)
+            {
+                lastFailure = exception.GetType().Name;
+                failure = ClassifyFailure(lastFailure, exception.Message);
+                Debug.LogWarning($"[Lobby online] Departure browser failed: {exception.Message}");
+                await StopRunnerAsync();
+                return false;
+            }
+            finally
+            {
+                departureTransition = false;
+            }
+        }
+
+        public async Task<bool> JoinDepartureAsync(DepartureListing listing)
+        {
+            if (!browsingDepartures || departureTransition || listing == null || runner == null)
+                return false;
+
+            // The listing may have changed while the player was deciding.
+            if (!GetAvailableDepartures().Exists(item => item.SessionName == listing.SessionName))
+                return false;
+
+            return await StartDepartureAsync(listing.SessionName, listing.LevelId,
+                listing.TargetPlayers, false);
+        }
+
+        public async Task<bool> CreateDepartureAsync(int levelId, int targetPlayers)
+        {
+            if (!browsingDepartures || departureTransition || targetPlayers < 2 || targetPlayers > 4 ||
+                LevelManager.Instance == null ||
+                !LevelManager.Instance.TryGetLevel(levelId, out var level) || !level.Unlocked)
+                return false;
+
+            return await StartDepartureAsync("trip-" + Guid.NewGuid().ToString("N"),
+                levelId, targetPlayers, true);
+        }
+
+        private async Task<bool> StartDepartureAsync(string sessionName, int levelId, int targetPlayers, bool create)
+        {
+            departureTransition = true;
+            int revision = connectionRevision;
+            browsingDepartures = false;
+            status = create ? "Creating departure" : "Joining departure";
+            try
+            {
+                var startTask = runner.StartGame(new StartGameArgs
+                {
+                    GameMode = GameMode.Shared,
+                    CustomLobbyName = DepartureLobbyName,
+                    SessionName = sessionName,
+                    EnableClientSessionCreation = create,
+                    PlayerCount = targetPlayers,
+                    SessionProperties = create ? new Dictionary<string, SessionProperty>
+                    {
+                        { "d", 1 }, { "l", levelId }, { "t", targetPlayers }
+                    } : null,
+                    IsOpen = true,
+                    IsVisible = true,
+                    SceneManager = runner.GetComponent<LobbySceneManager>(),
+                    ObjectProvider = runner.GetComponent<NetworkObjectProviderDefault>()
+                });
+                if (await Task.WhenAny(startTask, Task.Delay(TimeSpan.FromSeconds(20))) != startTask)
+                {
+                    RecordTimeout(revision);
+                    await StopRunnerAsync();
+                    return false;
+                }
+
+                var result = await startTask;
+                if (leaving || revision != connectionRevision || mode != LobbyOnlineMode.Online)
+                {
+                    await StopRunnerAsync();
+                    return false;
+                }
+                if (!result.Ok)
+                {
+                    lastFailure = result.ShutdownReason.ToString();
+                    failure = ClassifyFailure(lastFailure, result.ErrorMessage);
+                    status = "Solo mode";
+                    await StopRunnerAsync();
+                    return false;
+                }
+
+                inDepartureRoom = true;
+                connectedOnce = true;
+                departureSessionName = sessionName;
+                departureLevelId = levelId;
+                departureTargetPlayers = targetPlayers;
+                departureBrowser = null;
+                lastFailure = null;
+                failure = LobbyConnectionFailure.None;
+                status = "Waiting for crew";
+                StayOnline();
+                return true;
+            }
+            catch (Exception exception)
+            {
+                lastFailure = exception.GetType().Name;
+                failure = ClassifyFailure(lastFailure, exception.Message);
+                Debug.LogWarning($"[Lobby online] Departure start failed: {exception.Message}");
+                await StopRunnerAsync();
+                return false;
+            }
+            finally
+            {
+                departureTransition = false;
+            }
+        }
+
+        public async Task LeaveDepartureForSoloSelectionAsync()
+        {
+            if (departureTransition)
+                return;
+
+            ++connectionRevision;
+            connectedOnce = false;
+            browsingDepartures = false;
+            inDepartureRoom = false;
+            departureBrowser = null;
+            status = "Solo map selection";
+            await StopRunnerAsync();
+        }
+
+        public async Task ReturnToVisualLobbyAsync()
+        {
+            if (leaving || startingSoloRun || departureTransition)
+                return;
+
+            departureTransition = true;
+            ++connectionRevision;
+            connectedOnce = false;
+            browsingDepartures = false;
+            inDepartureRoom = false;
+            departureBrowser = null;
+            departureSessionName = null;
+            departureLevelId = -1;
+            try
+            {
+                await StopRunnerAsync();
+            }
+            finally
+            {
+                departureTransition = false;
+            }
+
+            if (mode == LobbyOnlineMode.Online && !leaving)
+                await ConnectAsync();
+        }
+
+        private LobbySessionBrowser CreateRunner()
+        {
+            var runnerObject = new GameObject("Lobby Photon Runner");
+            runner = runnerObject.AddComponent<NetworkRunner>();
+            runnerObject.AddComponent<LobbySceneManager>();
+            runnerObject.AddComponent<NetworkObjectProviderDefault>();
+            runnerObject.AddComponent<LobbyAvatarSpawner>().AvatarPrefab = avatarPrefab;
+            var browser = runnerObject.AddComponent<LobbySessionBrowser>();
+            runner.AddCallbacks(browser);
+            return browser;
         }
 
         public void StayOnline()
@@ -171,12 +421,15 @@ namespace DeadBoat.Online
 
         private async Task DisconnectForIdleAsync()
         {
-            if (idleDisconnected || !IsOnline || leaving)
+            if (idleDisconnected || (!IsOnline && !browsingDepartures) || leaving)
                 return;
 
             idleDisconnected = true;
             ++connectionRevision;
             connectedOnce = false;
+            browsingDepartures = false;
+            inDepartureRoom = false;
+            departureBrowser = null;
             status = "Solo mode: idle timeout";
             await StopRunnerAsync();
         }
@@ -374,7 +627,7 @@ namespace DeadBoat.Online
         private void TryPendingReconnect()
         {
             if (!reconnectRequested || leaving || startingSoloRun || mode != LobbyOnlineMode.Online ||
-                connecting || stopping || runner != null)
+                connecting || stopping || departureTransition || browsingDepartures || inDepartureRoom || runner != null)
                 return;
 
             reconnectRequested = false;

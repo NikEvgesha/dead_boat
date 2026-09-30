@@ -11,23 +11,28 @@ namespace DeadBoat.Online
     public sealed class LobbySessionBrowser : MonoBehaviour, INetworkRunnerCallbacks
     {
         private readonly TaskCompletionSource<List<SessionInfo>> firstList = new TaskCompletionSource<List<SessionInfo>>();
+        private List<SessionInfo> latestSessions = new List<SessionInfo>();
 
         public Task<List<SessionInfo>> FirstList => firstList.Task;
+        public IReadOnlyList<SessionInfo> LatestSessions => latestSessions;
+        public bool Disconnected { get; private set; }
 
         public void OnSessionListUpdated(NetworkRunner runner, List<SessionInfo> sessionList)
         {
-            firstList.TrySetResult(new List<SessionInfo>(sessionList));
+            latestSessions = new List<SessionInfo>(sessionList);
+            firstList.TrySetResult(latestSessions);
         }
 
         public void OnPlayerJoined(NetworkRunner runner, PlayerRef player) { }
         public void OnPlayerLeft(NetworkRunner runner, PlayerRef player) { }
         public void OnInput(NetworkRunner runner, NetworkInput input) { }
         public void OnInputMissing(NetworkRunner runner, PlayerRef player, NetworkInput input) { }
-        public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason) { }
+        public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason) { Disconnected = true; }
         public void OnConnectedToServer(NetworkRunner runner) { }
-        public void OnDisconnectedFromServer(NetworkRunner runner, NetDisconnectReason reason) { }
+        public void OnDisconnectedFromServer(NetworkRunner runner, NetDisconnectReason reason) { Disconnected = true; }
         public void OnConnectRequest(NetworkRunner runner, NetworkRunnerCallbackArgs.ConnectRequest request, byte[] token) { }
-        public void OnConnectFailed(NetworkRunner runner, NetAddress remoteAddress, NetConnectFailedReason reason) { }
+        public void OnConnectFailed(NetworkRunner runner, NetAddress remoteAddress, NetConnectFailedReason reason)
+        { Disconnected = true; }
         public void OnCustomAuthenticationResponse(NetworkRunner runner, Dictionary<string, object> data) { }
         public void OnHostMigration(NetworkRunner runner, HostMigrationToken hostMigrationToken) { }
         public void OnReliableDataReceived(NetworkRunner runner, PlayerRef player, ReliableKey key, ReadOnlySpan<byte> data) { }

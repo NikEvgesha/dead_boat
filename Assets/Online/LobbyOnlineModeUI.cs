@@ -32,7 +32,7 @@ namespace DeadBoat.Online
             if (bootstrap == null)
                 return;
 
-            if (Input.GetKeyDown(KeyCode.O))
+            if (Input.GetKeyDown(KeyCode.O) && !bootstrap.IsBrowsingDepartures && !bootstrap.IsInDepartureRoom)
                 SetOpen(!open);
 
             if (Time.unscaledTime < nextRefresh)
@@ -97,6 +97,8 @@ namespace DeadBoat.Online
 
         private void SetOpen(bool value)
         {
+            if (value && bootstrap != null && (bootstrap.IsBrowsingDepartures || bootstrap.IsInDepartureRoom))
+                return;
             open = value;
             if (panel != null)
                 panel.SetActive(value);
@@ -119,6 +121,8 @@ namespace DeadBoat.Online
 
         private void Refresh()
         {
+            if (open && (bootstrap.IsBrowsingDepartures || bootstrap.IsInDepartureRoom))
+                SetOpen(false);
             bool english = LocalizationManager.Instance != null &&
                 !string.IsNullOrEmpty(LocalizationManager.Instance.CurrentLanguage) &&
                 LocalizationManager.Instance.CurrentLanguage.StartsWith("En", System.StringComparison.OrdinalIgnoreCase);
@@ -129,6 +133,10 @@ namespace DeadBoat.Online
             if (bootstrap.IdleWarning)
                 state = (english ? "Idle disconnect in " : "Отключение из-за бездействия через ") +
                     bootstrap.IdleSecondsRemaining + (english ? " s. Press Stay online." : " с. Нажмите «Остаться». ");
+            else if (bootstrap.IsBrowsingDepartures)
+                state = english ? "Looking for a crew" : "Поиск экипажа";
+            else if (bootstrap.IsInDepartureRoom)
+                state = english ? "Waiting for crew" : "Ожидание экипажа";
             else if (bootstrap.IsOnline)
                 state = english ? "Online lobby" : "Онлайн-лобби";
             else if (bootstrap.IsConnecting)
@@ -147,7 +155,7 @@ namespace DeadBoat.Online
             chipText.text = bootstrap.IdleWarning
                 ? (english ? "Disconnect in " : "Отключение через ") + bootstrap.IdleSecondsRemaining + " s  [O]"
                 : (english ? "Mode: " : "Режим: ") +
-                  (bootstrap.IsOnline ? (english ? "online" : "онлайн") :
+                  (bootstrap.IsOnline || bootstrap.IsBrowsingDepartures ? (english ? "online" : "онлайн") :
                    bootstrap.IsConnecting ? (english ? "connecting" : "подключение") :
                    (english ? "offline" : "офлайн")) + "  [O]";
             chipText.color = bootstrap.IdleWarning ? new Color(1f, 0.8f, 0.3f) : Color.white;
@@ -157,7 +165,7 @@ namespace DeadBoat.Online
             stayButton.GetComponentInChildren<Text>().text = english ? "Stay online" : "Остаться онлайн";
             stayButton.gameObject.SetActive(bootstrap.IdleWarning);
             retryButton.gameObject.SetActive(bootstrap.Mode == LobbyOnlineMode.Online &&
-                !bootstrap.IsOnline && !bootstrap.IsConnecting);
+                !bootstrap.IsOnline && !bootstrap.IsBrowsingDepartures && !bootstrap.IsConnecting);
             retryButton.interactable = !bootstrap.IsConnecting;
         }
 

@@ -1,4 +1,5 @@
 using UnityEngine;
+using DeadBoat.Online;
 
 public class GameStartPoint : MonoBehaviour
 {
@@ -10,6 +11,9 @@ public class GameStartPoint : MonoBehaviour
 
     private Transform _player;
     private Canvas _canvasComponent;
+    private LobbyDepartureUI _departureUI;
+    private LobbyOnlineBootstrap _online;
+    private bool _onlinePortalOpened;
 
     private void Awake()
     {
@@ -22,16 +26,52 @@ public class GameStartPoint : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             PlayerMovement.Instance.Teleport(_insidePoint);
-            ShowCanvas();
+            _online = FindFirstObjectByType<LobbyOnlineBootstrap>();
+            if (_online != null && _online.IsOnline && !_online.IsInDepartureRoom)
+            {
+                _onlinePortalOpened = true;
+                _departureUI = GetComponent<LobbyDepartureUI>();
+                if (_departureUI == null)
+                    _departureUI = gameObject.AddComponent<LobbyDepartureUI>();
+                _departureUI.Open(this, _online);
+            }
+            else
+            {
+                _onlinePortalOpened = false;
+                ShowCanvas();
+            }
             ControlManager.Instance.CursorActive = true;
         }
     }
 
     public void Cancel()
     {
+        if (_onlinePortalOpened && _online != null && _online.IsConnecting)
+            return;
+
+        if (_onlinePortalOpened)
+        {
+            _departureUI?.Close();
+            _onlinePortalOpened = false;
+            if (_online != null && _online.Mode == LobbyOnlineMode.Online && !_online.IdleDisconnected)
+                _ = _online.ReturnToVisualLobbyAsync();
+        }
         PlayerMovement.Instance.Teleport(_outsidePoint);
-        _canvas.SetActive(false);
+        if (_canvas != null)
+            _canvas.SetActive(false);
         ControlManager.Instance.ForceGameplayCursor();
+    }
+
+    public async void ShowSoloMapFromDeparture()
+    {
+        if (!_onlinePortalOpened || _online == null || _online.IsConnecting)
+            return;
+
+        await _online.LeaveDepartureForSoloSelectionAsync();
+        if (this == null)
+            return;
+        _departureUI?.Close();
+        ShowCanvas();
     }
 
     private void ShowCanvas()
