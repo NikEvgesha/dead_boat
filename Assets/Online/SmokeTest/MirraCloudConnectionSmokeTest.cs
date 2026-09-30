@@ -11,6 +11,7 @@ namespace DeadBoat.Online.SmokeTest
     {
         private MirraCloudSDK sdk;
         private string status = "Ready";
+        private string errorDetails;
         private bool connecting;
 
 #if DEADBOAT_MIRRA_DIAGNOSTICS && !UNITY_EDITOR
@@ -36,6 +37,7 @@ namespace DeadBoat.Online.SmokeTest
 
             connecting = true;
             status = "Connecting to Mirra Cloud...";
+            errorDetails = null;
 
             try
             {
@@ -63,7 +65,11 @@ namespace DeadBoat.Online.SmokeTest
                 {
                     var error = login.Result.Error;
                     status = $"Login failed: HTTP {login.Result.HttpStatusCode} {error?.Message}";
-                    Debug.LogWarning($"[Mirra Cloud smoke test] {status}");
+                    string serverCode = error?.Errors != null && error.Errors.Count > 0
+                        ? error.Errors[0].Code : null;
+                    errorDetails = $"Type: {error?.Type}; network: {error?.NetworkResult}; " +
+                        $"code: {(string.IsNullOrEmpty(serverCode) ? "none" : serverCode)}";
+                    Debug.LogWarning($"[Mirra Cloud smoke test] {status}; {errorDetails}");
                 }
             }
             catch (Exception exception)
@@ -82,14 +88,16 @@ namespace DeadBoat.Online.SmokeTest
 #if DEADBOAT_MIRRA_DIAGNOSTICS && !UNITY_EDITOR
             var width = Mathf.Min(Screen.width - 20, 360);
             var x = Mathf.Max(10, Screen.width - width - 10);
-            var y = Mathf.Max(10, Screen.height - 105);
-            GUILayout.BeginArea(new Rect(x, y, width, 95), GUI.skin.box);
+            var y = Mathf.Max(10, Screen.height - 130);
+            GUILayout.BeginArea(new Rect(x, y, width, 120), GUI.skin.box);
 #else
             var width = Mathf.Min(Screen.width - 40, 540);
             GUILayout.BeginArea(new Rect(20, 20, width, 180), GUI.skin.box);
 #endif
             GUILayout.Label("Mirra Cloud - Yandex Games connection test");
             GUILayout.Label($"Status: {status}");
+            if (!string.IsNullOrEmpty(errorDetails))
+                GUILayout.Label(errorDetails);
             if (!connecting && GUILayout.Button("Retry"))
                 _ = ConnectAsync();
             GUILayout.EndArea();
