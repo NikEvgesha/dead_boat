@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Collections;
+using DeadBoat.Online;
 using UnityEngine;
 
 public class LobbyManager : MonoBehaviour
@@ -41,6 +43,21 @@ public class LobbyManager : MonoBehaviour
 
     public void StartGame()
     {
+        StartCoroutine(StartSoloGame());
+    }
+
+    private IEnumerator StartSoloGame()
+    {
+        LobbyOnlineBootstrap online = FindFirstObjectByType<LobbyOnlineBootstrap>();
+        if (online != null)
+        {
+            var disconnect = online.DisconnectForSoloRunAsync();
+            while (!disconnect.IsCompleted)
+                yield return null;
+            if (disconnect.IsFaulted)
+                Debug.LogException(disconnect.Exception);
+        }
+
         ControlManager.Instance.ForceGameplayCursor();
         // The player explicitly starts a new solo run here. Merely entering
         // the lobby must leave any unfinished saved run intact.

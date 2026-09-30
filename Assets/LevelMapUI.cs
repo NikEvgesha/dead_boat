@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using DeadBoat.Online;
 
 public class LevelMapUI : MonoBehaviour
 {
@@ -49,6 +50,17 @@ public class LevelMapUI : MonoBehaviour
     {
         // Let the loading canvas render once before the ad SDK or scene loading can block WebGL.
         yield return null;
+
+        // A solo map selection never keeps a Photon CCU slot during the run.
+        LobbyOnlineBootstrap online = FindFirstObjectByType<LobbyOnlineBootstrap>();
+        if (online != null)
+        {
+            var disconnect = online.DisconnectForSoloRunAsync();
+            while (!disconnect.IsCompleted)
+                yield return null;
+            if (disconnect.IsFaulted)
+                Debug.LogException(disconnect.Exception);
+        }
 
         try
         {
