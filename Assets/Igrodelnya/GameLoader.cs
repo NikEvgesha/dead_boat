@@ -15,6 +15,7 @@ public class GameLoader : MonoBehaviour
 
     public static GameLoader Instance { get { return _instance; } }
     public Action OnSceneLoaded;
+    public Action<string> OnLoadFailed;
 
 
     private void Awake()
@@ -47,12 +48,12 @@ public class GameLoader : MonoBehaviour
 
         if (asyncMode)
         {
+            ShowLoadingScreen();
             if (_startLoadingFinished && withAds)
                 AdsManager.Instance.ShowInterstitialAd();
             else
                 _startLoadingFinished = true;
 
-            _loadingImage.SetActive(true);
             StartCoroutine("SceneLoad", _currentSceneName);
             //AdsManager.Instance.ShowInterstitialAd();
         } else
@@ -64,10 +65,53 @@ public class GameLoader : MonoBehaviour
     }
 
 
+    public void ShowLoadingScreen()
+    {
+        if (_loadingImage == null)
+            return;
+
+        Canvas canvas = _loadingImage.GetComponent<Canvas>();
+        if (canvas != null)
+        {
+            canvas.overrideSorting = true;
+            canvas.sortingOrder = Mathf.Max(canvas.sortingOrder, 200);
+        }
+
+        _loadingImage.SetActive(true);
+        LoadingProgressBarUI.Instance?.Progress(0f);
+    }
+
+    public void HideLoadingScreen()
+    {
+        if (_loadingImage != null)
+            _loadingImage.SetActive(false);
+    }
+
     private IEnumerator SceneLoad(string sceneName)
     {
+        // Render the loading screen before starting the costly scene operation on WebGL.
+        yield return null;
+
         float loadingProgress;
-        _asyncOperation = SceneManager.LoadSceneAsync(sceneName);
+        Exception loadError = null;
+        try
+        {
+            _asyncOperation = SceneManager.LoadSceneAsync(sceneName);
+        }
+        catch (Exception exception)
+        {
+            loadError = exception;
+        }
+
+        if (loadError != null)
+            Debug.LogException(loadError);
+
+        if (loadError != null || _asyncOperation == null)
+        {
+            HideLoadingScreen();
+            OnLoadFailed?.Invoke("Could not open this level. Please try again.");
+            yield break;
+        }
         while (_asyncOperation.progress < 0.95f)
         {
             loadingProgress = Mathf.Clamp01(_asyncOperation.progress / 0.95f);
@@ -86,7 +130,7 @@ public class GameLoader : MonoBehaviour
         if (!PauseManager.Instance.IsInitialize)
             PauseManager.Instance.StartInitialize();
 
-        _loadingImage.SetActive(false);
+        HideLoadingScreen();
         //AdsManager.Instance.ShowInterstitialAd();
         OnSceneLoaded?.Invoke();
     }
