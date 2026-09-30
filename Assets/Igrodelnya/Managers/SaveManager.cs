@@ -8,10 +8,13 @@ public class SaveManager : MonoBehaviour
 {
     private static SaveManager _instance;
     public static SaveManager Instance => _instance;
+    public SaveProvider PersistentProvider => saveProvider;
+    private SaveProvider ActiveProvider => DeadBoat.Online.SharedRunContext.Save != null
+        ? DeadBoat.Online.SharedRunContext.Save : saveProvider;
 
     [SerializeField] private SaveProvider saveProvider; // Назначаем в инспекторе нужный провайдер (YG2SaveProvider, DebugSaveProvider и т.д.)
     [SerializeField] private bool _newPlayer;
-    public bool IsNewPlayer => saveProvider.CheckProgress() == false;
+    public bool IsNewPlayer => ActiveProvider.CheckProgress() == false;
 
     private void Awake()
     {
@@ -28,7 +31,7 @@ public class SaveManager : MonoBehaviour
         {
             _instance = this;
             //DontDestroyOnLoad(gameObject);
-            saveProvider.Initialize();
+            ActiveProvider.Initialize();
             StartCoroutine(ProgressSavingRoutine());
         }
         else
@@ -43,139 +46,139 @@ public class SaveManager : MonoBehaviour
         while (true)
         {
             yield return new WaitForSeconds(1);
-            saveProvider.SaveProgress();
+            ActiveProvider.SaveProgress();
         }
     }
 
     public void SetSave(bool haveSave)
     {
-        saveProvider.SetSave(haveSave);
+        ActiveProvider.SetSave(haveSave);
     }
 
     public void FlushProgress()
     {
-        saveProvider.SaveProgress();
+        ActiveProvider.SaveProgress();
     }
 
     // Пример методов, которые делегируют работу провайдеру:
     public float[] GetVolume()
     {
-        return saveProvider.LoadVolume();
+        return ActiveProvider.LoadVolume();
     }
     public void SaveQuestProgress(int step = 0)
     {
-        saveProvider.SaveQuestProgress(step);
+        ActiveProvider.SaveQuestProgress(step);
     }
     public int LoadQuestProgress() 
     {
-        return saveProvider.LoadQuestProgress();
+        return ActiveProvider.LoadQuestProgress();
     }
     public void SaveMusicVolume(float volume)
     {
-        var volumes = saveProvider.LoadVolume();
-        saveProvider.SaveVolume(volume, volumes[1]);
+        var volumes = ActiveProvider.LoadVolume();
+        ActiveProvider.SaveVolume(volume, volumes[1]);
     }
 
     public void SaveSoundVolume(float volume)
     {
-        var volumes = saveProvider.LoadVolume();
-        saveProvider.SaveVolume(volumes[0], volume);
+        var volumes = ActiveProvider.LoadVolume();
+        ActiveProvider.SaveVolume(volumes[0], volume);
     }
 
 
     public void SaveSensivity(float sens)
     {
-        saveProvider.SaveSensivity(sens);
+        ActiveProvider.SaveSensivity(sens);
     }
 
     public float LoadSensivity()
     {
-        return saveProvider.LoadSensivity();
+        return ActiveProvider.LoadSensivity();
     }
 
     public void SaveScore(float score, int levelId)
     {
-        saveProvider.SaveScore(score, levelId);
+        ActiveProvider.SaveScore(score, levelId);
     }
 
     public float GetLevelScore(int levelId)
     {
-        return saveProvider.LoadScore(levelId);
+        return ActiveProvider.LoadScore(levelId);
     }
 
     public bool GetTutorialProgress()
     {
-        return saveProvider.GetTutorialProgress();
+        return ActiveProvider.GetTutorialProgress();
     }
     public void SaveTutorialProgress(bool endTutorial)
     {
-        saveProvider.SaveTutorialProgress(endTutorial);
+        ActiveProvider.SaveTutorialProgress(endTutorial);
     }
     public void SaveGems(int amount)
     {
-        saveProvider.SaveGems(amount);
-        if (LeaderboardManager.Instance != null)
+        ActiveProvider.SaveGems(amount);
+        if (!DeadBoat.Online.SharedRunContext.Active && LeaderboardManager.Instance != null)
             LeaderboardManager.Instance.SaveScore(LBName.gems.ToString(), amount);
     }
 
     public int GetGems()
     {
-        return saveProvider.LoadGems();
+        return ActiveProvider.LoadGems();
     }
 
 
     public void SaveAchiementTypeProgress(AchievementType achievementType, int progress)
     {
-        saveProvider.SaveAchievementProgress(achievementType, progress);
+        ActiveProvider.SaveAchievementProgress(achievementType, progress);
     }
 
     public int GetAchievementTypeProgress(AchievementType achievementType)
     {
-        return saveProvider.LoadAchievementProgress(achievementType);
+        return ActiveProvider.LoadAchievementProgress(achievementType);
     }
 
     public void SaveAchiementStatus(string achievementID, bool progress)
     {
-        saveProvider.SaveAchievementStatus(achievementID, progress);
+        ActiveProvider.SaveAchievementStatus(achievementID, progress);
     }
 
     public bool GetAchievementStatus(string achievementID)
     {
-        return saveProvider.LoadAchievementStatus(achievementID);
+        return ActiveProvider.LoadAchievementStatus(achievementID);
     }
 
     public void SaveLevelStatus(string lvlName, bool unlocked)
     {
-        saveProvider.SaveLevelStatus("LevelStatus_" + lvlName, unlocked);
+        ActiveProvider.SaveLevelStatus("LevelStatus_" + lvlName, unlocked);
     }
 
     public bool GetLevelStatus(string lvlName)
     {
-        return saveProvider.LoadLevelStatus("LevelStatus_" + lvlName);
+        return ActiveProvider.LoadLevelStatus("LevelStatus_" + lvlName);
     }
 
     public void SaveLobbyItem(string id)
     {
-        saveProvider.SaveLobbyItem(id);
+        ActiveProvider.SaveLobbyItem(id);
     }
 
     public List<string> LoadLobbyItems()
     {
-        return saveProvider.LoadLobbyItems();
+        return ActiveProvider.LoadLobbyItems();
     }
 
     public void ResetLobbyItems()
     {
-        saveProvider.ResetLobbyItems();
+        ActiveProvider.ResetLobbyItems();
     }
 
 
     public void SaveGameProgress(int distance = -1, List<PickableItem> items = null, int lvlId = -1)
     { 
-        saveProvider.SaveDistance(distance);
-        saveProvider.SaveLevelId(lvlId);
+        ActiveProvider.SaveDistance(distance);
+        ActiveProvider.SaveLevelId(lvlId);
         if (items != null)
-            saveProvider.SaveInventory(items);
+            ActiveProvider.SaveInventory(items);
 
         //Debug.Log("Progress Saved");
        
@@ -183,150 +186,150 @@ public class SaveManager : MonoBehaviour
     public void SaveBoardItem(List<PickableItem> items = null)
     {
             if (items != null)
-                saveProvider.SaveBoardItem(items);
+                ActiveProvider.SaveBoardItem(items);
         //Debug.Log(items.Count);
     }
     public void SavePlayerStats(int coin, float hp)
     {
-        saveProvider.SavePlayerStats(coin, hp);
+        ActiveProvider.SavePlayerStats(coin, hp);
     }
     public void SaveGameCoin(int coin)
     {
-        saveProvider.SaveGameCoin(coin);
+        ActiveProvider.SaveGameCoin(coin);
     }
     public int LoadGameCoin()
     {
-        return saveProvider.LoadGameCoin();
+        return ActiveProvider.LoadGameCoin();
     }
     public void SavePlayerHealth(float health)
     {
-        saveProvider.SavePlayerHealth(health);
+        ActiveProvider.SavePlayerHealth(health);
     }
     public float LoadPlayerHealth()
     {
-        return saveProvider.LoadPlayerHealth();
+        return ActiveProvider.LoadPlayerHealth();
     }
     public void SavePlayerExperience(int exp , int level)
     {
-        saveProvider.SavePlayerExperience(exp, level);
+        ActiveProvider.SavePlayerExperience(exp, level);
     }
     public (int, int) LoadPlayerExperience()
     {
-        return saveProvider.LoadPlayerExperience();
+        return ActiveProvider.LoadPlayerExperience();
     }
     public (int, float) LoadPlayerStats()
     {
-        return saveProvider.LoadPlayerStats();
+        return ActiveProvider.LoadPlayerStats();
     }
     public void ResetGameProgress() => SaveGameProgress();
 
     public (int, List<string>) LoadGameProgress()
     {
-        return (saveProvider.LoadDistance(), saveProvider.LoadInventory());
+        return (ActiveProvider.LoadDistance(), ActiveProvider.LoadInventory());
     }
     public List<SavedItem> LoadBoardItem()
     {
-        return saveProvider.LoadBoardItem();
+        return ActiveProvider.LoadBoardItem();
     }
 
     public int LoadLevelId() {
-        return saveProvider.LoadLevelId();
+        return ActiveProvider.LoadLevelId();
     }
 
 
     public void SaveFuel(int fuel)
     {
-        saveProvider.SaveFuel(fuel);
+        ActiveProvider.SaveFuel(fuel);
     }
     public int LoadFuel()
     {
-        return saveProvider.LoadFuel();
+        return ActiveProvider.LoadFuel();
     }
 
     public void SaveAmmo(WeaponType type, int amount) {
-        saveProvider.SaveAmmo(type, amount);
+        ActiveProvider.SaveAmmo(type, amount);
     }
 
     public int LoadAmmo(WeaponType type) {
-        return saveProvider.LoadAmmo(type);
+        return ActiveProvider.LoadAmmo(type);
     }
 
     public void SaveWin()
     {
-        int wins = saveProvider.LoadWins();
-        saveProvider.SaveWins(wins+1);
-        if (LeaderboardManager.Instance != null)
+        int wins = ActiveProvider.LoadWins();
+        ActiveProvider.SaveWins(wins+1);
+        if (!DeadBoat.Online.SharedRunContext.Active && LeaderboardManager.Instance != null)
             LeaderboardManager.Instance.SaveScore(LBName.wins.ToString(), wins+1);
     }
 
     public void SaveRouletteDate(DateTime date)
     {
-        saveProvider.SaveRouletteDate(date);
+        ActiveProvider.SaveRouletteDate(date);
     }
 
     public DateTime LoadRouletteDate()
     {
-        return saveProvider.LoadRouletteDate();
+        return ActiveProvider.LoadRouletteDate();
     }
     public void SavePlayerFixPos(float posZ)
     {
-        saveProvider.SavePlayerFixPos(posZ);
+        ActiveProvider.SavePlayerFixPos(posZ);
     }
 
     public float LoadPlayerFixPos()
     {
-        return saveProvider.LoadPlayerFixPos();
+        return ActiveProvider.LoadPlayerFixPos();
     }
     public void SaveBoardFixPos(float posZ)
     {
-        saveProvider.SaveBoardFixPos(posZ);
+        ActiveProvider.SaveBoardFixPos(posZ);
     }
     public float LoadBoardFixPos()
     {
-        return saveProvider.LoadBoardFixPos();
+        return ActiveProvider.LoadBoardFixPos();
     }
     public void SaveLevelUpdate(Stats stats)
     {
-        saveProvider.SaveLevelUpdate(stats);
+        ActiveProvider.SaveLevelUpdate(stats);
     }
     public Stats LoadLevelUpdate()
     {
-        return saveProvider.LoadLevelUpdate();
+        return ActiveProvider.LoadLevelUpdate();
     }
     public void SaveLevelUp(int count)
     {
-        saveProvider.SaveLevelUp(count);
+        ActiveProvider.SaveLevelUp(count);
     }
     public int LoadLevelUp()
     {
-        return saveProvider.LoadLevelUp();
+        return ActiveProvider.LoadLevelUp();
     }
 
     /*    public void SaveAttachedItem(string id)
         {
-            saveProvider.SaveAttachedItem(id);
+            ActiveProvider.SaveAttachedItem(id);
         }
 
         public List<string> LoadAttachedItems()
         {
-            return saveProvider.LoadAttachedItems();
+            return ActiveProvider.LoadAttachedItems();
         }
 
         public void ResetAttachedItems()
         {
-            saveProvider.ResetAttachedItems();
+            ActiveProvider.ResetAttachedItems();
         }
 
         public void DeleteAttachedItem(string id)
         {
-            List<string> current = saveProvider.LoadAttachedItems();
+            List<string> current = ActiveProvider.LoadAttachedItems();
             current.Remove(id);
-            saveProvider.SaveAllAttachedItems(current);
+            ActiveProvider.SaveAllAttachedItems(current);
         }*/
 
     /*    public void SaveInventory()
         {
-            saveProvider.SaveInventory(Inventory.Instance.GetInventoryList());
+            ActiveProvider.SaveInventory(Inventory.Instance.GetInventoryList());
         }*/
 
     // Остальные методы аналогично делегируют работу провайдеру...

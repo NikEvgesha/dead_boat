@@ -9,7 +9,7 @@ public class LocationItemSpawnCollection : ScriptableObject
     [Tooltip("Spawn entries for this location")]
     public List<LocationItemSpawnEntry> spawnEntries;
 
-    public PickableItem GetRandomItem(ItemType requiredType, ItemSize requiredSize)
+    public PickableItem GetRandomItem(ItemType requiredType, ItemSize requiredSize, DeadBoat.Online.RunRandom random = null)
     {
         if (spawnEntries == null || spawnEntries.Count == 0)
             return null;
@@ -36,7 +36,7 @@ public class LocationItemSpawnCollection : ScriptableObject
         if (totalChance <= 0f)
             return null;
 
-        float randomValue = Random.Range(0f, totalChance);
+        float randomValue = (random != null ? random.Range(0f, totalChance) : Random.Range(0f, totalChance));
         for (int i = 0; i < validEntries.Count; i++)
         {
             if (randomValue < effectiveChances[i])
@@ -48,7 +48,7 @@ public class LocationItemSpawnCollection : ScriptableObject
         return validEntries[validEntries.Count - 1].itemPrefab;
     }
 
-    public bool TryGetRandomEggItem(ItemType requiredType, ItemSize requiredSize, out PickableItem itemPrefab)
+    public bool TryGetRandomEggItem(ItemType requiredType, ItemSize requiredSize, out PickableItem itemPrefab, DeadBoat.Online.RunRandom random = null)
     {
         itemPrefab = null;
 
@@ -72,7 +72,7 @@ public class LocationItemSpawnCollection : ScriptableObject
         if (totalChance <= 0f)
             return false;
 
-        float randomValue = Random.Range(0f, totalChance);
+        float randomValue = (random != null ? random.Range(0f, totalChance) : Random.Range(0f, totalChance));
         for (int i = 0; i < validEntries.Count; i++)
         {
             float chance = Mathf.Max(0f, validEntries[i].chance);
@@ -116,9 +116,10 @@ public class LocationItemSpawnCollection : ScriptableObject
         float chance = Mathf.Max(0f, entry.chance);
 
         if (IsEggEntry(entry))
-            return EggSpawnRuntimeState.GetEffectiveChance(chance * EggSpawnChanceMultiplier);
+            return DeadBoat.Online.SharedRunContext.Active ? chance * EggSpawnChanceMultiplier
+                : EggSpawnRuntimeState.GetEffectiveChance(chance * EggSpawnChanceMultiplier);
 
-        return ProfessionService.ApplyLocationItemSpawnChance(chance);
+        return DeadBoat.Online.SharedRunContext.Active ? chance : ProfessionService.ApplyLocationItemSpawnChance(chance);
     }
 
     private static bool EntryMatches(LocationItemSpawnEntry entry, ItemType requiredType, ItemSize requiredSize)

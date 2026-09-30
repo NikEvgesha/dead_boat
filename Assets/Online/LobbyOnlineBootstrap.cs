@@ -14,7 +14,7 @@ namespace DeadBoat.Online
     public sealed class LobbyOnlineBootstrap : MonoBehaviour
     {
         private const string MatchmakingLobbyName = "river-public-lobby-v2";
-        private const string DepartureLobbyName = "river-departures-v1";
+        private const string DepartureLobbyName = "river-departures-v2";
         private const string ModePreferenceKey = "DeadBoat.OnlineMode.v1";
 
         [SerializeField] private NetworkObject avatarPrefab;
@@ -43,6 +43,13 @@ namespace DeadBoat.Online
         private string departureSessionName;
         private int departureLevelId = -1;
         private int departureTargetPlayers;
+        private SharedDepartureState departureState;
+        private bool launchingDeparture;
+        public bool IsDepartureLeader => IsInDepartureRoom && runner.IsSharedModeMasterClient;
+        public bool DepartureCountingDown => departureState != null && departureState.Phase == 1;
+        public int DepartureCountdownSeconds => departureState != null && runner != null
+            ? Mathf.CeilToInt(departureState.Countdown.RemainingTime(runner) ?? 0) : 0;
+        public int DepartureSeed => departureState != null ? departureState.Seed : 0;
 #if UNITY_EDITOR || DEADBOAT_ONLINE_DIAGNOSTICS
         private bool diagnosticsLogged;
         private GUIStyle diagnosticsLabelStyle;
@@ -98,6 +105,15 @@ namespace DeadBoat.Online
 
         private void Update()
         {
+            if (IsInDepartureRoom && !launchingDeparture)
+            {
+                if (departureState == null)
+                    departureState = FindObjectsByType<SharedDepartureState>(FindObjectsSortMode.None)
+                        .FirstOrDefault(state => state.Runner == runner);
+                if (departureState != null && departureState.Phase == 2)
+                    _ = LaunchDepartureAsync();
+            }
+
             if (browsingDepartures && departureBrowser != null && departureBrowser.Disconnected)
             {
                 browsingDepartures = false;
@@ -292,6 +308,8 @@ namespace DeadBoat.Online
 
         private async Task<bool> StartDepartureAsync(string sessionName, int levelId, int targetPlayers, bool create)
         {
+            launchingDeparture = false;
+            departureState = null;
             departureTransition = true;
             int revision = connectionRevision;
             browsingDepartures = false;
@@ -345,6 +363,14 @@ namespace DeadBoat.Online
                 lastFailure = null;
                 failure = LobbyConnectionFailure.None;
                 status = "Waiting for crew";
+                if (create && runner.IsSharedModeMasterClient)
+                {
+                    var statePrefab = Resources.Load<NetworkObject>("Online/SharedDepartureState");
+                    if (statePrefab == null) throw new InvalidOperationException("Departure state prefab missing");
+                    departureState = runner.Spawn(statePrefab, onBeforeSpawned: (networkRunner, obj) =>
+                        obj.GetComponent<SharedDepartureState>().Initialize(levelId, targetPlayers))
+                        .GetComponent<SharedDepartureState>();
+                }
                 StayOnline();
                 return true;
             }
@@ -374,6 +400,48 @@ namespace DeadBoat.Online
             departureBrowser = null;
             status = "Solo map selection";
             await StopRunnerAsync();
+        }
+
+        public void LaunchDepartureNow()
+        {
+            if (IsDepartureLeader && departureState != null && !launchingDeparture)
+                departureState.LaunchNow();
+        }
+
+        private async Task LaunchDepartureAsync()
+        {
+            launchingDeparture = true;
+            if (departureState.GenerationVersion != RunRandom.Version ||
+                !departureState.Includes(runner.LocalPlayer) ||
+                !LevelManager.Instance.TryGetLevel(departureState.LevelId, out var level))
+            {
+                lastFailure = "Incompatible departure or roster";
+                await StopRunnerAsync();
+                connectedOnce = inDepartureRoom = false;
+                return;
+            }
+
+            int seed = departureState.Seed;
+            int levelId = departureState.LevelId;
+            int count = departureState.CrewCount;
+            startingSoloRun = true; // stop the lobby UI/idle logic during scene loading
+            connectedOnce = inDepartureRoom = false;
+            ++connectionRevision;
+            SaveManager.Instance.FlushProgress();
+            if (count == 1)
+            {
+                await StopRunnerAsync();
+            }
+            else
+            {
+                var runRunner = runner;
+                runner = null; // ownership is now held by SharedRunLifetime, not the lobby scene
+                SharedRunContext.Begin(seed, levelId, runRunner.gameObject, SaveManager.Instance.PersistentProvider);
+                runRunner.gameObject.AddComponent<SharedRunLifetime>().Initialize(runRunner);
+                Debug.Log($"[Shared run] session={runRunner.SessionInfo.Name}; seed={seed}; v={RunRandom.Version}; crew={count}");
+            }
+            ControlManager.Instance.ForceGameplayCursor();
+            LoadingManager.Instance.LoadLocation(Location.Game, level.Scene, false);
         }
 
         public async Task ReturnToVisualLobbyAsync()

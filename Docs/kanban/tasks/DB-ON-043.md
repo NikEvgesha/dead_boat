@@ -1,8 +1,8 @@
 ---
 id: DB-ON-043
 title: Спроектировать сиды и восстановление случайных событий совместного забега
-status: backlog
-when: next
+status: in_progress
+when: now
 ai: true
 ---
 
@@ -28,3 +28,9 @@ ai: true
 - `Docs/kanban/tasks/DB-ON-019.md`
 - `Docs/kanban/tasks/DB-ON-020.md`
 - `Docs/kanban/tasks/DB-ON-026.md`
+
+## Работа 2026-09-30
+
+Добавлены RunRandom v1, отдельные потоки layout/items/enemies, копия пула локаций и WorldSpawnIdentity. В Unity прошла проверка двух независимых копий 4 реальных пулов × 200 локаций, независимости потоков и восстановления ключа на 5 seed. Это не проверка двух сетевых вкладок. Остальной Random и snapshot/reconnect ещё не перенесены. Следующий шаг — ИИ: authority лодки и снимок изменений мира; владелец: сравнение карты в двух WebGL-клиентах.
+
+Дизайн, ограничения и порядок: `Docs/SHARED_RUN_SEED_AND_PHYSICS.md`.

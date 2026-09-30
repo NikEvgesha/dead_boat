@@ -34,6 +34,7 @@ namespace DeadBoat.Online
                 return;
             }
             Runner.SetPlayerObject(player, avatar);
+            Runner.MakeDontDestroyOnLoad(avatar.gameObject);
         }
     }
 }

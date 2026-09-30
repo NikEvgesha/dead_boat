@@ -395,6 +395,9 @@ public class BoardController : MonoBehaviour
     {
         get { return TotalDistanceTraveled / 1000f; }
     }
+    public int GetLevelAtDistance(float distance) => Mathf.Clamp(
+        Mathf.CeilToInt(distance / (GameManager.Instance.PlayDistance / _levels)), 1, 10);
+
     public int GetLevel()
     {
         return _level;

@@ -22,6 +22,8 @@ public class LocationSpawner : MonoBehaviour
     public float removalDistance = 200f;                 // Удалять, если позади лодки больше этого
 
     private float _stopSpawnDistance = 100000f;          // Границы, пока лодка не доедет до конца уровня
+    private int generationIndex;
+    private bool ownsRuntimeCollection;
     private float lastSpawnZ;                            // Z-координата последнего созданного объекта
     private List<LocationContentSpawner> spawnedLocations = new List<LocationContentSpawner>();
 
@@ -44,7 +46,17 @@ public class LocationSpawner : MonoBehaviour
         _stopSpawnDistance = GameManager.Instance.PlayDistance - spawnThreshold;
 
         // Инициализируем lastSpawnZ положением игрока по Z, чтобы спавн шел от него
-        lastSpawnZ = _player.zPositionFix;
+        lastSpawnZ = DeadBoat.Online.SharedRunContext.Active ? 0f : _player.zPositionFix;
+        if (DeadBoat.Online.SharedRunContext.Active && locationCollection != null)
+        {
+            locationCollection = Instantiate(locationCollection);
+            ownsRuntimeCollection = true;
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (ownsRuntimeCollection && locationCollection != null) Destroy(locationCollection);
     }
 
     void Update()
@@ -72,8 +84,12 @@ public class LocationSpawner : MonoBehaviour
         Change?.Invoke();
 
         // Вычисляем случайное расстояние до следующего объекта и обновляем lastSpawnZ
-        float distance = UnityEngine.Random.Range(minDistance, maxDistance);
+        var random = DeadBoat.Online.SharedRunContext.Active
+            ? DeadBoat.Online.SharedRunContext.Random("layout", generationIndex) : null;
+        float distance = random != null ? random.Range(minDistance, maxDistance)
+            : UnityEngine.Random.Range(minDistance, maxDistance);
         lastSpawnZ += distance;
+        int currentIndex = generationIndex++;
 
         // Фиксируем позицию спавна: spawnX, spawnY и динамический Z = lastSpawnZ
         Vector3 spawnPosition = new Vector3(spawnX, spawnY, lastSpawnZ - FixCoordinate.Instance.PlayerAddPos);
@@ -81,14 +97,16 @@ public class LocationSpawner : MonoBehaviour
         // Берём случайный префаб из коллекции
         if (locationCollection != null)
         {
-            LocationContentSpawner chosenPrefab = locationCollection.GetRandomSpawnPrefab(lastSpawnZ);
+            LocationContentSpawner chosenPrefab = locationCollection.GetRandomSpawnPrefab(lastSpawnZ, random);
             if (chosenPrefab != null)
             {
                 LocationContentSpawner spawnedObj = Instantiate(chosenPrefab, spawnPosition, Quaternion.identity);
                 spawnedObj.ZPosition = spawnPosition.z + FixCoordinate.Instance.BoardAddPos;
                 spawnedLocations.Add(spawnedObj);
                 spawnedObj.transform.SetParent(this.transform);
-                spawnedObj.SetLevel(_boardController.GetLevel());
+                spawnedObj.InitializeGeneration(currentIndex);
+                spawnedObj.SetLevel(DeadBoat.Online.SharedRunContext.Active
+                    ? _boardController.GetLevelAtDistance(lastSpawnZ) : _boardController.GetLevel());
             }
             else
             {

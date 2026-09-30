@@ -1,8 +1,8 @@
 ---
 id: DB-ON-017
 title: Переводить группу из лобби в совместный забег и обратно
-status: backlog
-when: next
+status: in_progress
+when: now
 ai: true
 ---
 
@@ -24,3 +24,9 @@ ai: true
 
 - `Assets/Online/README.md`
 - `Docs/WEB_MULTIPLAYER_IMPLEMENTATION_ROADMAP.md`
+
+## Работа 2026-09-30
+
+Реализован протокол Phase=2 → существующий GameLoader на каждом участнике; общий Runner/аватары сохраняются, один участник отключает Photon и идёт обычным solo-путём. Введён временный SharedRunPreviewSave для изоляции вызовов SaveManager. Это прототип совместной загрузки, физика и взаимодействия ещё локальны. Настоящая регистрация Fusion scene objects, ready-barrier и reconnect остаются. Следующий шаг — ИИ: проверить два клиента и добавить одну общую лодку/координаты; владелец: ручная приёмка загрузки/индивидуального выхода/solo-save.
+
+Дизайн, ограничения и порядок: `Docs/SHARED_RUN_SEED_AND_PHYSICS.md`.

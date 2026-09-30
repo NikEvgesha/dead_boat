@@ -25,9 +25,21 @@ public class LocationContentSpawner : MonoBehaviour
     public float ZPosition;
 
     private int _level = 1;
+    private int generationIndex = -1;
+    private string generationKey;
+    private DeadBoat.Online.RunRandom itemRandom;
+    private DeadBoat.Online.RunRandom enemyRandom;
+    public void InitializeGeneration(int index) => generationIndex = index;
 
     private void Start()
     {
+        if (DeadBoat.Online.SharedRunContext.Active)
+        {
+            // Scene-authored locations use their stable hierarchy path; procedural ones use their index.
+            generationKey = generationIndex >= 0 ? "procedural:" + generationIndex : "scene:" + HierarchyKey(transform);
+            itemRandom = DeadBoat.Online.SharedRunContext.Random("items:" + generationKey, 0);
+            enemyRandom = DeadBoat.Online.SharedRunContext.Random("enemies:" + generationKey, 0);
+        }
         LocationSceneBalance balance = ResolveBalance();
         SpawnItems(ResolveItemCollection());
         SpawnEnemies(balance);
@@ -49,13 +61,15 @@ public class LocationContentSpawner : MonoBehaviour
             PickableItem itemPrefab = null;
             bool forceEgg = i == guaranteedEggSpawnPointIndex;
             if (forceEgg)
-                activeItemCollection.TryGetRandomEggItem(spawnPoint.allowedType, spawnPoint.allowedSize, out itemPrefab);
+                activeItemCollection.TryGetRandomEggItem(spawnPoint.allowedType, spawnPoint.allowedSize, out itemPrefab, itemRandom);
 
-            itemPrefab ??= activeItemCollection.GetRandomItem(spawnPoint.allowedType, spawnPoint.allowedSize);
+            itemPrefab ??= activeItemCollection.GetRandomItem(spawnPoint.allowedType, spawnPoint.allowedSize, itemRandom);
             if (itemPrefab == null)
                 continue;
 
-            Instantiate(itemPrefab.gameObject, spawnPoint.spawnTransform.position, spawnPoint.spawnTransform.rotation, transform);
+            var item = Instantiate(itemPrefab.gameObject, spawnPoint.spawnTransform.position, spawnPoint.spawnTransform.rotation, transform);
+            if (DeadBoat.Online.SharedRunContext.Active)
+                item.AddComponent<DeadBoat.Online.WorldSpawnIdentity>().Key = generationKey + ":item:" + i;
 
             if (LocationItemSpawnCollection.IsEggPrefab(itemPrefab))
                 EggSpawnRuntimeState.OnEggSpawned();
@@ -64,7 +78,7 @@ public class LocationContentSpawner : MonoBehaviour
 
     private int FindGuaranteedEggSpawnPointIndex(LocationItemSpawnCollection activeItemCollection)
     {
-        if (!EggSpawnRuntimeState.ShouldGuaranteeFirstEggSpawn)
+        if (DeadBoat.Online.SharedRunContext.Active ? generationIndex != 0 : !EggSpawnRuntimeState.ShouldGuaranteeFirstEggSpawn)
             return -1;
 
         if (activeItemCollection == null || itemSpawnPoints == null || itemSpawnPoints.Count == 0)
@@ -84,7 +98,7 @@ public class LocationContentSpawner : MonoBehaviour
         if (candidateIndexes.Count == 0)
             return -1;
 
-        return candidateIndexes[Random.Range(0, candidateIndexes.Count)];
+        return candidateIndexes[itemRandom != null ? itemRandom.Range(0, candidateIndexes.Count) : Random.Range(0, candidateIndexes.Count)];
     }
 
     private void SpawnEnemies(LocationSceneBalance balance)
@@ -99,7 +113,7 @@ public class LocationContentSpawner : MonoBehaviour
                 spawnPoints.Add(enemySpawnPoints[i]);
         }
 
-        Shuffle(spawnPoints);
+        Shuffle(spawnPoints, enemyRandom);
 
         int enemyLevel = balance != null ? balance.ResolveEnemyLevel(_level) : _level;
         int maxSpawns = balance != null ? balance.ResolveLocationEnemyLimit(spawnPoints.Count) : spawnPoints.Count;
@@ -108,16 +122,18 @@ public class LocationContentSpawner : MonoBehaviour
 
         for (int i = 0; i < spawnPoints.Count && spawnedCount < maxSpawns; i++)
         {
-            if (Random.value > spawnChance)
+            if ((enemyRandom != null ? enemyRandom.Value : Random.value) > spawnChance)
                 continue;
 
-            ZombieController enemyPrefab = _enemyPrefabs[Random.Range(0, _enemyPrefabs.Count)];
+            ZombieController enemyPrefab = _enemyPrefabs[enemyRandom != null ? enemyRandom.Range(0, _enemyPrefabs.Count) : Random.Range(0, _enemyPrefabs.Count)];
             if (enemyPrefab == null)
                 continue;
 
             Transform enemyPoint = spawnPoints[i];
             ZombieController enemy = Instantiate(enemyPrefab, enemyPoint.position, enemyPoint.rotation, transform);
             enemy.InitializeLevel(enemyLevel);
+            if (DeadBoat.Online.SharedRunContext.Active)
+                enemy.gameObject.AddComponent<DeadBoat.Online.WorldSpawnIdentity>().Key = generationKey + ":enemy:" + i;
             spawnedCount++;
         }
     }
@@ -147,11 +163,22 @@ public class LocationContentSpawner : MonoBehaviour
         _balanceProfile = Resources.Load<LocationBalanceProfile>(DefaultBalanceProfileResourcePath);
     }
 
-    private static void Shuffle<T>(List<T> values)
+    private static string HierarchyKey(Transform part)
+    {
+        string key = part.GetSiblingIndex().ToString();
+        while (part.parent != null)
+        {
+            part = part.parent;
+            key = part.GetSiblingIndex() + "/" + key;
+        }
+        return key;
+    }
+
+    private static void Shuffle<T>(List<T> values, DeadBoat.Online.RunRandom random)
     {
         for (int i = values.Count - 1; i > 0; i--)
         {
-            int j = Random.Range(0, i + 1);
+            int j = random != null ? random.Range(0, i + 1) : Random.Range(0, i + 1);
             (values[i], values[j]) = (values[j], values[i]);
         }
     }

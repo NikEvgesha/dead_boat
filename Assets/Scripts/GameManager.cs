@@ -102,8 +102,9 @@ public class GameManager : MonoBehaviour
             Debug.LogWarning("Не найден prefab Quest_Kill5Rats_Prefab");
     }
 
-    public void EndGame(bool lobby,bool withAds = true)
+    public async void EndGame(bool lobby,bool withAds = true)
     {
+        if (isEndGame) return;
         PlayerManager.Instance.gameObject.transform.SetParent(null);
         DontDestroyOnLoad(PlayerManager.Instance.gameObject);
         isEndGame = true;
@@ -127,6 +128,7 @@ public class GameManager : MonoBehaviour
         _ammoManager.ResetAmmo();
         // Persist the explicit exit before the scene transition or page close.
         SaveManager.Instance.FlushProgress();
+        await DeadBoat.Online.SharedRunLifetime.LeaveAsync();
         LoadingManager.Instance.LoadLocation(location, default, lobby ? false : withAds);
     }
 

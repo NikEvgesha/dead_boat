@@ -25,7 +25,7 @@ public class LocationSpawnCollection : ScriptableObject
     /// Возвращает один случайный префаб с учётом весов и с гарантией, 
     /// что один и тот же элемент не выпадет повторно, пока не будут использованы все доступные по дистанции.
     /// </summary>
-    public LocationContentSpawner GetRandomSpawnPrefab(float distance)
+    public LocationContentSpawner GetRandomSpawnPrefab(float distance, DeadBoat.Online.RunRandom random = null)
     {
         // Шаг 1: Собираем все элементы, которые сейчас подходят по distance
         _actualSpawnItems.Clear();
@@ -79,7 +79,7 @@ public class LocationSpawnCollection : ScriptableObject
             return fallback.prefab;
         }
 
-        float randomValue = Random.Range(0f, totalWeight);
+        float randomValue = (random != null ? random.Range(0f, totalWeight) : Random.Range(0f, totalWeight));
         LocationSpawnItem chosenItem = null;
         foreach (var item in candidates)
         {

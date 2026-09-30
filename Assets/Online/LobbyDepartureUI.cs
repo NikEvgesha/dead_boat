@@ -139,17 +139,23 @@ namespace DeadBoat.Online
                     "Use the separate button for solo play."),
                 Page.Configure => Text("Публичный экипаж · до ", "Public crew · up to ") + seats,
                 _ => Text("Игроков: ", "Players: ") + online.DeparturePlayerCount +
-                    "/" + online.DepartureTargetPlayers
+                    "/" + online.DepartureTargetPlayers + (online.DepartureCountingDown
+                        ? Text(" · Отправление через ", " · Departing in ") + online.DepartureCountdownSeconds
+                        : "")
             });
 
-            primary.gameObject.SetActive(page == Page.Browser || page == Page.Configure);
+            primary.gameObject.SetActive(page == Page.Browser || page == Page.Configure || page == Page.Waiting);
             secondary.gameObject.SetActive(page == Page.Browser || page == Page.Configure);
             primary.interactable = !busy && (page != Page.Browser || online.IsBrowsingDepartures);
+            if (page == Page.Waiting)
+                primary.interactable = online.IsDepartureLeader && !online.DepartureCountingDown;
             secondary.interactable = !busy;
             back.interactable = !busy && !online.IsConnecting;
 
             SetButton(primary, page == Page.Browser ? Text("Создать свой", "Create a crew") :
-                Text("Создать", "Create"), page == Page.Browser ? (Action)ShowLevels : () => _ = CreateAsync());
+                page == Page.Waiting ? Text("Запустить сейчас", "Launch now") : Text("Создать", "Create"),
+                page == Page.Browser ? (Action)ShowLevels : page == Page.Waiting
+                    ? online.LaunchDepartureNow : () => _ = CreateAsync());
             SetButton(secondary, page == Page.Browser ? Text("Играть одному", "Play solo") :
                 Text("Мест: ", "Seats: ") + seats + "  ↻",
                 page == Page.Browser ? (Action)(() => startPoint.ShowSoloMapFromDeparture()) : CycleSeats);
@@ -235,8 +241,10 @@ namespace DeadBoat.Online
             {
                 AddMessage(Text("Экипаж создан. Другие игроки могут присоединиться из каталога.",
                     "Crew ready. Other players can join from the directory."));
-                AddMessage(Text("Запуск совместного забега — следующий этап разработки.",
-                    "Starting the co-op run is the next development step."));
+                AddMessage(Text("Полный экипаж отправится через 5 секунд. Лидер может запустить раньше.",
+                    "A full crew departs after 5 seconds. The leader can launch earlier."));
+                AddMessage(Text("Тест совместной загрузки: взаимодействия и физика ещё не синхронизированы.",
+                    "Shared loading preview: interactions and physics are not synchronized yet."));
             }
         }
 
