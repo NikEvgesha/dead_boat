@@ -125,6 +125,8 @@ public class GameManager : MonoBehaviour
         SaveManager.Instance.SavePlayerExperience(0, 0);
         //SaveManager.Instance.SaveQuestProgress();
         _ammoManager.ResetAmmo();
+        // Persist the explicit exit before the scene transition or page close.
+        SaveManager.Instance.FlushProgress();
         LoadingManager.Instance.LoadLocation(location, default, lobby ? false : withAds);
     }
 

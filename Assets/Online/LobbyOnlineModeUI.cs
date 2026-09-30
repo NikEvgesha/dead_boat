@@ -64,7 +64,10 @@ namespace DeadBoat.Online
             var panelRect = panel.GetComponent<RectTransform>();
             panelRect.anchorMin = panelRect.anchorMax = new Vector2(0.5f, 0.5f);
             panelRect.sizeDelta = new Vector2(530, 320);
-            panel.GetComponent<Image>().color = new Color(0.04f, 0.08f, 0.13f, 0.96f);
+            var panelImage = panel.GetComponent<Image>();
+            panelImage.sprite = Resources.Load<Sprite>("OnlineUI/OnlineFrame");
+            panelImage.type = Image.Type.Sliced;
+            panelImage.color = Color.white;
 
             CreateText(panel.transform, "Title", new Vector2(0, 115), new Vector2(490, 52), 29);
             statusText = CreateText(panel.transform, "Status", new Vector2(0, 43), new Vector2(480, 80), 21);
@@ -198,7 +201,9 @@ namespace DeadBoat.Online
             rect.anchoredPosition = position;
             rect.sizeDelta = size;
             var image = item.GetComponent<Image>();
-            image.color = new Color(0.13f, 0.30f, 0.42f, 0.97f);
+            image.sprite = Resources.Load<Sprite>("OnlineUI/OnlineButton");
+            image.type = Image.Type.Sliced;
+            image.color = Color.white;
             var button = item.GetComponent<Button>();
             button.targetGraphic = image;
             button.onClick.AddListener(action);
@@ -216,7 +221,7 @@ namespace DeadBoat.Online
             rect.anchoredPosition = position;
             rect.sizeDelta = size;
             var label = item.GetComponent<Text>();
-            label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            label.font = Resources.Load<Font>("Fonts/RussoOne-Regular");
             label.fontSize = fontSize;
             label.color = Color.white;
             label.alignment = TextAnchor.MiddleCenter;

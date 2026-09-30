@@ -52,6 +52,11 @@ public class SaveManager : MonoBehaviour
         saveProvider.SetSave(haveSave);
     }
 
+    public void FlushProgress()
+    {
+        saveProvider.SaveProgress();
+    }
+
     // Пример методов, которые делегируют работу провайдеру:
     public float[] GetVolume()
     {

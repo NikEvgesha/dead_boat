@@ -1,3 +1,10 @@
+// UnityWebView (used by Mirra Cloud) calls unityInstance.SendMessage from iframe
+// load events, which can arrive before createUnityInstance has resolved.
+const pendingUnityWebViewMessages = [];
+window.unityInstance = {
+    SendMessage: (...args) => pendingUnityWebViewMessages.push(args)
+};
+
 const unityApp = {
 
     applyCommonFixes: function () {
@@ -249,6 +256,11 @@ const unityApp = {
             createUnityInstance(canvas, config, (progress) => {
                 progressBarFull.style.width = 100 * progress + "%";
             }).then((unityInstance) => {
+                window.unityInstance = unityInstance;
+                for (const args of pendingUnityWebViewMessages) {
+                    unityInstance.SendMessage(...args);
+                }
+                pendingUnityWebViewMessages.length = 0;
                 loadingBar.style.display = "none";
 
                 #if SHOW_DIAGNOSTICS

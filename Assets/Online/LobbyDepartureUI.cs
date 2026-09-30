@@ -301,12 +301,14 @@ namespace DeadBoat.Online
             shade.anchorMax = Vector2.one;
             shade.offsetMin = shade.offsetMax = Vector2.zero;
             var panel = MakeRect(shade, "Panel", new Vector2(0.5f, 0.5f), Vector2.zero,
-                new Vector2(800, 600), new Color(0.05f, 0.09f, 0.14f, 0.98f));
+                new Vector2(800, 600), Color.white);
+            panel.GetComponent<Image>().sprite = Resources.Load<Sprite>("OnlineUI/OnlineFrame");
+            panel.GetComponent<Image>().type = Image.Type.Sliced;
             title = MakeText(panel, "Title", new Vector2(0, 250), new Vector2(750, 52), 32);
             status = MakeText(panel, "Status", new Vector2(0, 195), new Vector2(750, 55), 21);
 
             var viewport = MakeRect(panel, "List viewport", new Vector2(0.5f, 0.5f),
-                new Vector2(0, 15), new Vector2(750, 300), new Color(0.08f, 0.15f, 0.21f, 1f));
+                new Vector2(0, 15), new Vector2(750, 300), new Color(0.22f, 0.25f, 0.29f, 1f));
             viewport.gameObject.AddComponent<Mask>().showMaskGraphic = true;
             var scroll = viewport.gameObject.AddComponent<ScrollRect>();
             scroll.viewport = viewport;
@@ -381,7 +383,9 @@ namespace DeadBoat.Online
         private static Button MakeButton(Transform parent, string name, Vector2 position, Vector2 size)
         {
             var rect = MakeRect(parent, name, new Vector2(0.5f, 0.5f), position, size,
-                new Color(0.14f, 0.32f, 0.43f, 1f));
+                Color.white);
+            rect.GetComponent<Image>().sprite = Resources.Load<Sprite>("OnlineUI/OnlineButton");
+            rect.GetComponent<Image>().type = Image.Type.Sliced;
             var button = rect.gameObject.AddComponent<Button>();
             button.targetGraphic = rect.GetComponent<Image>();
             MakeText(rect, "Label", Vector2.zero, size - new Vector2(12, 6), 20);
@@ -397,7 +401,7 @@ namespace DeadBoat.Online
             rect.anchoredPosition = position;
             rect.sizeDelta = size;
             var text = item.GetComponent<Text>();
-            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            text.font = Resources.Load<Font>("Fonts/RussoOne-Regular");
             text.fontSize = sizePt;
             text.color = Color.white;
             text.alignment = TextAnchor.MiddleCenter;
