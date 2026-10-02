@@ -27,9 +27,17 @@ namespace DeadBoat.Online
         public void OnPlayerLeft(NetworkRunner runner, PlayerRef player) { }
         public void OnInput(NetworkRunner runner, NetworkInput input) { }
         public void OnInputMissing(NetworkRunner runner, PlayerRef player, NetworkInput input) { }
-        public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason) { Disconnected = true; }
+        public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason)
+        {
+            Disconnected = true;
+            Debug.LogWarning($"[Online transport] Shutdown={shutdownReason}; sharedRun={SharedRunContext.Active}");
+        }
         public void OnConnectedToServer(NetworkRunner runner) { }
-        public void OnDisconnectedFromServer(NetworkRunner runner, NetDisconnectReason reason) { Disconnected = true; }
+        public void OnDisconnectedFromServer(NetworkRunner runner, NetDisconnectReason reason)
+        {
+            Disconnected = true;
+            Debug.LogWarning($"[Online transport] Disconnect={reason}; sharedRun={SharedRunContext.Active}");
+        }
         public void OnConnectRequest(NetworkRunner runner, NetworkRunnerCallbackArgs.ConnectRequest request, byte[] token) { }
         public void OnConnectFailed(NetworkRunner runner, NetAddress remoteAddress, NetConnectFailedReason reason)
         { Disconnected = true; }

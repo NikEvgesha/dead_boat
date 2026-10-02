@@ -25,6 +25,8 @@ namespace DeadBoat.Online
 
         public override void Spawned()
         {
+            // Runs on every peer: remote instances must survive the lobby unload too.
+            Runner.MakeDontDestroyOnLoad(gameObject);
             Debug.Log($"[Lobby online] Avatar spawned; authority={Object.HasStateAuthority}");
             avatarRenderers = GetComponentsInChildren<Renderer>(true);
             animator = GetComponentInChildren<Animator>(true);

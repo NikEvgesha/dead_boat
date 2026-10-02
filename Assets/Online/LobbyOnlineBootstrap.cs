@@ -46,6 +46,7 @@ namespace DeadBoat.Online
         private SharedDepartureState departureState;
         private bool launchingDeparture;
         public bool IsDepartureLeader => IsInDepartureRoom && runner.IsSharedModeMasterClient;
+        public bool IsLaunchingDeparture => launchingDeparture && startingSoloRun;
         public bool DepartureCountingDown => departureState != null && departureState.Phase == 1;
         public int DepartureCountdownSeconds => departureState != null && runner != null
             ? Mathf.CeilToInt(departureState.Countdown.RemainingTime(runner) ?? 0) : 0;
@@ -440,6 +441,8 @@ namespace DeadBoat.Online
             int levelId = departureState.LevelId;
             int count = departureState.CrewCount;
             startingSoloRun = true; // stop the lobby UI/idle logic during scene loading
+            foreach (var departureUI in FindObjectsByType<LobbyDepartureUI>(FindObjectsSortMode.None))
+                departureUI.Close();
             connectedOnce = inDepartureRoom = false;
             ++connectionRevision;
             SaveManager.Instance.FlushProgress();

@@ -12,6 +12,20 @@ namespace DeadBoat.Online.SmokeTest.Editor
         private const string Output = "Builds/MirraCloudSmokeTest";
         private const string GameOutput = "Builds/MirraCloudPlayableDraft";
 
+        // Queue once from automation so a long BuildPlayer does not trigger tool retries.
+        public static void QueuePlayableDraft()
+        {
+            EditorApplication.update -= BuildQueuedDraft;
+            EditorApplication.update += BuildQueuedDraft;
+        }
+
+        private static void BuildQueuedDraft()
+        {
+            if (BuildPipeline.isBuildingPlayer) return;
+            EditorApplication.update -= BuildQueuedDraft;
+            BuildPlayableDraft();
+        }
+
         [MenuItem("Tools/Dead Boat/Build Mirra Cloud Smoke Test")]
         public static void Build()
         {

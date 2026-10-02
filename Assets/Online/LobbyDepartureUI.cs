@@ -105,6 +105,11 @@ namespace DeadBoat.Online
 
         private void Update()
         {
+            if (online != null && online.IsLaunchingDeparture)
+            {
+                Close();
+                return;
+            }
             if (root == null || !root.activeSelf || online == null || Time.unscaledTime < nextRefresh)
                 return;
             nextRefresh = Time.unscaledTime + 0.25f;
