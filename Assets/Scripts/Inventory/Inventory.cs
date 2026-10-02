@@ -228,7 +228,8 @@ public class Inventory : MonoBehaviour
         if (_activeItemManager != null && _activeItemManager.Active == item)
         {
             PickableItem nextItem = _quickPanelItems.Count > 0 ? _quickPanelItems[0] : null;
-            _activeItemManager.SwitchActiveItem(nextItem);
+            _activeItemManager.ForgetDestroyedItem(item);
+            if (isActiveAndEnabled) _activeItemManager.SwitchActiveItem(nextItem);
         }
 
         if (InventoryUI.Instance != null)

@@ -330,6 +330,7 @@ namespace DeadBoat.Online
                 var startTask = runner.StartGame(new StartGameArgs
                 {
                     GameMode = GameMode.Shared,
+                    Config = CreateDepartureNetworkConfig(),
                     CustomLobbyName = DepartureLobbyName,
                     SessionName = sessionName,
                     EnableClientSessionCreation = create,
@@ -489,6 +490,19 @@ namespace DeadBoat.Online
 
             if (mode == LobbyOnlineMode.Online && !leaving)
                 await ConnectAsync();
+        }
+
+        private static NetworkProjectConfig CreateDepartureNetworkConfig()
+        {
+            // WebGL scene activation/generation runs on the same thread as networking.
+            // Use a per-run copy; do not change the SDK's global configuration asset.
+            var config = NetworkProjectConfig.Deserialize(
+                NetworkProjectConfig.Serialize(NetworkProjectConfig.Global));
+            // Runtime prefab sources live in the imported table, not in config JSON.
+            config.PrefabTable = NetworkProjectConfig.Global.PrefabTable;
+            config.Network.ConnectionTimeout = 60;
+            Debug.Log("[Shared run] Departure connection timeout=60s (WebGL loading allowance).");
+            return config;
         }
 
         private LobbySessionBrowser CreateRunner()

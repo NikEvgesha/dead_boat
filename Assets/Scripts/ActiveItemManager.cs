@@ -8,6 +8,13 @@ public class ActiveItemManager : MonoBehaviour
     private PickableItem _activeItem;
     public PickableItem Active => _activeItem;
 
+    // OnDestroy must forget the reference before switching: reparenting an object
+    // that Unity is already destroying is invalid.
+    public void ForgetDestroyedItem(PickableItem item)
+    {
+        if (ReferenceEquals(_activeItem, item)) _activeItem = null;
+    }
+
 
 
     public void SwitchActiveItem(PickableItem newItem)

@@ -14,11 +14,13 @@ namespace DeadBoat.Online
         private bool connectionLost;
         private bool sceneLoaded;
         private bool returningToLobby;
+        private double lastFrameTime;
 
         public void Initialize(NetworkRunner value)
         {
             instance = this;
             runner = value;
+            lastFrameTime = Time.realtimeSinceStartupAsDouble;
             DontDestroyOnLoad(gameObject);
             DontDestroyOnLoad(value.gameObject);
             loader = GameLoader.Instance;
@@ -74,12 +76,17 @@ namespace DeadBoat.Online
             sceneLoaded = true;
             bool connected = runner != null && runner.IsConnectedToServer;
             int players = connected ? runner.ActivePlayers.Count() : 0;
-            Debug.Log($"[Shared run] Scene loaded; connected={connected}; players={players}; seed={SharedRunContext.Seed}; avatars={FindObjectsByType<LobbyNetworkAvatar>(FindObjectsSortMode.None).Length}");
+            Debug.Log($"[Shared run] Scene loaded; connected={connected}; players={players}; seed={SharedRunContext.Seed}; avatars={FindObjectsByType<LobbyNetworkAvatar>(FindObjectsSortMode.None).Length}; player={PlayerManager.Instance != null}; camera={Camera.main != null}");
             if (!connected) ReturnAfterDisconnect();
         }
 
         private void Update()
         {
+            double now = Time.realtimeSinceStartupAsDouble;
+            double gap = now - lastFrameTime;
+            lastFrameTime = now;
+            if (gap > 5)
+                Debug.LogWarning($"[Shared run] Main-thread frame gap={gap:F1}s; loaded={sceneLoaded}; focused={Application.isFocused}");
             if (stopping || returningToLobby || (runner != null && runner.IsConnectedToServer)) return;
             if (!connectionLost)
             {
@@ -95,6 +102,20 @@ namespace DeadBoat.Online
             if (returningToLobby || stopping) return;
             returningToLobby = true;
             Debug.LogWarning("[Shared run] Returning to lobby after network loss; solo fallback is disabled.");
+            // The normal exit preserves the first-person player and resets the
+            // transient save before LeaveAsync. A bare scene load loses the player
+            // and leaves persistent UI without its camera.
+            if (GameManager.Instance != null && !GameManager.Instance.isEndGame &&
+                PlayerManager.Instance != null)
+            {
+                GameManager.Instance.EndGame(true, false);
+                return;
+            }
+            if (PlayerManager.Instance != null)
+            {
+                PlayerManager.Instance.transform.SetParent(null);
+                DontDestroyOnLoad(PlayerManager.Instance.gameObject);
+            }
             if (ControlManager.Instance != null) ControlManager.Instance.MoveActive = false;
             await LeaveAsync();
             if (ControlManager.Instance != null) ControlManager.Instance.MoveActive = true;
