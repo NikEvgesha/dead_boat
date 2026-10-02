@@ -12,12 +12,15 @@ namespace DeadBoat.Online
         private bool stopping;
         private GameLoader loader;
         private bool connectionLost;
+        private bool sceneLoaded;
+        private bool returningToLobby;
 
         public void Initialize(NetworkRunner value)
         {
             instance = this;
             runner = value;
             DontDestroyOnLoad(gameObject);
+            DontDestroyOnLoad(value.gameObject);
             loader = GameLoader.Instance;
             if (loader != null)
             {
@@ -68,16 +71,35 @@ namespace DeadBoat.Online
 
         private void OnSceneLoaded()
         {
+            sceneLoaded = true;
             bool connected = runner != null && runner.IsConnectedToServer;
             int players = connected ? runner.ActivePlayers.Count() : 0;
             Debug.Log($"[Shared run] Scene loaded; connected={connected}; players={players}; seed={SharedRunContext.Seed}; avatars={FindObjectsByType<LobbyNetworkAvatar>(FindObjectsSortMode.None).Length}");
+            if (!connected) ReturnAfterDisconnect();
         }
 
         private void Update()
         {
-            if (stopping || connectionLost || runner == null || runner.IsConnectedToServer) return;
-            connectionLost = true;
-            Debug.LogWarning("[Shared run] Connection lost after transfer to run lifetime.");
+            if (stopping || returningToLobby || (runner != null && runner.IsConnectedToServer)) return;
+            if (!connectionLost)
+            {
+                connectionLost = true;
+                Debug.LogWarning("[Shared run] Connection lost after transfer to run lifetime.");
+            }
+            // Wait for the current async scene load to finish before requesting another.
+            if (sceneLoaded) ReturnAfterDisconnect();
+        }
+
+        private async void ReturnAfterDisconnect()
+        {
+            if (returningToLobby || stopping) return;
+            returningToLobby = true;
+            Debug.LogWarning("[Shared run] Returning to lobby after network loss; solo fallback is disabled.");
+            if (ControlManager.Instance != null) ControlManager.Instance.MoveActive = false;
+            await LeaveAsync();
+            if (ControlManager.Instance != null) ControlManager.Instance.MoveActive = true;
+            if (LoadingManager.Instance != null)
+                LoadingManager.Instance.LoadLocation(Location.Lobby, withAds: false);
         }
 
         private void OnGUI()

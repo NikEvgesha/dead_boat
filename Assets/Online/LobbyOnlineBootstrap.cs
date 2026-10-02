@@ -454,8 +454,11 @@ namespace DeadBoat.Online
             {
                 var runRunner = runner;
                 runner = null; // ownership is now held by SharedRunLifetime, not the lobby scene
-                SharedRunContext.Begin(seed, levelId, runRunner.gameObject, SaveManager.Instance.PersistentProvider);
-                runRunner.gameObject.AddComponent<SharedRunLifetime>().Initialize(runRunner);
+                // Fusion can destroy its runner on shutdown. Keep the run save/context alive
+                // separately until we have explicitly returned to the lobby.
+                var lifetimeObject = new GameObject("Shared Run Lifetime");
+                SharedRunContext.Begin(seed, levelId, lifetimeObject, SaveManager.Instance.PersistentProvider);
+                lifetimeObject.AddComponent<SharedRunLifetime>().Initialize(runRunner);
                 Debug.Log($"[Shared run] session={runRunner.SessionInfo.Name}; seed={seed}; v={RunRandom.Version}; crew={count}");
             }
             ControlManager.Instance.ForceGameplayCursor();
