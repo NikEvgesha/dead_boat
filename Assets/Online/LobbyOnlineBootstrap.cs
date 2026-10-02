@@ -297,9 +297,18 @@ namespace DeadBoat.Online
 
         public async Task<bool> CreateDepartureAsync(int levelId, int targetPlayers)
         {
-            if (!browsingDepartures || departureTransition || targetPlayers < 2 || targetPlayers > 4 ||
+            if (mode != LobbyOnlineMode.Online || leaving || startingSoloRun ||
+                departureTransition || inDepartureRoom || targetPlayers < 2 || targetPlayers > 4 ||
                 LevelManager.Instance == null ||
                 !LevelManager.Instance.TryGetLevel(levelId, out var level) || !level.Unlocked)
+            {
+                Debug.LogWarning("[Lobby online] Departure creation rejected: invalid level, mode or transition state.");
+                return false;
+            }
+
+            // A failed StartGame shuts down the runner and leaves the configure screen open.
+            // A retry must reconnect the directory instead of failing its guard forever.
+            if (!browsingDepartures && !await OpenDepartureBrowserAsync())
                 return false;
 
             return await StartDepartureAsync("trip-" + Guid.NewGuid().ToString("N"),
@@ -314,6 +323,7 @@ namespace DeadBoat.Online
             int revision = connectionRevision;
             browsingDepartures = false;
             status = create ? "Creating departure" : "Joining departure";
+            string stage = "connect";
             try
             {
                 var startTask = runner.StartGame(new StartGameArgs
@@ -348,6 +358,7 @@ namespace DeadBoat.Online
                 if (!result.Ok)
                 {
                     lastFailure = result.ShutdownReason.ToString();
+                    Debug.LogWarning($"[Lobby online] Departure connection failed: {result.ShutdownReason}");
                     failure = ClassifyFailure(lastFailure, result.ErrorMessage);
                     status = "Solo mode";
                     await StopRunnerAsync();
@@ -365,6 +376,7 @@ namespace DeadBoat.Online
                 status = "Waiting for crew";
                 if (create && runner.IsSharedModeMasterClient)
                 {
+                    stage = "spawn-state";
                     var statePrefab = Resources.Load<NetworkObject>("Online/SharedDepartureState");
                     if (statePrefab == null) throw new InvalidOperationException("Departure state prefab missing");
                     departureState = runner.Spawn(statePrefab, onBeforeSpawned: (networkRunner, obj) =>
@@ -378,7 +390,10 @@ namespace DeadBoat.Online
             {
                 lastFailure = exception.GetType().Name;
                 failure = ClassifyFailure(lastFailure, exception.Message);
-                Debug.LogWarning($"[Lobby online] Departure start failed: {exception.Message}");
+                Debug.LogWarning($"[Lobby online] Departure start failed ({stage}, {exception.GetType().Name}): {exception.Message}");
+                inDepartureRoom = false;
+                connectedOnce = false;
+                departureState = null;
                 await StopRunnerAsync();
                 return false;
             }

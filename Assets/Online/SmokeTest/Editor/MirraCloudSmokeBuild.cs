@@ -38,6 +38,8 @@ namespace DeadBoat.Online.SmokeTest.Editor
 
             Directory.CreateDirectory(output);
 
+            DeadBoat.Online.Editor.OnlinePrefabBuildValidation.Prepare();
+
             var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
             {
                 scenes = scenes,
