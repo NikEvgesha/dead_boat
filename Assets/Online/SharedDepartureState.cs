@@ -13,7 +13,9 @@ namespace DeadBoat.Online
         [Networked] public int LevelId { get; private set; }
         [Networked] public int TargetPlayers { get; private set; }
         [Networked] public TickTimer Countdown { get; private set; }
-        [Networked] public int Phase { get; private set; } // 0 waiting, 1 countdown, 2 loading
+        [Networked] public int Phase { get; private set; } // 0 waiting, 1 countdown, 2 loading, 3 playing, 4 aborted
+        [Networked] public int ReadyMask { get; private set; }
+        [Networked] public TickTimer LoadingDeadline { get; private set; }
         [Networked] public int CrewCount { get; private set; }
         [Networked, Capacity(4)] public NetworkArray<PlayerRef> Crew => default;
 
@@ -41,7 +43,17 @@ namespace DeadBoat.Online
 
         public override void FixedUpdateNetwork()
         {
-            if (!Object.HasStateAuthority || TargetPlayers == 0 || Phase == 2) return;
+            if (!Object.HasStateAuthority || TargetPlayers == 0 || Phase >= 3) return;
+            if (Phase == 2)
+            {
+                // The sealed crew must reach the scene together. Never turn a failed
+                // shared launch into independent solo runs.
+                if (!MembershipMatches() || LoadingDeadline.Expired(Runner))
+                    Phase = 4;
+                else if (ReadyMask == (1 << CrewCount) - 1)
+                    Phase = 3;
+                return;
+            }
             int count = Runner.ActivePlayers.Count();
             if (Phase == 1 && !MembershipMatches())
             {
@@ -57,6 +69,8 @@ namespace DeadBoat.Online
                 var members = Runner.ActivePlayers.OrderBy(p => p.RawEncoded).Take(4).ToArray();
                 CrewCount = members.Length;
                 for (int i = 0; i < members.Length; i++) Crew.Set(i, members[i]);
+                ReadyMask = 0;
+                LoadingDeadline = TickTimer.CreateFromSeconds(Runner, 180);
                 Phase = 2;
             }
         }
@@ -80,6 +94,25 @@ namespace DeadBoat.Online
         {
             for (int i = 0; i < CrewCount; i++) if (Crew[i] == player) return true;
             return false;
+        }
+
+        public bool IsReady(PlayerRef player)
+        {
+            for (int i = 0; i < CrewCount; i++)
+                if (Crew[i] == player) return (ReadyMask & (1 << i)) != 0;
+            return false;
+        }
+
+        [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+        public void RPC_SceneReady(RpcInfo info = default)
+        {
+            if (Phase != 2) return;
+            for (int i = 0; i < CrewCount; i++)
+                if (Crew[i] == info.Source)
+                {
+                    ReadyMask |= 1 << i;
+                    return;
+                }
         }
     }
 }

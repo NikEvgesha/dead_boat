@@ -14,7 +14,7 @@ namespace DeadBoat.Online
     public sealed class LobbyOnlineBootstrap : MonoBehaviour
     {
         private const string MatchmakingLobbyName = "river-public-lobby-v2";
-        private const string DepartureLobbyName = "river-departures-v2";
+        private const string DepartureLobbyName = "river-departures-v3";
         private const string ModePreferenceKey = "DeadBoat.OnlineMode.v1";
 
         [SerializeField] private NetworkObject avatarPrefab;
@@ -111,7 +111,7 @@ namespace DeadBoat.Online
                 if (departureState == null)
                     departureState = FindObjectsByType<SharedDepartureState>(FindObjectsSortMode.None)
                         .FirstOrDefault(state => state.Runner == runner);
-                if (departureState != null && departureState.Phase == 2)
+                if (departureState != null && departureState.Phase >= 2 && departureState.Phase <= 3)
                     _ = LaunchDepartureAsync();
             }
 
@@ -458,7 +458,7 @@ namespace DeadBoat.Online
                 // Fusion can destroy its runner on shutdown. Keep the run save/context alive
                 // separately until we have explicitly returned to the lobby.
                 var lifetimeObject = new GameObject("Shared Run Lifetime");
-                SharedRunContext.Begin(seed, levelId, lifetimeObject, SaveManager.Instance.PersistentProvider);
+                SharedRunContext.Begin(seed, levelId, lifetimeObject, SaveManager.Instance.PersistentProvider, departureState);
                 lifetimeObject.AddComponent<SharedRunLifetime>().Initialize(runRunner);
                 Debug.Log($"[Shared run] session={runRunner.SessionInfo.Name}; seed={seed}; v={RunRandom.Version}; crew={count}");
             }

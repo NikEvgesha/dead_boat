@@ -276,6 +276,7 @@ public class BoardController : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (DeadBoat.Online.SharedRunContext.Active && !DeadBoat.Online.SharedRunContext.Playing) return;
         if (_endGame || !StartGame)
             return;
         float speed = currentSpeed;

@@ -15,6 +15,14 @@ namespace DeadBoat.Online
         private bool sceneLoaded;
         private bool returningToLobby;
         private double lastFrameTime;
+        private PauseManager waitingPause;
+        private double nextReadyReport;
+
+        private void ReleaseWaitingPause()
+        {
+            if (waitingPause != null) waitingPause.SetPause(false);
+            waitingPause = null;
+        }
 
         public void Initialize(NetworkRunner value)
         {
@@ -36,6 +44,7 @@ namespace DeadBoat.Online
             var current = instance;
             if (current == null || current.stopping) return;
             current.stopping = true;
+            current.ReleaseWaitingPause();
             try
             {
                 if (current.runner != null) await current.runner.Shutdown();
@@ -54,6 +63,7 @@ namespace DeadBoat.Online
 
         private void OnDestroy()
         {
+            ReleaseWaitingPause();
             if (loader != null)
             {
                 loader.OnLoadFailed -= OnLoadFailed;
@@ -74,6 +84,11 @@ namespace DeadBoat.Online
         private void OnSceneLoaded()
         {
             sceneLoaded = true;
+            if (!SharedRunContext.Playing && waitingPause == null)
+            {
+                waitingPause = PauseManager.Instance;
+                if (waitingPause != null) waitingPause.SetPause(true);
+            }
             bool connected = runner != null && runner.IsConnectedToServer;
             int players = connected ? runner.ActivePlayers.Count() : 0;
             Debug.Log($"[Shared run] Scene loaded; connected={connected}; players={players}; seed={SharedRunContext.Seed}; avatars={FindObjectsByType<LobbyNetworkAvatar>(FindObjectsSortMode.None).Length}; player={PlayerManager.Instance != null}; camera={Camera.main != null}");
@@ -87,7 +102,30 @@ namespace DeadBoat.Online
             lastFrameTime = now;
             if (gap > 5)
                 Debug.LogWarning($"[Shared run] Main-thread frame gap={gap:F1}s; loaded={sceneLoaded}; focused={Application.isFocused}");
-            if (stopping || returningToLobby || (runner != null && runner.IsConnectedToServer)) return;
+            if (stopping || returningToLobby) return;
+            if (runner != null && runner.IsConnectedToServer)
+            {
+                if (!sceneLoaded) return;
+                var state = SharedRunContext.State;
+                if (state == null || state.Object == null || !state.Object.IsValid || state.Phase == 4)
+                {
+                    Debug.LogWarning("[Shared run] Crew loading aborted or state unavailable.");
+                    ReturnAfterDisconnect();
+                    return;
+                }
+                if (SharedRunContext.Playing)
+                {
+                    ReleaseWaitingPause();
+                    return;
+                }
+                // Acknowledgements are idempotent and retried across authority changes.
+                if (state.Phase == 2 && !state.IsReady(runner.LocalPlayer) && now >= nextReadyReport)
+                {
+                    nextReadyReport = now + 1;
+                    state.RPC_SceneReady();
+                }
+                return;
+            }
             if (!connectionLost)
             {
                 connectionLost = true;
@@ -101,6 +139,7 @@ namespace DeadBoat.Online
         {
             if (returningToLobby || stopping) return;
             returningToLobby = true;
+            ReleaseWaitingPause();
             Debug.LogWarning("[Shared run] Returning to lobby after network loss; solo fallback is disabled.");
             // The normal exit preserves the first-person player and resets the
             // transient save before LeaveAsync. A bare scene load loses the player
@@ -127,10 +166,11 @@ namespace DeadBoat.Online
         {
             if (!SharedRunContext.Active) return;
             bool connected = runner != null && runner.IsConnectedToServer;
-            GUI.Box(new Rect(12, 12, Mathf.Min(570, Screen.width - 24), 62),
+            GUI.Box(new Rect(12, 12, Mathf.Min(570, Screen.width - 24), 82),
                 (connected ? $"Co-op preview · connected · players: {runner.ActivePlayers.Count()}"
                     : "Co-op connection lost — return to lobby") + "\n" +
-                $"Seed: {SharedRunContext.Seed} · Generator: {RunRandom.Version} · Level: {SharedRunContext.LevelId}");
+                $"Seed: {SharedRunContext.Seed} · Generator: {RunRandom.Version} · Level: {SharedRunContext.LevelId}" +
+                (sceneLoaded && !SharedRunContext.Playing ? "\nОжидаем загрузку экипажа…" : ""));
         }
     }
 }
