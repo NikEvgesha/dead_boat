@@ -53,6 +53,8 @@ public class ZombieController : LevelledEnemy
 
     void Update()
     {
+        if (!DeadBoat.Online.SharedEnemiesRuntime.Authority) return;
+        target = DeadBoat.Online.SharedEnemiesRuntime.Target(transform, target);
         if (isDead || target == null) return;
         float dist = Vector3.Distance(transform.position, target.position);
         if (!CheckSee(dist)) return;
@@ -123,6 +125,12 @@ public class ZombieController : LevelledEnemy
 
     void Attack()
     {
+        if (DeadBoat.Online.SharedEnemiesRuntime.AreaAttack(transform.position + Vector3.up, _hitRadius + 1, attackDamage))
+        {
+            transform.LookAt(target);
+            animator.SetTrigger("Attack");
+            return;
+        }
         transform.LookAt(player.transform);
         animator.SetTrigger("Attack");
         Collider[] hits = Physics.OverlapSphere(this.transform.position + (Vector3.forward * _PointHit.x) + (Vector3.up * _PointHit.y), _hitRadius, _hitLayers);
@@ -142,6 +150,7 @@ public class ZombieController : LevelledEnemy
 
     public override void TakeDamage(int damage)
     {
+        if (DeadBoat.Online.SharedEnemiesRuntime.RequestDamage(this, damage)) return;
         base.TakeDamage(damage);
         animator.SetTrigger("Hurt");
     }
@@ -154,6 +163,11 @@ public class ZombieController : LevelledEnemy
             ragdoll.EnableRagdoll();
             if (pickable)
             {
+                if (DeadBoat.Online.SharedRunContext.Active)
+                {
+                    var identity = GetComponent<DeadBoat.Online.WorldSpawnIdentity>();
+                    if (identity != null) pickable.gameObject.AddComponent<DeadBoat.Online.WorldSpawnIdentity>().Key = "corpse:" + identity.Id;
+                }
                 pickable.enabled = true;
                 pickable.transform.SetParent(null);
                 pickable.tag = Tag.Item.ToString();

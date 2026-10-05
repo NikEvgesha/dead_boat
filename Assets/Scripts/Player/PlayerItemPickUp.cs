@@ -105,6 +105,13 @@ public class PlayerItemPickUp : MonoBehaviour
     {
         if (_raycastHitItem != null && !_raycastHitItem.Attached)
         {
+            if (DeadBoat.Online.SharedItemsRuntime.Request(_raycastHitItem, claimed =>
+            {
+                _grabbedItem = claimed;
+                claimed.PickUp(_itemJoint);
+                _controlUI.OnItemPickUp(true);
+                claimed.OnFocus(true);
+            })) return false;
             _grabbedItem = _raycastHitItem;
             _grabbedItem.PickUp(_itemJoint);
             _controlUI.OnItemPickUp(true);
@@ -145,7 +152,9 @@ public class PlayerItemPickUp : MonoBehaviour
             }
         } else if (_raycastHitItem != null)
         {
-            _raycastHitItem.TrySetAttach(!_raycastHitItem.Attached);
+            bool attach = !_raycastHitItem.Attached;
+            if (DeadBoat.Online.SharedItemsRuntime.Request(_raycastHitItem, claimed => claimed.TrySetAttach(attach))) return;
+            _raycastHitItem.TrySetAttach(attach);
         }
     }
 

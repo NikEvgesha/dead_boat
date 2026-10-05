@@ -6,7 +6,7 @@ using UnityEngine;
 namespace DeadBoat.Online
 {
     // MasterClientObject: ownership follows the Shared master without losing the seed.
-    public sealed class SharedDepartureState : NetworkBehaviour
+    public sealed partial class SharedDepartureState : NetworkBehaviour
     {
         [Networked] public int Seed { get; private set; }
         [Networked] public int GenerationVersion { get; private set; }
@@ -43,6 +43,7 @@ namespace DeadBoat.Online
 
         public override void FixedUpdateNetwork()
         {
+            if (Object.HasStateAuthority && Phase == 3) TickBoat();
             if (!Object.HasStateAuthority || TargetPlayers == 0 || Phase >= 3) return;
             if (Phase == 2)
             {

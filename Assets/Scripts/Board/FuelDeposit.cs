@@ -15,6 +15,7 @@ public class FuelDeposit : MonoBehaviour
             fuelItem = other.GetComponentInParent<FuelItem>();
         if (fuelItem != null)
         {
+            if (DeadBoat.Online.SharedItemsRuntime.Burn(fuelItem)) return;
             if (fuelItem.InFire)
                 return;
 

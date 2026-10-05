@@ -61,7 +61,9 @@ public class FixCoordinate : MonoBehaviour
             _player = PlayerManager.Instance.gameObject;
             _player.transform.SetParent(this.transform, true);
         }
-        PlayerAddPos += PlayerManager.Instance.gameObject.transform.position.z;
+        PlayerAddPos += DeadBoat.Online.SharedRunContext.Active
+            ? BoardController.Instance.transform.position.z
+            : PlayerManager.Instance.gameObject.transform.position.z;
         BoardAddPos += BoardController.Instance.gameObject.transform.position.z;
         transform.position += Vector3.back * BoardController.Instance.gameObject.transform.position.z;
         if (_gameObjects.Count > 0)
@@ -74,6 +76,7 @@ public class FixCoordinate : MonoBehaviour
         }
         if (_player)
         {
+            _player.transform.SetParent(null, true);
             DontDestroyOnLoad(_player);
             _player = null;
         }

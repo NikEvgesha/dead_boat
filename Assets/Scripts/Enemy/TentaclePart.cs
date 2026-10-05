@@ -44,10 +44,12 @@ public class TentaclePart : EnemyCore
     {
         Active = false;
         StartAnimation(TentacleAnimation.Start);
+        if (!DeadBoat.Online.SharedEnemiesRuntime.Authority) return;
     }
     public override void TakeDamage(int damage)
     {
-        if (!Active)
+        if (DeadBoat.Online.SharedEnemiesRuntime.RequestDamage(this, damage)) return;
+        if (!Active && !DeadBoat.Online.SharedEnemiesRuntime.ApplyingDamage)
             return;
         base.TakeDamage(damage);
         _mainBody.TakeDamage(damage);
@@ -64,7 +66,7 @@ public class TentaclePart : EnemyCore
     {
         Active = true;
         StartAnimation(TentacleAnimation.Active);
-        StartCoroutine(AttackBoard());
+        if (DeadBoat.Online.SharedEnemiesRuntime.Authority) StartCoroutine(AttackBoard());
     }
     private void DisableTentacle()
     {
@@ -98,6 +100,7 @@ public class TentaclePart : EnemyCore
 
     private void ActivateDamageBox()
     {
+        if (DeadBoat.Online.SharedEnemiesRuntime.BoxAttack(_pointHit.position, _hitBoxSize, _pointHit.rotation, _damage)) return;
         // Центр куба — позиция объекта
         Collider[] hits = Physics.OverlapBox(_pointHit.position, _hitBoxSize * 0.5f, _pointHit.rotation, _hitLayers);
         foreach (var hit in hits)

@@ -274,9 +274,36 @@ public class BoardController : MonoBehaviour
         }
     }
 
+    public float SharedEndDistance => _endPoint;
+    public float SharedBaseFuel => _maxFuel;
+    public float SharedBaseSpeed => _maxSpeed;
+    public float SharedBaseConsumption => _fuelConsumptionRate;
+
+    public void ApplySharedBoat(float distance, float speed, float fuel, float maxFuel, float maxSpeed, bool finished)
+    {
+        transform.position += transform.forward * (distance - TotalDistanceTraveled);
+        TotalDistanceTraveled = distance;
+        currentSpeed = speed;
+        currentFuel = fuel;
+        SwitchSpeed?.Invoke(speed);
+        SwitchFuel?.Invoke(fuel, maxFuel);
+        NoFuel?.Invoke(fuel <= 0);
+        if (_audioSource) _audioSource.volume = maxSpeed > 0 ? (speed / 2) / maxSpeed : 0;
+        if (finished && !_endGame)
+        {
+            _endGame = true;
+            EndGame?.Invoke();
+        }
+        if (WaitFixUpdate && speed <= 0)
+        {
+            WaitFixUpdate = false;
+            FixCoordinate.Instance.FixPosition();
+        }
+    }
+
     private void FixedUpdate()
     {
-        if (DeadBoat.Online.SharedRunContext.Active && !DeadBoat.Online.SharedRunContext.Playing) return;
+        if (DeadBoat.Online.SharedRunContext.Active) return;
         if (_endGame || !StartGame)
             return;
         float speed = currentSpeed;
@@ -357,6 +384,12 @@ public class BoardController : MonoBehaviour
     // Метод для добавления топлива
     public void AddFuel(float amount)
     {
+        if (DeadBoat.Online.SharedRunContext.Active)
+        {
+            if (DeadBoat.Online.SharedRunContext.Playing)
+                DeadBoat.Online.SharedRunContext.State.RPC_AddFuel(amount * DeadBoat.Online.SharedRunContext.State.BoatFillMultiplier);
+            return;
+        }
         if (LevelStatManager.Instance)
             amount *= LevelStatManager.Instance.Stats.AddMultFuel;
         amount = ProfessionService.ApplyFuelFill(amount);

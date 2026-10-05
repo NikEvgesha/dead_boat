@@ -27,6 +27,9 @@ namespace DeadBoat.Online
         public void Initialize(NetworkRunner value)
         {
             instance = this;
+            gameObject.AddComponent<SharedBoatRuntime>();
+            gameObject.AddComponent<SharedItemsRuntime>();
+            gameObject.AddComponent<SharedEnemiesRuntime>();
             runner = value;
             lastFrameTime = Time.realtimeSinceStartupAsDouble;
             DontDestroyOnLoad(gameObject);
@@ -97,6 +100,9 @@ namespace DeadBoat.Online
 
         private void Update()
         {
+            // Pause is local in co-op. Scene initialization, authority AI and
+            // coroutines keep advancing; local input is gated separately.
+            if (SharedRunContext.Active && !stopping && !returningToLobby) Time.timeScale = 1;
             double now = Time.realtimeSinceStartupAsDouble;
             double gap = now - lastFrameTime;
             lastFrameTime = now;

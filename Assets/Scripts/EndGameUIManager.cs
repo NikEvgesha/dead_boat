@@ -73,6 +73,7 @@ public class EndGameUIManager : MonoBehaviour
         /// <param name="duration">Длительность таймера (в секундах)</param>
         public void ShowEndGameUI(EndGameState state, int distance = 0, float duration = 10f)
     {
+        if (state == EndGameState.Win && currentState == EndGameState.Win) return;
         bool isStart = currentState == state && state == EndGameState.None;
         currentState = state;
         timerDuration = duration;
@@ -190,6 +191,7 @@ public class EndGameUIManager : MonoBehaviour
             string tagText = LocalizationManager.Instance.LocalizationData.GetTranslation("Game/SecLeft", LocalizationManager.Instance.CurrentLanguage);
             timerMessageTextFaint.text = string.Format(tagText, Mathf.Ceil(timerRemaining));
             yield return new WaitForSeconds(1f);
+            if (DeadBoat.Online.SharedAdProtection.IsShowing) continue;
             timerRemaining--;
         }
         // По окончании отсчёта переключаем состояние на "Поражение"
@@ -206,6 +208,7 @@ public class EndGameUIManager : MonoBehaviour
             string tagText = LocalizationManager.Instance.LocalizationData.GetTranslation("Game/AutoLeft", LocalizationManager.Instance.CurrentLanguage);
             timerMessageText.text = string.Format(tagText, Mathf.Ceil(timerRemaining));
             yield return new WaitForSeconds(1f);
+            if (DeadBoat.Online.SharedAdProtection.IsShowing) continue;
             timerRemaining--;
         }
         // Автоматически переходим в сцену лобби по окончании отсчёта
@@ -321,6 +324,8 @@ public class EndGameUIManager : MonoBehaviour
     // Метод для показа рекламы и последующего возрождения
     private void ShowAdAndRevive()
     {
+        if (DeadBoat.Online.SharedAdProtection.IsShowing || currentState != EndGameState.Faint) return;
+        var run = DeadBoat.Online.SharedRunContext.State;
         Debug.Log("Показ рекламы для возрождения");
         // Реализуйте здесь вызов показа рекламы.
         // После завершения рекламы вызовите RevivePlayer()
@@ -328,7 +333,8 @@ public class EndGameUIManager : MonoBehaviour
             "revive",
             (success) =>
             {
-                if (success)
+                if (success && currentState == EndGameState.Faint &&
+                    (!DeadBoat.Online.SharedRunContext.Active || DeadBoat.Online.SharedRunContext.State == run))
                     RevivePlayer();
             });
         

@@ -223,6 +223,14 @@ public class PlayerInput : MonoBehaviour
                 _healing = _attack;
             }
         }
+        if (DeadBoat.Online.SharedLocalGameplay.Blocked)
+        {
+            _jump = _sprint = _interaction = _interactionHold = _pickUp = _forcePickUp = false;
+            _attach = _useItem = _reload = _attack = _healing = _rotationX = _rotationY = false;
+            Movement = Vector3.zero;
+            Rotation = Vector2.zero;
+            TrainMove = 0;
+        }
         if (_jump) AJump?.Invoke();
         if (_sprint) ASprint?.Invoke();
         if (_interaction) AInteraction?.Invoke();
@@ -247,6 +255,7 @@ public class PlayerInput : MonoBehaviour
 
     private void UpdateMovement()
     {
+        if (DeadBoat.Online.SharedLocalGameplay.Blocked) return;
 
         if (ControlManager.Instance.UseTouchControl)
         {
@@ -267,6 +276,7 @@ public class PlayerInput : MonoBehaviour
 
     public void UpdateRotation()
     {
+        if (DeadBoat.Online.SharedLocalGameplay.Blocked) return;
         if (ControlManager.Instance.UseTouchControl)
         {
             //Rotation = _touchControls.cameraTouchController.GetRotationInput();

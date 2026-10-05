@@ -14,6 +14,7 @@ namespace DeadBoat.Online.Editor
         {
             "Assets/Online/Avatars/LobbyNetworkAvatar.prefab",
             "Assets/Resources/Online/SharedDepartureState.prefab"
+            ,"Assets/Resources/Online/SharedWorldPage.prefab"
         };
 
         public int callbackOrder => -1000;
@@ -26,6 +27,7 @@ namespace DeadBoat.Online.Editor
             if (EditorApplication.isPlaying)
                 throw new BuildFailedException("Stop Play Mode before preparing network prefabs.");
 
+            SharedItemCatalogBuilder.Prepare();
             foreach (string path in RequiredPrefabs)
             {
                 var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
@@ -33,6 +35,11 @@ namespace DeadBoat.Online.Editor
                     throw new BuildFailedException($"Required network prefab missing: {path}");
                 if (System.Array.IndexOf(AssetDatabase.GetLabels(prefab), "FusionPrefab") < 0)
                     throw new BuildFailedException($"Required network prefab has no FusionPrefab label: {path}");
+                int words = 64; // Conservative header allowance; Fusion's allocation ceiling is 32 KiB.
+                foreach (var behaviour in prefab.GetComponents<NetworkBehaviour>())
+                    words += NetworkBehaviourUtils.GetWordCount(behaviour);
+                if (words * 4 >= 32000)
+                    throw new BuildFailedException($"Network prefab exceeds safe state size: {path} ({words * 4} bytes)");
             }
 
             // Use the SDK's public importer; do not edit Photon or Mirra SDK sources.

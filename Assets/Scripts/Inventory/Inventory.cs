@@ -119,6 +119,7 @@ public class Inventory : MonoBehaviour
 
     public bool AddItem(PickableItem item)
     {
+        if (DeadBoat.Online.SharedItemsRuntime.Request(item, claimed => AddItem(claimed))) return false;
         bool added = false;
         if (item.Attached) return false;
 
@@ -204,6 +205,7 @@ public class Inventory : MonoBehaviour
         else
             item.DropOutFromInventory(dropoutPoint);
         item.gameObject.SetActive(true);
+        DeadBoat.Online.SharedItemsRuntime.PublishDrop(item);
 
 
 

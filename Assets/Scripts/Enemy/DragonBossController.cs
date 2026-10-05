@@ -56,6 +56,34 @@ public class DragonBossController : BossControllerBase
     public System.Action<float> AddDamage;
     public System.Action Dead;
     private float oldHP;
+    public DeadBoat.Online.SharedDragonBrain CaptureSharedBrain(ulong id)
+    {
+        var origin = DeadBoat.Online.LobbyNetworkAvatar.Origin;
+        return new DeadBoat.Online.SharedDragonBrain {
+            Id = id, State = (int)currentState, Direction = orbitDirection,
+            Timer = stateTimer, LastShot = lastShotTime, Angle = currentAngle,
+            DiveTimer = diveTimer, DiveTime1 = diveTime1, DiveTime2 = diveTime2,
+            ShootElapsed = Time.time - lastAttackShootTime, DiveElapsed = Time.time - lastAttackDiveTime,
+            Speed = speedMultiplier, PreviousHP = oldHP,
+            Shooting = shootingPosition + origin, DiveStart = diveStartPos + origin,
+            DiveMid = diveMidPos + origin, DiveEnd = diveEndPos + origin, Dead = deadPos + origin,
+            DiveHitMask = DeadBoat.Online.SharedEnemiesRuntime.DiveMask(this)
+        };
+    }
+
+    public void ApplySharedBrain(DeadBoat.Online.SharedDragonBrain brain)
+    {
+        var origin = DeadBoat.Online.LobbyNetworkAvatar.Origin;
+        currentState = (State)brain.State; orbitDirection = brain.Direction;
+        stateTimer = brain.Timer; lastShotTime = brain.LastShot; currentAngle = brain.Angle;
+        diveTimer = brain.DiveTimer; diveTime1 = brain.DiveTime1; diveTime2 = brain.DiveTime2;
+        lastAttackShootTime = Time.time - brain.ShootElapsed; lastAttackDiveTime = Time.time - brain.DiveElapsed;
+        speedMultiplier = brain.Speed; oldHP = brain.PreviousHP;
+        shootingPosition = brain.Shooting - origin; diveStartPos = brain.DiveStart - origin;
+        diveMidPos = brain.DiveMid - origin; diveEndPos = brain.DiveEnd - origin; deadPos = brain.Dead - origin;
+        DeadBoat.Online.SharedEnemiesRuntime.RestoreDiveMask(this, brain.DiveHitMask);
+    }
+
     protected override void Awake()
     {
         base.Awake();
@@ -74,6 +102,8 @@ public class DragonBossController : BossControllerBase
 
     private void Update()
     {
+        if (!DeadBoat.Online.SharedEnemiesRuntime.Authority) return;
+        player = DeadBoat.Online.SharedEnemiesRuntime.Target(transform, player);
         if (orbitCenter == null) return;
         if (isDead)
         {
@@ -148,6 +178,7 @@ public class DragonBossController : BossControllerBase
         }
         else if (newState == State.Diving)
         {
+            DeadBoat.Online.SharedEnemiesRuntime.StartDive(this);
             lastAttackDiveTime = Time.time;
             // Настройка точек и времени дайва
             diveStartPos = transform.position;
@@ -191,6 +222,7 @@ public class DragonBossController : BossControllerBase
 
     private void UpdateDiving()
     {
+        DeadBoat.Online.SharedEnemiesRuntime.DiveAttack(this);
         diveTimer += Time.deltaTime;
         if (diveTimer < diveTime1)
         {
@@ -226,6 +258,12 @@ public class DragonBossController : BossControllerBase
     }
     private void OnTriggerEnter(Collider other)
     {
+        if (!DeadBoat.Online.SharedEnemiesRuntime.Authority) return;
+        if (currentState == State.Diving && DeadBoat.Online.SharedRunContext.Active)
+        {
+            DeadBoat.Online.SharedEnemiesRuntime.DiveAttack(this);
+            return;
+        }
         if (currentState == State.Diving && other.CompareTag("Player"))
         {
             var hp = other.GetComponent<PlayerStatsManager>();
@@ -240,6 +278,7 @@ public class DragonBossController : BossControllerBase
     }
     public override void TakeDamage(int damage)
     {
+        if (DeadBoat.Online.SharedEnemiesRuntime.RequestDamage(this, damage)) return;
         base.TakeDamage(damage);
         AddDamage?.Invoke(damage);
     }

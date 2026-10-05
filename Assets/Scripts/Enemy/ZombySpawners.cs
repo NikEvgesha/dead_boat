@@ -32,6 +32,7 @@ public class ZombieSpawner : MonoBehaviour
 
     private void Start()
     {
+        foreach (var prefab in enemyTypes) if (prefab != null) DeadBoat.Online.SharedEnemiesRuntime.RegisterTemplate(prefab);
         EnsureBalanceProfile();
 
         if (!playerTransform)
@@ -88,6 +89,7 @@ public class ZombieSpawner : MonoBehaviour
 
     private void SpawnEnemies()
     {
+        if (!DeadBoat.Online.SharedEnemiesRuntime.Authority) return;
         if (playerTransform == null || enemyTypes.Count == 0 || _boardController == null)
             return;
 
@@ -105,6 +107,12 @@ public class ZombieSpawner : MonoBehaviour
             Vector3 spawnPos = GetRandomPositionInAnnulus();
             ZombieController zombie = Instantiate(prefab, spawnPos, prefab.transform.rotation, transform);
             zombie.InitializeLevel(enemyLevel);
+            if (DeadBoat.Online.SharedRunContext.Playing)
+            {
+                var identity = zombie.gameObject.AddComponent<DeadBoat.Online.WorldSpawnIdentity>();
+                identity.TemplateId = DeadBoat.Online.SharedEnemiesRuntime.RegisterTemplate(prefab);
+                identity.Key = "night:" + DeadBoat.Online.SharedRunContext.State.NextNightSpawn();
+            }
         }
     }
 

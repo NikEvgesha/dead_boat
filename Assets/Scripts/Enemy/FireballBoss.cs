@@ -10,8 +10,11 @@ public class FireballBoss : MonoBehaviour
     private Vector3 _targetPosition;
     private bool _haveTarget;
     private float _time = 0;
-    public void SetTarget(Vector3 target)
+    public void SetTarget(Vector3 target, bool broadcast = true)
     {
+        if (broadcast && DeadBoat.Online.SharedRunContext.Playing && DeadBoat.Online.SharedEnemiesRuntime.Authority)
+            DeadBoat.Online.SharedRunContext.State.RPC_ShowFireball(transform.position + DeadBoat.Online.LobbyNetworkAvatar.Origin,
+                target + DeadBoat.Online.LobbyNetworkAvatar.Origin);
         _selfPosition = this.transform.position;
         _targetPosition = target;
         _haveTarget = true;
@@ -31,6 +34,12 @@ public class FireballBoss : MonoBehaviour
     }
     private void ActivateDamageBox()
     {
+        if (DeadBoat.Online.SharedRunContext.Active)
+        {
+            DeadBoat.Online.SharedEnemiesRuntime.AreaAttack(transform.position, _hitRadius, (int)_damage);
+            Destroy(gameObject);
+            return;
+        }
         // ÷ентр сферы Ч позици€ объекта
         Collider[] hits = Physics.OverlapSphere(this.transform.position, _hitRadius, _hitLayers);
         foreach (var hit in hits)

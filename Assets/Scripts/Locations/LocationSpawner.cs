@@ -62,7 +62,11 @@ public class LocationSpawner : MonoBehaviour
     void Update()
     {
         // 1) Спавн новых локаций, когда игрок продвинулся вперед
-        if (_player.zPositionFix + spawnThreshold > lastSpawnZ && lastSpawnZ < _stopSpawnDistance)
+        var shared = DeadBoat.Online.SharedRunContext.State;
+        float front = DeadBoat.Online.SharedRunContext.Playing ? shared.WorldFront : _player.zPositionFix;
+        float rear = DeadBoat.Online.SharedRunContext.Playing ? shared.WorldRear : _boardController.TotalDistanceTraveled - removalDistance;
+        if (DeadBoat.Online.SharedRunContext.Active && !DeadBoat.Online.SharedRunContext.Playing) return;
+        if (front + spawnThreshold > lastSpawnZ && lastSpawnZ < _stopSpawnDistance)
         {
             SpawnLocation();
         }
@@ -71,7 +75,7 @@ public class LocationSpawner : MonoBehaviour
         for (int i = spawnedLocations.Count - 1; i >= 0; i--)
         {
             // Если этот объект позади лодки больше, чем removalDistance, уничтожаем
-            if (spawnedLocations[i].ZPosition < _boardController.TotalDistanceTraveled - removalDistance)
+            if (spawnedLocations[i].ZPosition < rear)
             {
                 Destroy(spawnedLocations[i].gameObject);
                 spawnedLocations.RemoveAt(i);

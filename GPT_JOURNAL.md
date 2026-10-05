@@ -459,3 +459,12 @@ Open follow-up:
 - Restored `PlayerSettings.WebGL.decompressionFallback = true` (`webGLDecompressionFallback: 1`) through the live Unity-MCP connection.
 - Future Brotli WebGL builds use `.unityweb` payloads with Unity's JavaScript decompressor and no longer depend on GameDistribution's compression headers. The current `PROJECT:Bridge` template and the other pending WebGL/Playgama changes were preserved.
 - A control `BuildPipeline.BuildPlayer` did not produce an artifact because Unity's `Unity.ILPP.Runner` stalled during build-time processing. The stalled child process and orphaned MCP server were cleaned up, Unity was restarted, and the editor returned with `IsCompiling=false` / `IsUpdating=false`. No temporary verification scripts remain in `Assets`.
+
+
+### 2026-10-05 — общий игровой мир кооператива
+
+- В рабочей ветке добавлены общая лодка/водитель/топливо, бонусы экипажа, страницы снимков объектов, атомарное владение и кинематические прокси предметов, attached, личный выброс оружия с патронами, authority AI/HP/горение/ночные спавны и общий RunWon.
+- Логические координаты отделены от визуальных аватаров; общий фронт геометрии учитывает всех участников. SDK не изменялись.
+- Два Cloud peers подтвердили протокол, включая переход authority страниц. Настоящий Lobby→LevelForest с transport-only вторым peer проверил инвентарь, тестовую рекламу/возрождение и реального Forest-босса до общей победы. Это не ручная приёмка WebGL.
+- Карточки и доказательства: Docs/COOP_EDITOR_CHECKS_20261005.md. Постоянные награды/reconnect остаются работой; SharedRunPreviewSave сохраняет изоляцию.
+- По просьбе владельца новую сборку в черновик не загружали. Следующий шаг — ИИ: подготовка сборки после окончательной проверки; владелец: затем приёмка двух/четырёх устройств.

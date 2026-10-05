@@ -17,6 +17,7 @@ public class DriverSeatTrigger : MonoBehaviour
 
     // Флаг, показывающий, находится ли игрок в режиме вождения
     private bool isDriving = false;
+    private bool pendingSharedSeat;
 
     // Ссылка на компонент PlayerInput для отслеживания прыжка
     private PlayerInput playerInput;
@@ -47,6 +48,18 @@ public class DriverSeatTrigger : MonoBehaviour
     }
     void EnterDrivingMode()
     {
+        if (DeadBoat.Online.SharedRunContext.Active)
+        {
+            var state = DeadBoat.Online.SharedRunContext.State;
+            if (!DeadBoat.Online.SharedRunContext.Playing || state == null) return;
+            if (state.Driver != state.Runner.LocalPlayer)
+            {
+                if (!pendingSharedSeat) state.RPC_Driver(true);
+                pendingSharedSeat = true;
+                return;
+            }
+            pendingSharedSeat = false;
+        }
         // Сохраняем исходную позицию и поворот игрока (на случай возврата)
         //originalPlayerPosition = playerCharacter.transform.position;
         //originalPlayerRotation = playerCharacter.transform.rotation;
@@ -71,6 +84,22 @@ public class DriverSeatTrigger : MonoBehaviour
 
     private void Update()
     {
+        if (DeadBoat.Online.SharedRunContext.Active)
+        {
+            var state = DeadBoat.Online.SharedRunContext.State;
+            if (pendingSharedSeat && state != null && state.Object != null && state.Object.IsValid)
+            {
+                if (Vector3.Distance(playerCharacter.transform.position, driverSeatTransform.position) > 4)
+                {
+                    state.RPC_Driver(false);
+                    pendingSharedSeat = false;
+                }
+                else if (state.Driver == state.Runner.LocalPlayer) EnterDrivingMode();
+                else if (state.Driver != Fusion.PlayerRef.None) pendingSharedSeat = false;
+            }
+            if (isDriving && (state == null || state.Object == null || !state.Object.IsValid ||
+                state.Driver != state.Runner.LocalPlayer)) ExitDrivingMode();
+        }
         // Если игрок в режиме вождения, проверяем срабатывание прыжка через PlayerInput
         if (isDriving && PlayerInput.Instance != null && PlayerInput.Instance.JumpTriggered)
         {
@@ -80,6 +109,9 @@ public class DriverSeatTrigger : MonoBehaviour
 
     void ExitDrivingMode()
     {
+        pendingSharedSeat = false;
+        var shared = DeadBoat.Online.SharedRunContext.State;
+        if (DeadBoat.Online.SharedRunContext.Playing && shared != null) shared.RPC_Driver(false);
         // Включаем обратно компонент обычного движения, если он был отключён
         if (PlayerInput.Instance != null)
         {

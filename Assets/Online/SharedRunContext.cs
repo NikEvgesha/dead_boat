@@ -29,7 +29,10 @@ namespace DeadBoat.Online
         public static void End()
         {
             Active = false;
+            SharedItemsRuntime.Clear();
+            SharedEnemiesRuntime.Clear();
             State = null;
+            Time.timeScale = PauseManager.Instance != null && PauseManager.Instance.IsPaused ? 0 : 1;
             if (Save != null) Object.Destroy(Save);
             Save = null;
         }

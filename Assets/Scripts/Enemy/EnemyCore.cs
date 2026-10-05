@@ -28,6 +28,16 @@ public abstract class EnemyCore : MonoBehaviour
     private Coroutine _burnRoutine;
 
     public bool IsDead => isDead;
+    public int SharedHP => currentHP;
+    public int SharedMaxHP => _maxHP;
+    public void ApplySharedHealth(int hp, int maxHP)
+    {
+        if (isDead) return;
+        _maxHP = maxHP;
+        if (hp < currentHP) DeadBoat.Online.SharedEnemiesRuntime.ApplyDamage(this, currentHP - hp);
+        else currentHP = hp;
+        if (hpBar != null) hpBar.size = maxHP > 0 ? (float)hp / maxHP : 0;
+    }
 
     protected virtual void Awake()
     {
@@ -55,6 +65,7 @@ public abstract class EnemyCore : MonoBehaviour
     /// </summary>
     public virtual void TakeDamage(int damage)
     {
+        if (DeadBoat.Online.SharedEnemiesRuntime.RequestDamage(this, damage)) return;
         if (isDead) return;
 
         DamagePopup.Create(transform, damage);
@@ -72,6 +83,7 @@ public abstract class EnemyCore : MonoBehaviour
 
     public void ApplyBurn(float duration, float damagePerSecond)
     {
+        if (DeadBoat.Online.SharedEnemiesRuntime.RequestBurn(this, duration, damagePerSecond)) return;
         if (isDead || duration <= 0f || damagePerSecond <= 0f)
             return;
 

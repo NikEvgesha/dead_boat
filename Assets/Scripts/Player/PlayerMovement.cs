@@ -132,6 +132,7 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
+        if (DeadBoat.Online.SharedLocalGameplay.Blocked) return;
         if (!ControlManager.Instance.MoveActive)
             return;
 

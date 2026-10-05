@@ -8,7 +8,11 @@ namespace DeadBoat.Online
     {
         [SerializeField] private LobbyHeldItemCatalog itemCatalog;
 
+        [Networked] private TickTimer AttackVisual { get; set; }
+        [Networked] private int AttackStyle { get; set; }
         [Networked] private byte HeldItemId { get; set; }
+        [Networked] public float Health { get; private set; }
+        public Transform WorldTransform => visualRoot != null ? visualRoot : transform;
 
         private PlayerMovement localPlayer;
         private ActiveItemManager activeItemManager;
@@ -22,6 +26,22 @@ namespace DeadBoat.Online
         private byte displayedItemId = byte.MaxValue;
         private float holdWeight;
         private Vector3 lastPosition;
+        private Transform visualRoot;
+
+        public static Vector3 Origin => SharedRunContext.Active && FixCoordinate.Instance != null
+            ? Vector3.forward * FixCoordinate.Instance.BoardAddPos : Vector3.zero;
+
+        public static void ReportAttack(int style)
+        {
+            foreach (var avatar in FindObjectsByType<LobbyNetworkAvatar>(FindObjectsSortMode.None))
+                if (avatar.Object != null && avatar.Object.IsValid && avatar.Object.HasStateAuthority &&
+                    (!SharedRunContext.Active || avatar.Runner == SharedRunContext.State?.Runner))
+                {
+                    avatar.AttackStyle = style;
+                    avatar.AttackVisual = TickTimer.CreateFromSeconds(avatar.Runner, 0.35f);
+                    return;
+                }
+        }
 
         public override void Spawned()
         {
@@ -44,6 +64,13 @@ namespace DeadBoat.Online
             }
 
             lastPosition = transform.position;
+            // NetworkTransform carries logical coordinates. Move only the visual
+            // children into this peer's rebased world; keep the network root intact.
+            visualRoot = new GameObject("Local Avatar Visual").transform;
+            var children = new System.Collections.Generic.List<Transform>();
+            foreach (Transform child in transform) children.Add(child);
+            visualRoot.SetParent(transform, false);
+            foreach (var child in children) child.SetParent(visualRoot, true);
             if (Object.HasStateAuthority)
             {
                 foreach (var avatarRenderer in avatarRenderers)
@@ -64,7 +91,8 @@ namespace DeadBoat.Online
             if (localPlayer == null)
                 return;
 
-            transform.SetPositionAndRotation(localPlayer.transform.position, localPlayer.transform.rotation);
+            transform.SetPositionAndRotation(localPlayer.transform.position + Origin, localPlayer.transform.rotation);
+            Health = PlayerStatsManager.Instance != null ? PlayerStatsManager.Instance.Health : 100;
 
             if (activeItemManager == null && Inventory.Instance != null)
                 activeItemManager = Inventory.Instance.GetComponent<ActiveItemManager>();
@@ -95,6 +123,7 @@ namespace DeadBoat.Online
 
         private void LateUpdate()
         {
+            if (visualRoot != null) visualRoot.position = transform.position - Origin;
             if (Object == null || Object.HasStateAuthority || rightArm == null)
                 return;
 
@@ -104,7 +133,10 @@ namespace DeadBoat.Online
                 return;
 
             float sway = Mathf.Sin(Time.time * 2.5f) * 1.5f;
-            var rightPose = Quaternion.Euler(-65f + sway, 0f, -6f);
+            float remaining = AttackVisual.RemainingTime(Runner) ?? 0;
+            float attack = remaining > 0 ? Mathf.Sin((1 - remaining / 0.35f) * Mathf.PI) : 0;
+            var rightPose = Quaternion.Euler(-65f + sway + attack * (AttackStyle == 1 ? 70 : -15),
+                attack * (AttackStyle == 1 ? 65 : 0), -6f);
             rightArm.localRotation = Quaternion.Slerp(rightArm.localRotation, rightPose, holdWeight);
 
             var entry = itemCatalog != null ? itemCatalog.Find(HeldItemId) : null;

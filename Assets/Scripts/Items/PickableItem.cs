@@ -109,6 +109,7 @@ public class PickableItem : MonoBehaviour
         while (this.enabled)
         {
             yield return new WaitForSeconds(1);
+            if (!DeadBoat.Online.SharedItemsRuntime.Simulates(this)) { if (_rb != null) _rb.isKinematic = true; continue; }
             if (!_useKinematicCheck) continue;
             if (_rb == null || _player == null) continue;
 
@@ -258,8 +259,36 @@ public class PickableItem : MonoBehaviour
         _status = ItemStatus.Free;
     }
 
+    public void ApplySharedWorldState(int mode)
+    {
+        CheckComponents();
+        if (mode == 2) return;
+        bool wasAttached = _attached;
+        _attached = mode == 3;
+        _status = _attached ? ItemStatus.Attached : ItemStatus.Free;
+        _useKinematicCheck = mode == 0;
+        tag = Tag.Item.ToString();
+        gameObject.layer = (int)Layer.Pickable;
+        if (_collider != null) _collider.enabled = mode != 1;
+        if (mode != 3 && (wasAttached || transform.parent == null ||
+            transform.GetComponentInParent<Inventory>() != null))
+            transform.SetParent(null, true);
+    }
+
+    public void ApplySharedPhysics(bool simulate)
+    {
+        CheckComponents();
+        if (_rb != null)
+        {
+            if (!simulate) _rb.isKinematic = true;
+            else if (_status == ItemStatus.Free || _status == ItemStatus.Grabbed) _rb.isKinematic = false;
+        }
+        // Collider visibility is controlled by the replicated item mode.
+    }
+
     private void FixedUpdate()
     {
+        if (!DeadBoat.Online.SharedItemsRuntime.Simulates(this)) return;
         if (_status == ItemStatus.Grabbed && _itemPoint != null)
         {
 

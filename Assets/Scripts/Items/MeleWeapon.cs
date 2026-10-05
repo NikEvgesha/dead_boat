@@ -88,6 +88,7 @@ public class MeleWeapon : MonoBehaviour
     }
     public void PlayRandomAttack()
     {
+        DeadBoat.Online.LobbyNetworkAvatar.ReportAttack(1);
         // Генерируем случайное число 1, 2 или 3
         _damageArea.enabled = true;
         int randomAttack = Random.Range(1, 4);

@@ -285,6 +285,8 @@ public class PlayerStatsManager : MonoBehaviour
 
     public void TakeDamage( int damage)
     {
+        if (DeadBoat.Online.SharedAdProtection.Protected ||
+            (DeadBoat.Online.SharedRunContext.Active && !DeadBoat.Online.SharedRunContext.Playing)) return;
         if(_isDead || !InGame) 
             return;
 

@@ -70,6 +70,11 @@ public class RangedWeaponController : MonoBehaviour
     [SerializeField] private GameObject bulletTrailPrefab;
     [SerializeField] private float bulletSpeed = 100f; // Скорость "перемещения" трейла
 
+    public void ApplySharedAmmo(int ammo)
+    {
+        if (ammo >= 0) _currentAmmo = Mathf.Clamp(ammo, 0, maxAmmo);
+    }
+
     public int CurrentAmmo 
     { 
         get { return _currentAmmo; }
@@ -232,6 +237,7 @@ public class RangedWeaponController : MonoBehaviour
     // Основной метод выстрела
     private void Fire()
     {
+        DeadBoat.Online.LobbyNetworkAvatar.ReportAttack(2);
         if (muzzleFlash != null)
             muzzleFlash.Play();
         

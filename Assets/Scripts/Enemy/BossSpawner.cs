@@ -22,6 +22,12 @@ public class BossSpawner : MonoBehaviour
     {
         Vector3 spawnPos = _boardController.transform.position;
         _boss = Instantiate(_boss, spawnPos, _boss.transform.rotation, transform);
+        if (DeadBoat.Online.SharedRunContext.Active)
+        {
+            int index = 0;
+            foreach (var enemy in _boss.GetComponentsInChildren<EnemyCore>(true))
+                enemy.gameObject.AddComponent<DeadBoat.Online.WorldSpawnIdentity>().Key = "boss:part:" + index++;
+        }
         _boss.StartBossFight();
     }
 

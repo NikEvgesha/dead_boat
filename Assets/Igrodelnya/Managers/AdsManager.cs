@@ -58,6 +58,7 @@ public class AdsManager : MonoBehaviour
 
     private void OnAdClosed()
     {
+        DeadBoat.Online.SharedAdProtection.End();
         AdClosed?.Invoke();
     }
 
@@ -103,7 +104,19 @@ public class AdsManager : MonoBehaviour
         {
             if (provider.IsRewardedAdReady())
             {
-                provider.ShowRewardedAd(rewardId, onComplete);
+                DeadBoat.Online.SharedAdProtection.Begin();
+                bool completed = false;
+                try { provider.ShowRewardedAd(rewardId, result =>
+                {
+                    if (completed) return;
+                    completed = true;
+                    DeadBoat.Online.SharedAdProtection.End();
+                    onComplete?.Invoke(result);
+                }); }
+                catch (Exception) {
+                    DeadBoat.Online.SharedAdProtection.End();
+                    if (!completed) { completed = true; onComplete?.Invoke(false); }
+                }
                 return;
             }
         }
@@ -122,7 +135,19 @@ public class AdsManager : MonoBehaviour
 
         foreach (var provider in adsProviders)
         {
-            provider.ShowInterstitialAd(onComplete);
+            DeadBoat.Online.SharedAdProtection.Begin();
+            bool completed = false;
+            try { provider.ShowInterstitialAd(result =>
+            {
+                if (completed) return;
+                completed = true;
+                DeadBoat.Online.SharedAdProtection.End();
+                onComplete?.Invoke(result);
+            }); }
+            catch (Exception) {
+                DeadBoat.Online.SharedAdProtection.End();
+                if (!completed) { completed = true; onComplete?.Invoke(false); }
+            }
             return;
         }
         Debug.LogWarning("No interstitial ads available!");
