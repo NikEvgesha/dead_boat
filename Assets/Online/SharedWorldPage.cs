@@ -45,13 +45,23 @@ namespace DeadBoat.Online
     public sealed class SharedItemsTable : IEnumerable<KeyValuePair<ulong, SharedItemRecord>>
     {
         private readonly SharedDepartureState state;
+        private readonly Dictionary<ulong, SharedWorldPage> locations = new();
         private NetworkRunner Runner => state.Runner;
         public SharedItemsTable(SharedDepartureState value) => state = value;
         public int Capacity => int.MaxValue;
         public int Count { get { int n = 0; foreach (var p in SharedWorldPage.All(Runner)) n += p.Items.Count; return n; } }
         private SharedWorldPage Page(ulong id)
         {
-            foreach (var p in SharedWorldPage.All(Runner)) if (p.Items.ContainsKey(id)) return p;
+            if (locations.TryGetValue(id, out var cached) && cached != null && cached.Object != null &&
+                cached.Object.IsValid && cached.Items.ContainsKey(id)) return cached;
+            locations.Remove(id);
+            foreach (var p in SharedWorldPage.All(Runner)) if (p.Items.ContainsKey(id))
+            {
+                // Remote cleanup is replicated independently; bound stale lookup entries.
+                if (locations.Count >= 4096) locations.Clear();
+                locations[id] = p;
+                return p;
+            }
             return null;
         }
         public bool ContainsKey(ulong id) => TryGet(id, out _);

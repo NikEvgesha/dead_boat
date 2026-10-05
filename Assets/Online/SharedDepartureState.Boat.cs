@@ -21,8 +21,10 @@ namespace DeadBoat.Online
         [Networked] private TickTimer DriverInputDeadline { get; set; }
         [Networked] public NetworkBool BoatFinished { get; private set; }
 
+        internal static readonly Unity.Profiling.ProfilerMarker TickMarker = new("DeadBoat.SharedAuthority");
         private void TickBoat()
         {
+            using var measured = TickMarker.Auto();
             EnsureWorldPages();
             ReleaseDisconnectedItems();
             TickWorld();
@@ -69,7 +71,7 @@ namespace DeadBoat.Online
                     ? BoardController.Instance.GetComponentInChildren<DriverSeatTrigger>() : null;
                 if (seat == null || seat.driverSeatTransform == null) return;
                 LobbyNetworkAvatar source = null;
-                foreach (var avatar in FindObjectsByType<LobbyNetworkAvatar>(FindObjectsSortMode.None))
+                foreach (var avatar in LobbyNetworkAvatar.All)
                     if (avatar.Runner == Runner && avatar.Object.StateAuthority == info.Source) source = avatar;
                 if (source == null || Vector3.Distance(source.transform.position,
                     seat.driverSeatTransform.position + LobbyNetworkAvatar.Origin) > 4 + Mathf.Min(15, BoatSpeed * 0.2f)) return;

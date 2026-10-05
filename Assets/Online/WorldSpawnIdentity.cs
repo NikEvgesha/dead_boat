@@ -6,12 +6,30 @@ namespace DeadBoat.Online
     public sealed class WorldSpawnIdentity : MonoBehaviour
     {
         private string key;
+        public PickableItem Item { get; private set; }
+        public EnemyCore Enemy { get; private set; }
+        public RangedWeaponController Weapon { get; private set; }
+        public Animator Animator { get; private set; }
+        public UnityEngine.AI.NavMeshAgent Agent { get; private set; }
+        private bool cached;
+        private void Awake() => CacheComponents();
+        private void CacheComponents()
+        {
+            if (cached) return;
+            cached = true;
+            Item = GetComponent<PickableItem>();
+            Enemy = GetComponent<EnemyCore>();
+            Weapon = GetComponentInChildren<RangedWeaponController>(true);
+            Animator = GetComponent<Animator>();
+            Agent = GetComponent<UnityEngine.AI.NavMeshAgent>();
+        }
         public ulong Id { get; private set; }
         public bool Prunable => key != null && !key.StartsWith("scene:") && !key.StartsWith("boss:") && !key.StartsWith("test:");
         public int ItemTemplate { get; set; }
         public ulong TemplateId { get; set; }
         public void InitializeRemote(ulong id, ulong template)
         {
+            CacheComponents();
             key = "remote:" + id;
             Id = id;
             TemplateId = template;
@@ -22,6 +40,7 @@ namespace DeadBoat.Online
             get => key;
             set
             {
+                CacheComponents();
                 key = value;
                 ulong hash = 14695981039346656037UL;
                 foreach (byte b in System.Text.Encoding.UTF8.GetBytes(value)) hash = (hash ^ b) * 1099511628211UL;

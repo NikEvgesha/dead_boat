@@ -24,9 +24,19 @@ namespace DeadBoat.Online
         public int NextNightSpawn() => ++NightSpawnSequence;
         public void MarkWon() { if (Object.HasStateAuthority && Phase == 3) RunWon = true; }
 
+        private readonly System.Collections.Generic.Dictionary<ulong, SharedWorldPage> enemyLocations = new();
+
         private SharedWorldPage EnemyPage(ulong id)
         {
-            foreach (var p in SharedWorldPage.All(Runner)) if (p.Enemies.ContainsKey(id)) return p;
+            if (enemyLocations.TryGetValue(id, out var cached) && cached != null && cached.Object != null &&
+                cached.Object.IsValid && cached.Enemies.ContainsKey(id)) return cached;
+            enemyLocations.Remove(id);
+            foreach (var p in SharedWorldPage.All(Runner)) if (p.Enemies.ContainsKey(id))
+            {
+                if (enemyLocations.Count >= 4096) enemyLocations.Clear();
+                enemyLocations[id] = p;
+                return p;
+            }
             return null;
         }
         public bool TryEnemy(ulong id, out SharedEnemyRecord enemy)
@@ -42,7 +52,7 @@ namespace DeadBoat.Online
             var page = EnemyPage(identity.Id) ?? (Object.HasStateAuthority ? AvailablePage(true) : null);
             if (page == null || !page.Object.HasStateAuthority || enemy.SharedMaxHP <= 0) return;
             if (enemy is DragonBossController dragon) DragonBrain = dragon.CaptureSharedBrain(identity.Id);
-            var animator = enemy.GetComponent<Animator>();
+            var animator = identity.Animator;
             var animation = animator != null && animator.isActiveAndEnabled ? animator.GetCurrentAnimatorStateInfo(0) : default;
             var record = new SharedEnemyRecord
             {
@@ -79,7 +89,7 @@ namespace DeadBoat.Online
                 damage <= 0 || damage > 5000 || float.IsNaN(duration) || float.IsNaN(damage) ||
                 !TryEnemy(id, out var record) || record.HP <= 0 || !record.Active) return;
             LobbyNetworkAvatar source = null;
-            foreach (var avatar in FindObjectsByType<LobbyNetworkAvatar>(FindObjectsSortMode.None))
+            foreach (var avatar in LobbyNetworkAvatar.All)
                 if (avatar.Runner == Runner && avatar.Object.StateAuthority == info.Source) source = avatar;
             if (source == null || Vector3.Distance(source.transform.position, record.Position) > 200) return;
             record.BurnRemaining = duration; record.BurnDamage = damage; record.BurnAccumulator = 0;
@@ -122,7 +132,7 @@ namespace DeadBoat.Online
                 !SharedItemsRuntime.TryFind(id, out var identity)) return;
             var enemy = identity.GetComponent<EnemyCore>();
             LobbyNetworkAvatar source = null;
-            foreach (var avatar in FindObjectsByType<LobbyNetworkAvatar>(FindObjectsSortMode.None))
+            foreach (var avatar in LobbyNetworkAvatar.All)
                 if (avatar.Runner == Runner && avatar.Object.StateAuthority == info.Source) source = avatar;
             if (enemy == null || source == null || Vector3.Distance(source.transform.position, record.Position) > 200) return;
             SharedEnemiesRuntime.ApplyDamage(enemy, damage);

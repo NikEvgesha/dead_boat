@@ -15,7 +15,7 @@ namespace DeadBoat.Online
         private void TickWorld()
         {
             float front = BoatDistance, rear = BoatDistance;
-            foreach (var avatar in FindObjectsByType<LobbyNetworkAvatar>(FindObjectsSortMode.None))
+            foreach (var avatar in LobbyNetworkAvatar.All)
                 if (avatar.Runner == Runner && Includes(avatar.Object.StateAuthority))
                 {
                     front = Mathf.Max(front, avatar.transform.position.z);

@@ -59,7 +59,7 @@ namespace DeadBoat.Online
                 float.IsNaN(rotation.w) || float.IsInfinity(rotation.w) ||
                 SharedItemCatalog.Load()?.Find(template) == null) return;
             LobbyNetworkAvatar source = null;
-            foreach (var avatar in FindObjectsByType<LobbyNetworkAvatar>(FindObjectsSortMode.None))
+            foreach (var avatar in LobbyNetworkAvatar.All)
                 if (avatar.Runner == Runner && avatar.Object.StateAuthority == info.Source) source = avatar;
             if (source == null || Vector3.Distance(source.transform.position, position) > 20) return;
             Items.Add(id, new SharedItemRecord
@@ -80,7 +80,7 @@ namespace DeadBoat.Online
                 item.Rotation = BoardController.Instance.transform.rotation * item.BoatLocalRotation;
             }
             LobbyNetworkAvatar avatar = null;
-            foreach (var candidate in FindObjectsByType<LobbyNetworkAvatar>(FindObjectsSortMode.None))
+            foreach (var candidate in LobbyNetworkAvatar.All)
                 if (candidate.Runner == Runner && candidate.Object.StateAuthority == info.Source) avatar = candidate;
             if (avatar == null || Vector3.Distance(avatar.transform.position, item.Position) > 4 + BoatMovementAllowance(item.Position)) return;
             item.Owner = info.Source;
@@ -96,7 +96,7 @@ namespace DeadBoat.Online
                 !Finite(new Vector3(rotation.x, rotation.y, rotation.z)) ||
                 float.IsNaN(rotation.w) || float.IsInfinity(rotation.w)) return;
             LobbyNetworkAvatar source = null;
-            foreach (var avatar in FindObjectsByType<LobbyNetworkAvatar>(FindObjectsSortMode.None))
+            foreach (var avatar in LobbyNetworkAvatar.All)
                 if (avatar.Runner == Runner && avatar.Object.StateAuthority == info.Source) source = avatar;
             if (mode != 4 && (source == null || Vector3.Distance(source.transform.position, position) > 20)) return;
             if (mode == 3)
@@ -115,8 +115,12 @@ namespace DeadBoat.Online
             Items.Set(id, item);
         }
 
+        private double nextOwnerAudit;
         private void ReleaseDisconnectedItems()
         {
+            double now = Time.realtimeSinceStartupAsDouble;
+            if (now < nextOwnerAudit) return;
+            nextOwnerAudit = now + 0.25;
             foreach (var entry in Items)
             {
                 var item = entry.Value;

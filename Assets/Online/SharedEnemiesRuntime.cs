@@ -11,6 +11,7 @@ namespace DeadBoat.Online
         private double nextSample;
         private bool victoryShown;
         private bool wasAuthority;
+        internal static readonly Unity.Profiling.ProfilerMarker UpdateMarker = new("DeadBoat.SharedEnemies");
         private static readonly System.Collections.Generic.Dictionary<ulong, ZombieController> templates = new();
         private static readonly System.Collections.Generic.Dictionary<DragonBossController,
             System.Collections.Generic.HashSet<Fusion.PlayerRef>> diveVictims = new();
@@ -37,7 +38,7 @@ namespace DeadBoat.Online
             if (!SharedRunContext.Playing || !Authority) return;
             if (!diveVictims.TryGetValue(dragon, out var hit)) diveVictims[dragon] = hit = new();
             var state = SharedRunContext.State;
-            foreach (var avatar in Object.FindObjectsByType<LobbyNetworkAvatar>(FindObjectsSortMode.None))
+            foreach (var avatar in LobbyNetworkAvatar.All)
                 if (avatar.Runner == state.Runner && avatar.Health > 0 &&
                     Vector3.Distance(avatar.transform.position - LobbyNetworkAvatar.Origin + Vector3.up,
                         dragon.transform.position) <= 3 && hit.Add(avatar.Object.StateAuthority))
@@ -85,7 +86,7 @@ namespace DeadBoat.Online
             if (!SharedRunContext.Active) return fallback;
             Transform nearest = fallback;
             float distance = float.MaxValue;
-            foreach (var avatar in Object.FindObjectsByType<LobbyNetworkAvatar>(FindObjectsSortMode.None))
+            foreach (var avatar in LobbyNetworkAvatar.All)
             {
                 if (avatar.Runner != SharedRunContext.State.Runner || avatar.Health <= 0) continue;
                 var target = avatar.Object.HasStateAuthority && PlayerMovement.Instance != null
@@ -101,7 +102,7 @@ namespace DeadBoat.Online
             if (!SharedRunContext.Active) return false;
             if (!Authority) return true;
             var state = SharedRunContext.State;
-            foreach (var avatar in Object.FindObjectsByType<LobbyNetworkAvatar>(FindObjectsSortMode.None))
+            foreach (var avatar in LobbyNetworkAvatar.All)
                 if (avatar.Runner == state.Runner && avatar.Health > 0 &&
                     (avatar.transform.position - LobbyNetworkAvatar.Origin - center).sqrMagnitude <= radius * radius)
                     state.RPC_PlayerDamage(avatar.Object.StateAuthority, damage);
@@ -113,7 +114,7 @@ namespace DeadBoat.Online
             if (!SharedRunContext.Active) return false;
             if (!Authority) return true;
             var state = SharedRunContext.State;
-            foreach (var avatar in Object.FindObjectsByType<LobbyNetworkAvatar>(FindObjectsSortMode.None))
+            foreach (var avatar in LobbyNetworkAvatar.All)
             {
                 if (avatar.Runner != state.Runner || avatar.Health <= 0) continue;
                 Vector3 point = Quaternion.Inverse(rotation) *
@@ -136,6 +137,7 @@ namespace DeadBoat.Online
 
         private void LateUpdate()
         {
+            using var measured = UpdateMarker.Auto();
             var state = SharedRunContext.State;
             if (!SharedRunContext.Playing || state == null) return;
             if (state.RunWon && !victoryShown)
@@ -158,7 +160,7 @@ namespace DeadBoat.Online
                 if (!active && alive > 0) Object.FindAnyObjectByType<TentacleBoss>()?.ChangeTentacle(null);
             }
             wasAuthority = Authority;
-            if (!Authority)
+            if (!Authority && sample)
             {
                 foreach (var page in SharedWorldPage.All(state.Runner))
                 {
@@ -177,7 +179,7 @@ namespace DeadBoat.Online
             foreach (var identity in snapshot)
             {
                 if (identity == null) continue;
-                var enemy = identity.GetComponent<EnemyCore>();
+                var enemy = identity.Enemy;
                 if (enemy == null) continue;
                 if (Authority)
                 {
@@ -185,8 +187,8 @@ namespace DeadBoat.Online
                     continue;
                 }
                 enemy.StopAllCoroutines();
-                var agent = enemy.GetComponent<NavMeshAgent>();
-                if (agent != null) agent.enabled = false;
+                var agent = identity.Agent;
+                if (agent != null && agent.enabled) agent.enabled = false;
                 if (!state.TryEnemy(identity.Id, out var record)) continue;
                 enemy.transform.SetPositionAndRotation(Vector3.Lerp(enemy.transform.position,
                     record.Position - LobbyNetworkAvatar.Origin, 1 - Mathf.Exp(-20 * Time.unscaledDeltaTime)), record.Rotation);
@@ -194,7 +196,7 @@ namespace DeadBoat.Online
                 enemy.ApplySharedHealth(record.HP, record.MaxHP);
                 if (enemy is DragonBossController dragon && state.DragonBrain.Id == identity.Id)
                     dragon.ApplySharedBrain(state.DragonBrain);
-                var animator = enemy.GetComponent<Animator>();
+                var animator = identity.Animator;
                 if (animator != null && animator.isActiveAndEnabled && record.Animation != 0)
                     animator.Play(record.Animation, 0, record.AnimationTime);
             }

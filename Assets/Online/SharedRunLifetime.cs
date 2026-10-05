@@ -30,6 +30,8 @@ namespace DeadBoat.Online
             gameObject.AddComponent<SharedBoatRuntime>();
             gameObject.AddComponent<SharedItemsRuntime>();
             gameObject.AddComponent<SharedEnemiesRuntime>();
+            if (Debug.isDebugBuild || Application.isEditor)
+                gameObject.AddComponent<SharedPerformanceMonitor>();
             runner = value;
             lastFrameTime = Time.realtimeSinceStartupAsDouble;
             DontDestroyOnLoad(gameObject);

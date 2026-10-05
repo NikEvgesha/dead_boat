@@ -13,6 +13,7 @@ namespace DeadBoat.Online
         private readonly List<WorldSpawnIdentity> snapshot = new();
         private double nextSample;
         private bool capacityReported;
+        internal static readonly Unity.Profiling.ProfilerMarker UpdateMarker = new("DeadBoat.SharedItems");
         public static void Register(WorldSpawnIdentity identity)
         {
             if (identities.TryGetValue(identity.Id, out var existing) && existing != null && existing.Key != identity.Key)
@@ -109,12 +110,14 @@ namespace DeadBoat.Online
 
         private void LateUpdate()
         {
+            using var measured = UpdateMarker.Auto();
             var state = SharedRunContext.State;
             if (!SharedRunContext.Playing || state == null) return;
             double now = Time.realtimeSinceStartupAsDouble;
             bool sample = now >= nextSample;
             if (sample) nextSample = now + 0.1;
-            foreach (var entry in state.Items)
+            // Discovery can follow the 10 Hz snapshot cadence; interpolation still runs every frame.
+            if (sample) foreach (var entry in state.Items)
             {
                 if (!entry.Value.Dropped || entry.Value.Template == 0 || entry.Value.Mode == 4 || TryFind(entry.Key, out _) ||
                     (entry.Value.Prunable && entry.Value.HomeZ < state.WorldRear && entry.Value.Position.z < state.WorldRear)) continue;
@@ -130,8 +133,8 @@ namespace DeadBoat.Online
             foreach (var identity in snapshot)
             {
                 if (identity == null) continue;
-                var item = identity.GetComponent<PickableItem>();
-                if (item == null || identity.GetComponent<EnemyCore>() != null) continue;
+                var item = identity.Item;
+                if (item == null || identity.Enemy != null) continue;
                 if (state.Object.HasStateAuthority)
                 {
                     state.RegisterItem(identity);
@@ -159,7 +162,7 @@ namespace DeadBoat.Online
                         pending.Remove(identity.Id);
                         deadlines.Remove(identity.Id);
                         item.gameObject.SetActive(true);
-                        item.GetComponentInChildren<RangedWeaponController>(true)?.ApplySharedAmmo(record.WeaponAmmo);
+                        identity.Weapon?.ApplySharedAmmo(record.WeaponAmmo);
                         if (item.GetComponentInParent<BoardController>() == null) item.transform.SetParent(null, true);
                         item.ApplySharedWorldState(0);
                         item.ApplySharedPhysics(true);
@@ -189,7 +192,7 @@ namespace DeadBoat.Online
                     if (sample)
                     {
                         int mode = item.Status == ItemStatus.InInventory ? 2 : item.Attached ? 3 : item.Grabbed ? 1 : 0;
-                        int ammo = item.GetComponentInChildren<RangedWeaponController>(true)?.CurrentAmmo ?? -1;
+                        int ammo = identity.Weapon?.CurrentAmmo ?? -1;
                         if (mode != 2 || record.Mode != 2 || record.WeaponAmmo != ammo)
                         {
                             Vector3 position = mode == 2 && PlayerMovement.Instance != null
@@ -205,12 +208,14 @@ namespace DeadBoat.Online
                 {
                     item.ApplySharedWorldState(3);
                     item.ApplySharedPhysics(false);
-                    item.transform.SetParent(BoardController.Instance.transform, false);
+                    if (item.transform.parent != BoardController.Instance.transform)
+                        item.transform.SetParent(BoardController.Instance.transform, false);
                     item.transform.SetLocalPositionAndRotation(record.BoatLocalPosition, record.BoatLocalRotation);
                     continue;
                 }
-                item.GetComponentInChildren<RangedWeaponController>(true)?.ApplySharedAmmo(record.WeaponAmmo);
-                if (record.Mode == 1 || record.Mode == 2) item.transform.SetParent(null, true);
+                identity.Weapon?.ApplySharedAmmo(record.WeaponAmmo);
+                if ((record.Mode == 1 || record.Mode == 2) && item.transform.parent != null)
+                    item.transform.SetParent(null, true);
                 item.ApplySharedWorldState(record.Mode);
                 bool visible = record.Mode != 2;
                 if (item.gameObject.activeSelf != visible) item.gameObject.SetActive(visible);

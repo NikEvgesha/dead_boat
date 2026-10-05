@@ -6,6 +6,30 @@ namespace DeadBoat.Online
     // The existing first-person controller stays local. This object only represents it to other peers.
     public sealed class LobbyNetworkAvatar : NetworkBehaviour
     {
+        private static readonly System.Collections.Generic.List<LobbyNetworkAvatar> spawned = new();
+        // Concrete enumerator avoids a scene scan and an array allocation per AI query.
+        public static AvatarEnumerable All => new AvatarEnumerable();
+        public readonly struct AvatarEnumerable
+        {
+            public Enumerator GetEnumerator() => new Enumerator(spawned.GetEnumerator());
+        }
+        public struct Enumerator
+        {
+            private System.Collections.Generic.List<LobbyNetworkAvatar>.Enumerator iterator;
+            internal Enumerator(System.Collections.Generic.List<LobbyNetworkAvatar>.Enumerator value) => iterator = value;
+            public LobbyNetworkAvatar Current => iterator.Current;
+            public bool MoveNext()
+            {
+                while (iterator.MoveNext())
+                    if (Current != null && Current.Object != null && Current.Object.IsValid) return true;
+                return false;
+            }
+            public void Dispose() => iterator.Dispose();
+        }
+
+        public override void Despawned(NetworkRunner runner, bool hasState) => spawned.Remove(this);
+        private void OnDestroy() => spawned.Remove(this);
+
         [SerializeField] private LobbyHeldItemCatalog itemCatalog;
 
         [Networked] private TickTimer AttackVisual { get; set; }
@@ -33,7 +57,7 @@ namespace DeadBoat.Online
 
         public static void ReportAttack(int style)
         {
-            foreach (var avatar in FindObjectsByType<LobbyNetworkAvatar>(FindObjectsSortMode.None))
+            foreach (var avatar in LobbyNetworkAvatar.All)
                 if (avatar.Object != null && avatar.Object.IsValid && avatar.Object.HasStateAuthority &&
                     (!SharedRunContext.Active || avatar.Runner == SharedRunContext.State?.Runner))
                 {
@@ -45,6 +69,7 @@ namespace DeadBoat.Online
 
         public override void Spawned()
         {
+            if (!spawned.Contains(this)) spawned.Add(this);
             // Runs on every peer: remote instances must survive the lobby unload too.
             Runner.MakeDontDestroyOnLoad(gameObject);
             Debug.Log($"[Lobby online] Avatar spawned; authority={Object.HasStateAuthority}");
