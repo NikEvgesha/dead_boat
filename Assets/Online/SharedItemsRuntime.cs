@@ -108,6 +108,24 @@ namespace DeadBoat.Online
                 (record.Owner == PlayerRef.None && state.Object.HasStateAuthority));
         }
 
+        private static void ApplyPhysics(WorldSpawnIdentity identity, PickableItem item, bool simulate)
+        {
+            item.ApplySharedPhysics(simulate);
+            identity.ApplyCorpsePhysics(simulate && item.Status != ItemStatus.InInventory && !item.Attached);
+        }
+
+        private static bool NearCrew(PickableItem item, bool wasNearby)
+        {
+            var state = SharedRunContext.State;
+            Vector3 position = item.transform.position + LobbyNetworkAvatar.Origin;
+            // Small hysteresis avoids repeatedly toggling bodies at the boundary.
+            float radius = item.PhysicsActivationDistance + (wasNearby ? 5 : 0);
+            foreach (var avatar in LobbyNetworkAvatar.All)
+                if (avatar.Runner == state.Runner && state.Includes(avatar.Object.StateAuthority) &&
+                    (avatar.transform.position - position).sqrMagnitude <= radius * radius) return true;
+            return false;
+        }
+
         private void LateUpdate()
         {
             using var measured = UpdateMarker.Auto();
@@ -146,7 +164,7 @@ namespace DeadBoat.Online
                 }
                 if (!state.Items.TryGet(identity.Id, out var record))
                 {
-                    item.ApplySharedPhysics(false);
+                    ApplyPhysics(identity, item, false);
                     continue;
                 }
                 if (record.Prunable && record.Owner == PlayerRef.None && record.Mode != 3 &&
@@ -165,7 +183,7 @@ namespace DeadBoat.Online
                         identity.Weapon?.ApplySharedAmmo(record.WeaponAmmo);
                         if (item.GetComponentInParent<BoardController>() == null) item.transform.SetParent(null, true);
                         item.ApplySharedWorldState(0);
-                        item.ApplySharedPhysics(true);
+                        ApplyPhysics(identity, item, true);
                         if (SharedLocalGameplay.Blocked)
                         {
                             state.RPC_ItemState(identity.Id, 0, record.Position, record.Rotation);
@@ -201,13 +219,13 @@ namespace DeadBoat.Online
                                 item.transform.rotation, ammo);
                         }
                     }
-                    item.ApplySharedPhysics(true);
+                    ApplyPhysics(identity, item, true);
                     continue;
                 }
                 if (record.Mode == 3 && BoardController.Instance != null)
                 {
                     item.ApplySharedWorldState(3);
-                    item.ApplySharedPhysics(false);
+                    ApplyPhysics(identity, item, false);
                     if (item.transform.parent != BoardController.Instance.transform)
                         item.transform.SetParent(BoardController.Instance.transform, false);
                     item.transform.SetLocalPositionAndRotation(record.BoatLocalPosition, record.BoatLocalRotation);
@@ -220,7 +238,8 @@ namespace DeadBoat.Online
                 bool visible = record.Mode != 2;
                 if (item.gameObject.activeSelf != visible) item.gameObject.SetActive(visible);
                 bool simulates = record.Owner == PlayerRef.None && state.Object.HasStateAuthority;
-                item.ApplySharedPhysics(simulates);
+                if (simulates && sample) identity.PhysicsNearby = NearCrew(item, identity.PhysicsNearby);
+                ApplyPhysics(identity, item, simulates && identity.PhysicsNearby);
                 if (simulates)
                 {
                     if (sample) state.SampleFreeItem(identity.Id, item.transform.position + LobbyNetworkAvatar.Origin,

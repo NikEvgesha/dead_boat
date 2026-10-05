@@ -50,6 +50,7 @@ public class PickableItem : MonoBehaviour
     public HashSet<ItemTag> Tags => _tags;
     public ItemData Data { get { return _itemData; } }
     public bool Usable => _usable;
+    public float PhysicsActivationDistance => _kinematicDistance;
 
     public Action PickUpItem;
     public Action PutItemToInventory;
@@ -110,6 +111,8 @@ public class PickableItem : MonoBehaviour
         {
             yield return new WaitForSeconds(1);
             if (!DeadBoat.Online.SharedItemsRuntime.Simulates(this)) { if (_rb != null) _rb.isKinematic = true; continue; }
+            // Shared world bodies are gated by proximity to the whole crew.
+            if (DeadBoat.Online.SharedRunContext.Active && GetComponent<DeadBoat.Online.WorldSpawnIdentity>() != null) continue;
             if (!_useKinematicCheck) continue;
             if (_rb == null || _player == null) continue;
 
@@ -280,8 +283,9 @@ public class PickableItem : MonoBehaviour
         CheckComponents();
         if (_rb != null)
         {
-            if (!simulate) _rb.isKinematic = true;
-            else if (_status == ItemStatus.Free || _status == ItemStatus.Grabbed) _rb.isKinematic = false;
+            if (simulate && _status != ItemStatus.Free && _status != ItemStatus.Grabbed) return;
+            bool kinematic = !simulate;
+            if (_rb.isKinematic != kinematic) _rb.isKinematic = kinematic;
         }
         // Collider visibility is controlled by the replicated item mode.
     }

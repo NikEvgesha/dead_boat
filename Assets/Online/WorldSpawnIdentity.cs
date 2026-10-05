@@ -12,6 +12,15 @@ namespace DeadBoat.Online
         public Animator Animator { get; private set; }
         public UnityEngine.AI.NavMeshAgent Agent { get; private set; }
         private bool cached;
+        public bool PhysicsNearby { get; set; } = true;
+        private Rigidbody[] corpseBodies;
+        public void ApplyCorpsePhysics(bool simulate)
+        {
+            if (key == null || !key.StartsWith("corpse:", System.StringComparison.Ordinal)) return;
+            corpseBodies ??= GetComponentsInChildren<Rigidbody>(true);
+            foreach (var body in corpseBodies)
+                if (body != null && body.isKinematic == simulate) body.isKinematic = !simulate;
+        }
         private void Awake() => CacheComponents();
         private void CacheComponents()
         {
