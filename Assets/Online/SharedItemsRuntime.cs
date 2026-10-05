@@ -153,16 +153,19 @@ namespace DeadBoat.Online
                 if (identity == null) continue;
                 var item = identity.Item;
                 if (item == null || identity.Enemy != null) continue;
-                if (state.Object.HasStateAuthority)
+                bool hasRecord = state.Items.TryGet(identity.Id, out var record);
+                // Existing records need no registration or repeated dictionary lookup.
+                if (!hasRecord && state.Object.HasStateAuthority)
                 {
                     state.RegisterItem(identity);
-                    if (!state.Items.ContainsKey(identity.Id) && !capacityReported)
+                    hasRecord = state.Items.TryGet(identity.Id, out record);
+                    if (!hasRecord && !capacityReported)
                     {
                         capacityReported = true;
                         Debug.LogWarning("[Shared items] Snapshot capacity exceeded; unregistered pickups remain locked.");
                     }
                 }
-                if (!state.Items.TryGet(identity.Id, out var record))
+                if (!hasRecord)
                 {
                     ApplyPhysics(identity, item, false);
                     continue;

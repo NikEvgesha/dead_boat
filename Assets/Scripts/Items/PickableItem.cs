@@ -270,10 +270,12 @@ public class PickableItem : MonoBehaviour
         _attached = mode == 3;
         _status = _attached ? ItemStatus.Attached : ItemStatus.Free;
         _useKinematicCheck = mode == 0;
-        tag = Tag.Item.ToString();
-        gameObject.layer = (int)Layer.Pickable;
-        if (_collider != null) _collider.enabled = mode != 1;
-        if (mode != 3 && (wasAttached || transform.parent == null ||
+        // Replicated state is revisited every frame; avoid unchanged native writes.
+        if (!CompareTag("Item")) tag = "Item";
+        if (gameObject.layer != (int)Layer.Pickable) gameObject.layer = (int)Layer.Pickable;
+        bool colliderEnabled = mode != 1;
+        if (_collider != null && _collider.enabled != colliderEnabled) _collider.enabled = colliderEnabled;
+        if (mode != 3 && transform.parent != null && (wasAttached ||
             transform.GetComponentInParent<Inventory>() != null))
             transform.SetParent(null, true);
     }

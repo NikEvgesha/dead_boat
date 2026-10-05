@@ -11,6 +11,23 @@ namespace DeadBoat.Online.SmokeTest.Editor
         private const string Scene = "Assets/Online/SmokeTest/MirraCloudConnectionSmokeTest.unity";
         private const string Output = "Builds/MirraCloudSmokeTest";
         private const string GameOutput = "Builds/MirraCloudPlayableDraft";
+        private const string PerformanceOutput = "Builds/CoopPerformanceDraft";
+
+        public static void QueuePerformanceDraft()
+        {
+            EditorApplication.update -= BuildQueuedPerformanceDraft;
+            EditorApplication.update += BuildQueuedPerformanceDraft;
+        }
+
+        private static void BuildQueuedPerformanceDraft()
+        {
+            if (BuildPipeline.isBuildingPlayer || EditorApplication.isCompiling) return;
+            EditorApplication.update -= BuildQueuedPerformanceDraft;
+            var scenes = EditorBuildSettings.scenes.Where(scene => scene.enabled).Select(scene => scene.path).ToArray();
+            if (scenes.Length == 0) throw new BuildFailedException("No enabled scenes in Editor Build Settings");
+            BuildPlayer(PerformanceOutput, scenes, new[] { "DEADBOAT_MIRRA_DIAGNOSTICS", "DEADBOAT_COOP_PERFORMANCE" });
+            UnityEngine.Debug.Log("[Coop performance build] PASS: " + PerformanceOutput);
+        }
 
         // Queue once from automation so a long BuildPlayer does not trigger tool retries.
         public static void QueuePlayableDraft()

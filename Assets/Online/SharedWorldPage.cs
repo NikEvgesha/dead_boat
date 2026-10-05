@@ -67,8 +67,16 @@ namespace DeadBoat.Online
         public bool ContainsKey(ulong id) => TryGet(id, out _);
         public bool TryGet(ulong id, out SharedItemRecord item)
         {
-            var page = Page(id);
-            if (page != null) return page.Items.TryGet(id, out item);
+            if (locations.TryGetValue(id, out var cached) && cached != null && cached.Object != null &&
+                cached.Object.IsValid && cached.Items.TryGet(id, out item)) return true;
+            locations.Remove(id);
+            foreach (var page in SharedWorldPage.All(Runner))
+                if (page.Items.TryGet(id, out item))
+                {
+                    if (locations.Count >= 4096) locations.Clear();
+                    locations[id] = page;
+                    return true;
+                }
             item = default; return false;
         }
         public SharedItemRecord this[ulong id] => Page(id).Items[id];
