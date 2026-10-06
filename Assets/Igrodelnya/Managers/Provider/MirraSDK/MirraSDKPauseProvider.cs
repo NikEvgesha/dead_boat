@@ -16,6 +16,10 @@ public class MirraSDKPauseProvider : PauseProvider
         {
             _isInitialized = true;
 
+            // Set the game-requested resume speed through the SDK. Its external
+            // pause remains effective until focus/ad pause reasons are cleared.
+            MirraSDK.Time.Scale = _isPaused ? 0f : 1f;
+
             if (!IsGameplayAnalyticsEnabled())
                 return;
 
