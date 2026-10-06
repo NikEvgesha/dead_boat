@@ -92,7 +92,8 @@ public class GameLoader : MonoBehaviour
         // Render the loading screen before starting the costly scene operation on WebGL.
         yield return null;
 
-        float loadingProgress;
+        double loadStarted = Time.realtimeSinceStartupAsDouble;
+        Debug.Log("[Scene load] Begin " + sceneName);
         Exception loadError = null;
         try
         {
@@ -112,17 +113,24 @@ public class GameLoader : MonoBehaviour
             OnLoadFailed?.Invoke("Could not open this level. Please try again.");
             yield break;
         }
-        while (_asyncOperation.progress < 0.95f)
+        while (!_asyncOperation.isDone)
         {
-            loadingProgress = Mathf.Clamp01(_asyncOperation.progress / 0.95f);
             LoadingProgressBarUI.Instance?.Progress(_asyncOperation.progress);
             yield return true;
         }
+        LoadingProgressBarUI.Instance?.Progress(1f);
+        Debug.Log("[Scene load] Activated " + sceneName + "; timeScale=" + Time.timeScale);
         BoardController board = FindAnyObjectByType<BoardController>();
         if (board != null)
         {
-            while (!board.StartGame)
+            double nextReport = Time.realtimeSinceStartupAsDouble + 10;
+            while (board != null && !board.StartGame)
             {
+                if (Time.realtimeSinceStartupAsDouble >= nextReport)
+                {
+                    nextReport += 10;
+                    Debug.LogWarning("[Scene load] Waiting for boat: " + sceneName + "; timeScale=" + Time.timeScale + "; elapsed=" + (Time.realtimeSinceStartupAsDouble - loadStarted).ToString("F1"));
+                }
                 yield return null;
             }
         }
@@ -132,6 +140,7 @@ public class GameLoader : MonoBehaviour
 
         HideLoadingScreen();
         //AdsManager.Instance.ShowInterstitialAd();
+        Debug.Log("[Scene load] Ready " + sceneName);
         OnSceneLoaded?.Invoke();
     }
 

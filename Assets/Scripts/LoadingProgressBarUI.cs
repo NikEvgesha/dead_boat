@@ -39,7 +39,7 @@ public class LoadingProgressBarUI : MonoBehaviour
         while (time <= finishTime)
         {
             yield return null;
-            time += Time.deltaTime;
+            time += Time.unscaledDeltaTime;
             t = time/finishTime;
             CurveT = _visuals[r].Evaluate(t);
             lerpT = math.lerp(_firstPartProgress, 1, CurveT);

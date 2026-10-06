@@ -176,7 +176,8 @@ public class BoardController : MonoBehaviour
         LoadingProgressBarUI.Instance?.EndProgress(1);
         while (time < 1)
         {
-            time += Time.deltaTime;
+            // Scene readiness must advance even during SDK/ad/focus pause.
+            time += Time.unscaledDeltaTime;
 
             if (time > 1)
                 time = 1;
