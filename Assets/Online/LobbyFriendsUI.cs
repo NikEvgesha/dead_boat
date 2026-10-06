@@ -85,7 +85,7 @@ namespace DeadBoat.Online
         private void SetOpen(bool value)
         {
             if (value && (owner.IsBrowsingDepartures || owner.IsInDepartureRoom ||
-                owner.GetComponent<LobbyOnlineModeUI>()?.IsOpen == true)) return;
+                owner.GetComponent<LobbyOnlineModeUI>()?.IsOpen == true || owner.GetComponent<LobbyChatUI>()?.IsOpen == true)) return;
             panel.SetActive(value);
             var controls = ControlManager.Instance;
             if (controls != null && !controls.UseTouchControl)

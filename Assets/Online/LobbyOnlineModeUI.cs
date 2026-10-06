@@ -101,7 +101,7 @@ namespace DeadBoat.Online
 
         private void SetOpen(bool value)
         {
-            if (value && GetComponent<LobbyFriendsUI>()?.IsOpen == true)
+            if (value && (GetComponent<LobbyFriendsUI>()?.IsOpen == true || GetComponent<LobbyChatUI>()?.IsOpen == true))
                 return;
             if (value && bootstrap != null && (bootstrap.IsBrowsingDepartures || bootstrap.IsInDepartureRoom))
                 return;

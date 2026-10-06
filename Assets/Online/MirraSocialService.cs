@@ -19,6 +19,7 @@ namespace DeadBoat.Online
         private float refreshAfter;
         private float mutationAfter;
         public bool Busy { get; private set; }
+        internal MirraCloudSDK Sdk => sdk;
         public bool Ready => sdk?.Authentication?.IsAuth == true && !string.IsNullOrEmpty(PlayerId);
         public string PlayerId => sdk?.Authentication?.IsAuth == true ? sdk.PlayerAccount?.PlayerAccountInfo?.Id : null;
         public string Status { get; private set; } = "Откройте друзей для подключения";

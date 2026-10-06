@@ -77,6 +77,7 @@ namespace DeadBoat.Online
         public string CurrentSessionName => runner != null && runner.SessionInfo.IsValid
             ? runner.SessionInfo.Name
             : null;
+        internal NetworkRunner LobbyRunner => runner;
 
         private void Awake()
         {
@@ -99,6 +100,7 @@ namespace DeadBoat.Online
                 : hasPreference ? LobbyOnlineMode.Offline : LobbyOnlineMode.Unselected;
             gameObject.AddComponent<LobbyOnlineModeUI>().Initialize(this, !hasPreference);
             gameObject.AddComponent<LobbyFriendsUI>().Initialize(this);
+            gameObject.AddComponent<MirraLobbyChat>().Initialize(this);
             if (mode == LobbyOnlineMode.Online)
                 _ = ConnectAsync();
             else

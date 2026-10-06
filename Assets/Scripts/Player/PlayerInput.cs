@@ -169,6 +169,19 @@ public class PlayerInput : MonoBehaviour
 
     private void Update()
     {
+        var selected = UnityEngine.EventSystems.EventSystem.current?.currentSelectedGameObject;
+        var textInput = selected != null ? selected.GetComponent<UnityEngine.UI.InputField>() : null;
+        if (textInput != null && textInput.isFocused)
+        {
+            // Typing in chat / friend ID must not trigger P, Tab, weapon actions or boat steering.
+            _jump = _sprint = _interaction = _interactionHold = _pickUp = _forcePickUp = false;
+            _attach = _inventory = _useItem = _reload = _attack = _healing = _rotationX = _rotationY = false;
+            _pause = _roulette = _playtime = _levelUp = false;
+            Movement = Vector3.zero;
+            Rotation = Vector2.zero;
+            TrainMove = 0;
+            return;
+        }
         CheckControls();
         UpdateMovement();
         UpdateRotation();

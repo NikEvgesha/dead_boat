@@ -1,0 +1,227 @@
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Fusion;
+using MirraCloud.Core.Chats.Dto;
+using MirraCloud.Core.Chats.Models;
+using MirraCloud.Core.Realtime.Protocol;
+using UnityEngine;
+
+namespace DeadBoat.Online
+{
+    // Messages live in Mirra; Photon carries only the public channel identifier.
+    public sealed class MirraLobbyChat : MonoBehaviour
+    {
+        private const string ChannelProperty = "mc_chat_v1";
+        private static readonly SemaphoreSlim channelGate = new(1, 1);
+        private LobbyOnlineBootstrap owner;
+        private MirraLobbyChatSettings settings;
+        private MirraSocialService social;
+        private bool working, sending, subscribed, recovering;
+        private string room, channel;
+        private float nextAttempt, nextSend;
+        private int generation;
+        private readonly List<ChatMessageDto> messages = new();
+        private readonly HashSet<string> deleted = new();
+        public IReadOnlyList<ChatMessageDto> Messages => messages;
+        public string Status { get; private set; } = "Чат недоступен";
+        public bool Ready => subscribed && !working && !recovering && social.Ready &&
+            social.Sdk.Chats.ConnectionState == RealtimeConnectionState.Connected && IsCurrent(room);
+        public bool Sending => sending;
+        public event Action Changed;
+
+        public void Initialize(LobbyOnlineBootstrap bootstrap)
+        {
+            owner = bootstrap;
+            social = MirraSocialService.Instance;
+            settings = Resources.Load<MirraLobbyChatSettings>("OnlineUI/MirraLobbyChatSettings");
+            if (settings != null && settings.enabledForPilot)
+                gameObject.AddComponent<LobbyChatUI>().Initialize(this, owner);
+        }
+
+        private bool IsCurrent(string expected) => this != null && owner != null && owner.IsOnline &&
+            !owner.IsInDepartureRoom && !owner.IsBrowsingDepartures && owner.CurrentSessionName == expected;
+
+        private async void Update()
+        {
+            if (settings == null || !settings.enabledForPilot || working || Time.unscaledTime < nextAttempt) return;
+            string desired = owner.IsOnline && !owner.IsInDepartureRoom && !owner.IsBrowsingDepartures
+                ? owner.CurrentSessionName : null;
+            if (room == desired && ((subscribed && social.Ready) || desired == null)) return;
+            working = true;
+            await channelGate.WaitAsync();
+            try
+            {
+                await DetachAsync();
+                if (this == null || string.IsNullOrEmpty(desired)) return;
+                room = desired;
+                Status = "Подключение чата…";
+                Changed?.Invoke();
+                if (!await social.ConnectAsync() || !IsCurrent(desired)) return;
+                var sdk = social.Sdk;
+                var runner = owner.LobbyRunner;
+                bool created = false;
+                if (runner.SessionInfo.Properties.TryGetValue(ChannelProperty, out var property))
+                    channel = (string)property;
+                if (string.IsNullOrEmpty(channel))
+                {
+                    if (!runner.IsSharedModeMasterClient) return;
+                    var create = sdk.Chats.CreateChannelAsync("Dead Boat lobby", settings.templateKey);
+                    await create.Task();
+                    if (!create.Result.IsSuccess || create.Result.Data == null) throw new InvalidOperationException();
+                    channel = create.Result.Data.ChannelId;
+                    created = true; // CreateChannel already joins its creator.
+                    if (!IsCurrent(desired) || !runner.IsSharedModeMasterClient) return;
+                    runner.SessionInfo.UpdateCustomProperties(new Dictionary<string, SessionProperty> { [ChannelProperty] = channel });
+                }
+                if (!created)
+                {
+                    var join = sdk.Chats.JoinAsync(channel);
+                    await join.Task();
+                    if (!join.Result.IsSuccess)
+                    {
+                        // A reconnect may already be a member. A generic 409 is not proof of membership.
+                        if (join.Result.HttpStatusCode != 409) throw new InvalidOperationException();
+                        var members = sdk.Chats.GetMembersAsync(channel);
+                        await members.Task();
+                        string profile = sdk.PlayerAccount.PlayerAccountInfo?.SelectedProfileId;
+                        bool member = !string.IsNullOrEmpty(profile) && members.Result.IsSuccess &&
+                            Array.Exists(members.Result.Data ?? Array.Empty<ChatMemberDto>(), m => m?.ProfileId == profile);
+                        if (!member) throw new InvalidOperationException();
+                    }
+                    if (!IsCurrent(desired)) throw new InvalidOperationException();
+                }
+                sdk.Chats.OnMessageReceived += Receive;
+                sdk.Chats.OnMessageEdited += Receive;
+                sdk.Chats.OnMessageDeleted += Delete;
+                sdk.Chats.OnSubscribedChannel += Recover;
+                sdk.Chats.OnConnectionStateChanged += ConnectionChanged;
+                var connect = sdk.Chats.ConnectAsync();
+                await connect.Task();
+                if (!connect.Result.IsSuccess || !IsCurrent(desired)) throw new InvalidOperationException();
+                var subscribe = sdk.Chats.SubscribeAsync(channel);
+                await subscribe.Task();
+                if (!subscribe.Result.IsSuccess || !IsCurrent(desired)) throw new InvalidOperationException();
+                subscribed = true;
+                var history = sdk.Chats.GetMessagesAsync(channel, limit: 50);
+                await history.Task();
+                if (!history.Result.IsSuccess || !IsCurrent(desired)) throw new InvalidOperationException();
+                foreach (var message in history.Result.Data ?? Array.Empty<ChatMessageDto>()) Receive(message);
+                Status = "Чат лобби";
+            }
+            catch (Exception) { Status = "Чат недоступен. Игра продолжается"; await DetachAsync(); }
+            finally { channelGate.Release(); working = false; nextAttempt = Time.unscaledTime + 10; Changed?.Invoke(); }
+        }
+
+        private void Receive(ChatMessageDto message)
+        {
+            if (message == null || message.ChannelId != channel || string.IsNullOrEmpty(message.MessageId) || deleted.Contains(message.MessageId)) return;
+            if (message.DeletedAt.HasValue) { Delete(new RealtimeDeletePayload { ChannelId = channel, MessageId = message.MessageId }); return; }
+            int index = messages.FindIndex(m => m.MessageId == message.MessageId);
+            if (index >= 0 && (messages[index].EditedAt ?? messages[index].CreatedAt) > (message.EditedAt ?? message.CreatedAt)) return;
+            if (index >= 0) messages[index] = message; else messages.Add(message);
+            messages.Sort((a,b) => a.Number.CompareTo(b.Number));
+            while (messages.Count > 50) messages.RemoveAt(0);
+            Changed?.Invoke();
+        }
+
+        private void Delete(RealtimeDeletePayload payload)
+        {
+            if (payload == null || payload.ChannelId != channel || string.IsNullOrEmpty(payload.MessageId)) return;
+            if (deleted.Count < 200) deleted.Add(payload.MessageId);
+            messages.RemoveAll(m => m.MessageId == payload.MessageId);
+            Changed?.Invoke();
+        }
+
+        private void ConnectionChanged(RealtimeConnectionState state)
+        {
+            if (state != RealtimeConnectionState.Connected) Status = "Переподключение чата…";
+            Changed?.Invoke();
+        }
+
+        private async void Recover(string subscribedChannel)
+        {
+            if (!subscribed || working || recovering || subscribedChannel != channel || !IsCurrent(room)) return;
+            int epoch = generation;
+            recovering = true;
+            messages.Clear(); deleted.Clear();
+            Status = "Обновление истории…";
+            Changed?.Invoke();
+            try
+            {
+                var history = social.Sdk.Chats.GetMessagesAsync(channel, limit: 50);
+                await history.Task();
+                if (epoch != generation || !IsCurrent(room)) return;
+                if (!history.Result.IsSuccess) throw new InvalidOperationException();
+                foreach (var message in history.Result.Data ?? Array.Empty<ChatMessageDto>()) Receive(message);
+                Status = "Чат лобби";
+            }
+            catch (Exception)
+            {
+                if (epoch == generation) { subscribed = false; Status = "Не удалось восстановить историю чата"; }
+            }
+            finally { recovering = false; Changed?.Invoke(); }
+        }
+
+        public async Task<bool> SendAsync(string body)
+        {
+            body = body?.Trim();
+            if (!Ready || sending || Time.unscaledTime < nextSend || string.IsNullOrEmpty(body) || body.Length > 200) return false;
+            sending = true;
+            int epoch = generation;
+            string target = channel;
+            Changed?.Invoke();
+            try
+            {
+                // UX preflight only. Mandatory moderation must also be enabled on the Cloud channel.
+                var filter = social.Sdk.ProfanityFilter.CheckAsync(body, settings.profanityGroupKey);
+                await filter.Task();
+                if (epoch != generation || !Ready) return false;
+                if (!filter.Result.IsSuccess || filter.Result.Data?.isClean != true)
+                { Status = "Сообщение не прошло проверку. Измените текст или попробуйте позже"; return false; }
+                var send = social.Sdk.Chats.SendMessageAsync(target, body);
+                await send.Task();
+                if (epoch != generation || !IsCurrent(room)) return false;
+                if (!send.Result.IsSuccess) { Status = "Не удалось отправить сообщение"; return false; }
+                Receive(send.Result.Data);
+                Status = "Чат лобби";
+                owner.StayOnline();
+                return true;
+            }
+            catch (Exception) { Status = "Не удалось отправить сообщение"; return false; }
+            finally { sending = false; nextSend = Time.unscaledTime + 2; Changed?.Invoke(); }
+        }
+
+        private async Task DetachAsync()
+        {
+            generation++;
+            var old = channel;
+            room = channel = null;
+            subscribed = false;
+            messages.Clear(); deleted.Clear();
+            var chats = social?.Sdk?.Chats;
+            if (chats == null) return;
+            chats.OnMessageReceived -= Receive; chats.OnMessageEdited -= Receive; chats.OnMessageDeleted -= Delete;
+            chats.OnSubscribedChannel -= Recover; chats.OnConnectionStateChanged -= ConnectionChanged;
+            try
+            {
+                if (!string.IsNullOrEmpty(old))
+                {
+                    var unsub = chats.UnsubscribeAsync(old); await unsub.Task();
+                    var leave = chats.LeaveAsync(old); await leave.Task();
+                }
+                var disconnect = chats.DisconnectAsync(); await disconnect.Task();
+            }
+            catch (Exception) { /* Best effort during scene teardown; never block gameplay. */ }
+        }
+
+        private async void OnDestroy()
+        {
+            generation++;
+            await channelGate.WaitAsync();
+            try { await DetachAsync(); }
+            finally { channelGate.Release(); }
+        }
+    }
+}
