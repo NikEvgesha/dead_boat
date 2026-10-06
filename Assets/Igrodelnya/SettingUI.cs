@@ -13,6 +13,7 @@ public class SettingUI : MonoBehaviour
     [SerializeField] private Image _menuImagePrefab;
 
     private bool _isOpen;
+    public bool IsOpen => _isOpen;
     public void ToggleOpen()
     {
         _isOpen = !_isOpen;
