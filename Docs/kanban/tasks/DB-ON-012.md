@@ -24,3 +24,7 @@ ai: true
 
 - `Docs/WEB_MULTIPLAYER_PLAYER_FLOW.md`
 - `Docs/WEB_MULTIPLAYER_IMPLEMENTATION_ROADMAP.md`
+
+## Разбор SDK 2026-10-06
+
+ChatsService v0.10.0 имеет REST историю и WebSocket-подписку. CreateChannelAsync требует заранее созданный шаблон (templateKey). В игре появился общий владелец SDK MirraSocialService (DB-ON-010), но chat UI/создание/подписка пока не реализованы. Следующий шаг — ИИ: проверить шаблон и доступ участников в Dead Boat Cloud, затем хранить channelId в Photon-комнате и ограничить историю/частоту отправки. Не создавать отдельный канал каждым клиентом по одинаковому имени.

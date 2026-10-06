@@ -98,6 +98,7 @@ namespace DeadBoat.Online
                 ? LobbyOnlineMode.Online
                 : hasPreference ? LobbyOnlineMode.Offline : LobbyOnlineMode.Unselected;
             gameObject.AddComponent<LobbyOnlineModeUI>().Initialize(this, !hasPreference);
+            gameObject.AddComponent<LobbyFriendsUI>().Initialize(this);
             if (mode == LobbyOnlineMode.Online)
                 _ = ConnectAsync();
             else

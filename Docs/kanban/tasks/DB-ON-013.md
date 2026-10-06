@@ -23,3 +23,7 @@ ai: true
 ## Источники
 
 - `Docs/WEB_MULTIPLAYER_IMPLEMENTATION_ROADMAP.md`
+
+## Разбор SDK 2026-10-06
+
+ProfanityFilter.CheckAsync(text, groupKey) выполняет отдельный запрос; groupKey обязателен. Это само по себе не гарантирует обязательную фильтрацию Chats.SendMessage/EditMessage. Следующий шаг — ИИ: подтвердить серверное применение цензуры к каналу и серверные ограничения/жалобы. Публичную отправку нельзя считать принятой только по клиентскому CheckAsync. SDK не меняем; наблюдение записано в MIRRA_CLOUD_FIELD_NOTES.

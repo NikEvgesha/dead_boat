@@ -16,6 +16,7 @@ namespace DeadBoat.Online
         private Button retryButton;
         private Button stayButton;
         private bool open;
+        internal bool IsOpen => open;
         private bool ownsCursor;
         private float nextRefresh;
 
@@ -100,6 +101,8 @@ namespace DeadBoat.Online
 
         private void SetOpen(bool value)
         {
+            if (value && GetComponent<LobbyFriendsUI>()?.IsOpen == true)
+                return;
             if (value && bootstrap != null && (bootstrap.IsBrowsingDepartures || bootstrap.IsInDepartureRoom))
                 return;
             open = value;
@@ -191,7 +194,7 @@ namespace DeadBoat.Online
             }
         }
 
-        private static Button CreateButton(Transform parent, string name, Vector2 anchor,
+        internal static Button CreateButton(Transform parent, string name, Vector2 anchor,
             Vector2 position, Vector2 size, UnityEngine.Events.UnityAction action)
         {
             var item = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Button));
@@ -211,7 +214,7 @@ namespace DeadBoat.Online
             return button;
         }
 
-        private static Text CreateText(Transform parent, string name, Vector2 position,
+        internal static Text CreateText(Transform parent, string name, Vector2 position,
             Vector2 size, int fontSize)
         {
             var item = new GameObject(name, typeof(RectTransform), typeof(Text));

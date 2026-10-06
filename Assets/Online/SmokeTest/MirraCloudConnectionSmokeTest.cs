@@ -1,7 +1,4 @@
-using System;
 using System.Threading.Tasks;
-using MirraCloud;
-using MirraCloud.Core;
 using UnityEngine;
 
 namespace DeadBoat.Online.SmokeTest
@@ -9,7 +6,6 @@ namespace DeadBoat.Online.SmokeTest
     // Used by the isolated scene and, with a build-only define, the playable draft.
     public sealed class MirraCloudConnectionSmokeTest : MonoBehaviour
     {
-        private MirraCloudSDK sdk;
         private string status = "Ready";
         private string errorDetails;
         private bool connecting;
@@ -32,57 +28,17 @@ namespace DeadBoat.Online.SmokeTest
 
         private async Task ConnectAsync()
         {
-            if (connecting)
-                return;
-
+            if (connecting) return;
             connecting = true;
-            status = "Connecting to Mirra Cloud...";
-            errorDetails = null;
-
             try
             {
-                var configuration = Configuration.Load();
-                if (string.IsNullOrWhiteSpace(configuration.ProjectId) ||
-                    string.IsNullOrWhiteSpace(configuration.BranchId) ||
-                    string.IsNullOrWhiteSpace(configuration.PlatformKey))
-                {
-                    status = "Missing local Mirra Cloud configuration";
-                    return;
-                }
-
-                sdk ??= MirraCloudSDK.Create();
-                sdk.Initialize();
-
-                var login = sdk.Authentication.LoginGuestAsync();
-                await login.Task();
-
-                if (login.Result.IsSuccess)
-                {
-                    status = "Guest login OK";
-                    Debug.Log("[Mirra Cloud smoke test] Guest login OK");
-                }
-                else
-                {
-                    var error = login.Result.Error;
-                    status = $"Login failed: HTTP {login.Result.HttpStatusCode} {error?.Message}";
-                    string serverCode = error?.Errors != null && error.Errors.Count > 0
-                        ? error.Errors[0].Code : null;
-                    errorDetails = $"Type: {error?.Type}; network: {error?.NetworkResult}; " +
-                        $"code: {(string.IsNullOrEmpty(serverCode) ? "none" : serverCode)}";
-                    Debug.LogWarning($"[Mirra Cloud smoke test] {status}; {errorDetails}");
-                }
+                var service = DeadBoat.Online.MirraSocialService.Instance;
+                await service.ConnectAsync();
+                status = service.Status;
+                errorDetails = null;
             }
-            catch (Exception exception)
-            {
-                status = $"Exception: {exception.Message}";
-                Debug.LogException(exception);
-            }
-            finally
-            {
-                connecting = false;
-            }
+            finally { connecting = false; }
         }
-
         private void OnGUI()
         {
 #if DEADBOAT_MIRRA_DIAGNOSTICS && !UNITY_EDITOR
@@ -103,9 +59,5 @@ namespace DeadBoat.Online.SmokeTest
             GUILayout.EndArea();
         }
 
-        private void OnDestroy()
-        {
-            sdk?.Dispose();
-        }
     }
 }
