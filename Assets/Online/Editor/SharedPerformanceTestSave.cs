@@ -32,6 +32,12 @@ namespace DeadBoat.Online.Editor
             type.GetMethod("SetConsoleFlag", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
                 .Invoke(null, new object[] { 4, false });
             SessionState.SetBool(Flag, true);
+            SessionState.SetBool(Flag + ".ResumeForest", false);
+        }
+        public static void PrepareResumeForest()
+        {
+            Prepare();
+            SessionState.SetBool(Flag + ".ResumeForest", true);
         }
         private static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
@@ -44,8 +50,10 @@ namespace DeadBoat.Online.Editor
             if (SaveManager.Instance != manager) original.Initialize();
             preview = manager.gameObject.AddComponent<SharedRunPreviewSave>();
             preview.Persistent = original;
+            if (SessionState.GetBool(Flag + ".ResumeForest", false))
+                preview.SaveDistance(0);
             typeof(SaveManager).GetField("saveProvider", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(manager, preview);
-            Debug.Log("[Stress fixture] Solo save isolated before scene Start; no auto-resume.");
+            Debug.Log("[Stress fixture] Solo save isolated before scene Start.");
         }
         public static void Restore()
         {

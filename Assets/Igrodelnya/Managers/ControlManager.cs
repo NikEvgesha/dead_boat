@@ -1,4 +1,7 @@
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public class ControlManager : MonoBehaviour
 {
@@ -10,6 +13,9 @@ public class ControlManager : MonoBehaviour
     private bool _cursorActive;
     private bool _moveActive = true;
     private bool _blockPrimaryActionUntilMouseUp;
+    private readonly List<RaycastResult> _cursorRaycasts = new List<RaycastResult>(16);
+    private EventSystem _cursorEventSystem;
+    private PointerEventData _cursorPointer;
     public bool UseTouchControl { get { return _useTouchControls; } private set { } }
 
     private int _activeWindows = 0;
@@ -184,9 +190,37 @@ public class ControlManager : MonoBehaviour
 
         if (Input.GetMouseButtonDown(0))
         {
+            // Let the UI receive its click before requesting WebGL pointer lock.
+            if (IsPointerOverInteractiveUI(Input.mousePosition))
+                return;
+
             _blockPrimaryActionUntilMouseUp = true;
             ApplyCursorState(false);
         }
+    }
+
+    private bool IsPointerOverInteractiveUI(Vector2 position)
+    {
+        EventSystem events = EventSystem.current;
+        if (events == null) return false;
+        if (_cursorPointer == null || _cursorEventSystem != events)
+        {
+            _cursorEventSystem = events;
+            _cursorPointer = new PointerEventData(events);
+        }
+        _cursorPointer.Reset();
+        _cursorPointer.position = position;
+        events.RaycastAll(_cursorPointer, _cursorRaycasts);
+        foreach (RaycastResult hit in _cursorRaycasts)
+        {
+            if (!(hit.module is GraphicRaycaster)) continue;
+            // Match the top UI hit. Decorative HUD graphics must not prevent
+            // the normal click-to-resume gameplay capture.
+            return ExecuteEvents.GetEventHandler<IPointerClickHandler>(hit.gameObject) != null ||
+                   ExecuteEvents.GetEventHandler<IPointerDownHandler>(hit.gameObject) != null ||
+                   ExecuteEvents.GetEventHandler<IDragHandler>(hit.gameObject) != null;
+        }
+        return false;
     }
 
 }
