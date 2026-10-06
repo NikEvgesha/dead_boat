@@ -246,6 +246,14 @@ namespace DeadBoat.Online.Editor
             remote.RPC_ItemState(id, 0, Vector3.zero, Quaternion.identity, 1);
             await Until(() => authority.Items[id].Mode == 0 && authority.Items[id].Owner == PlayerRef.None, "weapon redrop");
             Require(authority.Items[id].Dropped && authority.Items[id].Template == entry.id, "weapon template persists");
+            authority.RPC_ClaimItem(id);
+            await Until(() => authority.Items[id].Owner == authority.Runner.LocalPlayer, "weapon passed to other player");
+            Require(authority.Items[id].WeaponAmmo == 1, "passed weapon keeps loaded magazine");
+            authority.RPC_ItemState(id, 0, Vector3.zero, Quaternion.identity, 1);
+            await Until(() => remote.Items[id].Owner == PlayerRef.None, "weapon returned to world");
+            remote.RPC_ClaimItem(id);
+            await Until(() => remote.Items[id].Owner == remote.Runner.LocalPlayer, "weapon returned to first player");
+            Require(remote.Items[id].WeaponAmmo == 1, "returned weapon keeps loaded magazine");
             Debug.Log("[Weapon probe] PASS: personal drop, replay rejection, inventory ammo, redrop preserves template/magazine.");
         }
 

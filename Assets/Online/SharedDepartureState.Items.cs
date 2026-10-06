@@ -61,7 +61,7 @@ namespace DeadBoat.Online
             LobbyNetworkAvatar source = null;
             foreach (var avatar in LobbyNetworkAvatar.All)
                 if (avatar.Runner == Runner && avatar.Object.StateAuthority == info.Source) source = avatar;
-            if (source == null || Vector3.Distance(source.transform.position, position) > 20) return;
+            if (source == null || Vector3.Distance(source.LogicalPosition, position) > 20) return;
             Items.Add(id, new SharedItemRecord
             {
                 Template = template, WeaponAmmo = Mathf.Clamp(ammo, -1, 10000), Position = position, Rotation = rotation,
@@ -82,7 +82,7 @@ namespace DeadBoat.Online
             LobbyNetworkAvatar avatar = null;
             foreach (var candidate in LobbyNetworkAvatar.All)
                 if (candidate.Runner == Runner && candidate.Object.StateAuthority == info.Source) avatar = candidate;
-            if (avatar == null || Vector3.Distance(avatar.transform.position, item.Position) > 4 + BoatMovementAllowance(item.Position)) return;
+            if (avatar == null || Vector3.Distance(avatar.LogicalPosition, item.Position) > 4 + BoatMovementAllowance(item.Position)) return;
             item.Owner = info.Source;
             item.Mode = 1;
             Items.Set(id, item);
@@ -98,7 +98,7 @@ namespace DeadBoat.Online
             LobbyNetworkAvatar source = null;
             foreach (var avatar in LobbyNetworkAvatar.All)
                 if (avatar.Runner == Runner && avatar.Object.StateAuthority == info.Source) source = avatar;
-            if (mode != 4 && (source == null || Vector3.Distance(source.transform.position, position) > 20)) return;
+            if (mode != 4 && (source == null || Vector3.Distance(source.LogicalPosition, position) > 20)) return;
             if (mode == 3)
             {
                 var boat = BoardController.Instance;

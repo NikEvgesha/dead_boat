@@ -35,6 +35,7 @@ namespace DeadBoat.Online
                 return;
             }
             ulong id = System.BitConverter.ToUInt64(System.Guid.NewGuid().ToByteArray(), 0);
+            item.transform.SetParent(null, true);
             var identity = item.gameObject.AddComponent<WorldSpawnIdentity>();
             identity.ItemTemplate = template;
             identity.InitializeRemote(id, 0);
@@ -122,7 +123,7 @@ namespace DeadBoat.Online
             float radius = item.PhysicsActivationDistance + (wasNearby ? 5 : 0);
             foreach (var avatar in LobbyNetworkAvatar.All)
                 if (avatar.Runner == state.Runner && state.Includes(avatar.Object.StateAuthority) &&
-                    (avatar.transform.position - position).sqrMagnitude <= radius * radius) return true;
+                    (avatar.LogicalPosition - position).sqrMagnitude <= radius * radius) return true;
             return false;
         }
 

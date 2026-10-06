@@ -37,6 +37,7 @@ namespace DeadBoat.Online
                 gameObject.AddComponent<SharedPerformanceMonitor>();
 #endif
             runner = value;
+            UnityEngine.SceneManagement.SceneManager.sceneLoaded += RegisterSceneItems;
             lastFrameTime = Time.realtimeSinceStartupAsDouble;
             DontDestroyOnLoad(gameObject);
             DontDestroyOnLoad(value.gameObject);
@@ -72,6 +73,7 @@ namespace DeadBoat.Online
 
         private void OnDestroy()
         {
+            UnityEngine.SceneManagement.SceneManager.sceneLoaded -= RegisterSceneItems;
             ReleaseWaitingPause();
             if (loader != null)
             {
@@ -102,6 +104,23 @@ namespace DeadBoat.Online
             int players = connected ? runner.ActivePlayers.Count() : 0;
             Debug.Log($"[Shared run] Scene loaded; connected={connected}; players={players}; seed={SharedRunContext.Seed}; avatars={FindObjectsByType<LobbyNetworkAvatar>(FindObjectsSortMode.None).Length}; player={PlayerManager.Instance != null}; camera={Camera.main != null}");
             if (!connected) ReturnAfterDisconnect();
+        }
+
+        private void RegisterSceneItems(UnityEngine.SceneManagement.Scene scene,
+            UnityEngine.SceneManagement.LoadSceneMode mode)
+        {
+            if (!SharedRunContext.Active) return;
+            // sceneLoaded runs before Start: only authored objects are present,
+            // not the store display models or generated content spawned in Start.
+            foreach (var root in scene.GetRootGameObjects())
+                foreach (var item in root.GetComponentsInChildren<PickableItem>(true))
+                {
+                    if (item.GetComponent<WorldSpawnIdentity>() != null ||
+                        item.GetComponentInParent<Inventory>() != null ||
+                        item.GetComponent<EnemyCore>() != null) continue;
+                    item.gameObject.AddComponent<WorldSpawnIdentity>().Key =
+                        "authored:" + scene.name + ":" + WorldSpawnIdentity.StablePath(item.transform);
+                }
         }
 
         private void Update()

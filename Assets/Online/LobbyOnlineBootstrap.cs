@@ -14,7 +14,7 @@ namespace DeadBoat.Online
     public sealed class LobbyOnlineBootstrap : MonoBehaviour
     {
         private const string MatchmakingLobbyName = "river-public-lobby-v4";
-        private const string DepartureLobbyName = "river-departures-v5";
+        private const string DepartureLobbyName = "river-departures-v6";
         private const string ModePreferenceKey = "DeadBoat.OnlineMode.v1";
 
         [SerializeField] private NetworkObject avatarPrefab;

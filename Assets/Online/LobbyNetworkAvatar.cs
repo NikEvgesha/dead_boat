@@ -4,6 +4,7 @@ using UnityEngine;
 namespace DeadBoat.Online
 {
     // The existing first-person controller stays local. This object only represents it to other peers.
+    [DefaultExecutionOrder(100)] // Anchor visuals after SharedBoatRuntime applies the boat snapshot.
     public sealed class LobbyNetworkAvatar : NetworkBehaviour
     {
         private static readonly System.Collections.Generic.List<LobbyNetworkAvatar> spawned = new();
@@ -37,8 +38,31 @@ namespace DeadBoat.Online
         [Networked] private byte HeldItemId { get; set; }
         [Networked] public float Health { get; private set; }
         public Transform WorldTransform => visualRoot != null ? visualRoot : transform;
+        private BoardController seatBoard;
+        private Transform driverSeat;
+        public Transform DrivingSeat
+        {
+            get
+            {
+                var state = SharedRunContext.State;
+                if (Object == null || !Object.IsValid || !SharedRunContext.Playing || state.Runner != Runner ||
+                    state.Driver != Object.StateAuthority) return null;
+                var board = BoardController.Instance;
+                if (seatBoard != board)
+                {
+                    seatBoard = board;
+                    driverSeat = board != null ? board.GetComponentInChildren<DriverSeatTrigger>()?.driverSeatTransform : null;
+                }
+                return driverSeat;
+            }
+        }
+        // The driver's logical location follows the already replicated boat;
+        // its NetworkTransform can remain unchanged while the seat is occupied.
+        public Vector3 LogicalPosition => DrivingSeat != null ? DrivingSeat.position + Origin : transform.position;
 
         private PlayerMovement localPlayer;
+        private bool wasDriving;
+        private NetworkTransform networkTransform;
         private ActiveItemManager activeItemManager;
         private PickableItem observedItem;
         private Renderer[] avatarRenderers;
@@ -72,6 +96,7 @@ namespace DeadBoat.Online
             if (!spawned.Contains(this)) spawned.Add(this);
             // Runs on every peer: remote instances must survive the lobby unload too.
             Runner.MakeDontDestroyOnLoad(gameObject);
+            networkTransform = GetComponent<NetworkTransform>();
             Debug.Log($"[Lobby online] Avatar spawned; authority={Object.HasStateAuthority}");
             avatarRenderers = GetComponentsInChildren<Renderer>(true);
             animator = GetComponentInChildren<Animator>(true);
@@ -116,7 +141,16 @@ namespace DeadBoat.Online
             if (localPlayer == null)
                 return;
 
-            transform.SetPositionAndRotation(localPlayer.transform.position + Origin, localPlayer.transform.rotation);
+            bool driving = DrivingSeat != null;
+            if (!driving)
+            {
+                // Resume at the exit position without interpolating from the
+                // old, frozen position that may now be kilometres behind us.
+                if (wasDriving && networkTransform != null)
+                    networkTransform.Teleport(localPlayer.transform.position + Origin, localPlayer.transform.rotation);
+                transform.SetPositionAndRotation(localPlayer.transform.position + Origin, localPlayer.transform.rotation);
+            }
+            wasDriving = driving;
             Health = PlayerStatsManager.Instance != null ? PlayerStatsManager.Instance.Health : 100;
 
             if (activeItemManager == null && Inventory.Instance != null)
@@ -148,7 +182,12 @@ namespace DeadBoat.Online
 
         private void LateUpdate()
         {
-            if (visualRoot != null) visualRoot.position = transform.position - Origin;
+            if (visualRoot != null)
+            {
+                var seat = DrivingSeat;
+                visualRoot.SetPositionAndRotation(seat != null ? seat.position : transform.position - Origin,
+                    seat != null ? seat.rotation : transform.rotation);
+            }
             if (Object == null || Object.HasStateAuthority || rightArm == null)
                 return;
 

@@ -40,7 +40,7 @@ namespace DeadBoat.Online.Editor
                 config.PeerMode = NetworkProjectConfig.PeerModes.Multiple;
                 var result = await peer.StartGame(new StartGameArgs {
                     GameMode = GameMode.Shared, Config = config, SessionName = lobby.DepartureSessionName,
-                    PlayerCount = 2, CustomLobbyName = "river-departures-v5",
+                    PlayerCount = 2, CustomLobbyName = "river-departures-v6",
                     EnableClientSessionCreation = false, SceneManager = sceneManager, ObjectProvider = provider
                 });
                 if (!result.Ok) throw new Exception("Second peer: " + result.ShutdownReason);
@@ -55,6 +55,8 @@ namespace DeadBoat.Online.Editor
                 await Until(() => state.BoatInitialized && Camera.main != null && state.Items.Count > 0, "boat and pickups initialized");
                 Debug.Log("[Gameplay probe] Level ready: " + UnityEngine.SceneManagement.SceneManager.GetActiveScene().name +
                     "; items=" + state.Items.Count + "; crew=" + state.CrewCount);
+
+                await CityItemsCase(state, Replica(peer));
 
                 var item = UnityEngine.Object.FindObjectsByType<PickableItem>(FindObjectsSortMode.None)
                     .FirstOrDefault(p => p.GetComponent<WorldSpawnIdentity>() != null && p.GetComponent<EnemyCore>() == null &&
@@ -103,6 +105,62 @@ namespace DeadBoat.Online.Editor
                 running = false;
             }
         }
+        private static async Task CityItemsCase(SharedDepartureState state, SharedDepartureState remote)
+        {
+            var authored = UnityEngine.Object.FindObjectsByType<WorldSpawnIdentity>(FindObjectsSortMode.None)
+                .FirstOrDefault(i => i.Key.StartsWith("authored:") && i.Item != null &&
+                    i.Item.GetComponent<AmmoItem>() == null && i.Item.GetComponent<EggCollectibleItem>() == null);
+            if (authored == null) throw new Exception("No authored city pickup registered");
+            PlayerMovement.Instance.transform.position = authored.transform.position + Vector3.up;
+            await Task.Delay(300);
+            SharedItemsRuntime.Request(authored.Item, p => p.PickUp(PlayerMovement.Instance.transform));
+            await Until(() => remote.Items.TryGet(authored.Id, out var r) && r.Mode == 1 &&
+                r.Owner == state.Runner.LocalPlayer, "authored carry replication");
+            authored.Item.Drop();
+            await Until(() => remote.Items.TryGet(authored.Id, out var r) && r.Mode == 0 &&
+                r.Owner == PlayerRef.None, "authored drop replication");
+
+            const System.Reflection.BindingFlags flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
+            foreach (var store in UnityEngine.Object.FindObjectsByType<ItemStore>(FindObjectsSortMode.None))
+            {
+                var points = ((Transform)typeof(ItemStore).GetField("_pointsParent", flags).GetValue(store))
+                    .GetComponentsInChildren<StorePoint>();
+                var first = points.Select(p => typeof(StorePoint).GetField("_itemPrefab", flags).GetValue(p)).ToArray();
+                for (int n = 0; n < 200; n++) UnityEngine.Random.Range(0, 10000);
+                typeof(ItemStore).GetMethod("Start", flags).Invoke(store, null);
+                if (!first.SequenceEqual(points.Select(p => typeof(StorePoint).GetField("_itemPrefab", flags).GetValue(p))))
+                    throw new Exception("Store assortment depends on Unity Random: " + store.name);
+            }
+            var point = UnityEngine.Object.FindObjectsByType<StorePoint>(FindObjectsSortMode.None).First();
+            var buyPoint = (Transform)typeof(StorePoint).GetField("_buyPoint", flags).GetValue(point);
+            PlayerMovement.Instance.transform.position = buyPoint.position + Vector3.up;
+            await Task.Delay(300);
+            var before = new System.Collections.Generic.HashSet<ulong>(state.Items.Select(e => e.Key));
+            typeof(StorePoint).GetMethod("GiveItem", flags).Invoke(point, null);
+            await Until(() => remote.Items.Any(e => !before.Contains(e.Key) && e.Value.Dropped && e.Value.Template != 0),
+                "purchased physical item published");
+            Debug.Log("[City probe] PASS: authored carry/drop, store replay after unrelated Random, purchase snapshot.");
+
+            var seat = BoardController.Instance.GetComponentInChildren<DriverSeatTrigger>().driverSeatTransform;
+            PlayerMovement.Instance.transform.position = seat.position;
+            await Task.Delay(300);
+            state.RPC_Driver(true);
+            await Until(() => state.Driver == state.Runner.LocalPlayer, "city driver claim");
+            var avatar = LobbyNetworkAvatar.All.GetEnumerator();
+            LobbyNetworkAvatar driver = null;
+            while (avatar.MoveNext()) if (avatar.Current.Runner == state.Runner && avatar.Current.Object.HasStateAuthority) driver = avatar.Current;
+            if (driver == null) throw new Exception("Driver avatar missing");
+            Vector3 root = driver.transform.position;
+            Set(state, "BoatDistance", state.BoatDistance + 5);
+            await Task.Delay(400);
+            if (driver.DrivingSeat != seat || Vector3.Distance(driver.LogicalPosition, seat.position + LobbyNetworkAvatar.Origin) > 0.01f ||
+                Vector3.Distance(root, driver.transform.position) > 0.01f)
+                throw new Exception("Driver anchor or frozen network root");
+            state.RPC_Driver(false);
+            await Until(() => state.Driver == PlayerRef.None, "city driver release");
+            Debug.Log("[City probe] PASS: driver logical position follows seat with unchanged network root; release.");
+        }
+
         private static async Task AdsCase(SharedDepartureState state)
         {
             var manager = AdsManager.Instance;

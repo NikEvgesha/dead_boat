@@ -18,8 +18,8 @@ namespace DeadBoat.Online
             foreach (var avatar in LobbyNetworkAvatar.All)
                 if (avatar.Runner == Runner && Includes(avatar.Object.StateAuthority))
                 {
-                    front = Mathf.Max(front, avatar.transform.position.z);
-                    rear = Mathf.Min(rear, avatar.transform.position.z);
+                    front = Mathf.Max(front, avatar.LogicalPosition.z);
+                    rear = Mathf.Min(rear, avatar.LogicalPosition.z);
                 }
             WorldFront = Mathf.Max(WorldFront, front);
             // Keep a generous margin behind every crew member, including someone awaiting revival.

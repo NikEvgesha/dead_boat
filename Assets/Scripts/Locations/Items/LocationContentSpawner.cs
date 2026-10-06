@@ -30,13 +30,15 @@ public class LocationContentSpawner : MonoBehaviour
     private DeadBoat.Online.RunRandom itemRandom;
     private DeadBoat.Online.RunRandom enemyRandom;
     public void InitializeGeneration(int index) => generationIndex = index;
+    public string SharedGenerationKey => generationIndex >= 0
+        ? "procedural:" + generationIndex : "scene:" + HierarchyKey(transform);
 
     private void Start()
     {
         if (DeadBoat.Online.SharedRunContext.Active)
         {
             // Scene-authored locations use their stable hierarchy path; procedural ones use their index.
-            generationKey = generationIndex >= 0 ? "procedural:" + generationIndex : "scene:" + HierarchyKey(transform);
+            generationKey = SharedGenerationKey;
             itemRandom = DeadBoat.Online.SharedRunContext.Random("items:" + generationKey, 0);
             enemyRandom = DeadBoat.Online.SharedRunContext.Random("enemies:" + generationKey, 0);
         }

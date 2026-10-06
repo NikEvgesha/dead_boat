@@ -101,7 +101,8 @@ public class SpecialShopPoint : MonoBehaviour
 
     public void OnItemPurchase(PickableItem item)
     {
-        Instantiate(item, _buyPoint);
+        var spawned = Instantiate(item, _buyPoint);
+        DeadBoat.Online.SharedItemsRuntime.PublishDrop(spawned);
     }
 
 }

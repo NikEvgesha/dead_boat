@@ -73,7 +73,7 @@ namespace DeadBoat.Online
                 LobbyNetworkAvatar source = null;
                 foreach (var avatar in LobbyNetworkAvatar.All)
                     if (avatar.Runner == Runner && avatar.Object.StateAuthority == info.Source) source = avatar;
-                if (source == null || Vector3.Distance(source.transform.position,
+                if (source == null || Vector3.Distance(source.LogicalPosition,
                     seat.driverSeatTransform.position + LobbyNetworkAvatar.Origin) > 4 + Mathf.Min(15, BoatSpeed * 0.2f)) return;
                 Driver = info.Source;
                 DriverInput = 0;

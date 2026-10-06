@@ -40,7 +40,7 @@ namespace DeadBoat.Online
             var state = SharedRunContext.State;
             foreach (var avatar in LobbyNetworkAvatar.All)
                 if (avatar.Runner == state.Runner && avatar.Health > 0 &&
-                    Vector3.Distance(avatar.transform.position - LobbyNetworkAvatar.Origin + Vector3.up,
+                    Vector3.Distance(avatar.LogicalPosition - LobbyNetworkAvatar.Origin + Vector3.up,
                         dragon.transform.position) <= 3 && hit.Add(avatar.Object.StateAuthority))
                     state.RPC_PlayerDamage(avatar.Object.StateAuthority, (int)dragon.diveDamage);
         }
@@ -104,7 +104,7 @@ namespace DeadBoat.Online
             var state = SharedRunContext.State;
             foreach (var avatar in LobbyNetworkAvatar.All)
                 if (avatar.Runner == state.Runner && avatar.Health > 0 &&
-                    (avatar.transform.position - LobbyNetworkAvatar.Origin - center).sqrMagnitude <= radius * radius)
+                    (avatar.LogicalPosition - LobbyNetworkAvatar.Origin - center).sqrMagnitude <= radius * radius)
                     state.RPC_PlayerDamage(avatar.Object.StateAuthority, damage);
             return true;
         }
@@ -118,7 +118,7 @@ namespace DeadBoat.Online
             {
                 if (avatar.Runner != state.Runner || avatar.Health <= 0) continue;
                 Vector3 point = Quaternion.Inverse(rotation) *
-                    (avatar.transform.position - LobbyNetworkAvatar.Origin + Vector3.up - center);
+                    (avatar.LogicalPosition - LobbyNetworkAvatar.Origin + Vector3.up - center);
                 if (Mathf.Abs(point.x) <= size.x / 2 + 0.3f && Mathf.Abs(point.y) <= size.y / 2 + 1 &&
                     Mathf.Abs(point.z) <= size.z / 2 + 0.3f)
                     state.RPC_PlayerDamage(avatar.Object.StateAuthority, damage);

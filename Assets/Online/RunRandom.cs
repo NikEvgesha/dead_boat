@@ -6,7 +6,7 @@ namespace DeadBoat.Online
     // A new generator per stable key prevents unrelated calls from changing the map.
     public sealed class RunRandom
     {
-        public const int Version = 1;
+        public const int Version = 2; // Store assortments now use their own seeded stream.
         private uint state;
 
         public RunRandom(int seed, string stream, int index)

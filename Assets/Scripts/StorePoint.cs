@@ -217,6 +217,7 @@ public class StorePoint : MonoBehaviour
 
     private void GiveItem() {
         PickableItem item = Instantiate(_itemPrefab, _buyPoint);
+        DeadBoat.Online.SharedItemsRuntime.PublishDrop(item);
         item.CheckTags();
         if (LoadingManager.Instance.CurrentLocation == Location.Lobby)
         {

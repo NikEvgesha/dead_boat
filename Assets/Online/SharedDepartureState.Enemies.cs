@@ -91,7 +91,7 @@ namespace DeadBoat.Online
             LobbyNetworkAvatar source = null;
             foreach (var avatar in LobbyNetworkAvatar.All)
                 if (avatar.Runner == Runner && avatar.Object.StateAuthority == info.Source) source = avatar;
-            if (source == null || Vector3.Distance(source.transform.position, record.Position) > 200) return;
+            if (source == null || Vector3.Distance(source.LogicalPosition, record.Position) > 200) return;
             record.BurnRemaining = duration; record.BurnDamage = damage; record.BurnAccumulator = 0;
             EnemyPage(id).Enemies.Set(id, record);
         }
@@ -134,7 +134,7 @@ namespace DeadBoat.Online
             LobbyNetworkAvatar source = null;
             foreach (var avatar in LobbyNetworkAvatar.All)
                 if (avatar.Runner == Runner && avatar.Object.StateAuthority == info.Source) source = avatar;
-            if (enemy == null || source == null || Vector3.Distance(source.transform.position, record.Position) > 200) return;
+            if (enemy == null || source == null || Vector3.Distance(source.LogicalPosition, record.Position) > 200) return;
             SharedEnemiesRuntime.ApplyDamage(enemy, damage);
             SampleEnemy(identity, enemy);
         }

@@ -36,6 +36,17 @@ namespace DeadBoat.Online
         public bool Prunable => key != null && !key.StartsWith("scene:") && !key.StartsWith("boss:") && !key.StartsWith("test:");
         public int ItemTemplate { get; set; }
         public ulong TemplateId { get; set; }
+        public static string StablePath(Transform part)
+        {
+            string path = "";
+            var location = part.GetComponentInParent<LocationContentSpawner>();
+            while (part != null && (location == null || part != location.transform))
+            {
+                path = part.name + "[" + part.GetSiblingIndex() + "]/" + path;
+                part = part.parent;
+            }
+            return location != null ? location.SharedGenerationKey + "/" + path : "scene:" + path;
+        }
         public void InitializeRemote(ulong id, ulong template)
         {
             CacheComponents();

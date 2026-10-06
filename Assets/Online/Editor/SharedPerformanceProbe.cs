@@ -60,7 +60,7 @@ namespace DeadBoat.Online.Editor
                     config.Network.ConnectionTimeout = 60;
                     var result = await runner.StartGame(new StartGameArgs {
                         GameMode = GameMode.Shared, Config = config, SessionName = room,
-                        PlayerCount = 4, CustomLobbyName = "river-departures-v5",
+                        PlayerCount = 4, CustomLobbyName = "river-departures-v6",
                         EnableClientSessionCreation = false,
                         SceneManager = go.AddComponent<LobbySceneManager>(),
                         ObjectProvider = go.AddComponent<NetworkObjectProviderDefault>()

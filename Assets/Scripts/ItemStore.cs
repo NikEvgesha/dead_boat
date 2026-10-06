@@ -16,6 +16,9 @@ public class ItemStore : MonoBehaviour
     private void Start()
     {
         _availableItems = new List<PickableItem>(_collection.Items);
+        var random = DeadBoat.Online.SharedRunContext.Active
+            ? DeadBoat.Online.SharedRunContext.Random("store:" +
+                DeadBoat.Online.WorldSpawnIdentity.StablePath(transform), 0) : null;
         foreach (StorePoint point in _pointsParent.GetComponentsInChildren<StorePoint>())
         {
             if (point.StaticItem)
@@ -24,7 +27,8 @@ public class ItemStore : MonoBehaviour
             }
             else if (!point.StaticItem && _availableItems.Count > 0)
             {
-                int random_idx = UnityEngine.Random.Range(0, _availableItems.Count);
+                int random_idx = random != null ? random.Range(0, _availableItems.Count)
+                    : UnityEngine.Random.Range(0, _availableItems.Count);
                 point.InitPoint(_inLobby, this, _availableItems[random_idx]);
                 _availableItems.RemoveAt(random_idx);
             }
