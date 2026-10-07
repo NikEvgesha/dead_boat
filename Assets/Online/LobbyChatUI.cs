@@ -18,6 +18,8 @@ namespace DeadBoat.Online
         private readonly List<string> authors = new();
         private string selectedAuthor;
         private bool ownsCursor;
+        private float nextHistoryPoll;
+        private const float HistoryPollSeconds = 15;
         internal bool IsOpen => panel != null && panel.activeSelf;
 
         public void Initialize(MirraLobbyChat transport, LobbyOnlineBootstrap bootstrap)
@@ -78,6 +80,11 @@ namespace DeadBoat.Online
             if (IsOpen && (!owner.IsOnline || owner.IsInDepartureRoom || owner.IsBrowsingDepartures || Input.GetKeyDown(KeyCode.Escape))) SetOpen(false);
             root.SetActive(owner.IsOnline && !owner.IsInDepartureRoom && !owner.IsBrowsingDepartures);
             if (IsOpen) send.interactable = chat.CanSend && !string.IsNullOrWhiteSpace(input.text);
+            if (IsOpen && Application.isFocused && chat.Ready && Time.realtimeSinceStartup >= nextHistoryPoll)
+            {
+                nextHistoryPoll = Time.realtimeSinceStartup + HistoryPollSeconds;
+                chat.RefreshHistory();
+            }
         }
         private void SetOpen(bool value)
         {
@@ -90,7 +97,11 @@ namespace DeadBoat.Online
                 if (value && !ownsCursor) { controls.CursorActive=true; ownsCursor=true; }
                 else if (!value && ownsCursor) { controls.CursorActive=false; ownsCursor=false; }
             }
-            if (value) { owner.StayOnline(); Refresh(); chat.RefreshHistory(); }
+            if (value)
+            {
+                nextHistoryPoll = Time.realtimeSinceStartup + HistoryPollSeconds;
+                owner.StayOnline(); Refresh(); chat.RefreshHistory();
+            }
         }
         private void Refresh()
         {

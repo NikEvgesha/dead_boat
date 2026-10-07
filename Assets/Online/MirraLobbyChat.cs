@@ -24,6 +24,8 @@ namespace DeadBoat.Online
         private int generation;
         private readonly List<ChatMessageDto> messages = new();
         private readonly HashSet<string> deleted = new();
+        private readonly List<ChatMessageDto> recoveryEvents = new();
+        private bool applyingHistory;
         public IReadOnlyList<ChatMessageDto> Messages => messages;
         public string Status { get; private set; } = "Чат недоступен";
         public bool Ready => subscribed && !working && !recovering && social.Ready &&
@@ -159,6 +161,7 @@ namespace DeadBoat.Online
             subscribed = sending = recovering = false;
             nextSend = 0;
             messages.Clear(); deleted.Clear();
+            recoveryEvents.Clear();
         }
 
         private void Receive(ChatMessageDto message)
@@ -167,10 +170,16 @@ namespace DeadBoat.Online
             if (message.DeletedAt.HasValue) { Delete(new RealtimeDeletePayload { ChannelId = channel, MessageId = message.MessageId }); return; }
             int index = messages.FindIndex(m => m.MessageId == message.MessageId);
             if (index >= 0 && (messages[index].EditedAt ?? messages[index].CreatedAt) > (message.EditedAt ?? message.CreatedAt)) return;
+            if (recovering && !applyingHistory)
+            {
+                recoveryEvents.RemoveAll(m => m.MessageId == message.MessageId);
+                recoveryEvents.Add(message);
+                if (recoveryEvents.Count > 50) recoveryEvents.RemoveAt(0);
+            }
             if (index >= 0) messages[index] = message; else messages.Add(message);
             messages.Sort((a,b) => a.Number.CompareTo(b.Number));
             while (messages.Count > 50) messages.RemoveAt(0);
-            Changed?.Invoke();
+            if (!applyingHistory) Changed?.Invoke();
         }
 
         private void Delete(RealtimeDeletePayload payload)
@@ -178,7 +187,7 @@ namespace DeadBoat.Online
             if ((owner != null && (!IsCurrent(room) || observedRoom != room)) || payload == null || payload.ChannelId != channel || string.IsNullOrEmpty(payload.MessageId)) return;
             if (deleted.Count < 200) deleted.Add(payload.MessageId);
             messages.RemoveAll(m => m.MessageId == payload.MessageId);
-            Changed?.Invoke();
+            if (!applyingHistory) Changed?.Invoke();
         }
 
         private void ConnectionChanged(RealtimeConnectionState state)
@@ -194,7 +203,7 @@ namespace DeadBoat.Online
             int epoch = generation;
             nextHistoryRefresh = Time.realtimeSinceStartup + 10;
             recovering = true;
-            messages.Clear(); deleted.Clear();
+            recoveryEvents.Clear();
             Status = "Обновление истории…";
             Changed?.Invoke();
             try
@@ -203,14 +212,30 @@ namespace DeadBoat.Online
                 await history.Task();
                 if (epoch != generation || !IsCurrent(room)) return;
                 if (!history.Result.IsSuccess) throw new InvalidOperationException();
-                foreach (var message in history.Result.Data ?? Array.Empty<ChatMessageDto>()) Receive(message);
+                ApplyRecoveredHistory(history.Result.Data);
                 Status = "Чат лобби";
             }
             catch (Exception)
             {
                 if (epoch == generation) { subscribed = false; Status = "Не удалось восстановить историю чата"; }
             }
-            finally { if (epoch == generation) { recovering = false; Changed?.Invoke(); } }
+            finally { if (epoch == generation) { recovering = false; recoveryEvents.Clear(); Changed?.Invoke(); } }
+        }
+
+        private void ApplyRecoveredHistory(ChatMessageDto[] history)
+        {
+            // Keep the visible buffer while REST is pending. Replay live events received
+            // during the request so an older snapshot cannot undo an edit/new message.
+            var live = recoveryEvents.ToArray();
+            messages.Clear();
+            applyingHistory = true;
+            try
+            {
+                foreach (var message in history ?? Array.Empty<ChatMessageDto>()) Receive(message);
+                foreach (var message in live) Receive(message);
+            }
+            finally { applyingHistory = false; recoveryEvents.Clear(); }
+            Changed?.Invoke();
         }
 
         public void RefreshHistory()

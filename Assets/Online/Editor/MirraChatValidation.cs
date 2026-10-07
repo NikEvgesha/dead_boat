@@ -33,6 +33,17 @@ namespace DeadBoat.Online.Editor
                 Require(chat.Messages.Count == 1, "deleted message must not reappear from stale history");
                 add(new ChatMessageDto { ChannelId = "other", MessageId = "alien", Number = 3 });
                 Require(chat.Messages.Count == 1, "channel isolation");
+                typeof(MirraLobbyChat).GetField("recovering", flags).SetValue(chat, true);
+                add(new ChatMessageDto { ChannelId = "probe", MessageId = "live", Number = 3, Body = "new edit", CreatedAt = date, EditedAt = date.AddSeconds(3) });
+                add(new ChatMessageDto { ChannelId = "probe", MessageId = "live", Number = 3, Body = "stale live", CreatedAt = date });
+                delete.Invoke(chat, new object[] { new RealtimeDeletePayload { ChannelId = "probe", MessageId = "one" } });
+                typeof(MirraLobbyChat).GetMethod("ApplyRecoveredHistory", flags).Invoke(chat, new object[] { new[] {
+                    new ChatMessageDto { ChannelId = "probe", MessageId = "one", Number = 1, CreatedAt = date },
+                    new ChatMessageDto { ChannelId = "probe", MessageId = "two", Number = 2, CreatedAt = date },
+                    new ChatMessageDto { ChannelId = "probe", MessageId = "live", Number = 3, Body = "old snapshot", CreatedAt = date }
+                } });
+                Require(chat.Messages.Count == 1 && chat.Messages[0].Body == "new edit", "history reconciliation preserves live edit/deletes and rejects stale event");
+                typeof(MirraLobbyChat).GetField("recovering", flags).SetValue(chat, false);
                 for (int i = 3; i < 70; i++)
                     add(new ChatMessageDto { ChannelId = "probe", MessageId = "m" + i, Number = i, CreatedAt = date });
                 Require(chat.Messages.Count == 50 && chat.Messages[0].Number == 20 && chat.Messages[49].Number == 69, "bounded recent history");
