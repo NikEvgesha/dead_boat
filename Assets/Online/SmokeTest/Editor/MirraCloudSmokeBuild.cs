@@ -13,6 +13,32 @@ namespace DeadBoat.Online.SmokeTest.Editor
         private const string GameOutput = "Builds/MirraCloudPlayableDraft";
         private const string PerformanceOutput = "Builds/CoopPerformanceDraft";
 
+        public static void QueueChatProbe()
+        {
+            EditorApplication.update -= BuildQueuedChatProbe;
+            EditorApplication.update += BuildQueuedChatProbe;
+        }
+
+        private static void BuildQueuedChatProbe()
+        {
+            if (BuildPipeline.isBuildingPlayer || EditorApplication.isCompiling) return;
+            EditorApplication.update -= BuildQueuedChatProbe;
+            if (EditorApplication.isPlaying) throw new BuildFailedException("Stop Play Mode before building chat probe");
+            const string scenePath = "Assets/Online/SmokeTest/MirraChatWebGLProbe.unity";
+            var scene = UnityEditor.SceneManagement.EditorSceneManager.NewScene(
+                UnityEditor.SceneManagement.NewSceneSetup.EmptyScene, UnityEditor.SceneManagement.NewSceneMode.Additive);
+            try
+            {
+                var root = new UnityEngine.GameObject("Mirra WebGL chat probe");
+                UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(root, scene);
+                root.AddComponent<MirraChatWebGLProbe>();
+                UnityEditor.SceneManagement.EditorSceneManager.SaveScene(scene, scenePath);
+            }
+            finally { UnityEditor.SceneManagement.EditorSceneManager.CloseScene(scene, true); }
+            BuildPlayer("Builds/MirraChatProbe", new[] { scenePath }, new[] { "DEADBOAT_MIRRA_CHAT_PROBE" });
+            UnityEngine.Debug.Log("[Mirra browser probe] build PASS");
+        }
+
         public static void QueuePerformanceDraft()
         {
             EditorApplication.update -= BuildQueuedPerformanceDraft;

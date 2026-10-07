@@ -2,6 +2,7 @@
 
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+import argparse
 
 
 ROOT = Path(__file__).resolve().parents[2] / "Builds" / "MirraCloudSmokeTest"
@@ -24,7 +25,12 @@ class Handler(SimpleHTTPRequestHandler):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--build", default="MirraCloudSmokeTest", choices=["MirraCloudSmokeTest", "MirraChatProbe"])
+    parser.add_argument("--port", type=int, default=8766)
+    args = parser.parse_args()
+    ROOT = Path(__file__).resolve().parents[2] / "Builds" / args.build
     if not (ROOT / "index.html").exists():
         raise SystemExit(f"Build not found: {ROOT}")
-    print("Mirra Cloud smoke test: http://127.0.0.1:8766/", flush=True)
-    ThreadingHTTPServer(("127.0.0.1", 8766), Handler).serve_forever()
+    print(f"{args.build}: http://127.0.0.1:{args.port}/", flush=True)
+    ThreadingHTTPServer(("127.0.0.1", args.port), Handler).serve_forever()

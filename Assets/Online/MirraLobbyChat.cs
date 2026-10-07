@@ -211,7 +211,7 @@ namespace DeadBoat.Online
                     var unsub = chats.UnsubscribeAsync(old); await unsub.Task();
                     var leave = chats.LeaveAsync(old); await leave.Task();
                 }
-                var disconnect = chats.DisconnectAsync(); await disconnect.Task();
+                await MirraChatConnection.DisconnectAsync(chats);
             }
             catch (Exception) { /* Best effort during scene teardown; never block gameplay. */ }
         }
