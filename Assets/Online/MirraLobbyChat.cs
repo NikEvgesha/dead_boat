@@ -13,7 +13,7 @@ namespace DeadBoat.Online
     // Messages live in Mirra; Photon carries only the public channel identifier.
     public sealed class MirraLobbyChat : MonoBehaviour
     {
-        private const string ChannelProperty = "mc_chat_v1";
+        internal const string ChannelProperty = "mc_chat_v1";
         private static readonly SemaphoreSlim channelGate = new(1, 1);
         private LobbyOnlineBootstrap owner;
         private MirraLobbyChatSettings settings;
@@ -67,8 +67,14 @@ namespace DeadBoat.Online
                 var sdk = social.Sdk;
                 var runner = owner.LobbyRunner;
                 bool created = false;
-                if (runner.SessionInfo.Properties.TryGetValue(ChannelProperty, out var property))
-                    channel = (string)property;
+                // Declare the key when creating the Photon room so it remains in lobby metadata.
+                // Older rooms without this key must not create a different Cloud channel per peer.
+                if (!runner.SessionInfo.Properties.TryGetValue(ChannelProperty, out var property))
+                {
+                    Status = "Чат доступен в новых лобби";
+                    return;
+                }
+                channel = (string)property;
                 if (string.IsNullOrEmpty(channel))
                 {
                     if (!runner.IsSharedModeMasterClient) return;
@@ -78,7 +84,8 @@ namespace DeadBoat.Online
                     channel = create.Result.Data.ChannelId;
                     created = true; // CreateChannel already joins its creator.
                     if (!IsOperationCurrent(epoch, desired) || !runner.IsSharedModeMasterClient) return;
-                    runner.SessionInfo.UpdateCustomProperties(new Dictionary<string, SessionProperty> { [ChannelProperty] = channel });
+                    if (!runner.SessionInfo.UpdateCustomProperties(new Dictionary<string, SessionProperty> { [ChannelProperty] = channel }))
+                        throw new InvalidOperationException("Chat channel property was not accepted by Photon");
                 }
                 if (!created)
                 {

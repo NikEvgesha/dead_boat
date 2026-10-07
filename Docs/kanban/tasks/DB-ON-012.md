@@ -92,3 +92,17 @@ Unity 6000.3.9f1, штатный Cloud SDK v0.10.0: в отдельном кан
 Unity MirraChatValidation.Run — PASS: буфер и лимит 50, версии departure/return, pending-флаги, retry, old-channel isolation. UGUI — PASS: 200 символов/plain text, закрытие/скрытие в офлайне и запрет открытия. Проверка без HTTP/Photon, не доказательство полного перехода двух игровых клиентов. SDK не изменён, пилот выключен, черновик не обновлён.
 
 Следующий шаг — ИИ: WebGL замер CreatedAt → браузерный WS frame → Unity callback в активной/фоновой вкладке; затем реальный лобби → забег → лобби с двумя клиентами. Владелец/команда Mirra: серверные гарантии по MIRRA_CHAT_SERVER_REQUIREMENTS.md до общего включения. Статус in_progress сохраняется.
+
+## WebGL доставка и задержки 2026-10-07
+
+Записаны времена browser frame и Unity callback: для двух live сообщений 4,692 и 6,768 мс между ними; возраст по CreatedAt около 562/492 мс с возможной погрешностью часов Cloud. Для первого сообщения не было live frame/callback, но оно сохранилось в REST истории. Наблюдались закрытие и автоматическая переподписка сокета. Не считать эти два замера гарантией latency/доставки. Hidden режим не воспроизведён: инструмент сообщает обе вкладки visible/focused. Яндекс-черновик не менялся, SDK штатный. Подробности MIRRA_CLOUD_FIELD_NOTES.md.
+
+## Настоящие Photon-комнаты / восстановление истории 2026-10-07
+
+Стенд MirraLobbyChatLifecycleProbe (один Editor клиент, отдельные приватные Photon rooms) прошёл отправку Cloud SDK, Disconnect/Connect/Subscribe с восстановлением истории, отключение чата при departure-флагах и offline, возврат в прежний room/channel/history и изоляцию другого room. Полный переход сцен забега и два игровых браузера НЕ проверены.
+
+Найден/исправлен mc_chat_v1: ключ теперь объявлен в начальных SessionProperties игрового лобби, результат UpdateCustomProperties проверяется, старые комнаты без ключа не создают несогласованные каналы. Без объявления ключа тест воспроизводил channelMatch=False/historyCount=0; с объявлением True/1 и PASS. SDK штатный, пилот выключен, черновик не обновлён.
+
+Следующий шаг — ИИ: совместная игровая WebGL проверка двух клиентов, смена master и настоящее hidden состояние. Владелец/Mirra: гарантии серверной защиты и live-доставки по MIRRA_CHAT_SERVER_REQUIREMENTS.md перед общим включением. in_progress сохраняется.
+
+Финальная проверка после правок: MirraChatValidation PASS; MirraLobbyChatLifecycleProbe PASS, включая legacy room guard без отдельного канала. cleanup complete. Play Mode остановлен, временные настройки редактора возвращены. Эта версия ещё не проверена в новой WebGL-сборке.

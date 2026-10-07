@@ -620,7 +620,8 @@ namespace DeadBoat.Online
                         PlayerCount = lobbyCapacity,
                         SessionProperties = new Dictionary<string, SessionProperty>
                         {
-                            { "cap", lobbyCapacity }
+                            { "cap", lobbyCapacity },
+                            { MirraLobbyChat.ChannelProperty, "" }
                         },
                         IsOpen = true,
                         IsVisible = true,
