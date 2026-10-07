@@ -69,6 +69,7 @@ namespace DeadBoat.Online
         {
             if (IsOpen && (!owner.IsOnline || owner.IsInDepartureRoom || owner.IsBrowsingDepartures || Input.GetKeyDown(KeyCode.Escape))) SetOpen(false);
             root.SetActive(owner.IsOnline && !owner.IsInDepartureRoom && !owner.IsBrowsingDepartures);
+            if (IsOpen) send.interactable = chat.CanSend && !string.IsNullOrWhiteSpace(input.text);
         }
         private void SetOpen(bool value)
         {
@@ -99,7 +100,7 @@ namespace DeadBoat.Online
             }
             history.text=text.ToString();
             history.rectTransform.sizeDelta=new Vector2(630,Mathf.Max(380,history.preferredHeight));
-            send.interactable=chat.Ready && !chat.Sending;
+            send.interactable=chat.CanSend && !string.IsNullOrWhiteSpace(input.text);
         }
         private static Text Label(Transform parent,string text,Vector2 position,Vector2 size,int fontSize)
         {

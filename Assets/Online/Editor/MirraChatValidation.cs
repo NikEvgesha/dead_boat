@@ -36,9 +36,71 @@ namespace DeadBoat.Online.Editor
                 for (int i = 3; i < 70; i++)
                     add(new ChatMessageDto { ChannelId = "probe", MessageId = "m" + i, Number = i, CreatedAt = date });
                 Require(chat.Messages.Count == 50 && chat.Messages[0].Number == 20 && chat.Messages[49].Number == 69, "bounded recent history");
-                Debug.Log("[Mirra chat validation] PASS: ordering, deduplication, edit/delete races, isolation, 50-message cap.");
+                var type = typeof(MirraLobbyChat);
+                var observe = type.GetMethod("ObserveRoom", flags);
+                var generation = type.GetField("generation", flags);
+                type.GetField("room", flags).SetValue(chat, "lobby-A");
+                type.GetField("observedRoom", flags).SetValue(chat, "lobby-A");
+                type.GetField("working", flags).SetValue(chat, true);
+                type.GetField("subscribed", flags).SetValue(chat, true);
+                type.GetField("sending", flags).SetValue(chat, true);
+                type.GetField("recovering", flags).SetValue(chat, true);
+                type.GetField("nextAttempt", flags).SetValue(chat, Time.unscaledTime + 100);
+                int before = (int)generation.GetValue(chat);
+                // Departure/offline while requests are pending: no retained messages or busy flags.
+                observe.Invoke(chat, new object[] { null });
+                Require(chat.Messages.Count == 0 && (int)generation.GetValue(chat) == before + 1, "immediate departure invalidation");
+                Require(!chat.Sending && !(bool)type.GetField("recovering", flags).GetValue(chat) &&
+                    !(bool)type.GetField("subscribed", flags).GetValue(chat), "pending send/history invalidation");
+                Require((float)type.GetField("nextAttempt", flags).GetValue(chat) == 0, "transition bypasses retry cooldown");
+                observe.Invoke(chat, new object[] { "lobby-A" });
+                Require((int)generation.GetValue(chat) == before + 2, "same room return rejects old operation epoch");
+                observe.Invoke(chat, new object[] { "lobby-A" });
+                Require((int)generation.GetValue(chat) == before + 2, "stable room does not repeatedly invalidate");
+                observe.Invoke(chat, new object[] { "lobby-B" });
+                type.GetField("channel", flags).SetValue(chat, "new-channel");
+                add(new ChatMessageDto { ChannelId = "probe", MessageId = "late", Number = 70 });
+                Require(chat.Messages.Count == 0, "late old-channel message after room switch");
+                ValidateOfflineUI(chat);
+                Debug.Log("[Mirra chat validation] PASS: buffer races/cap; departure and return epochs, pending flags, retry cooldown, old-channel isolation. No HTTP.");
             }
             finally { UnityEngine.Object.DestroyImmediate(root); }
+        }
+
+        private static void ValidateOfflineUI(MirraLobbyChat chat)
+        {
+            var host = new GameObject("Chat UI validation");
+            host.hideFlags = HideFlags.HideAndDontSave;
+            host.SetActive(false); // No game Start/Update or Photon connection.
+            GameObject canvas = null;
+            try
+            {
+                var bootstrap = host.AddComponent<LobbyOnlineBootstrap>();
+                var ui = host.AddComponent<LobbyChatUI>();
+                ui.Initialize(chat, bootstrap);
+                const BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Instance;
+                var type = typeof(LobbyChatUI);
+                canvas = (GameObject)type.GetField("root", flags).GetValue(ui);
+                var panel = (GameObject)type.GetField("panel", flags).GetValue(ui);
+                var input = (UnityEngine.UI.InputField)type.GetField("input", flags).GetValue(ui);
+                var history = (UnityEngine.UI.Text)type.GetField("history", flags).GetValue(ui);
+                Require(input.characterLimit == 200 && !input.textComponent.supportRichText && !history.supportRichText,
+                    "UI length and plain text");
+                panel.SetActive(true);
+                type.GetMethod("Update", flags).Invoke(ui, null);
+                Require(!panel.activeSelf && !canvas.activeSelf, "offline transition closes and hides chat UI");
+                type.GetMethod("SetOpen", flags).Invoke(ui, new object[] { true });
+                Require(!panel.activeSelf, "offline player cannot open chat");
+                Debug.Log("[Mirra chat UI validation] PASS: 200 characters, plain text, offline hides/closes panel and rejects open. No gameplay or HTTP.");
+            }
+            finally
+            {
+                // OnDestroy normally owns this canvas; detach it for immediate EditMode cleanup.
+                var ui = host.GetComponent<LobbyChatUI>();
+                if (ui != null) typeof(LobbyChatUI).GetField("root", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(ui, null);
+                UnityEngine.Object.DestroyImmediate(host);
+                if (canvas != null) UnityEngine.Object.DestroyImmediate(canvas);
+            }
         }
 
         private static void Require(bool condition, string check)

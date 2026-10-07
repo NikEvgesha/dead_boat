@@ -19,7 +19,7 @@ namespace DeadBoat.Online
         private MirraLobbyChatSettings settings;
         private MirraSocialService social;
         private bool working, sending, subscribed, recovering;
-        private string room, channel;
+        private string room, channel, observedRoom;
         private float nextAttempt, nextSend;
         private int generation;
         private readonly List<ChatMessageDto> messages = new();
@@ -29,6 +29,7 @@ namespace DeadBoat.Online
         public bool Ready => subscribed && !working && !recovering && social.Ready &&
             social.Sdk.Chats.ConnectionState == RealtimeConnectionState.Connected && IsCurrent(room);
         public bool Sending => sending;
+        public bool CanSend => Ready && !sending && Time.unscaledTime >= nextSend;
         public event Action Changed;
 
         public void Initialize(LobbyOnlineBootstrap bootstrap)
@@ -45,20 +46,24 @@ namespace DeadBoat.Online
 
         private async void Update()
         {
-            if (settings == null || !settings.enabledForPilot || working || Time.unscaledTime < nextAttempt) return;
+            if (settings == null || !settings.enabledForPilot) return;
             string desired = owner.IsOnline && !owner.IsInDepartureRoom && !owner.IsBrowsingDepartures
                 ? owner.CurrentSessionName : null;
+            ObserveRoom(desired);
+            if (working || Time.unscaledTime < nextAttempt) return;
             if (room == desired && ((subscribed && social.Ready) || desired == null)) return;
             working = true;
             await channelGate.WaitAsync();
+            int epoch = generation;
             try
             {
                 await DetachAsync();
-                if (this == null || string.IsNullOrEmpty(desired)) return;
+                epoch = generation;
+                if (!IsCurrent(desired) || string.IsNullOrEmpty(desired)) return;
                 room = desired;
                 Status = "Подключение чата…";
                 Changed?.Invoke();
-                if (!await social.ConnectAsync() || !IsCurrent(desired)) return;
+                if (!await social.ConnectAsync() || !IsOperationCurrent(epoch, desired)) return;
                 var sdk = social.Sdk;
                 var runner = owner.LobbyRunner;
                 bool created = false;
@@ -72,7 +77,7 @@ namespace DeadBoat.Online
                     if (!create.Result.IsSuccess || create.Result.Data == null) throw new InvalidOperationException();
                     channel = create.Result.Data.ChannelId;
                     created = true; // CreateChannel already joins its creator.
-                    if (!IsCurrent(desired) || !runner.IsSharedModeMasterClient) return;
+                    if (!IsOperationCurrent(epoch, desired) || !runner.IsSharedModeMasterClient) return;
                     runner.SessionInfo.UpdateCustomProperties(new Dictionary<string, SessionProperty> { [ChannelProperty] = channel });
                 }
                 if (!created)
@@ -90,7 +95,7 @@ namespace DeadBoat.Online
                             Array.Exists(members.Result.Data ?? Array.Empty<ChatMemberDto>(), m => m?.ProfileId == profile);
                         if (!member) throw new InvalidOperationException();
                     }
-                    if (!IsCurrent(desired)) throw new InvalidOperationException();
+                    if (!IsOperationCurrent(epoch, desired)) return;
                 }
                 sdk.Chats.OnMessageReceived += Receive;
                 sdk.Chats.OnMessageEdited += Receive;
@@ -99,24 +104,58 @@ namespace DeadBoat.Online
                 sdk.Chats.OnConnectionStateChanged += ConnectionChanged;
                 var connect = sdk.Chats.ConnectAsync();
                 await connect.Task();
-                if (!connect.Result.IsSuccess || !IsCurrent(desired)) throw new InvalidOperationException();
+                if (!IsOperationCurrent(epoch, desired)) return;
+                if (!connect.Result.IsSuccess) throw new InvalidOperationException();
                 var subscribe = sdk.Chats.SubscribeAsync(channel);
                 await subscribe.Task();
-                if (!subscribe.Result.IsSuccess || !IsCurrent(desired)) throw new InvalidOperationException();
+                if (!IsOperationCurrent(epoch, desired)) return;
+                if (!subscribe.Result.IsSuccess) throw new InvalidOperationException();
                 subscribed = true;
                 var history = sdk.Chats.GetMessagesAsync(channel, limit: 50);
                 await history.Task();
-                if (!history.Result.IsSuccess || !IsCurrent(desired)) throw new InvalidOperationException();
+                if (!IsOperationCurrent(epoch, desired)) return;
+                if (!history.Result.IsSuccess) throw new InvalidOperationException();
                 foreach (var message in history.Result.Data ?? Array.Empty<ChatMessageDto>()) Receive(message);
                 Status = "Чат лобби";
             }
-            catch (Exception) { Status = "Чат недоступен. Игра продолжается"; await DetachAsync(); }
-            finally { channelGate.Release(); working = false; nextAttempt = Time.unscaledTime + 10; Changed?.Invoke(); }
+            catch (Exception)
+            {
+                if (IsOperationCurrent(epoch, desired)) Status = "Чат недоступен. Игра продолжается";
+            }
+            finally
+            {
+                bool retrySameRoom = IsOperationCurrent(epoch, desired);
+                if (!subscribed || !IsOperationCurrent(epoch, desired)) await DetachAsync();
+                channelGate.Release(); working = false;
+                nextAttempt = retrySameRoom && observedRoom == desired ? Time.unscaledTime + 10 : 0;
+                Changed?.Invoke();
+            }
+        }
+
+        private bool IsOperationCurrent(int epoch, string expected) => epoch == generation && IsCurrent(expected);
+
+        // Invalidate pending callbacks immediately, even while a REST request is in flight.
+        private void ObserveRoom(string desired)
+        {
+            if (observedRoom == desired) return;
+            observedRoom = desired;
+            Invalidate();
+            nextAttempt = 0;
+            Status = string.IsNullOrEmpty(desired) ? "Чат недоступен" : "Подключение чата…";
+            Changed?.Invoke();
+        }
+
+        private void Invalidate()
+        {
+            generation++;
+            subscribed = sending = recovering = false;
+            nextSend = 0;
+            messages.Clear(); deleted.Clear();
         }
 
         private void Receive(ChatMessageDto message)
         {
-            if (message == null || message.ChannelId != channel || string.IsNullOrEmpty(message.MessageId) || deleted.Contains(message.MessageId)) return;
+            if ((owner != null && (!IsCurrent(room) || observedRoom != room)) || message == null || message.ChannelId != channel || string.IsNullOrEmpty(message.MessageId) || deleted.Contains(message.MessageId)) return;
             if (message.DeletedAt.HasValue) { Delete(new RealtimeDeletePayload { ChannelId = channel, MessageId = message.MessageId }); return; }
             int index = messages.FindIndex(m => m.MessageId == message.MessageId);
             if (index >= 0 && (messages[index].EditedAt ?? messages[index].CreatedAt) > (message.EditedAt ?? message.CreatedAt)) return;
@@ -128,7 +167,7 @@ namespace DeadBoat.Online
 
         private void Delete(RealtimeDeletePayload payload)
         {
-            if (payload == null || payload.ChannelId != channel || string.IsNullOrEmpty(payload.MessageId)) return;
+            if ((owner != null && (!IsCurrent(room) || observedRoom != room)) || payload == null || payload.ChannelId != channel || string.IsNullOrEmpty(payload.MessageId)) return;
             if (deleted.Count < 200) deleted.Add(payload.MessageId);
             messages.RemoveAll(m => m.MessageId == payload.MessageId);
             Changed?.Invoke();
@@ -136,6 +175,7 @@ namespace DeadBoat.Online
 
         private void ConnectionChanged(RealtimeConnectionState state)
         {
+            if (!IsCurrent(room) || observedRoom != room) return;
             if (state != RealtimeConnectionState.Connected) Status = "Переподключение чата…";
             Changed?.Invoke();
         }
@@ -161,13 +201,13 @@ namespace DeadBoat.Online
             {
                 if (epoch == generation) { subscribed = false; Status = "Не удалось восстановить историю чата"; }
             }
-            finally { recovering = false; Changed?.Invoke(); }
+            finally { if (epoch == generation) { recovering = false; Changed?.Invoke(); } }
         }
 
         public async Task<bool> SendAsync(string body)
         {
             body = body?.Trim();
-            if (!Ready || sending || Time.unscaledTime < nextSend || string.IsNullOrEmpty(body) || body.Length > 200) return false;
+            if (!CanSend || string.IsNullOrEmpty(body) || body.Length > 200) return false;
             sending = true;
             int epoch = generation;
             string target = channel;
@@ -189,17 +229,15 @@ namespace DeadBoat.Online
                 owner.StayOnline();
                 return true;
             }
-            catch (Exception) { Status = "Не удалось отправить сообщение"; return false; }
-            finally { sending = false; nextSend = Time.unscaledTime + 2; Changed?.Invoke(); }
+            catch (Exception) { if (epoch == generation) Status = "Не удалось отправить сообщение"; return false; }
+            finally { if (epoch == generation) { sending = false; nextSend = Time.unscaledTime + 2; Changed?.Invoke(); } }
         }
 
         private async Task DetachAsync()
         {
-            generation++;
+            Invalidate();
             var old = channel;
             room = channel = null;
-            subscribed = false;
-            messages.Clear(); deleted.Clear();
             var chats = social?.Sdk?.Chats;
             if (chats == null) return;
             chats.OnMessageReceived -= Receive; chats.OnMessageEdited -= Receive; chats.OnMessageDeleted -= Delete;
