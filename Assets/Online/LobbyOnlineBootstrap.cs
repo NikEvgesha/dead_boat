@@ -13,8 +13,13 @@ namespace DeadBoat.Online
 
     public sealed class LobbyOnlineBootstrap : MonoBehaviour
     {
+#if DEADBOAT_MIRRA_GAME_CHAT_PILOT
+        private const string MatchmakingLobbyName = "river-chat-pilot-lobby-v1";
+        private const string DepartureLobbyName = "river-chat-pilot-departures-v1";
+#else
         private const string MatchmakingLobbyName = "river-public-lobby-v4";
         private const string DepartureLobbyName = "river-departures-v6";
+#endif
         private const string ModePreferenceKey = "DeadBoat.OnlineMode.v1";
 
         [SerializeField] private NetworkObject avatarPrefab;

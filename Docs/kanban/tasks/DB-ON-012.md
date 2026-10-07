@@ -112,3 +112,9 @@ Unity MirraChatValidation.Run — PASS: буфер и лимит 50, верси�
 RefreshHistory вызывается при открытии чата и OnApplicationFocus(true), только Ready, с паузой 10 сек/без параллельного запроса. SDK OnSubscribedChannel восстанавливает историю без этой UI-паузы. Не добавлен постоянный polling; неизвестный пропуск WS при постоянно открытом чате остаётся возможен до сверки.
 
 Реальный Editor lifecycle probe PASS: пустой буфер восстановлен из Cloud, немедленный повтор RefreshHistory не запускает recovering; SDK reconnect/Photon return/isolation/legacy guard также PASS. Один Editor клиент, настоящие приватные rooms, флаги departure задаёт стенд. Визуал UGUI проверен на Builds/MirraChatUIPilot.png; полный переход двух игровых WebGL клиентов и hidden событие ещё нужны. SDK не менялся, пилотный ресурс выключен, черновик не обновлён. Следующий шаг ИИ — интегрированный WebGL/смена master; владелец/Mirra — серверные гарантии до общего включения.
+
+## Игровой WebGL пилот 2026-10-07
+
+Добавлен QueueGameChatPilot с define DEADBOAT_MIRRA_GAME_CHAT_PILOT: чат включён только в отдельной сборке, Photon matchmaking и departures отделены от обычных комнат. Resources enabledForPilot=0, SDK неизменён. MirraChatValidation PASS; WebGL BuildPlayer PASS. Два origin загрузили игру и вернулись в лобби, появился игровой чат.
+
+Доставка/смена master/общий забег не приняты: IAB выдаёт WrongDocumentError при pointer lock, после него управление предупреждением нестабильно. Сценарий из Docs/MIRRA_LOBBY_CHAT_PILOT.md остаётся открытым. Черновик не обновлён. Артефакт Builds/MirraGameChatPilot; скриншот Builds/MirraGameChatPilot-20261007.png показывает последнее состояние теста, а не успешный чат. Локальные серверы/клиенты остановлены. Следующий шаг — ИИ: устранить препятствие браузерного теста и проверить сценарий, затем владелец принимает UI. Статус in_progress.

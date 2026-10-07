@@ -37,7 +37,7 @@ namespace DeadBoat.Online
             owner = bootstrap;
             social = MirraSocialService.Instance;
             settings = Resources.Load<MirraLobbyChatSettings>("OnlineUI/MirraLobbyChatSettings");
-            if (settings != null && settings.enabledForPilot)
+            if (settings != null && settings.PilotEnabled)
                 gameObject.AddComponent<LobbyChatUI>().Initialize(this, owner);
         }
 
@@ -46,7 +46,7 @@ namespace DeadBoat.Online
 
         private async void Update()
         {
-            if (settings == null || !settings.enabledForPilot) return;
+            if (settings == null || !settings.PilotEnabled) return;
             string desired = owner.IsOnline && !owner.IsInDepartureRoom && !owner.IsBrowsingDepartures
                 ? owner.CurrentSessionName : null;
             ObserveRoom(desired);

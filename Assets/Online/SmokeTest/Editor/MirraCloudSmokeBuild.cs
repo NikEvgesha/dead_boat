@@ -13,6 +13,25 @@ namespace DeadBoat.Online.SmokeTest.Editor
         private const string GameOutput = "Builds/MirraCloudPlayableDraft";
         private const string PerformanceOutput = "Builds/CoopPerformanceDraft";
 
+        public static void QueueGameChatPilot()
+        {
+            EditorApplication.update -= BuildQueuedGameChatPilot;
+            EditorApplication.update += BuildQueuedGameChatPilot;
+        }
+
+        private static void BuildQueuedGameChatPilot()
+        {
+            if (BuildPipeline.isBuildingPlayer || EditorApplication.isCompiling) return;
+            EditorApplication.update -= BuildQueuedGameChatPilot;
+            if (EditorApplication.isPlaying)
+                throw new BuildFailedException("Stop Play Mode before building game chat pilot");
+            var scenes = EditorBuildSettings.scenes.Where(scene => scene.enabled).Select(scene => scene.path).ToArray();
+            if (scenes.Length == 0) throw new BuildFailedException("No enabled scenes in Editor Build Settings");
+            BuildPlayer("Builds/MirraGameChatPilot", scenes,
+                new[] { "DEADBOAT_MIRRA_GAME_CHAT_PILOT", "DEADBOAT_MIRRA_DIAGNOSTICS" });
+            UnityEngine.Debug.Log("[Mirra game chat pilot] build PASS: Builds/MirraGameChatPilot");
+        }
+
         public static void QueueChatProbe()
         {
             EditorApplication.update -= BuildQueuedChatProbe;
