@@ -61,10 +61,22 @@ namespace DeadBoat.Online.Editor
                 type.GetField("channel", flags).SetValue(chat, "new-channel");
                 add(new ChatMessageDto { ChannelId = "probe", MessageId = "late", Number = 70 });
                 Require(chat.Messages.Count == 0, "late old-channel message after room switch");
+                ValidateLocalVisibility();
                 ValidateOfflineUI(chat);
                 Debug.Log("[Mirra chat validation] PASS: buffer races/cap; departure and return epochs, pending flags, retry cooldown, old-channel isolation. No HTTP.");
             }
             finally { UnityEngine.Object.DestroyImmediate(root); }
+        }
+
+        private static void ValidateLocalVisibility()
+        {
+            var local = new ChatLocalVisibility();
+            Require(!local.SetHidden(null, true) && !local.SetHidden("", true), "empty sender rejected");
+            for (int i = 0; i < 64; i++) Require(local.SetHidden("local-" + i, true), "bounded local hide entries");
+            Require(!local.SetHidden("overflow", true) && local.HiddenSenders.Count == 64, "local preference memory cap");
+            Require(local.SetHidden("local-0", true), "repeated hide is idempotent at cap");
+            Require(local.SetHidden("local-0", false) && !local.IsHidden("local-0") && local.SetHidden("overflow", true), "unhide releases capacity");
+            Require(new ChatLocalVisibility().HiddenSenders.Count == 0, "independent local preference isolation");
         }
 
         private static void ValidateOfflineUI(MirraLobbyChat chat)
@@ -86,12 +98,28 @@ namespace DeadBoat.Online.Editor
                 var history = (UnityEngine.UI.Text)type.GetField("history", flags).GetValue(ui);
                 Require(input.characterLimit == 200 && !input.textComponent.supportRichText && !history.supportRichText,
                     "UI length and plain text");
+                var preference = new ChatLocalVisibility();
+                type.GetField("localVisibility", flags).SetValue(ui, preference);
                 panel.SetActive(true);
+                var receive = typeof(MirraLobbyChat).GetMethod("Receive", flags);
+                receive.Invoke(chat, new object[] { new ChatMessageDto { ChannelId = "new-channel", SenderId = "sender-A", MessageId = "visible", Number = 1, Body = "visible-body" } });
+                receive.Invoke(chat, new object[] { new ChatMessageDto { ChannelId = "new-channel", SenderId = "sender-B", MessageId = "hidden", Number = 2, Body = "hidden-body" } });
+                type.GetMethod("Refresh", flags).Invoke(ui, null);
+                type.GetField("selectedAuthor", flags).SetValue(ui, "sender-B");
+                type.GetMethod("ToggleVisibility", flags).Invoke(ui, null);
+                Require(history.text.Contains("visible-body") && !history.text.Contains("hidden-body") && chat.Messages.Count == 2,
+                    "local hide filters UI without changing transport history");
+                ((System.Collections.IList)typeof(MirraLobbyChat).GetField("messages", flags).GetValue(chat)).Clear();
+                type.GetMethod("Refresh", flags).Invoke(ui, null);
+                Require((string)type.GetField("selectedAuthor", flags).GetValue(ui) == "sender-B", "hidden author selectable after buffer eviction");
+                type.GetMethod("ToggleVisibility", flags).Invoke(ui, null);
+                receive.Invoke(chat, new object[] { new ChatMessageDto { ChannelId = "new-channel", SenderId = "sender-B", MessageId = "restored", Number = 3, Body = "restored-body" } });
+                Require(history.text.Contains("restored-body") && !preference.IsHidden("sender-B"), "unhide restores presentation");
                 type.GetMethod("Update", flags).Invoke(ui, null);
                 Require(!panel.activeSelf && !canvas.activeSelf, "offline transition closes and hides chat UI");
                 type.GetMethod("SetOpen", flags).Invoke(ui, new object[] { true });
                 Require(!panel.activeSelf, "offline player cannot open chat");
-                Debug.Log("[Mirra chat UI validation] PASS: 200 characters, plain text, offline hides/closes panel and rejects open. No gameplay or HTTP.");
+                Debug.Log("[Mirra chat UI validation] PASS: 200 characters/plain text, local hide/show and buffer eviction, bounded preferences, offline closes/rejects open. No gameplay or HTTP.");
             }
             finally
             {

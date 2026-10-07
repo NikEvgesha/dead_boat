@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,7 +13,10 @@ namespace DeadBoat.Online
         private GameObject root, panel;
         private InputField input;
         private Text status, history;
-        private Button send;
+        private Button send, author, visibility;
+        private ChatLocalVisibility localVisibility = ChatLocalVisibility.Session;
+        private readonly List<string> authors = new();
+        private string selectedAuthor;
         private bool ownsCursor;
         internal bool IsOpen => panel != null && panel.activeSelf;
 
@@ -56,6 +60,10 @@ namespace DeadBoat.Online
             input.placeholder.color = Color.gray;
             input.onValueChanged.AddListener(_ => owner.StayOnline());
             send = MakeButton(panel.transform,"Отправить",new Vector2(.5f,.5f),new Vector2(240,-219),new Vector2(170,52),Send);
+            author = MakeButton(panel.transform,"Выбрать игрока ▸",new Vector2(.5f,.5f),new Vector2(-115,-269),new Vector2(420,36),NextAuthor);
+            visibility = MakeButton(panel.transform,"Скрыть у себя",new Vector2(.5f,.5f),new Vector2(240,-269),new Vector2(170,36),ToggleVisibility);
+            author.GetComponentInChildren<Text>().fontSize = 17;
+            visibility.GetComponentInChildren<Text>().fontSize = 15;
             chat.Changed += Refresh;
             panel.SetActive(false);
         }
@@ -82,7 +90,7 @@ namespace DeadBoat.Online
                 if (value && !ownsCursor) { controls.CursorActive=true; ownsCursor=true; }
                 else if (!value && ownsCursor) { controls.CursorActive=false; ownsCursor=false; }
             }
-            if (value) { owner.StayOnline(); Refresh(); }
+            if (value) { owner.StayOnline(); Refresh(); chat.RefreshHistory(); }
         }
         private void Refresh()
         {
@@ -91,6 +99,7 @@ namespace DeadBoat.Online
             var text = new StringBuilder();
             foreach (var message in chat.Messages)
             {
+                if (localVisibility.IsHidden(message.SenderId)) continue;
                 string id = message.SenderId ?? "?";
                 // Nickname mapping follows verified profiles; never trust message metadata as identity.
                 string name = id.Length > 6 ? id.Substring(id.Length-6) : id;
@@ -101,6 +110,41 @@ namespace DeadBoat.Online
             history.text=text.ToString();
             history.rectTransform.sizeDelta=new Vector2(630,Mathf.Max(380,history.preferredHeight));
             send.interactable=chat.CanSend && !string.IsNullOrWhiteSpace(input.text);
+            RefreshAuthors();
+        }
+
+        private void RefreshAuthors()
+        {
+            authors.Clear();
+            foreach (var message in chat.Messages)
+                if (!string.IsNullOrEmpty(message.SenderId) && !authors.Contains(message.SenderId)) authors.Add(message.SenderId);
+            // Keep hidden players selectable even after their messages leave the 50-message buffer.
+            foreach (var sender in localVisibility.HiddenSenders)
+                if (!authors.Contains(sender)) authors.Add(sender);
+            authors.Sort(StringComparer.Ordinal);
+            if (!authors.Contains(selectedAuthor)) selectedAuthor = authors.Count > 0 ? authors[0] : null;
+            author.interactable = authors.Count > 0;
+            visibility.interactable = selectedAuthor != null;
+            string shortName = selectedAuthor == null ? "Выбрать игрока" : "Игрок " +
+                (selectedAuthor.Length > 6 ? selectedAuthor.Substring(selectedAuthor.Length - 6) : selectedAuthor);
+            author.GetComponentInChildren<Text>().text = shortName + " ▸";
+            visibility.GetComponentInChildren<Text>().text = localVisibility.IsHidden(selectedAuthor) ? "Показать у себя" : "Скрыть у себя";
+        }
+
+        private void NextAuthor()
+        {
+            if (authors.Count == 0) return;
+            selectedAuthor = authors[(authors.IndexOf(selectedAuthor) + 1) % authors.Count];
+            RefreshAuthors(); owner.StayOnline();
+        }
+
+        private void ToggleVisibility()
+        {
+            if (selectedAuthor == null) return;
+            bool accepted = localVisibility.SetHidden(selectedAuthor, !localVisibility.IsHidden(selectedAuthor));
+            Refresh();
+            if (!accepted) status.text = "Скрыто слишком много игроков. Сначала включите сообщения одного из них";
+            owner.StayOnline();
         }
         private static Text Label(Transform parent,string text,Vector2 position,Vector2 size,int fontSize)
         {

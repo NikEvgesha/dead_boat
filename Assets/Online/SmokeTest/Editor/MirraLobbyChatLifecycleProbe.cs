@@ -80,6 +80,21 @@ namespace DeadBoat.Online.SmokeTest.Editor
                 Require(await chat.SendAsync("Editor lifecycle probe"), "send acknowledgement");
                 Require(chat.Messages.Count == 1, "own acknowledgement in buffer");
 
+                step = "manual history reconciliation";
+                ((System.Collections.IList)Get(chat, "messages")).Clear();
+                Set(chat, "nextHistoryRefresh", 0f);
+                chat.RefreshHistory();
+                await Wait(() => chat.Ready && chat.Messages.Count == 1);
+                chat.RefreshHistory();
+                Require(!(bool)Get(chat, "recovering"), "repeated UI/focus refresh is throttled");
+                typeof(LobbyChatUI).GetMethod("SetOpen", Fields).Invoke(ui, new object[] { true });
+                Require(((GameObject)Get(ui, "panel")).activeSelf, "online chat panel opens");
+                System.IO.Directory.CreateDirectory("Builds");
+                Canvas.ForceUpdateCanvases();
+                await Task.Delay(200);
+                ScreenCapture.CaptureScreenshot(System.IO.Path.GetFullPath("Builds/MirraChatUIPilot.png"));
+                await Task.Delay(300); // Capture happens on a rendered frame; do not tear the UI down first.
+
                 step = "SDK disconnect and resubscribe";
                 var social = MirraSocialService.Instance;
                 var sdk = (MirraCloudSDK)Get(social, "sdk");
@@ -138,7 +153,7 @@ namespace DeadBoat.Online.SmokeTest.Editor
                 await Wait(() => chat.Status == "Чат доступен в новых лобби" && !(bool)Get(chat, "working"));
                 Require(!chat.Ready && Get(chat, "channel") == null && chat.Messages.Count == 0, "legacy room must not create a divergent channel");
                 Result = "PASS";
-                Debug.Log("[Mirra lifecycle probe] PASS: real private Photon rooms, SDK send/reconnect/history, departure cleanup, same-room return, different-room isolation, legacy room guard, online/offline UI visibility. Single Editor client; no level scene transition.");
+                Debug.Log("[Mirra lifecycle probe] PASS: real private Photon rooms, SDK send/reconnect/history, manual history reconciliation/throttle, departure cleanup, same-room return, different-room isolation, legacy room guard, online/offline UI visibility. Single Editor client; no level scene transition.");
             }
             catch (Exception exception)
             {

@@ -20,7 +20,7 @@ namespace DeadBoat.Online
         private MirraSocialService social;
         private bool working, sending, subscribed, recovering;
         private string room, channel, observedRoom;
-        private float nextAttempt, nextSend;
+        private float nextAttempt, nextSend, nextHistoryRefresh;
         private int generation;
         private readonly List<ChatMessageDto> messages = new();
         private readonly HashSet<string> deleted = new();
@@ -123,6 +123,7 @@ namespace DeadBoat.Online
                 if (!IsOperationCurrent(epoch, desired)) return;
                 if (!history.Result.IsSuccess) throw new InvalidOperationException();
                 foreach (var message in history.Result.Data ?? Array.Empty<ChatMessageDto>()) Receive(message);
+                nextHistoryRefresh = Time.realtimeSinceStartup + 10;
                 Status = "Чат лобби";
             }
             catch (Exception)
@@ -191,6 +192,7 @@ namespace DeadBoat.Online
         {
             if (!subscribed || working || recovering || subscribedChannel != channel || !IsCurrent(room)) return;
             int epoch = generation;
+            nextHistoryRefresh = Time.realtimeSinceStartup + 10;
             recovering = true;
             messages.Clear(); deleted.Clear();
             Status = "Обновление истории…";
@@ -209,6 +211,17 @@ namespace DeadBoat.Online
                 if (epoch == generation) { subscribed = false; Status = "Не удалось восстановить историю чата"; }
             }
             finally { if (epoch == generation) { recovering = false; Changed?.Invoke(); } }
+        }
+
+        public void RefreshHistory()
+        {
+            if (!Ready || Time.realtimeSinceStartup < nextHistoryRefresh) return;
+            Recover(channel);
+        }
+
+        private void OnApplicationFocus(bool focused)
+        {
+            if (focused) RefreshHistory();
         }
 
         public async Task<bool> SendAsync(string body)

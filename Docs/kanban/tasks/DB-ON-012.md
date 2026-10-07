@@ -106,3 +106,9 @@ Unity MirraChatValidation.Run — PASS: буфер и лимит 50, верси�
 Следующий шаг — ИИ: совместная игровая WebGL проверка двух клиентов, смена master и настоящее hidden состояние. Владелец/Mirra: гарантии серверной защиты и live-доставки по MIRRA_CHAT_SERVER_REQUIREMENTS.md перед общим включением. in_progress сохраняется.
 
 Финальная проверка после правок: MirraChatValidation PASS; MirraLobbyChatLifecycleProbe PASS, включая legacy room guard без отдельного канала. cleanup complete. Play Mode остановлен, временные настройки редактора возвращены. Эта версия ещё не проверена в новой WebGL-сборке.
+
+## Сверка истории по UI/фокусу 2026-10-07
+
+RefreshHistory вызывается при открытии чата и OnApplicationFocus(true), только Ready, с паузой 10 сек/без параллельного запроса. SDK OnSubscribedChannel восстанавливает историю без этой UI-паузы. Не добавлен постоянный polling; неизвестный пропуск WS при постоянно открытом чате остаётся возможен до сверки.
+
+Реальный Editor lifecycle probe PASS: пустой буфер восстановлен из Cloud, немедленный повтор RefreshHistory не запускает recovering; SDK reconnect/Photon return/isolation/legacy guard также PASS. Один Editor клиент, настоящие приватные rooms, флаги departure задаёт стенд. Визуал UGUI проверен на Builds/MirraChatUIPilot.png; полный переход двух игровых WebGL клиентов и hidden событие ещё нужны. SDK не менялся, пилотный ресурс выключен, черновик не обновлён. Следующий шаг ИИ — интегрированный WebGL/смена master; владелец/Mirra — серверные гарантии до общего включения.
