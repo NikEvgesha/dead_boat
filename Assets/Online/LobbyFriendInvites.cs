@@ -30,6 +30,7 @@ namespace DeadBoat.Online
         public string Code { get; private set; }
         public string Status { get; private set; } = "";
         public bool Busy => busy;
+        public bool IsInviting { get; private set; }
         public event Action Changed;
 
         public void Initialize(LobbyOnlineBootstrap owner)
@@ -48,6 +49,9 @@ namespace DeadBoat.Online
             }
 
             busy = true;
+            IsInviting = true;
+            Code = null;
+            Changed?.Invoke();
             int epoch = ++generation;
             string groupId = null;
             string inviteId = null;
@@ -99,8 +103,8 @@ namespace DeadBoat.Online
                 Code = "DB1:" + groupId + ":" + inviteId;
                 GUIUtility.systemCopyBuffer = Code;
                 SetStatus(roomFull
-                    ? "Код скопирован. Новое лобби после принятия. Регион: " + region + "; версия: " + state.version
-                    : "Код скопирован. Лобби: " + currentRoom + "; регион: " + region + "; версия: " + state.version);
+                    ? "Код показан в поле и скопирован. Новое лобби; " + region + "; v" + state.version
+                    : "Код показан в поле и скопирован. " + currentRoom + "; " + region + "; v" + state.version);
 
                 bool accepted = false;
                 while (IsCurrent(epoch) && DateTimeOffset.UtcNow.ToUnixTimeSeconds() < state.expires)
@@ -184,6 +188,7 @@ namespace DeadBoat.Online
             finally
             {
                 busy = false;
+                IsInviting = false;
                 Changed?.Invoke();
                 // Group is transient. The recipient has already consumed its metadata by now.
                 if (groupId != null && social.Ready)

@@ -120,6 +120,9 @@ namespace DeadBoat.Online
         {
             if (panel == null || !panel.activeSelf) return;
             status.text = social.Busy ? "Подождите… " + social.Status : social.Status;
+            if (invites.IsInviting && !string.IsNullOrEmpty(invites.Code) &&
+                inviteCode.text != invites.Code)
+                inviteCode.text = invites.Code;
             inviteStatus.text = invites.Status;
             identity.text = "Ваш ID: " + (social.FriendId ?? "пока недоступен");
             foreach (Transform child in rows.transform) { child.gameObject.SetActive(false); Destroy(child.gameObject); }
