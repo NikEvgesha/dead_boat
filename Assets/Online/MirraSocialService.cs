@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using System.Collections.Generic;
 using MirraCloud;
 using MirraCloud.Core;
 using MirraCloud.Core.Friends.Dto;
@@ -24,56 +23,30 @@ namespace DeadBoat.Online
         internal MirraCloudSDK Sdk => sdk;
         public bool Ready => sdk?.Authentication?.IsAuth == true && !string.IsNullOrEmpty(PlayerId);
         public string PlayerId => sdk?.Authentication?.IsAuth == true ? sdk.PlayerAccount?.PlayerAccountInfo?.Id : null;
+        public string FriendId => sdk?.Authentication?.IsAuth == true ? sdk.PlayerAccount?.PlayerAccountInfo?.SelectedProfileId : null;
         public string Status { get; private set; } = "Откройте друзей для подключения";
         public GetPlayerDto[] Friends { get; private set; } = Array.Empty<GetPlayerDto>();
         public GetFriendRequestDto[] Incoming { get; private set; } = Array.Empty<GetFriendRequestDto>();
         public GetFriendRequestDto[] Outgoing { get; private set; } = Array.Empty<GetFriendRequestDto>();
         public event Action Changed;
-        private readonly Dictionary<string, string> chatAccounts = new(StringComparer.Ordinal);
-        private float chatLookupAfter;
-
-        // Chats addresses profiles; Friends addresses accounts. Resolve via the SDK,
-        // never from message body, nickname or client-controlled metadata.
+        // The Cloud runtime accepts the server-provided chat sender profile in Friends.
+        // Other accounts' GetProfile is not publicly readable (404), so do not resolve
+        // their account IDs or derive targets from client-controlled message metadata.
         public string ChatFriendLabel(string senderId)
         {
-            if (senderId == sdk?.PlayerAccount?.PlayerAccountInfo?.SelectedProfileId && !string.IsNullOrEmpty(senderId))
-                return "Это вы";
-            return FriendActionLabel(chatAccounts.TryGetValue(senderId ?? "", out var account) ? account : senderId);
+            return FriendActionLabel(senderId);
         }
 
         public bool CanRequestChatFriend(string senderId) => !Busy && ChatFriendLabel(senderId) == "В друзья";
 
-        public async Task RequestChatFriendAsync(string senderId)
-        {
-            if (!CanRequestChatFriend(senderId)) return;
-            if (Time.realtimeSinceStartup < chatLookupAfter)
-            { Status = "Подождите несколько секунд перед следующим запросом"; Changed?.Invoke(); return; }
-            chatLookupAfter = Time.realtimeSinceStartup + 2;
-            string requester = PlayerId;
-            string target = null;
-            Busy = true; Status = "Проверяем профиль игрока…"; Changed?.Invoke();
-            try
-            {
-                var profile = sdk.PlayerAccount.GetProfileAsync(senderId);
-                await profile.Task();
-                if (!Ready || requester != PlayerId) { Status = "Сессия изменилась. Повторите запрос"; return; }
-                if (!profile.Result.IsSuccess) { Failure(profile.Result); return; }
-                if (profile.Result.Data?.Id != senderId || string.IsNullOrEmpty(profile.Result.Data.AccountId))
-                { Status = "Не удалось определить аккаунт игрока"; return; }
-                target = profile.Result.Data.AccountId;
-                if (chatAccounts.Count >= 50) chatAccounts.Clear();
-                chatAccounts[senderId] = target;
-            }
-            catch (Exception) { Status = "Не удалось проверить игрока. Повторите позже"; }
-            finally { Busy = false; Changed?.Invoke(); }
-            if (target != null) await ChangeFriendAsync(target, "send");
-        }
+        public Task RequestChatFriendAsync(string senderId) => CanRequestChatFriend(senderId)
+            ? ChangeFriendAsync(senderId, "send") : Task.CompletedTask;
 
         public string FriendActionLabel(string playerId)
         {
             if (string.IsNullOrEmpty(playerId)) return "Выберите игрока";
             if (!Ready) return "Друзья недоступны";
-            if (playerId == PlayerId) return "Это вы";
+            if (IsSelf(playerId)) return "Это вы";
             foreach (var friend in Friends)
                 if (friend?.PlayerId == playerId) return "Уже в друзьях";
             foreach (var request in Incoming)
@@ -86,6 +59,8 @@ namespace DeadBoat.Online
         }
 
         public bool CanRequestFriend(string playerId) => !Busy && FriendActionLabel(playerId) == "В друзья";
+        private bool IsSelf(string id) => !string.IsNullOrEmpty(id) &&
+            (id == PlayerId || id == sdk?.PlayerAccount?.PlayerAccountInfo?.SelectedProfileId);
 
         public static MirraSocialService Instance
         {
@@ -203,7 +178,7 @@ namespace DeadBoat.Online
             if (Time.realtimeSinceStartup < mutationAfter)
             { Status = "Подождите несколько секунд перед следующим запросом"; Changed?.Invoke(); return; }
             playerId = playerId?.Trim();
-            if (string.IsNullOrEmpty(playerId) || playerId.Length > 128 || playerId == PlayerId)
+            if (string.IsNullOrEmpty(playerId) || playerId.Length > 128 || IsSelf(playerId))
             { Status = "Введите ID другого игрока Mirra"; Changed?.Invoke(); return; }
             Busy = true;
             Changed?.Invoke();
@@ -211,7 +186,7 @@ namespace DeadBoat.Online
             try
             {
                 if (!await ConnectAsync()) return;
-                if (playerId == PlayerId) { Status = "Нельзя добавить себя"; return; }
+                if (IsSelf(playerId)) { Status = "Нельзя добавить себя"; return; }
                 if (action == "send" && FriendActionLabel(playerId) != "В друзья")
                 { Status = FriendActionLabel(playerId) + ". Откройте список друзей"; return; }
                 var operation = action switch
@@ -239,7 +214,6 @@ namespace DeadBoat.Online
 
         private void OnExpired()
         {
-            chatAccounts.Clear();
             Friends = Array.Empty<GetPlayerDto>();
             Incoming = Outgoing = Array.Empty<GetFriendRequestDto>();
             Status = "Сессия Mirra завершена. Подключитесь снова";

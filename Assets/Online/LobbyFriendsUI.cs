@@ -41,7 +41,7 @@ namespace DeadBoat.Online
             status = Label(panel.transform, "", new Vector2(0, 216), new Vector2(650, 45), 17);
             identity = Label(panel.transform, "", new Vector2(-60, 170), new Vector2(530, 38), 17);
             Button(panel.transform, "Копировать ID", new Vector2(.5f, .5f), new Vector2(247, 170), new Vector2(160, 38),
-                () => GUIUtility.systemCopyBuffer = social.PlayerId ?? "");
+                () => GUIUtility.systemCopyBuffer = social.FriendId ?? "");
             var input = new GameObject("Friend ID", typeof(RectTransform), typeof(Image), typeof(InputField));
             input.transform.SetParent(panel.transform, false);
             input.GetComponent<RectTransform>().sizeDelta = new Vector2(435, 42);
@@ -100,7 +100,7 @@ namespace DeadBoat.Online
         {
             if (panel == null || !panel.activeSelf) return;
             status.text = social.Busy ? "Подождите… " + social.Status : social.Status;
-            identity.text = "Ваш ID: " + (social.PlayerId ?? "пока недоступен");
+            identity.text = "Ваш ID: " + (social.FriendId ?? "пока недоступен");
             foreach (Transform child in rows.transform) { child.gameObject.SetActive(false); Destroy(child.gameObject); }
             int index = 0;
             foreach (var friend in social.Friends)
