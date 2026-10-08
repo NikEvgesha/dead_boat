@@ -36,6 +36,7 @@ namespace DeadBoat.Online
         [Networked] private TickTimer AttackVisual { get; set; }
         [Networked] private int AttackStyle { get; set; }
         [Networked] private byte HeldItemId { get; set; }
+        [Networked] public NetworkString<_64> MirraProfileId { get; private set; }
         [Networked] public float Health { get; private set; }
         public Transform WorldTransform => visualRoot != null ? visualRoot : transform;
         private BoardController seatBoard;
@@ -123,6 +124,8 @@ namespace DeadBoat.Online
             foreach (var child in children) child.SetParent(visualRoot, true);
             if (Object.HasStateAuthority)
             {
+                var profileId = MirraSocialService.Instance.FriendId;
+                if (!string.IsNullOrEmpty(profileId)) MirraProfileId = profileId;
                 foreach (var avatarRenderer in avatarRenderers)
                     avatarRenderer.enabled = false;
 
@@ -134,6 +137,12 @@ namespace DeadBoat.Online
         {
             if (!Object.HasStateAuthority)
                 return;
+
+            if (string.IsNullOrEmpty(MirraProfileId.ToString()))
+            {
+                var profileId = MirraSocialService.Instance.FriendId;
+                if (!string.IsNullOrEmpty(profileId)) MirraProfileId = profileId;
+            }
 
             if (localPlayer == null)
                 localPlayer = PlayerMovement.Instance;

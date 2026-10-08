@@ -82,6 +82,10 @@ namespace DeadBoat.Online
         public string CurrentSessionName => runner != null && runner.SessionInfo.IsValid
             ? runner.SessionInfo.Name
             : null;
+        public string CurrentRegion => runner != null && runner.SessionInfo.IsValid
+            ? runner.SessionInfo.Region : null;
+        public int LobbyPlayerCount => IsOnline && !inDepartureRoom ? runner.ActivePlayers.Count() : 0;
+        public int LobbyCapacity => lobbyCapacity;
         internal NetworkRunner LobbyRunner => runner;
 
         private void Awake()
@@ -104,6 +108,7 @@ namespace DeadBoat.Online
                 ? LobbyOnlineMode.Online
                 : hasPreference ? LobbyOnlineMode.Offline : LobbyOnlineMode.Unselected;
             gameObject.AddComponent<LobbyOnlineModeUI>().Initialize(this, !hasPreference);
+            gameObject.AddComponent<LobbyFriendInvites>().Initialize(this);
             gameObject.AddComponent<LobbyFriendsUI>().Initialize(this);
             gameObject.AddComponent<MirraLobbyChat>().Initialize(this);
             if (mode == LobbyOnlineMode.Online)
@@ -688,6 +693,88 @@ namespace DeadBoat.Online
                 connecting = false;
                 TryPendingReconnect();
             }
+        }
+
+        // A named room is joined deliberately: Photon must never create a second room when an invite expires.
+        public async Task<bool> JoinFriendLobbyAsync(string name, string region, bool create, bool initiallyHidden)
+        {
+            if (leaving || startingSoloRun || departureTransition || connecting || stopping ||
+                browsingDepartures || inDepartureRoom || mode != LobbyOnlineMode.Online ||
+                string.IsNullOrEmpty(name) || string.IsNullOrEmpty(region) ||
+                (IsOnline && CurrentRegion != region)) return false;
+
+            if (IsOnline && CurrentSessionName == name) return true;
+            int revision = ++connectionRevision;
+            connecting = true;
+            connectedOnce = false;
+            status = "Joining friend's lobby";
+            try
+            {
+                await StopRunnerAsync();
+                if (leaving || revision != connectionRevision) return false;
+                var runnerObject = new GameObject("Lobby Photon Runner");
+                runner = runnerObject.AddComponent<NetworkRunner>();
+                var sceneManager = runnerObject.AddComponent<LobbySceneManager>();
+                var objectProvider = runnerObject.AddComponent<NetworkObjectProviderDefault>();
+                runnerObject.AddComponent<LobbyAvatarSpawner>().AvatarPrefab = avatarPrefab;
+                var start = runner.StartGame(new StartGameArgs
+                {
+                    GameMode = GameMode.Shared,
+                    CustomLobbyName = MatchmakingLobbyName,
+                    SessionName = name,
+                    EnableClientSessionCreation = create,
+                    PlayerCount = lobbyCapacity,
+                    SessionProperties = create ? new Dictionary<string, SessionProperty>
+                    {
+                        { "cap", lobbyCapacity }, { MirraLobbyChat.ChannelProperty, "" }
+                    } : null,
+                    IsOpen = true,
+                    IsVisible = !initiallyHidden,
+                    SceneManager = sceneManager,
+                    ObjectProvider = objectProvider
+                });
+                if (await Task.WhenAny(start, Task.Delay(TimeSpan.FromSeconds(20))) != start)
+                {
+                    lastFailure = "Invitation room timed out";
+                    return false;
+                }
+                var result = await start;
+                if (leaving || revision != connectionRevision || !result.Ok)
+                {
+                    lastFailure = result.ErrorMessage ?? result.ShutdownReason.ToString();
+                    return false;
+                }
+                connectedOnce = true;
+                failure = LobbyConnectionFailure.None;
+                lastFailure = null;
+                idleDisconnected = false;
+                status = "Online lobby";
+                StayOnline();
+                return true;
+            }
+            catch (Exception exception)
+            {
+                lastFailure = exception.GetType().Name;
+                Debug.LogWarning("[Lobby invite] Room transition failed: " + exception.Message);
+                return false;
+            }
+            finally
+            {
+                connecting = false;
+                if (!connectedOnce)
+                {
+                    await StopRunnerAsync();
+                    status = "Reconnecting to lobby";
+                    RetryConnection();
+                }
+            }
+        }
+
+        public bool OpenFriendLobbyToPublic()
+        {
+            if (!IsOnline || inDepartureRoom || !runner.IsSharedModeMasterClient) return false;
+            runner.SessionInfo.IsVisible = true;
+            return true;
         }
 
         private void RecordTimeout(int attempt)

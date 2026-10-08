@@ -10,9 +10,10 @@ namespace DeadBoat.Online
     {
         private LobbyOnlineBootstrap owner;
         private MirraSocialService social;
+        private LobbyFriendInvites invites;
         private GameObject root, panel, rows;
-        private Text status, identity;
-        private InputField target;
+        private Text status, identity, inviteStatus;
+        private InputField target, inviteCode;
         private bool ownsCursor;
         private int page;
         private const int PageSize = 20;
@@ -22,7 +23,9 @@ namespace DeadBoat.Online
         {
             owner = bootstrap;
             social = MirraSocialService.Instance;
+            invites = bootstrap.GetComponent<LobbyFriendInvites>();
             social.Changed += Refresh;
+            invites.Changed += Refresh;
             root = new GameObject("Friends UI", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
             root.GetComponent<Canvas>().renderMode = RenderMode.ScreenSpaceOverlay;
             root.GetComponent<Canvas>().sortingOrder = 1002;
@@ -56,6 +59,23 @@ namespace DeadBoat.Online
             target.characterLimit = 128;
             Button(panel.transform, "Добавить", new Vector2(.5f, .5f), new Vector2(225, 117), new Vector2(200, 42),
                 () => { owner.StayOnline(); _ = social.ChangeFriendAsync(target.text, "send"); });
+            var codeInput = new GameObject("Invite code", typeof(RectTransform), typeof(Image), typeof(InputField));
+            codeInput.transform.SetParent(panel.transform, false);
+            codeInput.GetComponent<RectTransform>().sizeDelta = new Vector2(385, 40);
+            codeInput.GetComponent<RectTransform>().anchoredPosition = new Vector2(-130, 65);
+            codeInput.GetComponent<Image>().color = new Color(.22f, .28f, .33f);
+            inviteCode = codeInput.GetComponent<InputField>();
+            inviteCode.textComponent = Label(codeInput.transform, "", Vector2.zero, new Vector2(370, 38), 16);
+            inviteCode.textComponent.supportRichText = false;
+            var codePlaceholder = Label(codeInput.transform, "Код приглашения DB1:…", Vector2.zero, new Vector2(370, 38), 16);
+            codePlaceholder.color = Color.gray;
+            inviteCode.placeholder = codePlaceholder;
+            inviteCode.characterLimit = 180;
+            Button(panel.transform, "Войти", new Vector2(.5f, .5f), new Vector2(157, 65), new Vector2(118, 40),
+                () => { owner.StayOnline(); _ = invites.JoinAsync(inviteCode.text); });
+            Button(panel.transform, "Код", new Vector2(.5f, .5f), new Vector2(278, 65), new Vector2(95, 40),
+                () => GUIUtility.systemCopyBuffer = invites.Code ?? "");
+            inviteStatus = Label(panel.transform, "", new Vector2(0, 20), new Vector2(650, 49), 15);
             Button(panel.transform, "Обновить", new Vector2(.5f, .5f), new Vector2(0, -263), new Vector2(220, 42),
                 () => { owner.StayOnline(); _ = social.RefreshAsync(); });
             Button(panel.transform, "←", new Vector2(.5f, .5f), new Vector2(-190, -263), new Vector2(70, 42),
@@ -64,8 +84,8 @@ namespace DeadBoat.Online
                 () => { page++; Refresh(); });
             var viewport = new GameObject("Friends scroll", typeof(RectTransform), typeof(Image), typeof(RectMask2D), typeof(ScrollRect));
             viewport.transform.SetParent(panel.transform, false);
-            viewport.GetComponent<RectTransform>().sizeDelta = new Vector2(650, 320);
-            viewport.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -68);
+            viewport.GetComponent<RectTransform>().sizeDelta = new Vector2(650, 230);
+            viewport.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -121);
             viewport.GetComponent<Image>().color = new Color(0, 0, 0, .12f);
             rows = new GameObject("Rows", typeof(RectTransform));
             rows.transform.SetParent(viewport.transform, false);
@@ -100,13 +120,15 @@ namespace DeadBoat.Online
         {
             if (panel == null || !panel.activeSelf) return;
             status.text = social.Busy ? "Подождите… " + social.Status : social.Status;
+            inviteStatus.text = invites.Status;
             identity.text = "Ваш ID: " + (social.FriendId ?? "пока недоступен");
             foreach (Transform child in rows.transform) { child.gameObject.SetActive(false); Destroy(child.gameObject); }
             int index = 0;
             foreach (var friend in social.Friends)
             {
                 if (friend == null) continue;
-                Row(ref index, friend.PlayerInfo?.Nickname ?? friend.PlayerId, friend.PlayerId, "Удалить", "remove");
+                Row(ref index, friend.PlayerInfo?.Nickname ?? friend.PlayerId, friend.PlayerId,
+                    "Пригласить", "invite", "Удалить", "remove");
             }
             foreach (var request in social.Incoming)
             {
@@ -135,11 +157,11 @@ namespace DeadBoat.Online
             Label(row.transform, text, new Vector2(-120, 0), new Vector2(390, 50), 16);
             if (id == null) return;
             var button = Button(row.transform, caption, new Vector2(.5f, .5f), new Vector2(120, 0), new Vector2(116, 40),
-                () => { owner.StayOnline(); _ = social.ChangeFriendAsync(id, action); });
-            button.interactable = !social.Busy;
+                () => { owner.StayOnline(); if (action == "invite") _ = invites.InviteAsync(id); else _ = social.ChangeFriendAsync(id, action); });
+            button.interactable = !social.Busy && !invites.Busy;
             if (caption2 != null)
                 Button(row.transform, caption2, new Vector2(.5f, .5f), new Vector2(250, 0), new Vector2(126, 40),
-                    () => { owner.StayOnline(); _ = social.ChangeFriendAsync(id, action2); }).interactable = !social.Busy;
+                    () => { owner.StayOnline(); _ = social.ChangeFriendAsync(id, action2); }).interactable = !social.Busy && !invites.Busy;
         }
 
         private static Button Button(Transform parent, string text, Vector2 anchor, Vector2 position, Vector2 size, UnityEngine.Events.UnityAction action)
@@ -156,6 +178,7 @@ namespace DeadBoat.Online
         private void OnDestroy()
         {
             if (social != null) social.Changed -= Refresh;
+            if (invites != null) invites.Changed -= Refresh;
             if (ownsCursor && ControlManager.Instance != null) ControlManager.Instance.CursorActive = false;
             if (root != null) Destroy(root);
         }
