@@ -100,13 +100,15 @@ namespace DeadBoat.Online.Editor
             {
                 var bootstrap = host.AddComponent<LobbyOnlineBootstrap>();
                 var ui = host.AddComponent<LobbyChatUI>();
-                ui.Initialize(chat, bootstrap);
+                var social = host.AddComponent<MirraSocialService>();
+                ui.Initialize(chat, bootstrap, social);
                 const BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Instance;
                 var type = typeof(LobbyChatUI);
                 canvas = (GameObject)type.GetField("root", flags).GetValue(ui);
                 var panel = (GameObject)type.GetField("panel", flags).GetValue(ui);
                 var input = (UnityEngine.UI.InputField)type.GetField("input", flags).GetValue(ui);
                 var history = (UnityEngine.UI.Text)type.GetField("history", flags).GetValue(ui);
+                var friend = (UnityEngine.UI.Button)type.GetField("friend", flags).GetValue(ui);
                 Require(input.characterLimit == 200 && !input.textComponent.supportRichText && !history.supportRichText,
                     "UI length and plain text");
                 var preference = new ChatLocalVisibility();
@@ -116,6 +118,9 @@ namespace DeadBoat.Online.Editor
                 receive.Invoke(chat, new object[] { new ChatMessageDto { ChannelId = "new-channel", SenderId = "sender-A", MessageId = "visible", Number = 1, Body = "visible-body" } });
                 receive.Invoke(chat, new object[] { new ChatMessageDto { ChannelId = "new-channel", SenderId = "sender-B", MessageId = "hidden", Number = 2, Body = "hidden-body" } });
                 type.GetMethod("Refresh", flags).Invoke(ui, null);
+                Require(!friend.interactable, "unavailable social session cannot request from chat");
+                type.GetMethod("RequestFriend", flags).Invoke(ui, null);
+                Require(!social.Busy, "disabled chat friend action does not start HTTP");
                 type.GetField("selectedAuthor", flags).SetValue(ui, "sender-B");
                 type.GetMethod("ToggleVisibility", flags).Invoke(ui, null);
                 Require(history.text.Contains("visible-body") && !history.text.Contains("hidden-body") && chat.Messages.Count == 2,

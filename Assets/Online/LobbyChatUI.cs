@@ -13,7 +13,10 @@ namespace DeadBoat.Online
         private GameObject root, panel;
         private InputField input;
         private Text status, history;
-        private Button send, author, visibility;
+        private Button send, author, visibility, friend;
+        private MirraSocialService social;
+        private string friendFeedback;
+        private int friendRequestRevision;
         private ChatLocalVisibility localVisibility = ChatLocalVisibility.Session;
         private readonly List<string> authors = new();
         private string selectedAuthor;
@@ -22,9 +25,11 @@ namespace DeadBoat.Online
         private const float HistoryPollSeconds = 15;
         internal bool IsOpen => panel != null && panel.activeSelf;
 
-        public void Initialize(MirraLobbyChat transport, LobbyOnlineBootstrap bootstrap)
+        public void Initialize(MirraLobbyChat transport, LobbyOnlineBootstrap bootstrap, MirraSocialService socialService = null)
         {
             chat = transport; owner = bootstrap;
+            social = socialService != null ? socialService : MirraSocialService.Instance;
+            social.Changed += RefreshFriendAction;
             root = new GameObject("Lobby chat UI", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
             root.GetComponent<Canvas>().renderMode = RenderMode.ScreenSpaceOverlay;
             root.GetComponent<Canvas>().sortingOrder = 1003;
@@ -62,10 +67,12 @@ namespace DeadBoat.Online
             input.placeholder.color = Color.gray;
             input.onValueChanged.AddListener(_ => owner.StayOnline());
             send = MakeButton(panel.transform,"Отправить",new Vector2(.5f,.5f),new Vector2(240,-219),new Vector2(170,52),Send);
-            author = MakeButton(panel.transform,"Выбрать игрока ▸",new Vector2(.5f,.5f),new Vector2(-115,-269),new Vector2(420,36),NextAuthor);
+            author = MakeButton(panel.transform,"Выбрать игрока ▸",new Vector2(.5f,.5f),new Vector2(-215,-269),new Vector2(220,36),NextAuthor);
+            friend = MakeButton(panel.transform,"В друзья",new Vector2(.5f,.5f),new Vector2(25,-269),new Vector2(240,36),RequestFriend);
             visibility = MakeButton(panel.transform,"Скрыть у себя",new Vector2(.5f,.5f),new Vector2(240,-269),new Vector2(170,36),ToggleVisibility);
             author.GetComponentInChildren<Text>().fontSize = 17;
             visibility.GetComponentInChildren<Text>().fontSize = 15;
+            friend.GetComponentInChildren<Text>().fontSize = 15;
             chat.Changed += Refresh;
             panel.SetActive(false);
         }
@@ -91,6 +98,8 @@ namespace DeadBoat.Online
             if (value && (!owner.IsOnline || owner.IsInDepartureRoom || owner.IsBrowsingDepartures ||
                 owner.GetComponent<LobbyFriendsUI>()?.IsOpen == true || owner.GetComponent<LobbyOnlineModeUI>()?.IsOpen == true)) return;
             panel.SetActive(value);
+            friendFeedback = null;
+            friendRequestRevision++;
             var controls = ControlManager.Instance;
             if (controls != null && !controls.UseTouchControl)
             {
@@ -100,13 +109,13 @@ namespace DeadBoat.Online
             if (value)
             {
                 nextHistoryPoll = Time.realtimeSinceStartup + HistoryPollSeconds;
-                owner.StayOnline(); Refresh(); chat.RefreshHistory();
+                owner.StayOnline(); Refresh(); chat.RefreshHistory(); _ = social.RefreshAsync();
             }
         }
         private void Refresh()
         {
             if (!IsOpen) return;
-            status.text=chat.Status;
+            status.text=chat.Status + (string.IsNullOrEmpty(friendFeedback) ? "" : "\n" + friendFeedback);
             var text = new StringBuilder();
             foreach (var message in chat.Messages)
             {
@@ -140,13 +149,34 @@ namespace DeadBoat.Online
                 (selectedAuthor.Length > 6 ? selectedAuthor.Substring(selectedAuthor.Length - 6) : selectedAuthor);
             author.GetComponentInChildren<Text>().text = shortName + " ▸";
             visibility.GetComponentInChildren<Text>().text = localVisibility.IsHidden(selectedAuthor) ? "Показать у себя" : "Скрыть у себя";
+            RefreshFriendAction();
+        }
+
+        private void RefreshFriendAction()
+        {
+            if (friend == null) return;
+            friend.interactable = social.CanRequestChatFriend(selectedAuthor);
+            friend.GetComponentInChildren<Text>().text = social.Busy ? "Подождите…" : social.ChatFriendLabel(selectedAuthor);
+        }
+
+        private async void RequestFriend()
+        {
+            if (!IsOpen || !social.CanRequestChatFriend(selectedAuthor)) return;
+            string target = selectedAuthor;
+            int revision = ++friendRequestRevision;
+            owner.StayOnline();
+            friendFeedback = "Отправляем запрос в друзья…"; Refresh();
+            await social.RequestChatFriendAsync(target);
+            if (this == null || !IsOpen || revision != friendRequestRevision) return;
+            friendFeedback = social.Status; Refresh();
         }
 
         private void NextAuthor()
         {
             if (authors.Count == 0) return;
             selectedAuthor = authors[(authors.IndexOf(selectedAuthor) + 1) % authors.Count];
-            RefreshAuthors(); owner.StayOnline();
+            friendFeedback = null; friendRequestRevision++;
+            Refresh(); owner.StayOnline();
         }
 
         private void ToggleVisibility()
@@ -170,6 +200,7 @@ namespace DeadBoat.Online
         private void OnDestroy()
         {
             if(chat!=null) chat.Changed-=Refresh;
+            if(social!=null) social.Changed-=RefreshFriendAction;
             if(ownsCursor && ControlManager.Instance!=null) ControlManager.Instance.CursorActive=false;
             if(root!=null) Destroy(root);
         }
