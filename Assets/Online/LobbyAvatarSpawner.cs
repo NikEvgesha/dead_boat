@@ -9,15 +9,21 @@ namespace DeadBoat.Online
         public NetworkObject AvatarPrefab { get; set; }
 
         void IPlayerJoined.PlayerJoined(PlayerRef player)
+        { SpawnLocal(player); }
+
+        public void SpawnLocal(PlayerRef player)
+        { SpawnLocal(Runner, AvatarPrefab, player); }
+
+        public static void SpawnLocal(NetworkRunner runner, NetworkObject avatarPrefab, PlayerRef player)
         {
-            Debug.Log($"[Lobby online] Player joined: {player}; local={player == Runner.LocalPlayer}");
-            if (player != Runner.LocalPlayer || AvatarPrefab == null ||
-                Runner.TryGetPlayerObject(player, out _))
+            Debug.Log($"[Lobby online] Player joined: {player}; local={player == runner.LocalPlayer}");
+            if (player != runner.LocalPlayer || avatarPrefab == null ||
+                runner.TryGetPlayerObject(player, out _))
                 return;
 
             var localPlayer = PlayerMovement.Instance;
             var position = localPlayer != null ? localPlayer.transform.position : Vector3.zero;
-            var slot = Mathf.Clamp(Runner.ActivePlayers.Count() - 1, 0, 9);
+            var slot = Mathf.Clamp(runner.ActivePlayers.Count() - 1, 0, 9);
             position += Vector3.right * (slot * 2f);
             if (localPlayer != null && slot > 0)
             {
@@ -27,13 +33,13 @@ namespace DeadBoat.Online
                 if (controller != null) controller.enabled = true;
             }
             var rotation = localPlayer != null ? localPlayer.transform.rotation : Quaternion.identity;
-            var avatar = Runner.Spawn(AvatarPrefab, position, rotation);
+            var avatar = runner.Spawn(avatarPrefab, position, rotation);
             if (avatar == null)
             {
                 Debug.LogError("[Lobby online] Could not spawn player avatar.");
                 return;
             }
-            Runner.SetPlayerObject(player, avatar);
+            runner.SetPlayerObject(player, avatar);
         }
     }
 }

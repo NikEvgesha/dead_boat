@@ -46,8 +46,8 @@ public class LocationSpawner : MonoBehaviour
         _stopSpawnDistance = GameManager.Instance.PlayDistance - spawnThreshold;
 
         // »нициализируем lastSpawnZ положением игрока по Z, чтобы спавн шел от него
-        lastSpawnZ = DeadBoat.Online.SharedRunContext.Active ? 0f : _player.zPositionFix;
-        if (DeadBoat.Online.SharedRunContext.Active && locationCollection != null)
+        lastSpawnZ = DeadBoat.Online.SharedRunContext.GenerationActive ? 0f : _player.zPositionFix;
+        if (DeadBoat.Online.SharedRunContext.GenerationActive && locationCollection != null)
         {
             locationCollection = Instantiate(locationCollection);
             ownsRuntimeCollection = true;
@@ -64,11 +64,13 @@ public class LocationSpawner : MonoBehaviour
         // 1) —павн новых локаций, когда игрок продвинулс€ вперед
         var shared = DeadBoat.Online.SharedRunContext.State;
         float front = DeadBoat.Online.SharedRunContext.Playing ? shared.WorldFront : _player.zPositionFix;
-        float rear = DeadBoat.Online.SharedRunContext.Playing ? shared.WorldRear : _boardController.TotalDistanceTraveled - removalDistance;
+        float rear = DeadBoat.Online.SharedRunContext.Playing ? shared.WorldRear : DeadBoat.Online.SoloRunBranch.Active ? DeadBoat.Online.SoloRunBranch.Rear : _boardController.TotalDistanceTraveled - removalDistance;
         if (DeadBoat.Online.SharedRunContext.Active && !DeadBoat.Online.SharedRunContext.Playing) return;
         if (front + spawnThreshold > lastSpawnZ && lastSpawnZ < _stopSpawnDistance)
         {
-            SpawnLocation();
+            int budget = 128;
+            do { SpawnLocation(rear); }
+            while (lastSpawnZ < rear && --budget > 0 && lastSpawnZ < _stopSpawnDistance);
         }
 
         // 2) ”дал€ем уже созданные локации по положению лодки
@@ -83,12 +85,12 @@ public class LocationSpawner : MonoBehaviour
         }
     }
 
-    void SpawnLocation()
+    void SpawnLocation(float rear)
     {
         Change?.Invoke();
 
         // ¬ычисл€ем случайное рассто€ние до следующего объекта и обновл€ем lastSpawnZ
-        var random = DeadBoat.Online.SharedRunContext.Active
+        var random = DeadBoat.Online.SharedRunContext.GenerationActive
             ? DeadBoat.Online.SharedRunContext.Random("layout", generationIndex) : null;
         float distance = random != null ? random.Range(minDistance, maxDistance)
             : UnityEngine.Random.Range(minDistance, maxDistance);
@@ -102,14 +104,14 @@ public class LocationSpawner : MonoBehaviour
         if (locationCollection != null)
         {
             LocationContentSpawner chosenPrefab = locationCollection.GetRandomSpawnPrefab(lastSpawnZ, random);
-            if (chosenPrefab != null)
+            if (chosenPrefab != null && lastSpawnZ >= rear)
             {
                 LocationContentSpawner spawnedObj = Instantiate(chosenPrefab, spawnPosition, Quaternion.identity);
                 spawnedObj.ZPosition = spawnPosition.z + FixCoordinate.Instance.BoardAddPos;
                 spawnedLocations.Add(spawnedObj);
                 spawnedObj.transform.SetParent(this.transform);
                 spawnedObj.InitializeGeneration(currentIndex);
-                spawnedObj.SetLevel(DeadBoat.Online.SharedRunContext.Active
+                spawnedObj.SetLevel(DeadBoat.Online.SharedRunContext.GenerationActive
                     ? _boardController.GetLevelAtDistance(lastSpawnZ) : _boardController.GetLevel());
             }
             else

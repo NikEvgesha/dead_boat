@@ -18,6 +18,13 @@ namespace DeadBoat.Online
         private PauseManager waitingPause;
         private double nextReadyReport;
 
+        public static void NotifyTransportLost(NetworkRunner value)
+        {
+            if (instance == null || instance.runner != value || instance.stopping || instance.returningToLobby) return;
+            instance.connectionLost = true;
+            SharedRunRecovery.Instance.ConnectionLost();
+        }
+
         private void ReleaseWaitingPause()
         {
             if (waitingPause != null) waitingPause.SetPause(false);
@@ -49,8 +56,9 @@ namespace DeadBoat.Online
             }
         }
 
-        public static async Task LeaveAsync()
+        public static async Task LeaveAsync(bool preserveReturn = false)
         {
+            if (!preserveReturn) SharedRunRecovery.Forget();
             var current = instance;
             if (current == null || current.stopping) return;
             current.stopping = true;
@@ -69,6 +77,20 @@ namespace DeadBoat.Online
                 if (current != null) Destroy(current.gameObject);
                 instance = null;
             }
+        }
+
+        public static async Task ReleaseLostTransportAsync()
+        {
+            if (instance == null || instance.runner == null) return;
+            var old = instance.runner;
+            instance.runner = null;
+            try
+            {
+                var shutdown = old.Shutdown();
+                if (await Task.WhenAny(shutdown, Task.Delay(5000)) == shutdown) await shutdown;
+            }
+            catch (System.Exception) { }
+            if (old != null) Destroy(old.gameObject);
         }
 
         private void OnDestroy()
@@ -103,13 +125,20 @@ namespace DeadBoat.Online
             bool connected = runner != null && runner.IsConnectedToServer;
             int players = connected ? runner.ActivePlayers.Count() : 0;
             Debug.Log($"[Shared run] Scene loaded; connected={connected}; players={players}; seed={SharedRunContext.Seed}; avatars={FindObjectsByType<LobbyNetworkAvatar>(FindObjectsSortMode.None).Length}; player={PlayerManager.Instance != null}; camera={Camera.main != null}");
-            if (!connected) ReturnAfterDisconnect();
+            if (!connected)
+            {
+                connectionLost = true;
+                SharedRunRecovery.Instance.ConnectionLost();
+            }
         }
 
         private void RegisterSceneItems(UnityEngine.SceneManagement.Scene scene,
             UnityEngine.SceneManagement.LoadSceneMode mode)
+        { RegisterAuthoredItems(scene); }
+
+        public static void RegisterAuthoredItems(UnityEngine.SceneManagement.Scene scene)
         {
-            if (!SharedRunContext.Active) return;
+            if (!SharedRunContext.GenerationActive) return;
             // sceneLoaded runs before Start: only authored objects are present,
             // not the store display models or generated content spawned in Start.
             foreach (var root in scene.GetRootGameObjects())
@@ -127,7 +156,7 @@ namespace DeadBoat.Online
         {
             // Pause is local in co-op. Scene initialization, authority AI and
             // coroutines keep advancing; local input is gated separately.
-            if (SharedRunContext.Active && !stopping && !returningToLobby) Time.timeScale = 1;
+            if (SharedRunContext.Active && !stopping && !returningToLobby) Time.timeScale = connectionLost ? 0 : 1;
             double now = Time.realtimeSinceStartupAsDouble;
             double gap = now - lastFrameTime;
             lastFrameTime = now;
@@ -160,14 +189,20 @@ namespace DeadBoat.Online
             if (!connectionLost)
             {
                 connectionLost = true;
+                SharedRunRecovery.Instance.ConnectionLost();
                 Debug.LogWarning("[Shared run] Connection lost after transfer to run lifetime.");
             }
             // Wait for the current async scene load to finish before requesting another.
-            if (sceneLoaded) ReturnAfterDisconnect();
+            // Recovery UI owns the choice after a disconnect.
         }
 
         private async void ReturnAfterDisconnect()
         {
+            if (connectionLost)
+            {
+                SharedRunRecovery.Instance.ConnectionLost();
+                return;
+            }
             if (returningToLobby || stopping) return;
             returningToLobby = true;
             ReleaseWaitingPause();
@@ -191,6 +226,11 @@ namespace DeadBoat.Online
             if (ControlManager.Instance != null) ControlManager.Instance.MoveActive = true;
             if (LoadingManager.Instance != null)
                 LoadingManager.Instance.LoadLocation(Location.Lobby, withAds: false);
+        }
+
+        public static void SpawnLocalRecoveryAvatar(NetworkRunner runner)
+        {
+            LobbyAvatarSpawner.SpawnLocal(runner, LobbyOnlineBootstrap.RecoveryAvatarPrefab, runner.LocalPlayer);
         }
 
         private void OnGUI()

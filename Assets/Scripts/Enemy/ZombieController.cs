@@ -163,7 +163,7 @@ public class ZombieController : LevelledEnemy
             ragdoll.EnableRagdoll();
             if (pickable)
             {
-                if (DeadBoat.Online.SharedRunContext.Active)
+                if (DeadBoat.Online.SharedRunContext.GenerationActive)
                 {
                     var identity = GetComponent<DeadBoat.Online.WorldSpawnIdentity>();
                     if (identity != null) pickable.gameObject.AddComponent<DeadBoat.Online.WorldSpawnIdentity>().Key = "corpse:" + identity.Id;

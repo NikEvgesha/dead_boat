@@ -16,6 +16,11 @@ namespace DeadBoat.Online
         internal static readonly Unity.Profiling.ProfilerMarker UpdateMarker = new("DeadBoat.SharedItems");
         public static void Register(WorldSpawnIdentity identity)
         {
+            if (identities.TryGetValue(identity.Id, out var restored) && restored != null && restored != identity && restored.RecoveryReplica)
+            {
+                UnityEngine.Object.Destroy(identity.gameObject);
+                return;
+            }
             if (identities.TryGetValue(identity.Id, out var existing) && existing != null && existing.Key != identity.Key)
                 throw new InvalidOperationException("Shared world identity collision");
             identities[identity.Id] = identity;
@@ -27,7 +32,7 @@ namespace DeadBoat.Online
 
         public static void PublishDrop(PickableItem item)
         {
-            if (!SharedRunContext.Playing || item.GetComponent<WorldSpawnIdentity>() != null) return;
+            if ((!SharedRunContext.Playing && !SoloRunBranch.Active) || item.GetComponent<WorldSpawnIdentity>() != null) return;
             int template = SharedItemCatalog.Load()?.Identify(item) ?? 0;
             if (template == 0)
             {
@@ -39,6 +44,7 @@ namespace DeadBoat.Online
             var identity = item.gameObject.AddComponent<WorldSpawnIdentity>();
             identity.ItemTemplate = template;
             identity.InitializeRemote(id, 0);
+            if (SoloRunBranch.Active && !SharedRunContext.Active) return;
             SharedRunContext.State.RPC_DropPersonalItem(id, template,
                 item.transform.position + LobbyNetworkAvatar.Origin, item.transform.rotation,
                 item.GetComponentInChildren<RangedWeaponController>(true)?.CurrentAmmo ?? -1);
@@ -47,9 +53,11 @@ namespace DeadBoat.Online
         public static bool Burn(FuelItem fuel)
         {
             if (!SharedRunContext.Active) return false;
+            if (SharedRunRecovery.Restoring || SharedRecoveryInventory.Applying) return true;
             var identity = fuel.GetComponent<WorldSpawnIdentity>();
             if (identity == null) return false;
             var item = fuel.GetComponent<PickableItem>();
+            if (item != null && item.Status == ItemStatus.InInventory) return true;
             if (item != null && SharedRunContext.Playing && Simulates(item))
             {
                 var state = SharedRunContext.State;
@@ -65,6 +73,9 @@ namespace DeadBoat.Online
 
         public static void Unregister(WorldSpawnIdentity identity)
         {
+            // A regenerated duplicate or stale pre-reload instance must never
+            // consume the item represented by the current registered instance.
+            if (!identities.TryGetValue(identity.Id, out var current) || current != identity) return;
             var state = SharedRunContext.State;
             var enemy = identity.GetComponent<EnemyCore>();
             if (SharedRunContext.Playing && enemy != null && enemy.IsDead && state.Object.HasStateAuthority)
@@ -72,8 +83,7 @@ namespace DeadBoat.Online
             if (SharedRunContext.Playing && state.Items.TryGet(identity.Id, out var record) &&
                 record.Owner == state.Runner.LocalPlayer && record.Mode != 4)
                 state.RPC_ItemState(identity.Id, 4, record.Position, record.Rotation);
-            if (identities.TryGetValue(identity.Id, out var current) && current == identity)
-                identities.Remove(identity.Id);
+            identities.Remove(identity.Id);
             pending.Remove(identity.Id);
             deadlines.Remove(identity.Id);
         }
@@ -81,6 +91,7 @@ namespace DeadBoat.Online
         // True means this is a shared request; callers must defer their local mutation.
         public static bool Request(PickableItem item, Action<PickableItem> action)
         {
+            if (SharedRecoveryInventory.Applying) return false;
             if (!SharedRunContext.Active || item == null) return false;
             var identity = item.GetComponent<WorldSpawnIdentity>();
             if (identity == null) return false; // Personal starting/shop items keep their local owner.
@@ -138,7 +149,7 @@ namespace DeadBoat.Online
             // Discovery can follow the 10 Hz snapshot cadence; interpolation still runs every frame.
             if (sample) foreach (var entry in state.Items)
             {
-                if (!entry.Value.Dropped || entry.Value.Template == 0 || entry.Value.Mode == 4 || TryFind(entry.Key, out _) ||
+                if ((!entry.Value.Dropped && entry.Value.Mode != 3) || entry.Value.Template == 0 || entry.Value.Mode == 4 || TryFind(entry.Key, out _) ||
                     (entry.Value.Prunable && entry.Value.HomeZ < state.WorldRear && entry.Value.Position.z < state.WorldRear)) continue;
                 var prefab = SharedItemCatalog.Load()?.Find(entry.Value.Template);
                 if (prefab == null) continue;
@@ -239,7 +250,9 @@ namespace DeadBoat.Online
                 if ((record.Mode == 1 || record.Mode == 2) && item.transform.parent != null)
                     item.transform.SetParent(null, true);
                 item.ApplySharedWorldState(record.Mode);
-                bool visible = record.Mode != 2;
+                bool ownerPresent = false;
+                foreach (var player in state.Runner.ActivePlayers) if (player == record.Owner) ownerPresent = true;
+                bool visible = record.Mode != 2 && (record.Mode != 1 || ownerPresent);
                 if (item.gameObject.activeSelf != visible) item.gameObject.SetActive(visible);
                 bool simulates = record.Owner == PlayerRef.None && state.Object.HasStateAuthority;
                 if (simulates && sample) identity.PhysicsNearby = NearCrew(item, identity.PhysicsNearby);

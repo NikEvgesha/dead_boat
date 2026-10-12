@@ -30,12 +30,14 @@ public class LocationContentSpawner : MonoBehaviour
     private DeadBoat.Online.RunRandom itemRandom;
     private DeadBoat.Online.RunRandom enemyRandom;
     public void InitializeGeneration(int index) => generationIndex = index;
-    public string SharedGenerationKey => generationIndex >= 0
-        ? "procedural:" + generationIndex : "scene:" + HierarchyKey(transform);
+    private string stableGenerationKey;
+    public void InitializeStableGeneration(string key) => stableGenerationKey = key;
+    public string SharedGenerationKey => stableGenerationKey ?? (generationIndex >= 0
+        ? "procedural:" + generationIndex : "scene:" + HierarchyKey(transform));
 
     private void Start()
     {
-        if (DeadBoat.Online.SharedRunContext.Active)
+        if (DeadBoat.Online.SharedRunContext.GenerationActive)
         {
             // Scene-authored locations use their stable hierarchy path; procedural ones use their index.
             generationKey = SharedGenerationKey;
@@ -70,7 +72,7 @@ public class LocationContentSpawner : MonoBehaviour
                 continue;
 
             var item = Instantiate(itemPrefab.gameObject, spawnPoint.spawnTransform.position, spawnPoint.spawnTransform.rotation, transform);
-            if (DeadBoat.Online.SharedRunContext.Active)
+            if (DeadBoat.Online.SharedRunContext.GenerationActive)
                 item.AddComponent<DeadBoat.Online.WorldSpawnIdentity>().Key = generationKey + ":item:" + i;
 
             if (LocationItemSpawnCollection.IsEggPrefab(itemPrefab))
@@ -80,7 +82,7 @@ public class LocationContentSpawner : MonoBehaviour
 
     private int FindGuaranteedEggSpawnPointIndex(LocationItemSpawnCollection activeItemCollection)
     {
-        if (DeadBoat.Online.SharedRunContext.Active ? generationIndex != 0 : !EggSpawnRuntimeState.ShouldGuaranteeFirstEggSpawn)
+        if (DeadBoat.Online.SharedRunContext.GenerationActive ? generationIndex != 0 : !EggSpawnRuntimeState.ShouldGuaranteeFirstEggSpawn)
             return -1;
 
         if (activeItemCollection == null || itemSpawnPoints == null || itemSpawnPoints.Count == 0)
@@ -134,7 +136,7 @@ public class LocationContentSpawner : MonoBehaviour
             Transform enemyPoint = spawnPoints[i];
             ZombieController enemy = Instantiate(enemyPrefab, enemyPoint.position, enemyPoint.rotation, transform);
             enemy.InitializeLevel(enemyLevel);
-            if (DeadBoat.Online.SharedRunContext.Active)
+            if (DeadBoat.Online.SharedRunContext.GenerationActive)
                 enemy.gameObject.AddComponent<DeadBoat.Online.WorldSpawnIdentity>().Key = generationKey + ":enemy:" + i;
             spawnedCount++;
         }

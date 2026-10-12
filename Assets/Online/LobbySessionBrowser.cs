@@ -30,12 +30,14 @@ namespace DeadBoat.Online
         public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason)
         {
             Disconnected = true;
+            SharedRunLifetime.NotifyTransportLost(runner);
             Debug.LogWarning($"[Online transport] Shutdown={shutdownReason}; sharedRun={SharedRunContext.Active}");
         }
         public void OnConnectedToServer(NetworkRunner runner) { }
         public void OnDisconnectedFromServer(NetworkRunner runner, NetDisconnectReason reason)
         {
             Disconnected = true;
+            SharedRunLifetime.NotifyTransportLost(runner);
             Debug.LogWarning($"[Online transport] Disconnect={reason}; sharedRun={SharedRunContext.Active}");
         }
         public void OnConnectRequest(NetworkRunner runner, NetworkRunnerCallbackArgs.ConnectRequest request, byte[] token) { }

@@ -116,10 +116,10 @@ public class LocationItemSpawnCollection : ScriptableObject
         float chance = Mathf.Max(0f, entry.chance);
 
         if (IsEggEntry(entry))
-            return DeadBoat.Online.SharedRunContext.Active ? chance * EggSpawnChanceMultiplier
+            return DeadBoat.Online.SharedRunContext.GenerationActive ? chance * EggSpawnChanceMultiplier
                 : EggSpawnRuntimeState.GetEffectiveChance(chance * EggSpawnChanceMultiplier);
 
-        return DeadBoat.Online.SharedRunContext.Active ? chance : ProfessionService.ApplyLocationItemSpawnChance(chance);
+        return DeadBoat.Online.SharedRunContext.GenerationActive ? chance : ProfessionService.ApplyLocationItemSpawnChance(chance);
     }
 
     private static bool EntryMatches(LocationItemSpawnEntry entry, ItemType requiredType, ItemSize requiredSize)

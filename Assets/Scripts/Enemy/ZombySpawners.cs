@@ -111,7 +111,7 @@ public class ZombieSpawner : MonoBehaviour
             {
                 var identity = zombie.gameObject.AddComponent<DeadBoat.Online.WorldSpawnIdentity>();
                 identity.TemplateId = DeadBoat.Online.SharedEnemiesRuntime.RegisterTemplate(prefab);
-                identity.Key = "night:" + DeadBoat.Online.SharedRunContext.State.NextNightSpawn();
+                identity.Key = "night:" + (DeadBoat.Online.SharedRunContext.Active ? DeadBoat.Online.SharedRunContext.State.NextNightSpawn() : DeadBoat.Online.SoloRunBranch.NextNightSpawn());
             }
         }
     }

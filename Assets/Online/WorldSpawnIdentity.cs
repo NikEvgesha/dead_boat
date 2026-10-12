@@ -13,6 +13,7 @@ namespace DeadBoat.Online
         public UnityEngine.AI.NavMeshAgent Agent { get; private set; }
         private bool cached;
         public bool PhysicsNearby { get; set; } = true;
+        public bool RecoveryReplica { get; set; }
         private Rigidbody[] corpseBodies;
         public void ApplyCorpsePhysics(bool simulate)
         {
@@ -40,12 +41,13 @@ namespace DeadBoat.Online
         {
             string path = "";
             var location = part.GetComponentInParent<LocationContentSpawner>();
-            while (part != null && (location == null || part != location.transform))
+            var anchor = part.GetComponentInParent<WorldGenerationAnchor>();
+            while (part != null && (location == null || part != location.transform) && (anchor == null || part != anchor.transform))
             {
                 path = part.name + "[" + part.GetSiblingIndex() + "]/" + path;
                 part = part.parent;
             }
-            return location != null ? location.SharedGenerationKey + "/" + path : "scene:" + path;
+            return location != null ? location.SharedGenerationKey + "/" + path : anchor != null ? anchor.Key + "/" + path : "scene:" + path;
         }
         public void InitializeRemote(ulong id, ulong template)
         {
@@ -69,6 +71,12 @@ namespace DeadBoat.Online
             }
         }
 
-        private void OnDestroy() => SharedItemsRuntime.Unregister(this);
+        private void OnDestroy()
+        {
+            SoloRunBranch.RememberDestroyed(this);
+            SharedItemsRuntime.Unregister(this);
+        }
     }
+
+    public sealed class WorldGenerationAnchor : MonoBehaviour { public string Key; }
 }

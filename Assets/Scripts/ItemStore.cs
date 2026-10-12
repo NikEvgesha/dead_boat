@@ -16,7 +16,7 @@ public class ItemStore : MonoBehaviour
     private void Start()
     {
         _availableItems = new List<PickableItem>(_collection.Items);
-        var random = DeadBoat.Online.SharedRunContext.Active
+        var random = DeadBoat.Online.SharedRunContext.GenerationActive
             ? DeadBoat.Online.SharedRunContext.Random("store:" +
                 DeadBoat.Online.WorldSpawnIdentity.StablePath(transform), 0) : null;
         foreach (StorePoint point in _pointsParent.GetComponentsInChildren<StorePoint>())

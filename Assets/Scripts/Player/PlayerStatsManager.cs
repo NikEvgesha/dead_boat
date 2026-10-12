@@ -330,6 +330,14 @@ public class PlayerStatsManager : MonoBehaviour
         Health = MaxHealth;
         _isDead = false;
     }
+    public void RestoreRecoveryHealth(float hp)
+    {
+        _isDead = false;
+        InGame = true;
+        Health = hp;
+        if (_health <= 0) Dead();
+    }
+
     public void LoadHealth(float hp)
     {
         if(hp != 0) 

@@ -118,5 +118,9 @@ public class CitySpawner : MonoBehaviour
         GameObject city = Instantiate(cityPrefab, spawnPosition, Quaternion.identity);
         spawnedCities.Add(city);
         city.transform.SetParent(transform);
+        city.AddComponent<DeadBoat.Online.WorldGenerationAnchor>().Key = "city:" + Mathf.RoundToInt(nextSpawnDistance);
+        int index = 0;
+        foreach (var content in city.GetComponentsInChildren<LocationContentSpawner>(true))
+            content.InitializeStableGeneration("city:" + Mathf.RoundToInt(nextSpawnDistance) + ":" + index++);
     }
 }

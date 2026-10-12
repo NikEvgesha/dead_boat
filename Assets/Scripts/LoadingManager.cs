@@ -44,6 +44,15 @@ public class LoadingManager : MonoBehaviour
     {
         GameLoader.Instance.StartAfterSDK();
         bool haveSave = SaveManager.Instance.LoadGameProgress().Item1 >= 0;
+        if (DeadBoat.Online.SharedRunRecovery.HasPending)
+        {
+            _ = DeadBoat.Online.SharedRunRecovery.Instance;
+            _location = Location.Lobby;
+            GameLoader.Instance.LoadNextScene(_lobbyScene, true);
+            return;
+        }
+        DeadBoat.Online.SoloRunBranch.RestoreStartup();
+        haveSave = SaveManager.Instance.LoadGameProgress().Item1 >= 0;
         if (SaveManager.Instance.IsNewPlayer || haveSave)
         {
             _location = Location.Game;

@@ -103,6 +103,15 @@ public class PlayerAmmoManager : MonoBehaviour
         
     }
 
+    public void RestoreRecovery(int pistol, int rifle, int shotgun)
+    {
+        _ammo[WeaponType.Pistol] = Mathf.Max(0, pistol);
+        _ammo[WeaponType.Rifle] = Mathf.Max(0, rifle);
+        _ammo[WeaponType.Shotgun] = Mathf.Max(0, shotgun);
+        NewAmmo?.Invoke();
+        Save();
+    }
+
     public void ResetAmmo() {
         foreach (var entry in _startingAmmo)
         {

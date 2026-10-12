@@ -10,8 +10,9 @@ namespace DeadBoat.Online
         public static int LevelId { get; private set; }
         public static SaveProvider Save { get; private set; }
         public static SharedDepartureState State { get; private set; }
-        public static bool Playing => Active && State != null && State.Object != null &&
-            State.Object.IsValid && State.Phase == 3;
+        public static bool GenerationActive => Active || SoloRunBranch.Active;
+        public static bool Playing => Active && !SharedRunRecovery.Disconnected && State != null && State.Runner != null && State.Runner.IsRunning && State.Object != null &&
+            State.Object.IsValid && State.Phase == 3 && State.Runner.IsConnectedToServer && !SharedRunRecovery.Restoring;
 
         public static void Begin(int seed, int levelId, GameObject owner, SaveProvider persistentSave,
             SharedDepartureState state = null)
@@ -37,6 +38,6 @@ namespace DeadBoat.Online
             Save = null;
         }
 
-        public static RunRandom Random(string stream, int index) => new RunRandom(Seed, stream, index);
+        public static RunRandom Random(string stream, int index) => new RunRandom(Active ? Seed : SoloRunBranch.Seed, stream, index);
     }
 }

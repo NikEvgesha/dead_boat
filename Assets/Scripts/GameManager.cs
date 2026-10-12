@@ -105,6 +105,7 @@ public class GameManager : MonoBehaviour
     public async void EndGame(bool lobby,bool withAds = true)
     {
         if (isEndGame) return;
+        if (!DeadBoat.Online.SharedRunContext.Active) DeadBoat.Online.SoloRunBranch.Clear();
         PlayerManager.Instance.gameObject.transform.SetParent(null);
         DontDestroyOnLoad(PlayerManager.Instance.gameObject);
         isEndGame = true;

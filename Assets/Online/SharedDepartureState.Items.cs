@@ -129,6 +129,8 @@ namespace DeadBoat.Online
                 foreach (var player in Runner.ActivePlayers) if (player == item.Owner) present = true;
                 if (!present)
                 {
+                    int slot = CrewSlot(item.Owner);
+                    if (slot >= 0 && (AbandonedMask & (1 << slot)) == 0) continue;
                     item.Owner = PlayerRef.None;
                     item.Mode = 0;
                     Items.Set(entry.Key, item);

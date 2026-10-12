@@ -15,10 +15,10 @@ namespace DeadBoat.Online
     {
 #if DEADBOAT_MIRRA_GAME_CHAT_PILOT
         private const string MatchmakingLobbyName = "river-chat-pilot-lobby-v1";
-        private const string DepartureLobbyName = "river-chat-pilot-departures-v1";
+        private const string DepartureLobbyName = "river-chat-pilot-departures-v2";
 #else
         private const string MatchmakingLobbyName = "river-public-lobby-v4";
-        private const string DepartureLobbyName = "river-departures-v6";
+        private const string DepartureLobbyName = "river-departures-v7";
 #endif
         private const string ModePreferenceKey = "DeadBoat.OnlineMode.v1";
 
@@ -87,9 +87,12 @@ namespace DeadBoat.Online
         public int LobbyPlayerCount => IsOnline && !inDepartureRoom ? runner.ActivePlayers.Count() : 0;
         public int LobbyCapacity => lobbyCapacity;
         internal NetworkRunner LobbyRunner => runner;
+        internal static NetworkObject RecoveryAvatarPrefab { get; private set; }
+        public static string DepartureDirectoryName => DepartureLobbyName;
 
         private void Awake()
         {
+            RecoveryAvatarPrefab = avatarPrefab;
             Debug.Log("[Lobby online] Bootstrap active.");
         }
 
@@ -111,7 +114,8 @@ namespace DeadBoat.Online
             gameObject.AddComponent<LobbyFriendInvites>().Initialize(this);
             gameObject.AddComponent<LobbyFriendsUI>().Initialize(this);
             gameObject.AddComponent<MirraLobbyChat>().Initialize(this);
-            if (mode == LobbyOnlineMode.Online)
+            _ = SharedRunRecovery.Instance;
+            if (mode == LobbyOnlineMode.Online && !SharedRunRecovery.HasPending)
                 _ = ConnectAsync();
             else
                 status = mode == LobbyOnlineMode.Offline ? "Solo mode: selected" : "Choose online or solo";
@@ -212,6 +216,8 @@ namespace DeadBoat.Online
         // The selected mode is kept: returning to the lobby may reconnect automatically.
         public async Task DisconnectForSoloRunAsync()
         {
+            SharedRunRecovery.Forget();
+            SoloRunBranch.Clear(); // Explicitly starting a new solo run replaces an old fork.
             startingSoloRun = true;
             ++connectionRevision;
             reconnectRequested = false;
@@ -344,6 +350,8 @@ namespace DeadBoat.Online
                 {
                     GameMode = GameMode.Shared,
                     Config = CreateDepartureNetworkConfig(),
+                    PlayerUniqueId = SharedRunRecovery.LocalId,
+                    CustomPhotonAppSettings = SharedRunRecovery.Settings(),
                     CustomLobbyName = DepartureLobbyName,
                     SessionName = sessionName,
                     EnableClientSessionCreation = create,
@@ -462,6 +470,9 @@ namespace DeadBoat.Online
             SaveManager.Instance.FlushProgress();
             if (count == 1)
             {
+                SharedRunRecovery.Forget();
+                SoloRunBranch.Clear();
+                SaveManager.Instance.SaveGameProgress(-1, new List<PickableItem>());
                 await StopRunnerAsync();
             }
             else
@@ -472,6 +483,7 @@ namespace DeadBoat.Online
                 // separately until we have explicitly returned to the lobby.
                 var lifetimeObject = new GameObject("Shared Run Lifetime");
                 SharedRunContext.Begin(seed, levelId, lifetimeObject, SaveManager.Instance.PersistentProvider, departureState);
+                SharedRunRecovery.Instance.Track(runRunner, departureState, DepartureLobbyName);
                 lifetimeObject.AddComponent<SharedRunLifetime>().Initialize(runRunner);
                 Debug.Log($"[Shared run] session={runRunner.SessionInfo.Name}; seed={seed}; v={RunRandom.Version}; crew={count}");
             }
@@ -505,7 +517,7 @@ namespace DeadBoat.Online
                 await ConnectAsync();
         }
 
-        private static NetworkProjectConfig CreateDepartureNetworkConfig()
+        public static NetworkProjectConfig CreateDepartureNetworkConfig()
         {
             // WebGL scene activation/generation runs on the same thread as networking.
             // Use a per-run copy; do not change the SDK's global configuration asset.
@@ -533,6 +545,14 @@ namespace DeadBoat.Online
         public void StayOnline()
         {
             lastActivityUtc = DateTime.UtcNow;
+        }
+
+        public async Task SuspendForRecoveryAsync()
+        {
+            ++connectionRevision;
+            reconnectRequested = false;
+            connectedOnce = false;
+            await StopRunnerAsync();
         }
 
         private async Task DisconnectForIdleAsync()

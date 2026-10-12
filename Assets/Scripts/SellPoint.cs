@@ -20,6 +20,8 @@ public class SellPoint : MonoBehaviour
     {
         if (other.TryGetComponent<PickableItem>(out PickableItem item))
         {
+            if (item.Status == ItemStatus.InInventory || DeadBoat.Online.SharedRunRecovery.Restoring ||
+                DeadBoat.Online.SharedRecoveryInventory.Applying) return;
             if (item == _lastItem) return;
             _lastItem = item;
             bool selled = false;

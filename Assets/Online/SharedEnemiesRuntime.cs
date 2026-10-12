@@ -16,6 +16,7 @@ namespace DeadBoat.Online
         private static readonly System.Collections.Generic.Dictionary<DragonBossController,
             System.Collections.Generic.HashSet<Fusion.PlayerRef>> diveVictims = new();
         public static void Clear() { templates.Clear(); diveVictims.Clear(); }
+        public static bool TryTemplate(ulong id, out ZombieController prefab) => templates.TryGetValue(id, out prefab);
         public static int DiveMask(DragonBossController dragon)
         {
             if (!diveVictims.TryGetValue(dragon, out var hit) || !SharedRunContext.Playing) return 0;

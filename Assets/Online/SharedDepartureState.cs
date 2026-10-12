@@ -43,7 +43,16 @@ namespace DeadBoat.Online
 
         public override void FixedUpdateNetwork()
         {
-            if (Object.HasStateAuthority && Phase == 3) TickBoat();
+            if (Object.HasStateAuthority && Phase == 3)
+            {
+                bool playingCrew = false;
+                foreach (var player in Runner.ActivePlayers)
+                    if (Includes(player) && Runner.TryGetPlayerObject(player, out var avatar) && avatar != null && avatar.IsValid)
+                        playingCrew = true;
+                if (!playingCrew) { Phase = 4; Runner.SessionInfo.IsOpen = false; return; }
+                if (Runner.SessionInfo.IsOpen == RunWon) Runner.SessionInfo.IsOpen = !RunWon;
+                TickBoat();
+            }
             if (!Object.HasStateAuthority || TargetPlayers == 0 || Phase >= 3) return;
             if (Phase == 2)
             {
@@ -93,7 +102,8 @@ namespace DeadBoat.Online
 
         public bool Includes(PlayerRef player)
         {
-            for (int i = 0; i < CrewCount; i++) if (Crew[i] == player) return true;
+            for (int i = 0; i < CrewCount; i++)
+                if (Crew[i] == player) return Phase != 3 || (AbandonedMask & (1 << i)) == 0;
             return false;
         }
 
