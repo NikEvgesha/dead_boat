@@ -16,6 +16,14 @@ namespace DeadBoat.Online
         private List<string> inventory = new List<string>();
         private int gems;
         private bool initializedGems;
+        private RunRewardWallet isolatedRewards;
+        public override RunRewardResult GrantRunReward(string run, long player, int reward)
+        {
+            isolatedRewards ??= new RunRewardWallet { Gems = LoadGems(), Wins = LoadWins() };
+            var result = isolatedRewards.Grant(run, player, reward);
+            if (result == RunRewardResult.Granted) SaveGems(isolatedRewards.Gems);
+            return result;
+        }
         public override void Initialize() { }
         public override void SaveProgress() { }
         public override bool CheckProgress() => true;
@@ -32,7 +40,12 @@ namespace DeadBoat.Online
         public override void SaveQuestProgress(int step) { }
         public override void SaveLevelUnlock(int id, bool unlocked) { }
         public override void SaveLevelWin(int id, bool win) { }
-        public override void SaveGems(int amount) { gems = amount; initializedGems = true; }
+        public override void SaveGems(int amount)
+        {
+            gems = amount;
+            initializedGems = true;
+            if (isolatedRewards != null) isolatedRewards.Gems = amount;
+        }
         public override int LoadGems() => initializedGems ? gems : Persistent.LoadGems();
         public override void SaveAchievementProgress(AchievementType id, int progress) { }
         public override int LoadAchievementProgress(AchievementType id) => Persistent.LoadAchievementProgress(id);
@@ -71,7 +84,7 @@ namespace DeadBoat.Online
         public override void SaveAmmo(WeaponType type, int amount) => ammo[type] = amount;
         public override int LoadAmmo(WeaponType type) => ammo.TryGetValue(type, out var value) ? value : 0;
         public override void SaveWins(int wins) { }
-        public override int LoadWins() => Persistent.LoadWins();
+        public override int LoadWins() => isolatedRewards != null ? isolatedRewards.Wins : Persistent.LoadWins();
         public override void SaveLevelId(int id) => levelId = id;
         public override int LoadLevelId() => levelId;
         public override void SaveRouletteDate(DateTime date) { }

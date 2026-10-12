@@ -73,7 +73,11 @@ public class EndGameUIManager : MonoBehaviour
         /// <param name="duration">Длительность таймера (в секундах)</param>
         public void ShowEndGameUI(EndGameState state, int distance = 0, float duration = 10f)
     {
-        if (state == EndGameState.Win && currentState == EndGameState.Win) return;
+        if (state == EndGameState.Win && currentState == EndGameState.Win)
+        {
+            GameManager.Instance.GrantVictoryReward();
+            return;
+        }
         bool isStart = currentState == state && state == EndGameState.None;
         currentState = state;
         timerDuration = duration;
@@ -151,10 +155,10 @@ public class EndGameUIManager : MonoBehaviour
             string tagText = LocalizationManager.Instance.LocalizationData.GetTranslation("Game/Traveled", LocalizationManager.Instance.CurrentLanguage);
             distanceText.text = string.Format(tagText, GameManager.Instance.CurrentDistance);
             playAgainButton.gameObject.SetActive(true);
-            SaveManager.Instance.SaveWin();
+
             // Текст таймера для победы/поражения
 
-            GameManager.Instance.AddReward();
+            GameManager.Instance.GrantVictoryReward();
             PlayerStatsManager.Instance.InGame = false;
 
             tagText = LocalizationManager.Instance.LocalizationData.GetTranslation("Game/AutoLeft", LocalizationManager.Instance.CurrentLanguage);

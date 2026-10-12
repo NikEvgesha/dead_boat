@@ -97,6 +97,8 @@ namespace DeadBoat.Online
         private bool waitingScene;
         public static bool Active => instance != null && instance.snapshot != null;
         public static int Seed => Active ? instance.snapshot.Seed : 0;
+        public static string SourceRun => Active ? instance.snapshot.SourceRun : null;
+        public static long SourcePlayerId => Active ? instance.snapshot.PlayerId : 0;
         public static float Rear => Active ? instance.snapshot.Rear : 0;
         public static bool ClosesReturn(string room, long playerId)
         {

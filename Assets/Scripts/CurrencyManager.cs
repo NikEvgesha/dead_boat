@@ -78,6 +78,14 @@ public class CurrencyManager : MonoBehaviour
             SaveManager.Instance.SaveGameCoin(_balance[type]);
     }
 
+    // A committed reward already changed the persistent wallet: refresh UI
+    // without running AddCurrency/SaveGems a second time.
+    public void RefreshPersistentGems(int amount)
+    {
+        _balance[CurrencyType.Gems] = amount;
+        CurrencyChanged?.Invoke(CurrencyType.Gems, amount);
+    }
+
     public bool RemoveCurrency(CurrencyType type, int amount)
     {
         if (_balance[type] >= amount)

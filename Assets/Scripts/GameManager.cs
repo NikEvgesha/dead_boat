@@ -134,6 +134,14 @@ public class GameManager : MonoBehaviour
     }
 
 
+    public void GrantVictoryReward()
+    {
+        int reward = ProfessionService.ApplyWinGemsReward(_reward);
+        if (DeadBoat.Online.SharedVictoryRewards.Apply(reward)) return;
+        SaveManager.Instance.SaveWin();
+        AddReward();
+    }
+
     public void AddReward()
     {
         int reward = ProfessionService.ApplyWinGemsReward(_reward);

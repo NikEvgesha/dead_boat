@@ -132,7 +132,10 @@ namespace DeadBoat.Online
         private void OnEndGame(EndGameState outcome)
         {
             if (outcome != EndGameState.Win) return;
-            victoryShown = true;
+            // A local pre-result callback on a replica must not suppress the
+            // eventual shared verdict (and its persistent reward).
+            victoryShown = !SharedRunContext.Active || Authority ||
+                (SharedRunContext.State != null && SharedRunContext.State.RunWon);
             if (SharedRunContext.Playing && Authority) SharedRunContext.State.MarkWon();
         }
 

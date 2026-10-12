@@ -6,6 +6,8 @@ public abstract class SaveProvider : MonoBehaviour
 {
     public bool Changed;
     public abstract void Initialize();
+    public virtual DeadBoat.Online.RunRewardResult GrantRunReward(string run, long player, int gems)
+        => DeadBoat.Online.RunRewardResult.Unsupported;
 
     // Методы для работы с громкостью
     public abstract float[] LoadVolume();

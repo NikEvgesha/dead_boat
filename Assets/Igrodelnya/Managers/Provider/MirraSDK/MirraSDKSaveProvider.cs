@@ -24,6 +24,34 @@ public class SavedItems
 public class MirraSDKSaveProvider : SaveProvider
 {
     private bool isInitialize;
+    private const string RewardWalletKey = "DeadBoat.RewardWallet.v1";
+    private DeadBoat.Online.RunRewardWallet rewardWallet;
+
+    private DeadBoat.Online.RunRewardWallet Wallet => rewardWallet ??= MirraSDK.Data.GetObject(
+        RewardWalletKey, new DeadBoat.Online.RunRewardWallet
+        {
+            Gems = MirraSDK.Data.GetInt(SaveKey.Gems.ToString(), 0),
+            Wins = MirraSDK.Data.GetInt(SaveKey.Wins.ToString(), 0)
+        });
+
+    private void WriteWallet()
+    {
+        MirraSDK.Data.SetObject(RewardWalletKey, Wallet);
+        Changed = true;
+    }
+
+    public override DeadBoat.Online.RunRewardResult GrantRunReward(string run, long player, int gems)
+    {
+#if !UNITY_EDITOR && !DEADBOAT_MIRRA_DIAGNOSTICS
+        // Public builds need a trusted claim endpoint; Photon Shared is a client verdict.
+        return DeadBoat.Online.RunRewardResult.RequiresServer;
+#else
+        if (!isInitialize) return DeadBoat.Online.RunRewardResult.NotReady;
+        var result = Wallet.Grant(run, player, gems);
+        if (result == DeadBoat.Online.RunRewardResult.Granted) WriteWallet();
+        return result;
+#endif
+    }
     public override void Initialize()
     {
         // Дождёмся полной готовности системы сохранений
@@ -122,14 +150,15 @@ public class MirraSDKSaveProvider : SaveProvider
     {
         if (!isInitialize) return;
         Changed = true;
-        MirraSDK.Data.SetInt(SaveKey.Gems.ToString(), amount);
+        Wallet.Gems = amount;
+        WriteWallet();
     }
 
     public override int LoadGems()
     {
         if (!isInitialize)
             return 0;
-        return MirraSDK.Data.GetInt(SaveKey.Gems.ToString(), 0);
+        return Wallet.Gems;
     }
 
     public override void SaveProgress()
@@ -426,14 +455,15 @@ public class MirraSDKSaveProvider : SaveProvider
     {
         if (!isInitialize) return;
         Changed = true;
-        MirraSDK.Data.SetInt(SaveKey.Wins.ToString(), wins);
+        Wallet.Wins = wins;
+        WriteWallet();
     }
     public override int LoadWins()
     {
         int wins = 0;
         if (isInitialize)
         {
-            wins = MirraSDK.Data.GetInt(SaveKey.Wins.ToString());
+            wins = Wallet.Wins;
         }
         return wins;
     }
