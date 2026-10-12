@@ -150,7 +150,11 @@ namespace DeadBoat.Online.Editor
                 Require(SoloRunBranch.Active && SharedVictoryRewards.Apply(reward + 77), "fork routing");
                 Require(save.LoadGems() == gems + reward && save.LoadWins() == wins + 1, "fork retains original receipt");
                 SoloRunBranch.Clear();
-                Result = "PASS: Forest boss, replicated RunWon, victory UI, persistent grant, repeated callbacks, companion survives exit, fork dedup";
+                Require(!SharedRunContext.Active && !SoloRunBranch.Active, "ordinary solo route");
+                ui.ShowEndGameUI(EndGameState.Win);
+                Require(CurrencyManager.Instance.Gems == gems + reward && save.LoadGems() == gems + reward,
+                    "ordinary solo duplicate UI does not grant again");
+                Result = "PASS: Forest boss, replicated RunWon, victory UI, persistent grant, repeated callbacks, companion survives exit, fork dedup, ordinary solo duplicate UI";
                 Debug.Log("[Reward gameplay probe] " + Result);
             }
             catch (Exception e) { Result = "FAIL: " + e; Debug.LogWarning("[Reward gameplay probe] " + Result); }

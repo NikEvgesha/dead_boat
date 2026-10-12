@@ -75,7 +75,8 @@ public class EndGameUIManager : MonoBehaviour
     {
         if (state == EndGameState.Win && currentState == EndGameState.Win)
         {
-            GameManager.Instance.GrantVictoryReward();
+            if (DeadBoat.Online.SharedRunContext.GenerationActive)
+                GameManager.Instance.GrantVictoryReward();
             return;
         }
         bool isStart = currentState == state && state == EndGameState.None;
