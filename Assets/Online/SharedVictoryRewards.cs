@@ -45,7 +45,7 @@ namespace DeadBoat.Online
             CurrencyManager.Instance.RefreshPersistentGems(gems);
             // Flush the persistent provider explicitly; the online save is temporary.
             save.SaveProgress();
-            if (result == RunRewardResult.Granted && LeaderboardManager.Instance != null)
+            if (result == RunRewardResult.Granted && !(save is SharedRunPreviewSave) && LeaderboardManager.Instance != null)
             {
                 LeaderboardManager.Instance.SaveScore(LBName.gems.ToString(), gems);
                 LeaderboardManager.Instance.SaveScore(LBName.wins.ToString(), save.LoadWins());
