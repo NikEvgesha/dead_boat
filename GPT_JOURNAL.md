@@ -530,3 +530,16 @@ Open follow-up:
 Подготовлен отдельный Editor-клиент с изолированными сохранениями и foreground-clock fixture, Lobby загрузилось при timeScale=1. Из-за недоступного браузерного действия совместный забег не создавался, refresh в живой комнате не проверен. Play Mode остановлен; VerifyRestored PASS подтверждает возврат owner return/identity/solo/mode keys и playModeStartScene. Код/SDK для этой проверки не изменялись.
 
 Следующий шаг — владелец: проверить refresh одного игрока, пока товарищ остаётся в забеге, на обычных браузерах. ИИ: продолжить DB-ON-023 и разбирать замечания приёмки. DB-ON-026 остаётся in_review.
+
+
+## Стабильное хранение билета WebGL — 2026-10-13
+
+Владелец подтвердил настоящий сценарий: обычный браузер создал экипаж на двоих, IAB присоединился и поплыл; после перезапуска IAB оказался в начале solo. Это ошибка приёмки, а не одиночный тест.
+
+Билет и Fusion identity ранее сохранялись только в PlayerPrefs. Unity документирует URL-зависимый persistentDataPath WebGL: [Application.persistentDataPath](https://docs.unity.com/en-us/engine/6000.0/script-reference/unityengine/application/persistentdatapath); [PlayerPrefs](https://docs.unity.com/en-us/engine/6000.0/script-reference/unityengine/playerprefs) использует IndexedDB. Каталог iframe IAB действительно менялся при запуске черновика. Потеря именно этого билета в IndexedDB не прочитана и окончательная причина конкретного отказа не установлена.
+
+Добавлен собственный SharedReturnStorage / .jslib: только небольшие билет/идентичность читаются и синхронно записываются в localStorage игрового origin. Это устраняет зависимость этих двух записей от каталога сборки и от асинхронного сброса PlayerPrefs. Сохраняется fallback PlayerPrefs и миграция старого значения при отсутствии браузерной записи. Удаление оставляет пустой маркер, чтобы старый URL не воскресил билет. Смена origin/очистка данных браузера по-прежнему уничтожает доступ к локальному билету; это не облачная сохранённая копия онлайн-мира. SDK, обычные сохранения, большой solo-снимок не менялись.
+
+Диагностика показывает только наличие записи, backend и успешность записи, без комнаты/идентичности/данных игрока. При недоступном browser storage сообщается warning и используется PlayerPrefs. Проверки: `node tools/tests/test_recovery_web_storage.cjs` PASS (свежий JS heap и другой каталог, tombstone против отсутствия, UTF8, 64-bit identity строкой, origin isolation, denied/quota); Unity .jslib импортирован как PluginImporter; компиляция прошла; SharedRecoveryGameplayProbe.RunColdRestart PASS (тот же PlayerRef/золото/сумка/патроны/HP/опыт и separate solo); VerifyRestored PASS. Editor-тест по-прежнему использует foreground fixture, один мир и transport peer; Node тест не является проверкой localStorage реального IAB.
+
+Следующий шаг — ИИ: WebGL-сборка и тестовый черновик. Владелец: после загрузки новой сборки повторить refresh при живом товарище; при отказе нужны строки `[Shared recovery storage]` до/после перезапуска. Задача in_review после технических проверок, не done.

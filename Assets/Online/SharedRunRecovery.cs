@@ -20,6 +20,7 @@ namespace DeadBoat.Online
     {
         private const string TicketKey = "DeadBoat.SharedReturn.v1";
         private const string IdentityKey = "DeadBoat.FusionIdentity.v1";
+        private static bool loggedStartupTicket;
         private static SharedRunRecovery instance;
         private SharedReturnTicket ticket;
         private NetworkRunner probe;
@@ -69,11 +70,10 @@ namespace DeadBoat.Online
         {
             get
             {
-                if (long.TryParse(PlayerPrefs.GetString(IdentityKey), out long id) && id != 0) return id;
+                if (long.TryParse(SharedReturnStorage.Read(IdentityKey), out long id) && id != 0) return id;
                 id = BitConverter.ToInt64(Guid.NewGuid().ToByteArray(), 0);
                 if (id == 0) id = 1;
-                PlayerPrefs.SetString(IdentityKey, id.ToString(System.Globalization.CultureInfo.InvariantCulture));
-                PlayerPrefs.Save();
+                SharedReturnStorage.Write(IdentityKey, id.ToString(System.Globalization.CultureInfo.InvariantCulture));
                 return id;
             }
         }
@@ -81,7 +81,13 @@ namespace DeadBoat.Online
         {
             try
             {
-                var t = JsonUtility.FromJson<SharedReturnTicket>(PlayerPrefs.GetString(TicketKey, ""));
+                string saved = SharedReturnStorage.Read(TicketKey);
+                if (!loggedStartupTicket)
+                {
+                    loggedStartupTicket = true;
+                    Debug.Log($"[Shared recovery storage] Startup record present={!string.IsNullOrEmpty(saved)}; backend={SharedReturnStorage.Backend}.");
+                }
+                var t = JsonUtility.FromJson<SharedReturnTicket>(saved);
                 if (t != null && SoloRunBranch.ClosesReturn(t.Room, t.PlayerId)) return null;
                 return t != null && !string.IsNullOrEmpty(t.Room) && t.PlayerId != 0 ? t : null;
             }
@@ -104,16 +110,15 @@ namespace DeadBoat.Online
                 PlayerId = LocalId, Seed = state.Seed, Level = state.LevelId,
                 Generator = state.GenerationVersion, Version = Application.version
             };
-            PlayerPrefs.SetString(TicketKey, JsonUtility.ToJson(ticket));
-            PlayerPrefs.Save();
+            bool durable = SharedReturnStorage.Write(TicketKey, JsonUtility.ToJson(ticket));
+            Debug.Log($"[Shared recovery storage] Run record written; durable={durable}; backend={SharedReturnStorage.Backend}.");
             suppressOffer = lost = offered = false;
             lastItems = null; revision = 0; nextCapture = 0;
         }
         public static void Forget()
         {
             if (instance != null && instance.checking) instance.CancelCheck();
-            PlayerPrefs.DeleteKey(TicketKey);
-            PlayerPrefs.Save();
+            SharedReturnStorage.Delete(TicketKey);
             if (instance == null) return;
             instance.ticket = null;
             instance.lost = instance.offered = instance.restoring = false;
@@ -121,8 +126,7 @@ namespace DeadBoat.Online
         }
         private void InvalidateReturn()
         {
-            PlayerPrefs.DeleteKey(TicketKey);
-            PlayerPrefs.Save();
+            SharedReturnStorage.Delete(TicketKey);
             ticket = null;
             // A disconnected in-memory scene still offers an explicit solo fork.
             offered = !lost;
