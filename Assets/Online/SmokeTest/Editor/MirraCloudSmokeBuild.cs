@@ -148,6 +148,8 @@ namespace DeadBoat.Online.SmokeTest.Editor
 
             File.Copy(webViewSource, Path.Combine(output, "unity-webview.js"), true);
             File.Copy(jquerySource, Path.Combine(output, "jquery.min.js"), true);
+            File.Copy(Path.Combine("tools", "online-webgl", "pointer-lock-guard.js"),
+                Path.Combine(output, "pointer-lock-guard.js"), true);
 
             var index = Path.Combine(output, "index.html");
             var html = File.ReadAllText(index);
@@ -155,9 +157,11 @@ namespace DeadBoat.Online.SmokeTest.Editor
             if (!html.Contains(loader))
                 throw new BuildFailedException("WebGL template loader was not found");
 
-            html = html.Replace(loader,
-                "<script src=\"jquery.min.js\"></script>\n    " +
-                "<script src=\"unity-webview.js\"></script>\n    " + loader);
+            foreach (var script in new[] { "jquery.min.js", "unity-webview.js", "pointer-lock-guard.js" })
+            {
+                var tag = "<script src=\"" + script + "\"></script>";
+                if (!html.Contains(tag)) html = html.Replace(loader, tag + "\n    " + loader);
+            }
             File.WriteAllText(index, html);
         }
     }
