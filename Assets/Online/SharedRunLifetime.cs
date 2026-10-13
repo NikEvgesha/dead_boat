@@ -87,7 +87,7 @@ namespace DeadBoat.Online
             try
             {
                 var shutdown = old.Shutdown();
-                if (await Task.WhenAny(shutdown, Task.Delay(5000)) == shutdown) await shutdown;
+                if (await Task.WhenAny(shutdown, SharedRunFrameWait.Delay(5)) == shutdown) await shutdown;
             }
             catch (System.Exception) { }
             if (old != null) Destroy(old.gameObject);

@@ -147,3 +147,23 @@ SharedRecoveryGameplayProbe.RunColdRestart PASS: новый компонент �
 Smoke IAB: первый запуск сразу после обработки временно перенаправился на 404; повтор открыл игру. Loader `9793fb0298d61119519d366104744429.loader.js` совпал с новым архивом. Console: `[Shared recovery storage] Startup record present=False; backend=browser-origin.` Ошибок вызова JS-моста не было; встретились прежние ошибки аналитики SessionsStarted/лимита leaderboard, не объявленные причиной возврата. Проверена работа чтения моста в настоящем WebGL, не запись нового кооп-билета и не refresh при живом втором игроке. Временный smoke-клиент закрыт.
 
 Следующий шаг — владелец: обновить оба клиента, создать НОВЫЙ заплыв на двоих, немного поплыть, перезапустить один клиент, оставив второй в игре. Потерянный билет предыдущей версии восстановить из ничего невозможно. При отказе передать строки `[Shared recovery storage]` перед перезапуском и после него. ИИ: доработать по результату приёмки; DB-ON-026 остаётся in_review.
+
+
+### Приёмка: ожидание состояния зависает — 2026-10-13
+
+Владелец оставил живой забег и прислал экраны «Получаем состояние забега…» / таймаут. IAB Console подтверждает `Startup record present=True; backend=browser-origin`, Fusion добавляет возвращающегося игрока, затем `[Shared recovery] Timeout at receive run state`. Потеря билета устранена в данном тесте; отказ теперь после успешного StartGame.
+
+В игровом ожидании использовался Task.Delay(100), затем watchdog отменял попытку. ИИ заменяет ожидание состояния/загрузки/таймаут остановки/передачи abandon на Unity player loop (Awaitable.NextFrameAsync + real time). Диагностика этапа будет показывать наличие replicated state / playing / otherCrew без идентификаторов. Это проверяемый подозреваемый механизм; окончательный PASS только после браузерного возврата.
+
+
+## Ожидания восстановления по Unity player loop — 2026-10-13
+
+В новом реальном WebGL-тесте владельца билет читается: `Startup record present=True; backend=browser-origin`. StartGame завершился, Fusion добавил игрока, затем неоднократно `Timeout at receive run state`. Это точнее локализует отказ; наличие самого SharedDepartureState на клиенте до таймаута не было залогировано.
+
+Игровые циклы ожидания реплики и загрузки сцены содержали Task.Delay. Заменены на Awaitable.NextFrameAsync; короткая выдержка abandon и лимиты Shutdown используют SharedRunFrameWait.Delay по Time.realtimeSinceStartupAsDouble. C# таймеры/ThreadPool для этих ожиданий больше не нужны. Источники: [ограничения C# Web](https://docs.unity.com/en-us/engine/6000.5/manual/platform-specific/webgl/develop/web-multithreading/intro), [Awaitable](https://docs.unity.cn/6000.0/Documentation/Manual/async-await-support.html). Несовместимость старого таймера с конкретной средой IAB рассматривается как вероятный механизм, не как доказанный самим screenshot факт.
+
+Добавлена диагностика входа транспорта, наличия реплики, фазы playing и оставшегося playing crew без комнат/ID. Отсутствующая/неполная реплика при ожидании больше не удаляет билет как доказанный завершённый забег; завершённый/чужой/недопустимый забег и отсутствие других участников по-прежнему отклоняются.
+
+Проверки: SharedRecoveryHangProbe PASS, включая новый real-time frame wait при timeScale=0, таймаут/отмену/изоляцию старых попыток; SharedRecoveryGameplayProbe.RunColdRestart PASS с `State received=True; playing=True; otherCrew=True`, восстановлением личных предметов/патронов/HP/опыта и отдельной solo-ветки. VerifyRestored PASS. Ограничения Editor: один мир, transport peer и foreground fixture; это не реальный WebGL refresh. SDK не изменены.
+
+Следующий шаг — ИИ: собрать/загрузить черновик и проверить автоматическое получение состояния на оставленном живом забеге. Владелец: подтвердить сам возврат и личные данные. Статус in_review после технических проверок.

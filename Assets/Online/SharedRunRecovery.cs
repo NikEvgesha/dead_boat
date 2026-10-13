@@ -250,17 +250,28 @@ namespace DeadBoat.Online
                 Message = "Получаем состояние забега…";
                 checkStage = "receive run state";
                 checkDeadline = until + 1;
+                Debug.Log("[Shared recovery] Joined transport; awaiting replicated run state.");
                 while (probeState == null && Time.realtimeSinceStartupAsDouble < until)
                 {
                     probeState = FindObjectsByType<SharedDepartureState>(FindObjectsSortMode.None)
                         .FirstOrDefault(s => s.Runner == probe && s.Object != null && s.Object.IsValid);
                     if (probeState == null) await CheckYield(attempt);
                 }
-                while (probeState != null && probeState.Phase == 3 && !probeState.HasOtherPlayingCrew(probe.LocalPlayer) &&
+                while (probeState != null && (probeState.Phase < 3 ||
+                    (probeState.Phase == 3 && !probeState.HasOtherPlayingCrew(probe.LocalPlayer))) &&
                     Time.realtimeSinceStartupAsDouble < until)
                     await CheckYield(attempt);
                 EnsureCheck(attempt);
-                if (probeState == null || probeState.Seed != requested.Seed ||
+                Debug.Log($"[Shared recovery] State received={probeState != null}; playing={probeState != null && probeState.Phase == 3}; otherCrew={probeState != null && probeState.HasOtherPlayingCrew(probe.LocalPlayer)}.");
+                // Missing/incomplete replication is not proof that the run ended.
+                if (probeState == null || probeState.Phase < 3 ||
+                    (probeState.CanReturn(probe.LocalPlayer) && !probeState.HasOtherPlayingCrew(probe.LocalPlayer) &&
+                     probe.ActivePlayers.Any(p => p != probe.LocalPlayer)))
+                {
+                    Message = "Состояние экипажа ещё не получено. Можно повторить подключение.";
+                    await AwaitCheck(StopProbeAsync(), attempt, 7, "stop incomplete probe"); return;
+                }
+                if (probeState.Seed != requested.Seed ||
                     !probeState.CanReturn(probe.LocalPlayer) || !probeState.HasOtherPlayingCrew(probe.LocalPlayer))
                 { Message = "Этот забег уже недоступен для возврата."; InvalidateReturn(); await AwaitCheck(StopProbeAsync(), attempt, 7, "stop unavailable probe"); return; }
                 Message = "Экипаж ещё в пути. Можно вернуться к команде.";
@@ -323,7 +334,7 @@ namespace DeadBoat.Online
         }
         private async Task CheckYield(int attempt)
         {
-            await Task.WhenAny(Task.Delay(100), checkCanceled.Task);
+            await Awaitable.NextFrameAsync();
             EnsureCheck(attempt);
         }
         public void CancelCheck() => CancelCheck(false);
@@ -382,7 +393,7 @@ namespace DeadBoat.Online
                 double until = Time.realtimeSinceStartupAsDouble + 180;
                 while ((!loaded || BoardController.Instance == null || !BoardController.Instance.StartGame ||
                     LoadingManager.Instance.CurrentLocation != Location.Game) && Time.realtimeSinceStartupAsDouble < until)
-                    await Task.Delay(100);
+                    await Awaitable.NextFrameAsync();
                 GameLoader.Instance.OnSceneLoaded -= onLoaded;
                 if (!loaded || BoardController.Instance == null || !BoardController.Instance.StartGame) throw new TimeoutException();
                 SharedRecoveryInventory.Restore(probeState, personal);
@@ -417,7 +428,7 @@ namespace DeadBoat.Online
             if (probe != null && probe.IsConnectedToServer && probeState != null)
                 probeState.RPC_AbandonRun();
             Forget();
-            if (probe != null) await Task.Delay(200);
+            if (probe != null) await SharedRunFrameWait.Delay(.2);
             await StopProbeAsync();
             await SharedRunLifetime.LeaveAsync();
             SoloRunBranch.Begin(copy);
@@ -446,7 +457,7 @@ namespace DeadBoat.Online
             try
             {
                 var shutdown = current.Shutdown();
-                if (await Task.WhenAny(shutdown, Task.Delay(5000)) == shutdown) await shutdown;
+                if (await Task.WhenAny(shutdown, SharedRunFrameWait.Delay(5)) == shutdown) await shutdown;
                 else Debug.LogWarning("[Shared recovery] Probe shutdown timed out.");
             }
             catch (Exception) { }

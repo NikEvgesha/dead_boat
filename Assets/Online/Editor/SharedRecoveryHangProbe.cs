@@ -32,6 +32,10 @@ namespace DeadBoat.Online.Editor
                 Set(recovery, "fallback", new SharedSoloSnapshot { SourceRun = "test-only", PlayerId = 9 });
                 Set(recovery, "lost", true);
                 Time.timeScale = 0;
+                int beforeWait = Time.frameCount;
+                await SharedRunFrameWait.Delay(.05);
+                Require(Time.frameCount > beforeWait && Time.timeScale == 0,
+                    "realtime frame wait progresses with paused gameplay");
                 var oldReply = new TaskCompletionSource<bool>();
                 int first = (int)Call(recovery, "BeginCheck");
                 var wait = (Task)Call(recovery, "AwaitCheck", oldReply.Task, first, .25, "injected stalled join");
@@ -62,7 +66,7 @@ namespace DeadBoat.Online.Editor
                 await (Task)Call(recovery, "AwaitCheck", Task.CompletedTask, third, 5d, "successful retry");
                 Call(recovery, "EndCheck", third);
                 Require(!recovery.Busy, "subsequent completed attempt unlocks");
-                Result = "PASS: paused entry, network clock, stalled timeout, pause restoration, UI unlock/cancel, preserved ticket/solo, late reply/finally isolation, successful retry";
+                Result = "PASS: paused realtime frame wait, paused entry, network clock, stalled timeout, pause restoration, UI unlock/cancel, preserved ticket/solo, late reply/finally isolation, successful retry";
                 Debug.Log("[Recovery hang probe] " + Result);
             }
             catch (Exception e) { Result = "FAIL: " + e; Debug.LogWarning("[Recovery hang probe] " + Result); }
