@@ -9,15 +9,45 @@ namespace DeadBoat.Online.Editor
 {
     // Real loader + one local game world and one transport peer. The save provider
     // must be isolated with SharedPerformanceTestSave before entering Play Mode.
+    [InitializeOnLoad]
     public static class SharedRecoveryGameplayProbe
     {
+        private const string ClockFixture = "DeadBoat.RecoveryColdClockFixture";
+        static SharedRecoveryGameplayProbe()
+        {
+            EditorApplication.update += () =>
+            {
+                // A background Editor window may start paused by SDK focus.
+                // This fixture supplies foreground frames; it is not game code.
+                if (SessionState.GetBool(ClockFixture, false) && EditorApplication.isPlaying) Time.timeScale = 1;
+            };
+            EditorApplication.playModeStateChanged += state =>
+            {
+                if (state == PlayModeStateChange.EnteredEditMode) SessionState.SetBool(ClockFixture, false);
+            };
+        }
+        public static string PrepareColdRestart()
+        {
+            string result = SharedRewardGameplayProbe.Prepare();
+            SessionState.SetBool(ClockFixture, true);
+            return result + "; foreground clock fixture";
+        }
         public static string Result { get; private set; } = "not run";
         private static bool running;
+        private static bool coldRestart;
+        public static void RunColdRestart()
+        {
+            if (running) return;
+            coldRestart = true;
+            Run();
+        }
         [MenuItem("Tools/Online/Test Recovery In Real Level (isolated Lobby Play Mode)")]
         public static async void Run()
         {
             if (running || !EditorApplication.isPlaying) return;
             running = true; Result = "running";
+            bool cold = coldRestart;
+            coldRestart = false;
             NetworkRunner peer = null;
             var mode = NetworkProjectConfig.Global.PeerMode;
             try
@@ -83,6 +113,22 @@ namespace DeadBoat.Online.Editor
                 await state.Runner.Shutdown();
                 await Until(() => SharedRunRecovery.Instance.Lost, "lost dialog");
                 Require(SharedRunRecovery.Instance.CanSolo && SharedLocalGameplay.Blocked, "frozen choice and snapshot");
+                if (cold)
+                {
+                    // Recreate recovery from the persisted ticket, without its
+                    // in-memory fallback/probe, while the companion stays live.
+                    await SharedRunLifetime.LeaveAsync(preserveReturn: true);
+                    UnityEngine.Object.Destroy(SharedRunRecovery.Instance.gameObject);
+                    GameManager.Instance.isEndGame = true;
+                    PlayerManager.Instance.transform.SetParent(null);
+                    UnityEngine.Object.DontDestroyOnLoad(PlayerManager.Instance.gameObject);
+                    LoadingManager.Instance.LoadLocation(Location.Lobby, default, false);
+                    await Until(() => LoadingManager.Instance.CurrentLocation == Location.Lobby &&
+                        UnityEngine.Object.FindAnyObjectByType<LobbyOnlineBootstrap>() != null, "cold lobby boot");
+                    var recovery = SharedRunRecovery.Instance;
+                    await Until(() => recovery.Visible && !recovery.Busy, "cold ticket check");
+                    Require(recovery.CanRetry && !recovery.CanSolo, "cold return from ticket, not local world");
+                }
                 await SharedRunRecovery.Instance.ResumeAsync();
                 Require(SharedRunContext.Playing && SharedRunContext.State.Runner.LocalPlayer == oldRef, "actual reconnect");
                 await Task.Delay(600);
@@ -94,6 +140,7 @@ namespace DeadBoat.Online.Editor
                 Require(UnityEngine.Object.FindObjectsByType<WorldSpawnIdentity>(FindObjectsInactive.Include, FindObjectsSortMode.None)
                     .Count(i => i.Id == goldId) == 1, "no duplicate city gold");
                 Debug.Log("[Recovery game probe] reconnect PASS: real reload, gold, bag, magazine, reserve, health, avatar.");
+                if (cold) Debug.Log("[Recovery game probe] Cold restart PASS: new recovery component and persisted ticket.");
                 await Task.Delay(2500);
                 var before = BoardController.Instance;
                 await SharedRunContext.State.Runner.Shutdown();

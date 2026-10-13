@@ -23,8 +23,16 @@ namespace DeadBoat.Online
         private static SharedRunRecovery instance;
         private SharedReturnTicket ticket;
         private NetworkRunner probe;
+        private NetworkRunner retiringProbe;
         private SharedDepartureState probeState;
         private bool busy, lost, offered, restoring, suppressOffer;
+        private bool checking;
+        private int checkVersion;
+        private double checkDeadline;
+        private string checkStage;
+        private TaskCompletionSource<bool> checkCanceled;
+        private bool transportClock;
+        private float previousTimeScale;
         private double nextCapture, nextAttempt;
         private int revision;
         private SharedPersonalData lastData;
@@ -34,10 +42,13 @@ namespace DeadBoat.Online
         public bool Visible => lost || offered;
         public bool Lost => lost;
         public bool Busy => busy;
+        public bool CanCancelCheck => checking;
         public bool CanSolo => lost && fallback != null;
         public bool CanRetry => ticket != null;
         public static bool Restoring => instance != null && instance.restoring;
         public static bool Disconnected => instance != null && instance.lost;
+        public static bool NeedsTransportClock => instance != null &&
+            (instance.checking || instance.probe != null || instance.retiringProbe != null || instance.restoring);
         public static bool HasPending => instance != null ? instance.ticket != null : ReadTicket() != null;
         public static SharedRunRecovery Instance
         {
@@ -85,6 +96,7 @@ namespace DeadBoat.Online
         }
         public void Track(NetworkRunner runner, SharedDepartureState state, string lobbyName)
         {
+            if (checking) CancelCheck();
             SoloRunBranch.Suspend();
             ticket = new SharedReturnTicket
             {
@@ -99,6 +111,7 @@ namespace DeadBoat.Online
         }
         public static void Forget()
         {
+            if (instance != null && instance.checking) instance.CancelCheck();
             PlayerPrefs.DeleteKey(TicketKey);
             PlayerPrefs.Save();
             if (instance == null) return;
@@ -123,6 +136,11 @@ namespace DeadBoat.Online
         }
         private void Update()
         {
+            UpdateTransportClock();
+            // Update uses real time even when gameplay is paused. A failed
+            // transport/timer must never permanently lock the recovery dialog.
+            if (checking && Time.realtimeSinceStartupAsDouble >= checkDeadline)
+                CancelCheck(true);
             if (probe != null && !busy && !probe.IsConnectedToServer)
             {
                 Message = "Проверка прервалась. Повтори подключение, когда появится сеть.";
@@ -146,7 +164,7 @@ namespace DeadBoat.Online
                 }
                 return;
             }
-            if (busy || probe != null || ticket == null || suppressOffer || SharedRunContext.Active ||
+            if (busy || probe != null || ticket == null || suppressOffer || offered || lost || SharedRunContext.Active ||
                 LoadingManager.Instance == null || LoadingManager.Instance.CurrentLocation != Location.Lobby ||
                 Time.realtimeSinceStartupAsDouble < nextAttempt) return;
             nextAttempt = Time.realtimeSinceStartupAsDouble + 15;
@@ -188,17 +206,18 @@ namespace DeadBoat.Online
         public async Task CheckAsync()
         {
             if (busy || ticket == null) return;
-            busy = true;
+            int attempt = BeginCheck();
+            var requested = ticket;
             offered = !lost;
             Message = "Проверяем, продолжает ли экипаж забег…";
             try
             {
-                if (ticket.Version != Application.version || ticket.Generator != RunRandom.Version)
+                if (requested.Version != Application.version || requested.Generator != RunRandom.Version)
                 { Message = "Версия забега изменилась. Вернуться не получится."; InvalidateReturn(); return; }
                 var lobby = FindAnyObjectByType<LobbyOnlineBootstrap>();
-                if (lobby != null) await lobby.SuspendForRecoveryAsync();
-                if (lost) await SharedRunLifetime.ReleaseLostTransportAsync();
-                await StopProbeAsync();
+                if (lobby != null) await AwaitCheck(lobby.SuspendForRecoveryAsync(), attempt, 7, "stop lobby");
+                if (lost) await AwaitCheck(SharedRunLifetime.ReleaseLostTransportAsync(), attempt, 7, "stop old run");
+                await AwaitCheck(StopProbeAsync(), attempt, 7, "stop previous probe");
                 var root = new GameObject("Shared return runner");
                 DontDestroyOnLoad(root);
                 probe = root.AddComponent<NetworkRunner>();
@@ -207,42 +226,128 @@ namespace DeadBoat.Online
                 var start = probe.StartGame(new StartGameArgs
                 {
                     GameMode = GameMode.Shared, Config = LobbyOnlineBootstrap.CreateDepartureNetworkConfig(),
-                    CustomPhotonAppSettings = Settings(ticket.Region), PlayerUniqueId = ticket.PlayerId,
-                    SessionName = ticket.Room, CustomLobbyName = ticket.Lobby,
+                    CustomPhotonAppSettings = Settings(requested.Region), PlayerUniqueId = requested.PlayerId,
+                    SessionName = requested.Room, CustomLobbyName = requested.Lobby,
                     EnableClientSessionCreation = false, SceneManager = scenes, ObjectProvider = provider
                 });
-                if (await Task.WhenAny(start, Task.Delay(20000)) != start) throw new TimeoutException();
+                Message = "Подключаемся к экипажу…";
+                await AwaitCheck(start, attempt, 25, "connect to run");
                 var result = await start;
+                EnsureCheck(attempt);
                 if (!result.Ok)
                 {
                     if (result.ShutdownReason.ToString().Contains("GameNotFound") ||
                         result.ShutdownReason.ToString().Contains("GameClosed"))
                     { Message = "Экипаж уже завершил забег. Можно начать новую поездку."; InvalidateReturn(); }
                     else Message = "Не удалось проверить экипаж. Попробуй переподключиться позже.";
-                    await StopProbeAsync(); return;
+                    await AwaitCheck(StopProbeAsync(), attempt, 7, "stop rejected probe"); return;
                 }
                 double until = Time.realtimeSinceStartupAsDouble + 8;
+                Message = "Получаем состояние забега…";
+                checkStage = "receive run state";
+                checkDeadline = until + 1;
                 while (probeState == null && Time.realtimeSinceStartupAsDouble < until)
                 {
                     probeState = FindObjectsByType<SharedDepartureState>(FindObjectsSortMode.None)
                         .FirstOrDefault(s => s.Runner == probe && s.Object != null && s.Object.IsValid);
-                    if (probeState == null) await Task.Delay(100);
+                    if (probeState == null) await CheckYield(attempt);
                 }
                 while (probeState != null && probeState.Phase == 3 && !probeState.HasOtherPlayingCrew(probe.LocalPlayer) &&
                     Time.realtimeSinceStartupAsDouble < until)
-                    await Task.Delay(100);
-                if (probeState == null || probeState.Seed != ticket.Seed ||
+                    await CheckYield(attempt);
+                EnsureCheck(attempt);
+                if (probeState == null || probeState.Seed != requested.Seed ||
                     !probeState.CanReturn(probe.LocalPlayer) || !probeState.HasOtherPlayingCrew(probe.LocalPlayer))
-                { Message = "Этот забег уже недоступен для возврата."; InvalidateReturn(); await StopProbeAsync(); return; }
+                { Message = "Этот забег уже недоступен для возврата."; InvalidateReturn(); await AwaitCheck(StopProbeAsync(), attempt, 7, "stop unavailable probe"); return; }
                 Message = "Экипаж ещё в пути. Можно вернуться к команде.";
             }
-            catch (Exception) { Message = "Соединение пока недоступно. Можно повторить попытку."; await StopProbeAsync(); }
-            finally { busy = false; }
+            catch (OperationCanceledException) { }
+            catch (Exception exception)
+            {
+                if (attempt == checkVersion)
+                {
+                    Debug.LogWarning("[Shared recovery] Check failed at " + checkStage + ": " + exception.GetType().Name);
+                    Message = "Соединение пока недоступно. Можно повторить попытку.";
+                    try { await AwaitCheck(StopProbeAsync(), attempt, 7, "cleanup failed check"); }
+                    catch (OperationCanceledException) { }
+                }
+            }
+            finally { EndCheck(attempt); }
+        }
+        private int BeginCheck()
+        {
+            checking = busy = true;
+            UpdateTransportClock();
+            checkCanceled = new TaskCompletionSource<bool>();
+            checkStage = "prepare";
+            checkDeadline = Time.realtimeSinceStartupAsDouble + 7;
+            return ++checkVersion;
+        }
+        private void EnsureCheck(int attempt)
+        {
+            if (!checking || attempt != checkVersion) throw new OperationCanceledException();
+        }
+        private void EndCheck(int attempt)
+        {
+            if (attempt == checkVersion) checking = busy = false;
+        }
+        private void UpdateTransportClock()
+        {
+            if (NeedsTransportClock)
+            {
+                if (!transportClock) { previousTimeScale = Time.timeScale; transportClock = true; }
+                // Local controls remain blocked by the modal/lost context. Fusion
+                // startup and shutdown must keep receiving engine frames.
+                Time.timeScale = 1;
+            }
+            else if (transportClock)
+            {
+                transportClock = false;
+                if (!SharedRunContext.Playing && !SoloRunBranch.Active)
+                    Time.timeScale = lost ? 0 : previousTimeScale;
+            }
+        }
+        private async Task AwaitCheck(Task task, int attempt, double seconds, string stage)
+        {
+            EnsureCheck(attempt);
+            checkStage = stage;
+            checkDeadline = Time.realtimeSinceStartupAsDouble + seconds;
+            var cancellation = checkCanceled.Task;
+            await Task.WhenAny(task, cancellation);
+            EnsureCheck(attempt);
+            await task;
+        }
+        private async Task CheckYield(int attempt)
+        {
+            await Task.WhenAny(Task.Delay(100), checkCanceled.Task);
+            EnsureCheck(attempt);
+        }
+        public void CancelCheck() => CancelCheck(false);
+        private void CancelCheck(bool timedOut)
+        {
+            if (!checking) return;
+            Debug.LogWarning("[Shared recovery] " + (timedOut ? "Timeout" : "Canceled") + " at " + checkStage);
+            ++checkVersion;
+            checking = busy = false;
+            checkCanceled?.TrySetResult(true);
+            offered = !lost;
+            nextAttempt = Time.realtimeSinceStartupAsDouble + 15;
+            Message = timedOut ? "Подключение заняло слишком долго. Можно повторить попытку." : "Проверка остановлена. Можно повторить подключение позже.";
+            var current = probe;
+            _ = StopProbeAsync();
+            // Do not keep an unresponsive runner alive alongside the next attempt.
+            if (current != null) Destroy(current.gameObject);
+            if (retiringProbe != null) Destroy(retiringProbe.gameObject);
         }
         public async Task ResumeAsync()
         {
             if (busy) return;
-            if (probeState == null) await CheckAsync();
+            if (probeState == null)
+            {
+                int expectedCheck = checkVersion + 1;
+                await CheckAsync();
+                if (checkVersion != expectedCheck) return;
+            }
             if (probeState == null || probe == null || ticket == null) return;
             if (!probeState.CanReturn(probe.LocalPlayer) || !probeState.HasOtherPlayingCrew(probe.LocalPlayer))
             { Message = "Экипаж уже вышел из забега."; await StopProbeAsync(); InvalidateReturn(); return; }
@@ -333,7 +438,15 @@ namespace DeadBoat.Online
         {
             var current = probe; probe = null; probeState = null;
             if (current == null) return;
-            try { await current.Shutdown(); } catch (Exception) { }
+            retiringProbe = current;
+            try
+            {
+                var shutdown = current.Shutdown();
+                if (await Task.WhenAny(shutdown, Task.Delay(5000)) == shutdown) await shutdown;
+                else Debug.LogWarning("[Shared recovery] Probe shutdown timed out.");
+            }
+            catch (Exception) { }
+            if (retiringProbe == current) retiringProbe = null;
             if (current != null) Destroy(current.gameObject);
         }
     }

@@ -156,7 +156,8 @@ namespace DeadBoat.Online
         {
             // Pause is local in co-op. Scene initialization, authority AI and
             // coroutines keep advancing; local input is gated separately.
-            if (SharedRunContext.Active && !stopping && !returningToLobby) Time.timeScale = connectionLost ? 0 : 1;
+            if (SharedRunContext.Active && !stopping && !returningToLobby)
+                Time.timeScale = connectionLost && !SharedRunRecovery.NeedsTransportClock ? 0 : 1;
             double now = Time.realtimeSinceStartupAsDouble;
             double gap = now - lastFrameTime;
             lastFrameTime = now;

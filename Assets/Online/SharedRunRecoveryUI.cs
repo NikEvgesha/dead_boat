@@ -49,7 +49,8 @@ namespace DeadBoat.Online
             exit = LobbyOnlineModeUI.CreateButton(panel.transform, "Exit", new Vector2(.5f, .5f),
                 new Vector2(0, -150), new Vector2(500, 43), () =>
                 {
-                    if (confirming) confirming = false;
+                    if (recovery.CanCancelCheck) recovery.CancelCheck();
+                    else if (confirming) confirming = false;
                     else if (recovery.Lost) _ = recovery.ExitAsync();
                     else _ = recovery.LaterAsync();
                 });
@@ -84,9 +85,10 @@ namespace DeadBoat.Online
             resume.GetComponentInChildren<Text>().text = recovery.Lost ? "Переподключиться" : "Вернуться в забег";
             solo.gameObject.SetActive(recovery.CanSolo);
             solo.GetComponentInChildren<Text>().text = confirming ? "Да, продолжить одному" : "Продолжить одному";
-            exit.GetComponentInChildren<Text>().text = confirming ? "Остаться и ждать" : recovery.Lost ? "В лобби" : "Позже";
+            exit.GetComponentInChildren<Text>().text = recovery.CanCancelCheck ? "Отменить подключение" : confirming ? "Остаться и ждать" : recovery.Lost ? "В лобби" : "Позже";
             resume.interactable = solo.interactable = exit.interactable = !recovery.Busy;
             resume.interactable &= recovery.CanRetry;
+            exit.interactable = !recovery.Busy || recovery.CanCancelCheck;
         }
     }
 }
