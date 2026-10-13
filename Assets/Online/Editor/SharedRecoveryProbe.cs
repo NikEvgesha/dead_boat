@@ -45,6 +45,14 @@ namespace DeadBoat.Online.Editor
                 remote.RPC_RecoveryCommit(new SharedPersonalData { Revision = 2, ItemCount = 2, Health = 1 });
                 await Task.Delay(350);
                 Require(state.Personal[player].Revision == 1 && state.Personal[player].Health == 80, "partial snapshot discarded");
+                var progress = state.Personal[player];
+                progress.Coins = 237; progress.CardHP = 35; progress.Upgrades = 2;
+                progress.Revision = 999; progress.ItemCount = 31; // Must not alter the confirmed bag header.
+                remote.RPC_RecoveryProgress(progress);
+                await Until(() => state.Personal[player].Coins == 237 && state.Personal[player].CardHP == 35, "progress without bag commit");
+                Require(state.Personal[player].Revision == 1 && state.Personal[player].ItemCount == 1 &&
+                    state.PersonalItems[state.CrewSlot(player) * SharedDepartureState.RecoverySlots].WorldId == 9281,
+                    "independent progress preserves complete bag");
                 await second.Shutdown(); second = null;
                 await Task.Delay(1200);
                 Require(state.Items[9281].Owner == player && state.Items[9281].Mode == 2, "disconnected bag reserved");

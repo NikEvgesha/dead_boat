@@ -36,7 +36,8 @@ namespace DeadBoat.Online
         private float previousTimeScale;
         private double nextCapture, nextAttempt;
         private int revision;
-        private SharedPersonalData lastData;
+        private SharedPersonalData lastProgress;
+        private bool reportedProgress;
         private SharedRecoveryItem[] lastItems;
         private SharedSoloSnapshot fallback;
         public string Message { get; private set; } = "";
@@ -113,7 +114,7 @@ namespace DeadBoat.Online
             bool durable = SharedReturnStorage.Write(TicketKey, JsonUtility.ToJson(ticket));
             Debug.Log($"[Shared recovery storage] Run record written; durable={durable}; backend={SharedReturnStorage.Backend}.");
             suppressOffer = lost = offered = false;
-            lastItems = null; revision = 0; nextCapture = 0;
+            lastItems = null; revision = 0; nextCapture = 0; reportedProgress = false;
         }
         public static void Forget()
         {
@@ -180,9 +181,24 @@ namespace DeadBoat.Online
             }
             _ = CheckAsync();
         }
+        public static void PersonalChanged()
+        {
+            if (instance != null && SharedRunContext.Playing && !instance.restoring)
+                instance.nextCapture = 0;
+        }
         private void CapturePersonal(SharedDepartureState state)
         {
             if (Inventory.Instance == null || PlayerAmmoManager.Instance == null || PlayerStatsManager.Instance == null) return;
+            var data = SharedPersonalData.Capture();
+            bool progressConfirmed = state.Personal.TryGet(state.Runner.LocalPlayer, out var confirmedProgress);
+            confirmedProgress.Revision = 0;
+            confirmedProgress.ItemCount = 0;
+            if (!reportedProgress || !data.Equals(lastProgress) || !progressConfirmed || !data.Equals(confirmedProgress))
+            {
+                state.RPC_RecoveryProgress(data);
+                lastProgress = data;
+                reportedProgress = true;
+            }
             var inventory = Inventory.Instance.GetInventoryList();
             if (inventory.Count > SharedDepartureState.RecoverySlots) return;
             var items = new List<SharedRecoveryItem>();
@@ -198,9 +214,10 @@ namespace DeadBoat.Online
                     Equipped = item == active ? 1 : 0
                 });
             }
-            var data = SharedPersonalData.Capture();
-            bool changed = !data.Equals(lastData) || lastItems == null || !items.SequenceEqual(lastItems);
-            if (changed) { lastData = data; lastItems = items.ToArray(); revision++; }
+            // Currency/cards/HP use the small progress message. A changed header
+            // alone must not resend every inventory slot.
+            bool changed = lastItems == null || !items.SequenceEqual(lastItems);
+            if (changed) { lastItems = items.ToArray(); revision++; }
             if (revision < 1) revision = 1;
             if (state.Personal.TryGet(state.Runner.LocalPlayer, out var confirmed) && confirmed.Revision == revision) return;
             for (int i = 0; i < items.Count; i++) state.RPC_RecoveryItem(revision, i, items[i]);
@@ -403,7 +420,7 @@ namespace DeadBoat.Online
                 GameLoader.Instance.OnSceneLoaded -= onLoaded;
                 if (!loaded || BoardController.Instance == null || !BoardController.Instance.StartGame) throw new TimeoutException();
                 SharedRecoveryInventory.Restore(probeState, personal);
-                LevelStatManager.Instance.Stats = personal.Cards;
+                LevelStatManager.Instance.RestoreRecovery(personal.Cards, personal.Upgrades);
                 CurrencyManager.Instance.AddCurrency(CurrencyType.Coins, personal.Coins - CurrencyManager.Instance.Coins);
                 PlayerAmmoManager.Instance.RestoreRecovery(personal.Pistol, personal.Rifle, personal.Shotgun);
                 PlayerStatsManager.Instance.LoadExp(personal.Experience, personal.Level);
@@ -412,6 +429,7 @@ namespace DeadBoat.Online
                 SharedRunLifetime.SpawnLocalRecoveryAvatar(value);
                 Time.timeScale = 1;
                 nextCapture = 0;
+                reportedProgress = false;
                 revision = personal.Revision;
                 lastItems = null;
                 Message = "Вы вернулись к экипажу.";

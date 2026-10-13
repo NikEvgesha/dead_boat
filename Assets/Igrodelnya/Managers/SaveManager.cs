@@ -196,6 +196,7 @@ public class SaveManager : MonoBehaviour
     public void SaveGameCoin(int coin)
     {
         ActiveProvider.SaveGameCoin(coin);
+        DeadBoat.Online.SharedRunRecovery.PersonalChanged();
     }
     public int LoadGameCoin()
     {
@@ -291,6 +292,7 @@ public class SaveManager : MonoBehaviour
     public void SaveLevelUpdate(Stats stats)
     {
         ActiveProvider.SaveLevelUpdate(stats);
+        DeadBoat.Online.SharedRunRecovery.PersonalChanged();
     }
     public Stats LoadLevelUpdate()
     {
@@ -299,6 +301,7 @@ public class SaveManager : MonoBehaviour
     public void SaveLevelUp(int count)
     {
         ActiveProvider.SaveLevelUp(count);
+        DeadBoat.Online.SharedRunRecovery.PersonalChanged();
     }
     public int LoadLevelUp()
     {

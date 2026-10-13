@@ -36,7 +36,7 @@ namespace DeadBoat.Online
             var ammo = PlayerAmmoManager.Instance;
             return new SharedPersonalData
             {
-                Health = PlayerStatsManager.Instance.Health, Coins = save.LoadGameCoin(),
+                Health = PlayerStatsManager.Instance.Health, Coins = CurrencyManager.Instance != null ? CurrencyManager.Instance.Coins : save.LoadGameCoin(),
                 Experience = exp.Item1, Level = exp.Item2, Upgrades = save.LoadLevelUp(),
                 Pistol = ammo.GetAmmo(WeaponType.Pistol), Rifle = ammo.GetAmmo(WeaponType.Rifle),
                 Shotgun = ammo.GetAmmo(WeaponType.Shotgun),

@@ -273,6 +273,19 @@ public class LevelStatManager : MonoBehaviour
         // fallback на всякий случай
         return _rarityChances.Last().Rare;
     }
+    public void RestoreRecovery(Stats cards, int upgrades)
+    {
+        Stats = cards;
+        _countLevelUp = Mathf.Max(0, upgrades);
+        SaveManager.Instance.SaveLevelUpdate(Stats);
+        SaveManager.Instance.SaveLevelUp(_countLevelUp);
+        if (LevelUpUi.Instance != null)
+        {
+            LevelUpUi.Instance.RestartAll();
+            if (_countLevelUp > 0) LevelUpUi.Instance.AddNewLevelCount(_countLevelUp);
+        }
+    }
+
     public void DeleteProgress()
     {
         Stats = StatsDefault;

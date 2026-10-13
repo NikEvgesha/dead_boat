@@ -38,6 +38,26 @@ namespace DeadBoat.Online
             return false;
         }
 
+        // Progress can advance even when an inventory template cannot be captured.
+        // Preserve the last complete inventory's revision/count and item slots.
+        [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+        public void RPC_RecoveryProgress(SharedPersonalData data, RpcInfo info = default)
+        {
+            if (!CanReturn(info.Source) || float.IsNaN(data.Health) || float.IsInfinity(data.Health)) return;
+            if (Personal.TryGet(info.Source, out var previous))
+            {
+                data.Revision = previous.Revision;
+                data.ItemCount = previous.ItemCount;
+                Personal.Set(info.Source, data);
+            }
+            else if (Personal.Count < Personal.Capacity)
+            {
+                data.Revision = 0;
+                data.ItemCount = 0;
+                Personal.Add(info.Source, data);
+            }
+        }
+
         [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
         public void RPC_RecoveryItem(int revision, int slot, SharedRecoveryItem value, RpcInfo info = default)
         {
