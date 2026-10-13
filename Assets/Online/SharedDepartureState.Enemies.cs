@@ -139,11 +139,16 @@ namespace DeadBoat.Online
             SampleEnemy(identity, enemy);
         }
 
-        [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
-        public void RPC_PlayerDamage(PlayerRef player, int damage)
+        // Health belongs to this player's avatar owner, never to the boat/master.
+        public void DamagePlayer(PlayerRef player, int damage)
         {
-            if (player == Runner.LocalPlayer && PlayerStatsManager.Instance != null)
-                PlayerStatsManager.Instance.TakeDamage(damage);
+            if (!Object.HasStateAuthority || Phase != 3 || !Includes(player) || damage <= 0) return;
+            foreach (var avatar in LobbyNetworkAvatar.All)
+                if (avatar.Runner == Runner && avatar.Object.StateAuthority == player)
+                {
+                    avatar.RPC_ReceiveDamage(damage);
+                    return;
+                }
         }
 
         [Rpc(RpcSources.StateAuthority, RpcTargets.All)]

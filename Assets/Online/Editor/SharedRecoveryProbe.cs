@@ -31,6 +31,9 @@ namespace DeadBoat.Online.Editor
                 var remote = Replica(second);
                 state.RPC_SceneReady(); remote.RPC_SceneReady();
                 await Until(() => state.Phase == 3 && remote.Phase == 3, "playing");
+                typeof(SharedDepartureState).GetProperty("DayHour").SetValue(state, 22.5f);
+                typeof(SharedDepartureState).GetProperty("DayClockInitialized").SetValue(state, (NetworkBool)true);
+                await Until(() => remote.DayClockInitialized && Mathf.Abs(remote.DayHour - 22.5f) < .01f, "night clock replication");
                 var player = second.LocalPlayer;
                 int template = SharedItemCatalog.Load().entries.First(e => e.prefab != null).id;
                 var item = new SharedRecoveryItem { Template = template, Ammo = 7, WorldId = 9281, Equipped = 1 };
@@ -53,6 +56,7 @@ namespace DeadBoat.Online.Editor
                 await Until(() => Replica(returned) != null, "return state");
                 Require(returned.LocalPlayer == player, "PlayerUniqueId restores PlayerRef");
                 var restored = Replica(returned);
+                Require(restored.DayClockInitialized && Mathf.Abs(restored.DayHour - 22.5f) < .01f, "night clock restored on return");
                 Require(restored.CanReturn(player) && restored.Personal[player].Pistol == 31, "personal state survives reconnect");
                 int slot = restored.CrewSlot(player);
                 Require(restored.PersonalItems[slot * SharedDepartureState.RecoverySlots].Ammo == 7, "weapon magazine preserved");
@@ -60,6 +64,7 @@ namespace DeadBoat.Online.Editor
                 await Until(() => state.HasOtherPlayingCrew(first.LocalPlayer), "returned avatar registered");
                 await first.Shutdown(); first = null;
                 await Until(() => restored.Object.HasStateAuthority, "master transfer");
+                Require(restored.DayClockInitialized && Mathf.Abs(restored.DayHour - 22.5f) < .01f, "night clock survives master transfer");
                 Require(restored.Personal[player].Health == 80 && restored.Items[9281].Owner == player, "recovery data survives master transfer");
                 first = await Connect(room, 1001, false); // Probe only; no gameplay avatar.
                 await Until(() => Replica(first) != null, "probe state");

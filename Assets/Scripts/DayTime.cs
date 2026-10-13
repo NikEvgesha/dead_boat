@@ -89,11 +89,21 @@ public class DayTime : MonoBehaviour
 
     private void Update()
     {
-        _timeOfDay += (Time.deltaTime * _currentOrbitSpeed / _dayDuration) * 24f;
-        _timeOfDay %= 24f;
+        if (DeadBoat.Online.SharedRunContext.Active)
+        {
+            var state = DeadBoat.Online.SharedRunContext.State;
+            if (state != null && state.Object != null && state.Object.IsValid && state.DayClockInitialized)
+                _timeOfDay = state.DayHour;
+        }
+        else
+            _timeOfDay = Mathf.Repeat(_timeOfDay + Time.deltaTime * HoursPerSecond, 24f);
         ProgressTime();
         UpdateLightning();
     }
+
+    public float Hour => _timeOfDay;
+    public float HoursPerSecond => _dayDuration > 0 ? _currentOrbitSpeed / _dayDuration * 24f : 0;
+    public void StartForSharedDistance(float distance) => CheckDistanceToStart(distance);
 
     private void CheckDistanceToStart(float distance)
     {
@@ -143,6 +153,11 @@ public class DayTime : MonoBehaviour
             // Неподвижное положение
             //_isTransitioning = false;
             sunAngle = _isNight ? -90f : 50f;
+            // A late join can skip the sunrise/sunset transition.
+            _skybox.SetFloat(_exposure, _isNight ? _nightLightIntensity : 1f);
+            RenderSettings.fogColor = _isNight ? _nightFogColor : _dayFogColor;
+            RenderSettings.ambientIntensity = _isNight ? _nightLightIntensity * 3f : 1f;
+            _sun.intensity = _isNight ? _nightLightIntensity : 1f;
         }
 
         _sun.transform.rotation = Quaternion.Euler(sunAngle, _axisOffset, 0);

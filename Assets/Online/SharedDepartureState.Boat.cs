@@ -5,6 +5,17 @@ namespace DeadBoat.Online
 {
     public sealed partial class SharedDepartureState
     {
+        [Networked] public NetworkBool DayClockInitialized { get; private set; }
+        [Networked] public float DayHour { get; private set; }
+        private void TickDayClock()
+        {
+            var day = DayTime.instanse;
+            if (day == null) return;
+            if (!DayClockInitialized) { DayHour = day.Hour; DayClockInitialized = true; }
+            day.StartForSharedDistance(BoatDistance);
+            DayHour = Mathf.Repeat(DayHour + Runner.DeltaTime * day.HoursPerSecond, 24f);
+        }
+
         [Networked] public NetworkBool BoatInitialized { get; private set; }
         [Networked] public float BoatDistance { get; private set; }
         [Networked] public float BoatSpeed { get; private set; }
@@ -29,6 +40,7 @@ namespace DeadBoat.Online
             ReleaseDisconnectedItems();
             TickWorld();
             TickEnemyEffects();
+            TickDayClock();
             var board = BoardController.Instance;
             if (board == null || !board.StartGame) return;
             if (!BoatInitialized)

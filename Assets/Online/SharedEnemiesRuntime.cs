@@ -43,7 +43,7 @@ namespace DeadBoat.Online
                 if (avatar.Runner == state.Runner && avatar.Health > 0 &&
                     Vector3.Distance(avatar.LogicalPosition - LobbyNetworkAvatar.Origin + Vector3.up,
                         dragon.transform.position) <= 3 && hit.Add(avatar.Object.StateAuthority))
-                    state.RPC_PlayerDamage(avatar.Object.StateAuthority, (int)dragon.diveDamage);
+                    state.DamagePlayer(avatar.Object.StateAuthority, (int)dragon.diveDamage);
         }
         public static ulong RegisterTemplate(ZombieController prefab)
         {
@@ -85,7 +85,7 @@ namespace DeadBoat.Online
         public static Transform Target(Transform from, Transform fallback)
         {
             if (!SharedRunContext.Active) return fallback;
-            Transform nearest = fallback;
+            Transform nearest = null;
             float distance = float.MaxValue;
             foreach (var avatar in LobbyNetworkAvatar.All)
             {
@@ -98,6 +98,36 @@ namespace DeadBoat.Online
             return nearest;
         }
 
+        public static bool CanMeleeHit(Transform from, Transform target, float range)
+        {
+            if (target == null) return false;
+            Vector3 origin = from.position + Vector3.up * 1.5f;
+            Vector3 delta = target.position + Vector3.up * 1.5f - origin;
+            float distance = delta.magnitude;
+            if (distance > range) return false;
+            if (distance < 0.001f) return true;
+            // Remote avatars have no physics collider. Test obstacles up to the target.
+            if (!Physics.Raycast(origin, delta / distance, out var hit, Mathf.Max(0, distance - .3f))) return true;
+            return hit.transform == target || hit.transform.IsChildOf(target);
+        }
+
+        public static bool MeleeAttack(Transform from, Transform target, float range, int damage)
+        {
+            if (!SharedRunContext.Active) return false;
+            if (!Authority || !CanMeleeHit(from, target, range)) return true;
+            var state = SharedRunContext.State;
+            foreach (var avatar in LobbyNetworkAvatar.All)
+            {
+                if (avatar.Runner != state.Runner || avatar.Health <= 0) continue;
+                var candidate = avatar.Object.HasStateAuthority && PlayerMovement.Instance != null
+                    ? PlayerMovement.Instance.transform : avatar.WorldTransform;
+                if (candidate != target) continue;
+                state.DamagePlayer(avatar.Object.StateAuthority, damage);
+                break;
+            }
+            return true;
+        }
+
         public static bool AreaAttack(Vector3 center, float radius, int damage)
         {
             if (!SharedRunContext.Active) return false;
@@ -106,7 +136,7 @@ namespace DeadBoat.Online
             foreach (var avatar in LobbyNetworkAvatar.All)
                 if (avatar.Runner == state.Runner && avatar.Health > 0 &&
                     (avatar.LogicalPosition - LobbyNetworkAvatar.Origin - center).sqrMagnitude <= radius * radius)
-                    state.RPC_PlayerDamage(avatar.Object.StateAuthority, damage);
+                    state.DamagePlayer(avatar.Object.StateAuthority, damage);
             return true;
         }
 
@@ -122,7 +152,7 @@ namespace DeadBoat.Online
                     (avatar.LogicalPosition - LobbyNetworkAvatar.Origin + Vector3.up - center);
                 if (Mathf.Abs(point.x) <= size.x / 2 + 0.3f && Mathf.Abs(point.y) <= size.y / 2 + 1 &&
                     Mathf.Abs(point.z) <= size.z / 2 + 0.3f)
-                    state.RPC_PlayerDamage(avatar.Object.StateAuthority, damage);
+                    state.DamagePlayer(avatar.Object.StateAuthority, damage);
             }
             return true;
         }

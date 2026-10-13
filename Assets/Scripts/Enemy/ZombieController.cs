@@ -71,6 +71,8 @@ public class ZombieController : LevelledEnemy
     }
     bool CanHitPlayer()
     {
+        if (DeadBoat.Online.SharedRunContext.Active)
+            return DeadBoat.Online.SharedEnemiesRuntime.CanMeleeHit(transform, target, attackRange);
         RaycastHit rayHit;
         // Делим расчёт на две части: 
         // 1) точка старта чуть выше центра (например, уровень груди или головы)
@@ -125,7 +127,7 @@ public class ZombieController : LevelledEnemy
 
     void Attack()
     {
-        if (DeadBoat.Online.SharedEnemiesRuntime.AreaAttack(transform.position + Vector3.up, _hitRadius + 1, attackDamage))
+        if (DeadBoat.Online.SharedEnemiesRuntime.MeleeAttack(transform, target, attackRange, attackDamage))
         {
             transform.LookAt(target);
             animator.SetTrigger("Attack");

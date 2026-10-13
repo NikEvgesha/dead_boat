@@ -133,6 +133,20 @@ namespace DeadBoat.Online
             }
         }
 
+        [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+        public void RPC_ReceiveDamage(int damage, RpcInfo info = default)
+        {
+            var state = SharedRunContext.State;
+            if (!SharedRunContext.Playing || state.Runner != Runner ||
+                info.Source != state.Object.StateAuthority || !state.Includes(Runner.LocalPlayer) || damage <= 0)
+                return;
+            if (PlayerStatsManager.Instance != null)
+            {
+                PlayerStatsManager.Instance.TakeDamage(damage);
+                Health = PlayerStatsManager.Instance.Health;
+            }
+        }
+
         public override void FixedUpdateNetwork()
         {
             if (!Object.HasStateAuthority)
