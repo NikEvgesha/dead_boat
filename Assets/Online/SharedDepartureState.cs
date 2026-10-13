@@ -19,6 +19,7 @@ namespace DeadBoat.Online
         [Networked] public int CrewCount { get; private set; }
         [Networked, Capacity(4)] public NetworkArray<PlayerRef> Crew => default;
 
+        private bool heldRunAuthority;
         public override void Spawned() => Runner.MakeDontDestroyOnLoad(gameObject);
 
         public void Initialize(int levelId, int targetPlayers)
@@ -43,6 +44,8 @@ namespace DeadBoat.Online
 
         public override void FixedUpdateNetwork()
         {
+            bool gainedRunAuthority = Object.HasStateAuthority && !heldRunAuthority;
+            heldRunAuthority = Object.HasStateAuthority;
             if (Object.HasStateAuthority && Phase == 3)
             {
                 bool playingCrew = false;
@@ -50,7 +53,10 @@ namespace DeadBoat.Online
                     if (Includes(player) && Runner.TryGetPlayerObject(player, out var avatar) && avatar != null && avatar.IsValid)
                         playingCrew = true;
                 if (!playingCrew) { Phase = 4; Runner.SessionInfo.IsOpen = false; return; }
-                if (Runner.SessionInfo.IsOpen == RunWon) Runner.SessionInfo.IsOpen = !RunWon;
+                // Explicitly publish admission on takeover. The new master's local
+                // SessionInfo cache is not confirmation of the current server property.
+                if (gainedRunAuthority || Runner.SessionInfo.IsOpen == RunWon)
+                    Runner.SessionInfo.IsOpen = !RunWon;
                 TickBoat();
             }
             if (!Object.HasStateAuthority || TargetPlayers == 0 || Phase >= 3) return;

@@ -31,6 +31,9 @@ namespace DeadBoat.Online.Editor
                 Set(recovery, "ticket", new SharedReturnTicket { Room = "test-only", PlayerId = 9 });
                 Set(recovery, "fallback", new SharedSoloSnapshot { SourceRun = "test-only", PlayerId = 9 });
                 Set(recovery, "lost", true);
+                Call(recovery, "HandleJoinRejected", Fusion.ShutdownReason.GameClosed);
+                Require(recovery.CanRetry && recovery.CanSolo && recovery.Message.Contains("закрыта"),
+                    "closed room during takeover retains return and solo choices");
                 Time.timeScale = 0;
                 int beforeWait = Time.frameCount;
                 await SharedRunFrameWait.Delay(.05);

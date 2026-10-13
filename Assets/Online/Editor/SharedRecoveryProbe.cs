@@ -22,6 +22,7 @@ namespace DeadBoat.Online.Editor
                 string room = "recovery-test-" + Guid.NewGuid().ToString("N");
                 first = await Connect(room, 1001, true);
                 SpawnAvatar(first);
+                var originalMaster = first.LocalPlayer;
                 var state = first.Spawn(Resources.Load<NetworkObject>("Online/SharedDepartureState"),
                     onBeforeSpawned: (_, o) => o.GetComponent<SharedDepartureState>().Initialize(0, 2))
                     .GetComponent<SharedDepartureState>();
@@ -62,12 +63,17 @@ namespace DeadBoat.Online.Editor
                 Require(restored.PersonalItems[slot * SharedDepartureState.RecoverySlots].Ammo == 7, "weapon magazine preserved");
                 SpawnAvatar(returned);
                 await Until(() => state.HasOtherPlayingCrew(first.LocalPlayer), "returned avatar registered");
+                // Force a closed admission property before takeover. The successor
+                // must reopen it for the former master instead of trusting its cache.
+                first.SessionInfo.IsOpen = false;
                 await first.Shutdown(); first = null;
                 await Until(() => restored.Object.HasStateAuthority, "master transfer");
                 Require(restored.DayClockInitialized && Mathf.Abs(restored.DayHour - 22.5f) < .01f, "night clock survives master transfer");
                 Require(restored.Personal[player].Health == 80 && restored.Items[9281].Owner == player, "recovery data survives master transfer");
                 first = await Connect(room, 1001, false); // Probe only; no gameplay avatar.
                 await Until(() => Replica(first) != null, "probe state");
+                Require(first.LocalPlayer == originalMaster && Replica(first).CanReturn(first.LocalPlayer) &&
+                    Replica(first).HasOtherPlayingCrew(first.LocalPlayer), "former master return after takeover");
                 await returned.Shutdown(); returned = null;
                 await Until(() => Replica(first)?.Phase == 4, "last gameplay participant left");
                 Require(!Replica(first).CanReturn(first.LocalPlayer), "probe cannot resurrect empty run");

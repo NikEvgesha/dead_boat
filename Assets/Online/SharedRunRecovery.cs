@@ -240,10 +240,7 @@ namespace DeadBoat.Online
                 EnsureCheck(attempt);
                 if (!result.Ok)
                 {
-                    if (result.ShutdownReason.ToString().Contains("GameNotFound") ||
-                        result.ShutdownReason.ToString().Contains("GameClosed"))
-                    { Message = "Экипаж уже завершил забег. Можно начать новую поездку."; InvalidateReturn(); }
-                    else Message = "Не удалось проверить экипаж. Попробуй переподключиться позже.";
+                    HandleJoinRejected(result.ShutdownReason);
                     await AwaitCheck(StopProbeAsync(), attempt, 7, "stop rejected probe"); return;
                 }
                 double until = Time.realtimeSinceStartupAsDouble + 8;
@@ -288,6 +285,15 @@ namespace DeadBoat.Online
                 }
             }
             finally { EndCheck(attempt); }
+        }
+        private void HandleJoinRejected(ShutdownReason reason)
+        {
+            Debug.LogWarning("[Shared recovery] Join rejected: " + reason);
+            if (reason.ToString().Contains("GameNotFound"))
+            { Message = "Экипаж уже завершил забег. Можно начать новую поездку."; InvalidateReturn(); }
+            else if (reason.ToString().Contains("GameClosed"))
+                Message = "Комната пока закрыта. Подожди смены ведущего и повтори подключение.";
+            else Message = "Не удалось проверить экипаж. Попробуй переподключиться позже.";
         }
         private int BeginCheck()
         {
