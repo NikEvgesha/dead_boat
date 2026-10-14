@@ -49,9 +49,15 @@ public static class EggFeatureStorage
 
     public static void AddEgg(string eggId, int amount)
     {
+        AddEggWithReceipt(eggId, amount);
+    }
+
+    public static EggPickupReceipt AddEggWithReceipt(string eggId, int amount)
+    {
         EggFeatureState state = Load();
-        state.AddEgg(eggId, amount);
-        Save(state);
+        var receipt = EggPickupReceipt.Apply(state, eggId, amount);
+        if (receipt.Amount > 0) Save(state);
+        return receipt;
     }
 
     public static bool IsOneShotEggCollected(string collectibleId)
@@ -65,15 +71,18 @@ public static class EggFeatureStorage
 
     public static bool TryAddOneShotEgg(string collectibleId, string eggId, int amount)
     {
+        return TryAddOneShotEgg(collectibleId, eggId, amount, out _);
+    }
+
+    public static bool TryAddOneShotEgg(string collectibleId, string eggId, int amount, out EggPickupReceipt receipt)
+    {
+        receipt = default;
         if (string.IsNullOrWhiteSpace(collectibleId) || string.IsNullOrWhiteSpace(eggId))
             return false;
 
         EggFeatureState state = Load();
-        if (state.collectedOneShotEggIds.Contains(collectibleId))
-            return false;
-
-        state.collectedOneShotEggIds.Add(collectibleId);
-        state.AddEgg(eggId, amount);
+        receipt = EggPickupReceipt.Apply(state, eggId, amount, collectibleId);
+        if (receipt.Amount <= 0) return false;
         Save(state);
         return true;
     }

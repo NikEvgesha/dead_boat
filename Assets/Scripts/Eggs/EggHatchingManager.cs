@@ -837,22 +837,23 @@ public class EggHatchingManager : MonoBehaviour
     public static void RegisterEggPickup(string eggId, int amount = 1, bool countInRun = false)
     {
         int safeAmount = amount > 0 ? amount : 1;
+        var receipt = EggFeatureStorage.AddEggWithReceipt(eggId, safeAmount);
+        if (receipt.Amount <= 0) return;
         if (countInRun)
             EggSpawnRuntimeState.OnEggCollected();
-
-        EggFeatureStorage.AddEgg(eggId, safeAmount);
 
         if (_instance != null)
         {
             _instance.LoadState();
             _instance.EggsCollected?.Invoke(safeAmount);
         }
+        EggPickupFeedback.Show(receipt);
     }
 
     public static bool RegisterOneShotEggPickup(string collectibleId, string eggId, int amount = 1, bool countInRun = false)
     {
         int safeAmount = amount > 0 ? amount : 1;
-        bool collected = EggFeatureStorage.TryAddOneShotEgg(collectibleId, eggId, safeAmount);
+        bool collected = EggFeatureStorage.TryAddOneShotEgg(collectibleId, eggId, safeAmount, out var receipt);
         if (!collected)
             return false;
 
@@ -865,6 +866,7 @@ public class EggHatchingManager : MonoBehaviour
             _instance.EggsCollected?.Invoke(safeAmount);
         }
 
+        EggPickupFeedback.Show(receipt);
         return true;
     }
 

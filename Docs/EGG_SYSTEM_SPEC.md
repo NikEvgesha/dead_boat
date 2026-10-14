@@ -267,3 +267,8 @@ Progression targets to tune:
 ## Related Architecture
 
 See `Docs/SAVE_SCOPE_AND_STAT_MODIFIERS.md` for the save-scope rules and the planned unified stat modifier layer. The current implementation applies animal buffs after run cards and professions; before adding the future class mechanic, stat application should be centralized so cards, professions, animals, and classes share one deterministic calculation path.
+
+
+## Pickup feedback — 2026-10-14
+
+DB-ON-033 adds a local, non-blocking notification for a successful pickup: gained amount, total stored eggs and the existing first-discovery hint. Both ordinary and one-shot registration return a receipt from their existing save operation; no new save fields/keys or network messages. Replayed one-shots do not show a reward. Runtime UI uses unscaled time and suspends its own lifetime during an ad. Online personal-menu access remains DB-ON-041, not yet implemented. Source/test/acceptance limits: `Docs/EGG_PICKUP_FEEDBACK_20261014.md`. Editor receipt/UI checks passed; real solo/co-op pickup acceptance remains pending. Builds are deferred by the owner.
