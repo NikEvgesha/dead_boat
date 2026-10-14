@@ -60,6 +60,10 @@ public class AdsManager : MonoBehaviour
         var callback = completion;
         completion = null;
         DeadBoat.Online.SharedAdProtection.End();
+        if (adPause != null) adPause.SetAdPause(false);
+        if (adControl != null) adControl.CursorActive = previousCursor;
+        adPause = null;
+        adControl = null;
         AdClosed?.Invoke();
         callback?.Invoke(result);
     }

@@ -63,6 +63,7 @@ namespace DeadBoat.Online
 
         private PlayerMovement localPlayer;
         private bool wasDriving;
+        private bool snapRequested;
         private NetworkTransform networkTransform;
         private ActiveItemManager activeItemManager;
         private PickableItem observedItem;
@@ -147,6 +148,17 @@ namespace DeadBoat.Online
             }
         }
 
+        public static void SnapLocalPlayer(NetworkRunner runner)
+        {
+            foreach (var avatar in All)
+                if (avatar.Runner == runner && avatar.Object.HasStateAuthority)
+                {
+                    avatar.localPlayer = PlayerMovement.Instance;
+                    avatar.snapRequested = true;
+                    return;
+                }
+        }
+
         public override void FixedUpdateNetwork()
         {
             if (!Object.HasStateAuthority)
@@ -169,9 +181,10 @@ namespace DeadBoat.Online
             {
                 // Resume at the exit position without interpolating from the
                 // old, frozen position that may now be kilometres behind us.
-                if (wasDriving && networkTransform != null)
+                if ((wasDriving || snapRequested) && networkTransform != null)
                     networkTransform.Teleport(localPlayer.transform.position + Origin, localPlayer.transform.rotation);
                 transform.SetPositionAndRotation(localPlayer.transform.position + Origin, localPlayer.transform.rotation);
+                snapRequested = false;
             }
             wasDriving = driving;
             Health = PlayerStatsManager.Instance != null ? PlayerStatsManager.Instance.Health : 100;

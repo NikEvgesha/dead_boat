@@ -53,6 +53,9 @@ namespace DeadBoat.Online.Editor
                 await Until(() => authority.Phase == 2, "loading phase");
                 await Until(() => Replica(second) != null && Replica(second).Phase == 2, "remote roster");
                 var remote = Replica(second);
+                var avatarPrefab = AssetDatabase.LoadAssetAtPath<NetworkObject>("Assets/Online/Avatars/LobbyNetworkAvatar.prefab");
+                first.SetPlayerObject(first.LocalPlayer, first.Spawn(avatarPrefab));
+                second.SetPlayerObject(second.LocalPlayer, second.Spawn(avatarPrefab));
                 Time.timeScale = 0;
                 authority.RPC_SceneReady();
                 authority.RPC_SceneReady();
@@ -108,10 +111,6 @@ namespace DeadBoat.Online.Editor
                 seat.enabled = false;
                 seat.trainController = board;
                 seat.driverSeatTransform = go.transform;
-                var prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<NetworkObject>(
-                    "Assets/Online/Avatars/LobbyNetworkAvatar.prefab");
-                first.Spawn(prefab, Vector3.zero);
-                second.Spawn(prefab, Vector3.zero);
                 Set(authority, "BoatInitialized", (NetworkBool)true);
                 Set(authority, "BoatMaxFuel", 100f);
                 Set(authority, "BoatMaxSpeed", 10f);

@@ -11,6 +11,11 @@ namespace DeadBoat.Online
         private static readonly Dictionary<ulong, Action<PickableItem>> pending = new();
         private static readonly Dictionary<ulong, double> deadlines = new();
         private readonly List<WorldSpawnIdentity> snapshot = new();
+        private readonly List<WorldSpawnIdentity> interpolated = new();
+        private static int registryRevision;
+        private int observedRevision = -1;
+        private SharedDepartureState observedState;
+        private bool observedAuthority;
         private double nextSample;
         private bool capacityReported;
         internal static readonly Unity.Profiling.ProfilerMarker UpdateMarker = new("DeadBoat.SharedItems");
@@ -24,9 +29,10 @@ namespace DeadBoat.Online
             if (identities.TryGetValue(identity.Id, out var existing) && existing != null && existing.Key != identity.Key)
                 throw new InvalidOperationException("Shared world identity collision");
             identities[identity.Id] = identity;
+            registryRevision++;
         }
 
-        public static void Clear() { identities.Clear(); pending.Clear(); deadlines.Clear(); }
+        public static void Clear() { identities.Clear(); pending.Clear(); deadlines.Clear(); registryRevision++; }
         public static bool TryFind(ulong id, out WorldSpawnIdentity identity) => identities.TryGetValue(id, out identity);
         public static void CopyTo(List<WorldSpawnIdentity> destination) { destination.Clear(); destination.AddRange(identities.Values); }
 
@@ -84,6 +90,7 @@ namespace DeadBoat.Online
                 record.Owner == state.Runner.LocalPlayer && record.Mode != 4)
                 state.RPC_ItemState(identity.Id, 4, record.Position, record.Rotation);
             identities.Remove(identity.Id);
+            registryRevision++;
             pending.Remove(identity.Id);
             deadlines.Remove(identity.Id);
         }
@@ -146,6 +153,12 @@ namespace DeadBoat.Online
             double now = Time.realtimeSinceStartupAsDouble;
             bool sample = now >= nextSample;
             if (sample) nextSample = now + 0.1;
+            bool authority = state.Object.HasStateAuthority;
+            // Physics and state reconciliation follow the snapshot cadence. Only
+            // visible proxies need frame interpolation between samples. A pending
+            // claim, registry change or takeover still gets an immediate audit.
+            if (!sample && pending.Count == 0 && observedRevision == registryRevision &&
+                observedState == state && observedAuthority == authority && InterpolateFrame(state)) return;
             // Discovery can follow the 10 Hz snapshot cadence; interpolation still runs every frame.
             if (sample) foreach (var entry in state.Items)
             {
@@ -160,6 +173,10 @@ namespace DeadBoat.Online
                 identity.InitializeRemote(entry.Key, 0);
             }
             CopyTo(snapshot);
+            observedRevision = registryRevision;
+            observedState = state;
+            observedAuthority = authority;
+            interpolated.Clear();
             foreach (var identity in snapshot)
             {
                 if (identity == null) continue;
@@ -264,10 +281,34 @@ namespace DeadBoat.Online
                 }
                 else if (visible)
                 {
-                    item.transform.SetPositionAndRotation(Vector3.Lerp(item.transform.position,
-                        record.Position - LobbyNetworkAvatar.Origin, 1 - Mathf.Exp(-20 * Time.unscaledDeltaTime)), record.Rotation);
+                    interpolated.Add(identity);
+                    Interpolate(identity, record);
                 }
             }
+        }
+        // Return false when a visible proxy changes ownership/mode so its full
+        // reconciliation runs on this frame, rather than interpolating a stale mode.
+        private bool InterpolateFrame(SharedDepartureState state)
+        {
+            foreach (var identity in interpolated)
+            {
+                if (identity == null || identity.Item == null) continue;
+                if (!state.Items.TryGet(identity.Id, out var record) || record.Mode > 1 ||
+                    record.Owner == state.Runner.LocalPlayer ||
+                    (record.Owner == PlayerRef.None && state.Object.HasStateAuthority)) return false;
+                Interpolate(identity, record);
+            }
+            return true;
+        }
+        private static void Interpolate(WorldSpawnIdentity identity, SharedItemRecord record)
+        {
+            var part = identity.Item.transform;
+            Vector3 target = record.Position - LobbyNetworkAvatar.Origin;
+            Vector3 position = part.position;
+            if (position == target && part.rotation == record.Rotation) return;
+            Vector3 next = Vector3.Lerp(position, target, 1 - Mathf.Exp(-20 * Time.unscaledDeltaTime));
+            if ((next - target).sqrMagnitude < .00000001f) next = target;
+            part.SetPositionAndRotation(next, record.Rotation);
         }
     }
 }

@@ -9,6 +9,7 @@ public class PlayerItemPickUp : MonoBehaviour
 
     private PickableItem _raycastHitItem;
     private PickableItem _grabbedItem;
+    public bool CarryingWorldItem => _grabbedItem != null && _grabbedItem.Grabbed;
     private ControlUI _controlUI;
 
     bool _hitted = false;

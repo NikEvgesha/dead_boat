@@ -14,6 +14,7 @@ namespace DeadBoat.Online.Editor
     // simulate three extra game scenes; this is not four-device acceptance.
     public static class SharedPerformanceProbe
     {
+        public static string Result { get; private set; } = "not run";
         private static bool running;
         private static bool stressRequested;
         [MenuItem("Tools/Online/Stress Physics And Route (Lobby Play Mode)")]
@@ -28,6 +29,7 @@ namespace DeadBoat.Online.Editor
         {
             if (running || !EditorApplication.isPlaying) return;
             running = true;
+            Result = "running";
             bool stress = stressRequested;
             stressRequested = false;
             var peers = new List<NetworkRunner>();
@@ -48,25 +50,27 @@ namespace DeadBoat.Online.Editor
                 await Until(() => lobby.IsOnline && !lobby.IsConnecting, "public lobby");
                 if (!await lobby.CreateDepartureAsync(0, 4)) throw new Exception(lobby.LastFailure);
                 string room = lobby.DepartureSessionName;
+                var created = UnityEngine.Object.FindObjectsByType<SharedDepartureState>(FindObjectsSortMode.None)
+                    .First(s => s.Object.HasStateAuthority && s.Phase < 2);
+                typeof(SharedDepartureState).GetProperty("Seed").SetValue(created, 27182818);
                 for (int i = 0; i < 3; i++)
                 {
                     var go = new GameObject("Performance transport peer " + i);
                     UnityEngine.Object.DontDestroyOnLoad(go);
                     var runner = go.AddComponent<NetworkRunner>();
                     peers.Add(runner);
-                    var config = NetworkProjectConfig.Deserialize(NetworkProjectConfig.Serialize(NetworkProjectConfig.Global));
-                    config.PrefabTable = NetworkProjectConfig.Global.PrefabTable;
+                    var config = LobbyOnlineBootstrap.CreateDepartureNetworkConfig();
                     config.PeerMode = NetworkProjectConfig.PeerModes.Multiple;
-                    config.Network.ConnectionTimeout = 60;
                     var result = await runner.StartGame(new StartGameArgs {
-                        GameMode = GameMode.Shared, Config = config, SessionName = room,
-                        PlayerCount = 4, CustomLobbyName = "river-departures-v6",
+                        GameMode = GameMode.Shared, Config = config, SessionName = room, PlayerUniqueId = 8900 + i,
+                        CustomPhotonAppSettings = SharedRunRecovery.Settings("eu"),
+                        PlayerCount = 4, CustomLobbyName = LobbyOnlineBootstrap.DepartureDirectoryName,
                         EnableClientSessionCreation = false,
                         SceneManager = go.AddComponent<LobbySceneManager>(),
                         ObjectProvider = go.AddComponent<NetworkObjectProviderDefault>()
                     });
                     if (!result.Ok) throw new Exception("Peer join: " + result.ShutdownReason);
-                    runner.Spawn(AssetDatabase.LoadAssetAtPath<NetworkObject>("Assets/Online/Avatars/LobbyNetworkAvatar.prefab"));
+                    runner.SetPlayerObject(runner.LocalPlayer, runner.Spawn(AssetDatabase.LoadAssetAtPath<NetworkObject>("Assets/Online/Avatars/LobbyNetworkAvatar.prefab")));
                 }
                 await Until(() => peers.All(p => Replica(p) != null && Replica(p).Phase == 2), "sealed crew");
                 foreach (var peer in peers) Replica(peer).RPC_SceneReady();
@@ -79,11 +83,12 @@ namespace DeadBoat.Online.Editor
                     BenchmarkAvatars();
                     await Task.Delay(35000);
                 }
+                Result = "PASS: " + (stress ? "physics/corpses/route stress" : "four connections profile") + "; one game world";
                 Debug.Log(stress
                     ? "[Performance probe] PASS: four Cloud connections, physics/corpses/route stress completed. Transport-only peers; not WebGL acceptance."
                     : "[Performance probe] PASS: four Cloud connections, real Forest scene, 35s capture. Transport-only peers; not WebGL acceptance.");
             }
-            catch (Exception exception) { Debug.LogWarning("[Performance probe] FAIL: " + exception); }
+            catch (Exception exception) { Result = "FAIL: " + exception; Debug.LogWarning("[Performance probe] " + Result); }
             finally
             {
                 foreach (var peer in peers)
@@ -173,11 +178,14 @@ namespace DeadBoat.Online.Editor
                 }
                 await Task.Delay(1500); // Start initializes the ragdoll arrays.
                 foreach (var enemy in enemies) if (enemy != null) SharedEnemiesRuntime.ApplyDamage(enemy, 50000);
+                int createdCorpses = UnityEngine.Object.FindObjectsByType<WorldSpawnIdentity>(FindObjectsSortMode.None)
+                    .Count(i => i.Key != null && i.Key.StartsWith("corpse:"));
+                RequireCreatedCorpses(createdCorpses);
                 await Task.Delay(1500);
                 int corpses = UnityEngine.Object.FindObjectsByType<WorldSpawnIdentity>(FindObjectsSortMode.None)
                     .Count(i => i.Key != null && i.Key.StartsWith("corpse:"));
-                if (corpses < 20) throw new Exception("Expected 20 actual ragdoll corpses, got " + corpses);
-                Debug.Log("[Stress probe] generated actual corpses=" + corpses);
+                Debug.Log($"[Stress probe] created actual corpses={createdCorpses}; remaining after physics={corpses}");
+                BenchmarkItems();
                 monitor.BeginStage("100-items-20-corpses");
                 await Task.Delay(22000);
 
@@ -202,6 +210,26 @@ namespace DeadBoat.Online.Editor
                 if (lagging != null) UnityEngine.Object.Destroy(lagging);
                 foreach (var go in spawned) if (go != null) UnityEngine.Object.Destroy(go);
             }
+        }
+
+        private static void RequireCreatedCorpses(int count)
+        {
+            if (count < 20) throw new Exception("Expected 20 created ragdolls, got " + count);
+        }
+        private static void BenchmarkItems()
+        {
+            var runtime = UnityEngine.Object.FindAnyObjectByType<SharedItemsRuntime>();
+            var method = typeof(SharedItemsRuntime).GetMethod("LateUpdate", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+            var next = typeof(SharedItemsRuntime).GetField("nextSample", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+            var timer = Stopwatch.StartNew();
+            for (int i = 0; i < 200; i++)
+            {
+                next.SetValue(runtime, i % 6 == 0 ? 0d : Time.realtimeSinceStartupAsDouble + 10);
+                method.Invoke(runtime, null);
+            }
+            timer.Stop();
+            next.SetValue(runtime, 0d);
+            Debug.Log($"[Performance probe] Item loop 200 calls / 34 samples: items={SharedRunContext.State.Items.Count} elapsedMs={timer.Elapsed.TotalMilliseconds:F3}");
         }
 
         private static void BenchmarkAvatars()

@@ -236,6 +236,20 @@ public class PlayerMovement : MonoBehaviour
 
     }
 
+    public void Teleport(Vector3 position)
+    {
+        _velocity = Vector3.zero;
+        _inTeleport = true;
+        _isStart = false;
+        _waitStart = _lagStart;
+        var controller = _controller != null ? _controller : GetComponent<CharacterController>();
+        bool enabled = controller != null && controller.enabled;
+        if (enabled) controller.enabled = false;
+        transform.position = position;
+        if (enabled) controller.enabled = true;
+        StartCoroutine(WaitForTeleport());
+    }
+
     private IEnumerator WaitForTeleport()
     {
         yield return new WaitForSeconds(0.3f);

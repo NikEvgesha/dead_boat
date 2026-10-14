@@ -29,6 +29,8 @@ public class PickableItem : MonoBehaviour
 
     private Outline _outline;
     private Rigidbody _rb;
+    private RigidbodyInterpolation _sharedInterpolation;
+    private bool _sharedInterpolationCaptured;
     [SerializeField] private BoxCollider _collider;
     private Transform _itemPoint;
     private InfoUI _infoUI;
@@ -286,6 +288,15 @@ public class PickableItem : MonoBehaviour
         if (_rb != null)
         {
             if (simulate && _status != ItemStatus.Free && _status != ItemStatus.Grabbed) return;
+            if (!_sharedInterpolationCaptured)
+            {
+                _sharedInterpolation = _rb.interpolation;
+                _sharedInterpolationCaptured = true;
+            }
+            // Unity physics interpolation otherwise reapplies an old world pose
+            // to a kinematic item whose boat parent moved between audits.
+            var interpolation = simulate ? _sharedInterpolation : RigidbodyInterpolation.None;
+            if (_rb.interpolation != interpolation) _rb.interpolation = interpolation;
             bool kinematic = !simulate;
             if (_rb.isKinematic != kinematic) _rb.isKinematic = kinematic;
         }
