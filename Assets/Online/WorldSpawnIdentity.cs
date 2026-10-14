@@ -12,6 +12,44 @@ namespace DeadBoat.Online
         public Animator Animator { get; private set; }
         public UnityEngine.AI.NavMeshAgent Agent { get; private set; }
         private bool cached;
+        private bool proxyInitialized, proxyAIStopped, animationApplied;
+        private int proxyHP, proxyMaxHP, proxyAnimation;
+        private float proxyAnimationTime;
+        private void OnEnable() => ResetEnemyProxy();
+        internal void ResetEnemyProxy() { proxyInitialized = false; proxyAIStopped = false; animationApplied = false; }
+        internal void SuspendEnemyProxyAI(bool audit)
+        {
+            if (Enemy == null) return;
+            if (!proxyAIStopped || audit)
+            {
+                Enemy.StopAllCoroutines();
+                if (Agent != null && Agent.enabled) Agent.enabled = false;
+                proxyAIStopped = true;
+            }
+        }
+        internal void ApplyEnemyProxy(SharedEnemyRecord record, bool audit)
+        {
+            if (Enemy == null) return;
+            SuspendEnemyProxyAI(audit);
+            if (!proxyInitialized || proxyHP != record.HP || proxyMaxHP != record.MaxHP || Enemy.SharedHP != record.HP)
+                Enemy.ApplySharedHealth(record.HP, record.MaxHP);
+            proxyHP = record.HP; proxyMaxHP = record.MaxHP;
+            proxyInitialized = true;
+            if (Enemy is TentaclePart tentacle && tentacle.Active != record.Active) tentacle.Active = record.Active;
+            if (Animator == null || !Animator.isActiveAndEnabled || record.Animation == 0)
+            {
+                animationApplied = false;
+                return;
+            }
+            // Let Unity advance the clip between snapshots instead of restarting
+            // the same normalized time every rendered frame.
+            if (!animationApplied || proxyAnimation != record.Animation || proxyAnimationTime != record.AnimationTime)
+            {
+                Animator.Play(record.Animation, 0, record.AnimationTime);
+                proxyAnimation = record.Animation; proxyAnimationTime = record.AnimationTime;
+                animationApplied = true;
+            }
+        }
         public bool PhysicsNearby { get; set; } = true;
         public bool RecoveryReplica { get; set; }
         private Rigidbody[] corpseBodies;

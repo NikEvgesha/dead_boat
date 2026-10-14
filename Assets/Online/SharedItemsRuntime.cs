@@ -8,6 +8,8 @@ namespace DeadBoat.Online
     public sealed class SharedItemsRuntime : MonoBehaviour
     {
         private static readonly Dictionary<ulong, WorldSpawnIdentity> identities = new();
+        private static readonly Dictionary<ulong, WorldSpawnIdentity> enemyIdentities = new();
+        internal static int EnemyRevision { get; private set; }
         private static readonly Dictionary<ulong, Action<PickableItem>> pending = new();
         private static readonly Dictionary<ulong, double> deadlines = new();
         private readonly List<WorldSpawnIdentity> snapshot = new();
@@ -29,12 +31,15 @@ namespace DeadBoat.Online
             if (identities.TryGetValue(identity.Id, out var existing) && existing != null && existing.Key != identity.Key)
                 throw new InvalidOperationException("Shared world identity collision");
             identities[identity.Id] = identity;
+            if (identity.Enemy != null) { enemyIdentities[identity.Id] = identity; EnemyRevision++; }
+            else if (enemyIdentities.Remove(identity.Id)) EnemyRevision++;
             registryRevision++;
         }
 
-        public static void Clear() { identities.Clear(); pending.Clear(); deadlines.Clear(); registryRevision++; }
+        public static void Clear() { identities.Clear(); enemyIdentities.Clear(); pending.Clear(); deadlines.Clear(); registryRevision++; EnemyRevision++; }
         public static bool TryFind(ulong id, out WorldSpawnIdentity identity) => identities.TryGetValue(id, out identity);
         public static void CopyTo(List<WorldSpawnIdentity> destination) { destination.Clear(); destination.AddRange(identities.Values); }
+        internal static void CopyEnemiesTo(List<WorldSpawnIdentity> destination) { destination.Clear(); destination.AddRange(enemyIdentities.Values); }
 
         public static void PublishDrop(PickableItem item)
         {
@@ -90,6 +95,7 @@ namespace DeadBoat.Online
                 record.Owner == state.Runner.LocalPlayer && record.Mode != 4)
                 state.RPC_ItemState(identity.Id, 4, record.Position, record.Rotation);
             identities.Remove(identity.Id);
+            if (enemyIdentities.Remove(identity.Id)) EnemyRevision++;
             registryRevision++;
             pending.Remove(identity.Id);
             deadlines.Remove(identity.Id);

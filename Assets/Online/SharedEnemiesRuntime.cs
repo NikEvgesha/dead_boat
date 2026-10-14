@@ -11,6 +11,8 @@ namespace DeadBoat.Online
         private double nextSample;
         private bool victoryShown;
         private bool wasAuthority;
+        private int observedRevision = -1;
+        private SharedDepartureState observedState;
         internal static readonly Unity.Profiling.ProfilerMarker UpdateMarker = new("DeadBoat.SharedEnemies");
         private static readonly System.Collections.Generic.Dictionary<ulong, ZombieController> templates = new();
         private static readonly System.Collections.Generic.Dictionary<DragonBossController,
@@ -181,7 +183,10 @@ namespace DeadBoat.Online
             }
             bool sample = Time.realtimeSinceStartupAsDouble >= nextSample;
             if (sample) nextSample = Time.realtimeSinceStartupAsDouble + 0.1;
-            if (Authority && !wasAuthority)
+            bool authority = state.Object.HasStateAuthority;
+            bool roleChanged = authority != wasAuthority || observedState != state;
+            bool audit = sample || roleChanged || observedRevision != SharedItemsRuntime.EnemyRevision;
+            if (authority && roleChanged)
             {
                 bool active = false;
                 int alive = 0;
@@ -193,8 +198,9 @@ namespace DeadBoat.Online
                     }
                 if (!active && alive > 0) Object.FindAnyObjectByType<TentacleBoss>()?.ChangeTentacle(null);
             }
-            wasAuthority = Authority;
-            if (!Authority && sample)
+            wasAuthority = authority;
+            observedState = state;
+            if (!authority && audit)
             {
                 foreach (var page in SharedWorldPage.All(state.Runner))
                 {
@@ -209,30 +215,35 @@ namespace DeadBoat.Online
                     }
                 }
             }
-            SharedItemsRuntime.CopyTo(snapshot);
+            if (audit)
+            {
+                SharedItemsRuntime.CopyEnemiesTo(snapshot);
+                observedRevision = SharedItemsRuntime.EnemyRevision;
+            }
+            if (authority && !audit) return;
             foreach (var identity in snapshot)
             {
                 if (identity == null) continue;
                 var enemy = identity.Enemy;
                 if (enemy == null) continue;
-                if (Authority)
+                if (roleChanged) identity.ResetEnemyProxy();
+                if (authority)
                 {
-                    if (sample) state.SampleEnemy(identity, enemy);
+                    identity.ResetEnemyProxy();
+                    state.SampleEnemy(identity, enemy);
                     continue;
                 }
-                enemy.StopAllCoroutines();
-                var agent = identity.Agent;
-                if (agent != null && agent.enabled) agent.enabled = false;
-                if (!state.TryEnemy(identity.Id, out var record)) continue;
-                enemy.transform.SetPositionAndRotation(Vector3.Lerp(enemy.transform.position,
-                    record.Position - LobbyNetworkAvatar.Origin, 1 - Mathf.Exp(-20 * Time.unscaledDeltaTime)), record.Rotation);
-                if (enemy is TentaclePart tentacle) tentacle.Active = record.Active;
-                enemy.ApplySharedHealth(record.HP, record.MaxHP);
+                if (!state.TryEnemy(identity.Id, out var record)) { identity.SuspendEnemyProxyAI(audit); continue; }
+                Vector3 target = record.Position - LobbyNetworkAvatar.Origin;
+                if (enemy.transform.position != target || enemy.transform.rotation != record.Rotation)
+                {
+                    var position = Vector3.Lerp(enemy.transform.position, target, 1 - Mathf.Exp(-20 * Time.unscaledDeltaTime));
+                    if ((position - target).sqrMagnitude < .00000001f) position = target;
+                    enemy.transform.SetPositionAndRotation(position, record.Rotation);
+                }
+                identity.ApplyEnemyProxy(record, audit);
                 if (enemy is DragonBossController dragon && state.DragonBrain.Id == identity.Id)
                     dragon.ApplySharedBrain(state.DragonBrain);
-                var animator = identity.Animator;
-                if (animator != null && animator.isActiveAndEnabled && record.Animation != 0)
-                    animator.Play(record.Animation, 0, record.AnimationTime);
             }
         }
     }
