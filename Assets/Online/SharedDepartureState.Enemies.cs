@@ -85,7 +85,7 @@ namespace DeadBoat.Online
         [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
         public void RPC_EnemyBurn(ulong id, float duration, float damage, RpcInfo info = default)
         {
-            if (Phase != 3 || !Includes(info.Source) || duration <= 0 || duration > 120 ||
+            if (Phase != 3 || !CanAct(info.Source) || duration <= 0 || duration > 120 ||
                 damage <= 0 || damage > 5000 || float.IsNaN(duration) || float.IsNaN(damage) ||
                 !TryEnemy(id, out var record) || record.HP <= 0 || !record.Active) return;
             LobbyNetworkAvatar source = null;
@@ -127,7 +127,7 @@ namespace DeadBoat.Online
         [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
         public void RPC_EnemyDamage(ulong id, int damage, RpcInfo info = default)
         {
-            if (Phase != 3 || !Includes(info.Source) || damage <= 0 || damage > 5000 ||
+            if (Phase != 3 || !CanAct(info.Source) || damage <= 0 || damage > 5000 ||
                 !TryEnemy(id, out var record) || record.HP <= 0 || !record.Active ||
                 !SharedItemsRuntime.TryFind(id, out var identity)) return;
             var enemy = identity.GetComponent<EnemyCore>();
@@ -142,7 +142,7 @@ namespace DeadBoat.Online
         // Health belongs to this player's avatar owner, never to the boat/master.
         public void DamagePlayer(PlayerRef player, int damage)
         {
-            if (!Object.HasStateAuthority || Phase != 3 || !Includes(player) || damage <= 0) return;
+            if (!Object.HasStateAuthority || Phase != 3 || !Includes(player) || AdProtected(player) || damage <= 0) return;
             foreach (var avatar in LobbyNetworkAvatar.All)
                 if (avatar.Runner == Runner && avatar.Object.StateAuthority == player)
                 {

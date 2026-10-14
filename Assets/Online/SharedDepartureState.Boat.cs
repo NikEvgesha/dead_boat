@@ -76,7 +76,7 @@ namespace DeadBoat.Online
         [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
         public void RPC_Driver(bool occupy, RpcInfo info = default)
         {
-            if (Phase != 3 || !Includes(info.Source) || BoatFinished) return;
+            if (Phase != 3 || !Includes(info.Source) || (occupy && AdShowing(info.Source)) || BoatFinished) return;
             if (occupy && Driver == PlayerRef.None)
             {
                 var seat = BoardController.Instance != null
@@ -101,7 +101,7 @@ namespace DeadBoat.Online
         [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
         public void RPC_DriverInput(float input, RpcInfo info = default)
         {
-            if (Phase != 3 || Driver == PlayerRef.None || info.Source != Driver ||
+            if (Phase != 3 || Driver == PlayerRef.None || info.Source != Driver || AdShowing(info.Source) ||
                 float.IsNaN(input) || float.IsInfinity(input)) return;
             DriverInput = Mathf.Clamp(input, -1, 1);
             DriverInputDeadline = TickTimer.CreateFromSeconds(Runner, 0.75f);
@@ -110,7 +110,7 @@ namespace DeadBoat.Online
         [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
         public void RPC_AddFuel(float amount, RpcInfo info = default)
         {
-            if (Phase != 3 || !BoatInitialized || !Includes(info.Source) ||
+            if (Phase != 3 || !BoatInitialized || !CanAct(info.Source) ||
                 float.IsNaN(amount) || float.IsInfinity(amount) || amount <= 0) return;
             BoatFuel = Mathf.Min(BoatFuel + amount, BoatMaxFuel);
         }

@@ -40,26 +40,53 @@ public class AdsManager : MonoBehaviour
     }
 
 
-    private void Start()
-    {
-        foreach (var provider in adsProviders)
-        {
-            provider.AdClosed += OnAdClosed;
-        }
-    }
+    private void OnDisable() => Finish(request, false);
 
-    private void OnDisable()
+    private PauseManager adPause;
+    private ControlManager adControl;
+    private bool previousCursor;
+    private bool active;
+    private int request;
+    private double deadline;
+    private Action<bool> completion;
+    private void Update()
     {
-        foreach (var provider in adsProviders)
-        {
-            provider.AdClosed -= OnAdClosed;
-        }
+        if (active && Time.realtimeSinceStartupAsDouble >= deadline) Finish(request, false);
     }
-
-    private void OnAdClosed()
+    private void Finish(int id, bool result)
     {
+        if (!active || id != request) return;
+        active = false;
+        var callback = completion;
+        completion = null;
         DeadBoat.Online.SharedAdProtection.End();
         AdClosed?.Invoke();
+        callback?.Invoke(result);
+    }
+    private async void Show(AdsProvider provider, bool rewarded, string rewardId, Action<bool> callback)
+    {
+        if (active) { callback?.Invoke(false); return; }
+        active = true;
+        int id = ++request;
+        completion = callback;
+        deadline = Time.realtimeSinceStartupAsDouble + DeadBoat.Online.SharedDepartureState.AdMaximumSeconds;
+        try
+        {
+            bool protectedByRun = await DeadBoat.Online.SharedAdProtection.PrepareAsync();
+            if (!active || id != request) return;
+            if (!protectedByRun) { Finish(id, false); return; }
+            adPause = PauseManager.Instance;
+            adControl = ControlManager.Instance;
+            if (adControl != null) { previousCursor = adControl.CursorActive; adControl.CursorActive = true; }
+            if (adPause != null) adPause.SetAdPause(true);
+            if (rewarded) provider.ShowRewardedAd(rewardId, result => Finish(id, result));
+            else provider.ShowInterstitialAd(result => Finish(id, result));
+        }
+        catch (Exception exception)
+        {
+            Debug.LogWarning("[Ads] Request failed: " + exception.GetType().Name);
+            Finish(id, false);
+        }
     }
 
     private void InitializeProviders()
@@ -74,6 +101,7 @@ public class AdsManager : MonoBehaviour
     // Проверка готовности rewarded-рекламы
     public bool IsRewardedAdReady()
     {
+        if (active) return false;
         if (adsProviders.Count == 0)
         {
             Debug.LogWarning("No ads providers configured!");
@@ -82,7 +110,7 @@ public class AdsManager : MonoBehaviour
 
         foreach (var provider in adsProviders)
         {
-            if (provider.IsRewardedAdReady())
+            if (provider != null && provider.IsRewardedAdReady())
             {
                 return true;
             }
@@ -93,67 +121,21 @@ public class AdsManager : MonoBehaviour
     // Показ rewarded-рекламы через первый готовый провайдер
     public void ShowRewardedAd(string rewardId, Action<bool> onComplete)
     {
-        if (adsProviders.Count == 0)
-        {
-            Debug.LogWarning("No ads providers configured!");
-            onComplete?.Invoke(false);
-            return;
-        }
-
+        if (active) { onComplete?.Invoke(false); return; }
         foreach (var provider in adsProviders)
-        {
-            if (provider.IsRewardedAdReady())
-            {
-                DeadBoat.Online.SharedAdProtection.Begin();
-                bool completed = false;
-                try { provider.ShowRewardedAd(rewardId, result =>
-                {
-                    if (completed) return;
-                    completed = true;
-                    DeadBoat.Online.SharedAdProtection.End();
-                    onComplete?.Invoke(result);
-                }); }
-                catch (Exception) {
-                    DeadBoat.Online.SharedAdProtection.End();
-                    if (!completed) { completed = true; onComplete?.Invoke(false); }
-                }
-                return;
-            }
-        }
-        Debug.LogWarning("No rewarded ads available!");
+            if (provider != null && provider.IsRewardedAdReady())
+            { Show(provider, true, rewardId, onComplete); return; }
         onComplete?.Invoke(false);
     }
 
-    // Показ interstitial-рекламы через первый доступный провайдер
     public void ShowInterstitialAd(Action<bool> onComplete = null)
     {
-        if (adsProviders.Count == 0)
-        {
-            Debug.LogWarning("No ads providers configured!");
-            return;
-        }
-
+        if (active) { onComplete?.Invoke(false); return; }
         foreach (var provider in adsProviders)
-        {
-            DeadBoat.Online.SharedAdProtection.Begin();
-            bool completed = false;
-            try { provider.ShowInterstitialAd(result =>
-            {
-                if (completed) return;
-                completed = true;
-                DeadBoat.Online.SharedAdProtection.End();
-                onComplete?.Invoke(result);
-            }); }
-            catch (Exception) {
-                DeadBoat.Online.SharedAdProtection.End();
-                if (!completed) { completed = true; onComplete?.Invoke(false); }
-            }
-            return;
-        }
-        Debug.LogWarning("No interstitial ads available!");
+            if (provider != null) { Show(provider, false, null, onComplete); return; }
+        onComplete?.Invoke(false);
     }
 
-    // Метод для добавления провайдера в рантайме
     public void AddProvider(AdsProvider provider)
     {
         if (!adsProviders.Contains(provider))

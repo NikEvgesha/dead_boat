@@ -33,8 +33,6 @@ public class MirraSDKAdsProvider : AdsProvider
             onComplete?.Invoke(false);
             return;
         }
-        ControlManager.Instance.CursorActive = true;
-        PauseManager.Instance?.SetPause(true);
         MirraSDK.Ads.InvokeRewarded(
             onOpen: () =>
             {
@@ -47,8 +45,6 @@ public class MirraSDKAdsProvider : AdsProvider
                     Debug.Log($"MirraSDK: Rewarded ad succeeded (tag = {rewardId})");
                 }
 
-                PauseManager.Instance?.SetPause(false);
-                ControlManager.Instance.CursorActive = false;
                 onComplete?.Invoke(success);
             }
         );
@@ -59,29 +55,22 @@ public class MirraSDKAdsProvider : AdsProvider
         if (!MirraSDK.Ads.IsInterstitialReady)
         {
             Debug.LogWarning("MirraSDK: Interstitial ad not ready");
+            onComplete?.Invoke(false);
             return;
         }
 
 
-        //PauseManager.Instance.SetPause(true, true);
         // Правильные имена параметров: onOpen и onClose
         MirraSDK.Ads.InvokeInterstitial(
             onOpen: () =>
             {
-                PauseManager.Instance?.SetPause(true);
-                ControlManager.Instance.CursorActive = true;
                 Debug.Log("MirraSDK: Interstitial ad opened");
-                //ControlManager.Instance.CursorActive = true;
             },
             onClose: (success) =>
             {
                 Debug.Log("MirraSDK: Interstitial ad closed");
                 //AdClosed?.Invoke();
-                PauseManager.Instance?.SetPause(false);
-                ControlManager.Instance.CursorActive = false;
                 onComplete?.Invoke(success);
-                //PauseManager.Instance.SetPause(false, true);
-                //ControlManager.Instance.CursorActive = false;
             }
         );
     }

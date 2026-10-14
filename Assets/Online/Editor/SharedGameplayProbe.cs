@@ -70,7 +70,7 @@ namespace DeadBoat.Online.Editor
                     "real inventory pickup");
                 Debug.Log("[Gameplay probe] Real pickup reached local inventory and shared snapshot.");
 
-                await AdsCase(state);
+                await CheckAds(state);
 
                 // Fast-forward only this isolated preview to exercise the real end-of-route boss.
                 Set(state, "BoatDistance", BoardController.Instance.SharedEndDistance);
@@ -161,7 +161,7 @@ namespace DeadBoat.Online.Editor
             Debug.Log("[City probe] PASS: driver logical position follows seat with unchanged network root; release.");
         }
 
-        private static async Task AdsCase(SharedDepartureState state)
+        public static async Task CheckAds(SharedDepartureState state)
         {
             var manager = AdsManager.Instance;
             var field = typeof(AdsManager).GetField("adsProviders",
@@ -172,13 +172,18 @@ namespace DeadBoat.Online.Editor
             try
             {
                 field.SetValue(manager, new System.Collections.Generic.List<AdsProvider> { provider });
+                provider.onShow = () =>
+                {
+                    if (!state.AdShowing(state.Runner.LocalPlayer)) throw new Exception("Provider opened before authority ACK");
+                };
                 var stats = PlayerStatsManager.Instance;
                 stats.TakeDamage(100000);
                 var ui = UnityEngine.Object.FindAnyObjectByType<EndGameUIManager>();
                 if (stats.Health != 0 || ui.GetState() != EndGameState.Faint) throw new Exception("Personal death state");
                 typeof(EndGameUIManager).GetMethod("ShowAdAndRevive",
                     System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).Invoke(ui, null);
-                if (!SharedAdProtection.IsShowing || !SharedLocalGameplay.Blocked || provider.requests != 1)
+                await Until(() => provider.requests == 1, "authority ad acknowledgement before provider");
+                if (!state.AdShowing(state.Runner.LocalPlayer) || !SharedAdProtection.IsShowing || !SharedLocalGameplay.Blocked)
                     throw new Exception("Ad protection/input gate");
                 await Task.Delay(300);
                 if (Time.timeScale != 1 || state.Phase != 3) throw new Exception("Ad paused shared world");
@@ -186,7 +191,22 @@ namespace DeadBoat.Online.Editor
                 if (stats.Health != stats.MaxHealth || ui.GetState() != EndGameState.None || !SharedAdProtection.Protected)
                     throw new Exception("Revival or post-ad protection");
                 await Task.Delay(1200);
-                if (SharedAdProtection.Protected) throw new Exception("Post-ad protection expires");
+                if (SharedAdProtection.Protected || state.AdProtected(state.Runner.LocalPlayer)) throw new Exception("Post-ad protection expires");
+                float health = stats.Health;
+                int callbacks = 0;
+                manager.ShowInterstitialAd(_ => callbacks++);
+                await Until(() => provider.requests == 2, "interstitial protected before provider");
+                state.DamagePlayer(state.Runner.LocalPlayer, 10);
+                await Task.Delay(250);
+                if (stats.Health != health) throw new Exception("Authority damage during ad");
+                provider.CompleteTwice();
+                if (callbacks != 1) throw new Exception("Interstitial completion duplicated");
+                state.DamagePlayer(state.Runner.LocalPlayer, 10);
+                await Task.Delay(250);
+                if (stats.Health != health) throw new Exception("Authority damage during grace");
+                await Task.Delay(1000);
+                state.DamagePlayer(state.Runner.LocalPlayer, 10);
+                await Until(() => stats.Health < health, "damage resumes after grace");
                 Debug.Log("[Ads probe] PASS: personal death, ad input gate, shared world advances, duplicate callback, revival, one-second protection.");
             }
             finally

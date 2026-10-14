@@ -21,6 +21,12 @@ public class PauseManager : MonoBehaviour
 
     public bool IsPaused => _provider != null && _provider.IsPaused;
     private int _pause = 0;
+    private bool _adPause;
+    public void SetAdPause(bool paused)
+    {
+        _adPause = paused;
+        _provider?.SetPause(_pause != 0 || _adPause, true);
+    }
     private void Awake()
     {
         if (_instance == null)
@@ -34,7 +40,7 @@ public class PauseManager : MonoBehaviour
             if (_provider == null)
                 Debug.LogError("PauseManager: не назначен PauseProvider!");
 
-            
+
             _provider.OnPauseChanged += OnProviderPauseChanged;
         }
         else
@@ -43,11 +49,6 @@ public class PauseManager : MonoBehaviour
         }
     }
 
-
-    private void Start()
-    {
-        AdsManager.Instance.AdClosed += OnAdClosed;
-    }
 
     public void StartInitialize()
     {
@@ -69,19 +70,15 @@ public class PauseManager : MonoBehaviour
         if (_pause < 0)
             _pause = 0;
 
-        _provider?.SetPause(_pause != 0, controlAudio);
+        _provider?.SetPause(_pause != 0 || _adPause, controlAudio);
     }
 
     private void OnDestroy()
     {
-        AdsManager.Instance.AdClosed -= OnAdClosed;
+
         if (_provider != null)
             _provider.OnPauseChanged -= OnProviderPauseChanged;
     }
 
-    private void OnAdClosed()
-    {
-        SetPause(false, true);
-    }
 
 }

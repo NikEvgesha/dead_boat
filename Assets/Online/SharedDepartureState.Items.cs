@@ -54,7 +54,7 @@ namespace DeadBoat.Online
         [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
         public void RPC_DropPersonalItem(ulong id, int template, Vector3 position, Quaternion rotation, int ammo, RpcInfo info = default)
         {
-            if (Phase != 3 || !Includes(info.Source) || Items.ContainsKey(id) || !Finite(position) ||
+            if (Phase != 3 || !CanAct(info.Source) || Items.ContainsKey(id) || !Finite(position) ||
                 !Finite(new Vector3(rotation.x, rotation.y, rotation.z)) ||
                 float.IsNaN(rotation.w) || float.IsInfinity(rotation.w) ||
                 SharedItemCatalog.Load()?.Find(template) == null) return;
@@ -72,7 +72,7 @@ namespace DeadBoat.Online
         [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
         public void RPC_ClaimItem(ulong id, RpcInfo info = default)
         {
-            if (Phase != 3 || !Includes(info.Source) || !Items.TryGet(id, out var item) ||
+            if (Phase != 3 || !CanAct(info.Source) || !Items.TryGet(id, out var item) ||
                 (item.Mode != 0 && item.Mode != 3) || item.Owner != PlayerRef.None) return;
             if (item.Mode == 3 && BoardController.Instance != null)
             {
@@ -91,7 +91,7 @@ namespace DeadBoat.Online
         [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
         public void RPC_ItemState(ulong id, int mode, Vector3 position, Quaternion rotation, int ammo = -1, RpcInfo info = default)
         {
-            if (Phase != 3 || !Items.TryGet(id, out var item) || item.Owner != info.Source ||
+            if (Phase != 3 || AdShowing(info.Source) || !Items.TryGet(id, out var item) || item.Owner != info.Source ||
                 info.Source == PlayerRef.None || mode < 0 || mode > 4 || !Finite(position) ||
                 !Finite(new Vector3(rotation.x, rotation.y, rotation.z)) ||
                 float.IsNaN(rotation.w) || float.IsInfinity(rotation.w)) return;
@@ -152,6 +152,7 @@ namespace DeadBoat.Online
         public void RPC_BurnItem(ulong id, RpcInfo info = default)
         {
             if (Phase != 3 || !Items.TryGet(id, out var item) || item.Mode == 2 || item.Mode == 4 ||
+                (AdShowing(info.Source) && !(item.Owner == PlayerRef.None && info.Source == Object.StateAuthority)) ||
                 (item.Owner != info.Source && !(item.Owner == PlayerRef.None && info.Source == Object.StateAuthority))) return;
             if (!SharedItemsRuntime.TryFind(id, out var identity)) return;
             if (item.Mode == 3 && BoardController.Instance != null)
