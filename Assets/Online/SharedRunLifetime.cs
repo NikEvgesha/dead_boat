@@ -37,6 +37,7 @@ namespace DeadBoat.Online
             gameObject.AddComponent<SharedBoatRuntime>();
             gameObject.AddComponent<SharedItemsRuntime>();
             gameObject.AddComponent<SharedBoatReturn>();
+            gameObject.AddComponent<SharedRearFireVisual>();
             gameObject.AddComponent<SharedEnemiesRuntime>();
 #if DEADBOAT_COOP_PERFORMANCE
             gameObject.AddComponent<SharedPerformanceMonitor>();

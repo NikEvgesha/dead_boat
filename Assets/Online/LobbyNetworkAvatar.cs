@@ -148,6 +148,18 @@ namespace DeadBoat.Online
             }
         }
 
+        [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+        public void RPC_ReceiveRearFireDamage(RpcInfo info = default)
+        {
+            var state = SharedRunContext.State;
+            if (!SharedRunContext.Playing || state.Runner != Runner || info.Source != state.Object.StateAuthority ||
+                !state.Includes(Runner.LocalPlayer) || state.AdProtected(Runner.LocalPlayer) ||
+                !state.InRearFire(LogicalPosition.z)) return;
+            if (PlayerStatsManager.Instance == null) return;
+            PlayerStatsManager.Instance.TakeRearFireDamage();
+            Health = PlayerStatsManager.Instance.Health;
+        }
+
         public static void SnapLocalPlayer(NetworkRunner runner)
         {
             foreach (var avatar in All)

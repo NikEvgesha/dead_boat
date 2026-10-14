@@ -294,6 +294,13 @@ public class PlayerStatsManager : MonoBehaviour
         ApplyDamageInternal(finalDamage, true);
     }
 
+    public void TakeRearFireDamage()
+    {
+        if (_isDead || !InGame || DeadBoat.Online.SharedAdProtection.Protected ||
+            !DeadBoat.Online.SharedRunContext.Playing) return;
+        ApplyDamageInternal(DeadBoat.Online.SharedDepartureState.RearFireDamage, true);
+    }
+
     public void TakeProfessionDrainDamage(int damage)
     {
         if (_isDead || !InGame)

@@ -58,6 +58,7 @@ namespace DeadBoat.Online
                 if (gainedRunAuthority || Runner.SessionInfo.IsOpen == RunWon)
                     Runner.SessionInfo.IsOpen = !RunWon;
                 TickBoat();
+                TickRearFire();
             }
             if (!Object.HasStateAuthority || TargetPlayers == 0 || Phase >= 3) return;
             if (Phase == 2)
