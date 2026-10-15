@@ -54,6 +54,7 @@ public class EggInventoryHudButton : MonoBehaviour
             _manager.StateChanged -= Refresh;
             _manager.EggsCollected -= HandleEggsCollected;
         }
+        _manager = null;
     }
 
     private void Update()
@@ -180,9 +181,7 @@ public class EggInventoryHudButton : MonoBehaviour
 
     private EggHatchingManager CreateRuntimeManager()
     {
-        GameObject root = new GameObject("RuntimeEggHatchingManager");
-        root.transform.SetParent(transform, false);
-        return root.AddComponent<EggHatchingManager>();
+        return EggHatchingManager.GetOrCreateRuntimeFallback(transform);
     }
 
     private void CaptureDefaultRect()

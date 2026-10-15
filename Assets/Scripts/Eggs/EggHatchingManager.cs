@@ -38,13 +38,38 @@ public class EggHatchingManager : MonoBehaviour
     private EggFeatureState _state;
     private readonly Dictionary<string, GameObject> _spawnedAnimals = new();
     private float _nextTick;
+    private bool _runtimeFallback;
+
+    // The persistent HUD needs storage access during a run, but must never own Lobby scenery.
+    public static EggHatchingManager GetOrCreateRuntimeFallback(Transform parent)
+    {
+        if (_instance != null) return _instance;
+        var root = new GameObject("RuntimeEggHatchingManager");
+        root.SetActive(false);
+        root.transform.SetParent(parent, false);
+        var manager = root.AddComponent<EggHatchingManager>();
+        manager._runtimeFallback = true; // Set before Awake participates in singleton selection.
+        root.SetActive(true);
+        return manager;
+    }
 
     private void Awake()
     {
         if (_instance != null && _instance != this)
         {
-            Destroy(gameObject);
-            return;
+            if (!_runtimeFallback && _instance._runtimeFallback)
+            {
+                // Replace the HUD fallback with the configured scene manager. Its state is already
+                // persisted by every mutation; Start loads it using this scene's nests and anchors.
+                var fallback = _instance;
+                fallback.enabled = false;
+                Destroy(fallback.gameObject);
+            }
+            else
+            {
+                Destroy(gameObject);
+                return;
+            }
         }
 
         _instance = this;

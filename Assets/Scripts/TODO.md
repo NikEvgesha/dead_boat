@@ -226,4 +226,12 @@ Implementation backlog for eggs:
 - [x] Reject occupied-nest replacement before egg consumption; restore visibility subscription after disable/enable.
 - [x] Isolated Editor probe with real Lobby/GameCanvas bindings and temporary RAM storage; Russian UI render reviewed.
 - [ ] Independent WebGL/mobile acceptance with actual ads and full child-panel flow: Docs/COOP_BATCH_ACCEPTANCE.md. No build requested.
-- [ ] DB-ON-034 still needs separate offline-pen reproduction; do not equate the visibility subscription fix with full closure.
+- [x] DB-ON-034 reproduced separately: persistent HUD fallback destroyed incoming EggSystem; fixed and editor-tested below. Full browser acceptance remains pending.
+
+
+## 2026-10-15 — DB-ON-034 offline pen lifetime
+
+- [x] Reproduce persistent HUD fallback causing incoming Lobby EggSystem (and all pen children) to be destroyed as a duplicate.
+- [x] Explicit runtime fallback factory; scene manager takes ownership, removes only fallback child and loads existing storage. Reset HUD binding on disable.
+- [x] Play Mode probe: real EggSystem clone survives handoff/reentry, four nests and HUD retained, stored stock unchanged, online hidden/offline visible.
+- [ ] Browser acceptance through actual GameLoader transitions with egg pickup/return/repeated entry, in the combined package. No build/upload requested.
