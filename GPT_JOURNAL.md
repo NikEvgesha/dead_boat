@@ -764,3 +764,12 @@ SoloDepartureProbe log67165 PASS в изолированном Lobby→Forest→
 Первый shared regression подряд в той же Play после Single-run при смене test Global.PeerMode на Multiple дал NRE Connect и timeout log67168. После возврата PeerMode retry удался; стек NRE не локализован, причину фиксируем как гипотезу fixture mode transition, не объявляем runtime-исправлением. В новом изолированном Play SharedRecoveryGameplayProbe.RunColdRestart PASS67316/67317/67331: два Cloud peers, настоящий общий уровень/новый ticket component/reload личного и общего состояния/solo-fork. VerifyRestored PASS обоих запусков; owner keys/startscene восстановлены, Play остановлен.
 
 DB39 in_review, общий чеклист/README/TODO обновлены. SDK/пакеты/protocol не меняли, без сборки и загрузки. Следующий шаг — ИИ: DB16 изменение состава и отмена отсчёта на текущем коде. Владелец позже общий WebGL-проход; сейчас действий не нужно.
+
+
+## 2026-10-15 — DB-ON-016: состав/отмена/смена лидера, без сборки
+
+Baseline DepartureCountdownProbe log67399 PASS, затем текущие callbacks/cleanup/UI logs67481/67495/67496 PASS. До4 реальных Cloud peers одновременно в одной пустой Editor-сцене: общий deadline, автостарт2, уход/возврат/новый timer, двойной/чужой LaunchNow, вход третьего при ручном старте2/4, заполнение4 и отмена при выходе, уход лидера и master takeover с прежним seed/level/version, новый ручной старт2, закрытие admission(GameClosed ожидаемо), loading-member leave→abort4.
+
+Добавлен countdown-scoped membership guard IPlayerJoined/IPlayerLeft для пакетных leave+join между тиками. Событие привязано к TargetTick, старый callback прокси не должен переживать следующий countdown при takeover. Синтетические callbacks при том же PlayerRef наборе проверены отдельно от реальных join/leave. Cancel очищает roster/ready/deadlines. UI запуска разрешён только лидеру в waiting0; aborted4 объясняет выход/новое создание, кнопка выключена; runtime UI fixture проверен. Устаревшая preview-надпись заменена правилом смены состава. Новых network fields/SDK-правок нет, протокол тот же.
+
+Карточка in_review, общий чеклист/README/TODO обновлены. VerifyRestored PASS, Play остановлен, owner keys/start scene восстановлены. Независимый WebGL/мобильный фон и вход возле нуля не объявлены принятыми. Без сборки/архива/загрузки. Следующий шаг — владелец позже общий проход; ИИ продолжает оставшиеся исходные задачи/разбор будущих логов, сейчас владельцу действий не нужно.

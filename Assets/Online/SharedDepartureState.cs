@@ -6,7 +6,7 @@ using UnityEngine;
 namespace DeadBoat.Online
 {
     // MasterClientObject: ownership follows the Shared master without losing the seed.
-    public sealed partial class SharedDepartureState : NetworkBehaviour
+    public sealed partial class SharedDepartureState : NetworkBehaviour, IPlayerJoined, IPlayerLeft
     {
         [Networked] public int Seed { get; private set; }
         [Networked] public int GenerationVersion { get; private set; }
@@ -20,6 +20,20 @@ namespace DeadBoat.Online
         [Networked, Capacity(4)] public NetworkArray<PlayerRef> Crew => default;
 
         private bool heldRunAuthority;
+        private bool membershipChanged;
+        private int? changedCountdownTick;
+        void IPlayerJoined.PlayerJoined(PlayerRef player) => NoteMembershipChange();
+        void IPlayerLeft.PlayerLeft(PlayerRef player) => NoteMembershipChange();
+        private void NoteMembershipChange()
+        {
+            // A leave and join can be delivered between two ticks, even reusing a slot.
+            // Track the event as well as comparing the current PlayerRef set.
+            if (Object != null && Object.IsValid && Phase == 1)
+            {
+                membershipChanged = true;
+                changedCountdownTick = Countdown.TargetTick;
+            }
+        }
         public override void Spawned() => Runner.MakeDontDestroyOnLoad(gameObject);
 
         public void Initialize(int levelId, int targetPlayers)
@@ -44,6 +58,8 @@ namespace DeadBoat.Online
 
         public override void FixedUpdateNetwork()
         {
+            // A proxy must not carry an old round's callback into a later master takeover.
+            if (Phase != 1 || changedCountdownTick != Countdown.TargetTick) membershipChanged = false;
             bool gainedRunAuthority = Object.HasStateAuthority && !heldRunAuthority;
             heldRunAuthority = Object.HasStateAuthority;
             if (Object.HasStateAuthority && Phase == 3)
@@ -72,11 +88,8 @@ namespace DeadBoat.Online
                 return;
             }
             int count = Runner.ActivePlayers.Count();
-            if (Phase == 1 && !MembershipMatches())
-            {
-                Phase = 0;
-                Countdown = default;
-            }
+            if (Phase == 1 && (membershipChanged || !MembershipMatches()))
+                CancelCountdown();
             if (Phase == 0 && count >= TargetPlayers) StartCountdown();
             if (Phase == 1 && Countdown.Expired(Runner))
             {
@@ -98,8 +111,19 @@ namespace DeadBoat.Online
                 StartCountdown();
         }
 
+        private void CancelCountdown()
+        {
+            Phase = 0;
+            Countdown = default;
+            CrewCount = ReadyMask = 0;
+            LoadingDeadline = default;
+            for (int i = 0; i < Crew.Length; i++) Crew.Set(i, PlayerRef.None);
+            membershipChanged = false;
+        }
+
         private void StartCountdown()
         {
+            membershipChanged = false;
             var members = Runner.ActivePlayers.OrderBy(p => p.RawEncoded).Take(4).ToArray();
             CrewCount = members.Length;
             for (int i = 0; i < members.Length; i++) Crew.Set(i, members[i]);

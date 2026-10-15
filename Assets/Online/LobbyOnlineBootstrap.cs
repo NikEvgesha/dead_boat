@@ -53,6 +53,9 @@ namespace DeadBoat.Online
         private bool launchingDeparture;
         public bool IsDepartureLeader => IsInDepartureRoom && runner.IsSharedModeMasterClient;
         public bool IsLaunchingDeparture => launchingDeparture && startingSoloRun;
+        public bool DepartureAborted => departureState != null && departureState.Phase == 4;
+        public bool CanLaunchDepartureNow => IsDepartureLeader && departureState != null &&
+            departureState.Phase == 0 && !launchingDeparture;
         public bool DepartureCountingDown => departureState != null && departureState.Phase == 1;
         public int DepartureCountdownSeconds => departureState != null && runner != null
             ? Mathf.CeilToInt(departureState.Countdown.RemainingTime(runner) ?? 0) : 0;
@@ -452,7 +455,7 @@ namespace DeadBoat.Online
 
         public void LaunchDepartureNow()
         {
-            if (IsDepartureLeader && departureState != null && !launchingDeparture)
+            if (CanLaunchDepartureNow)
                 departureState.LaunchNow();
         }
 

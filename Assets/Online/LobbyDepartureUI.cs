@@ -143,7 +143,10 @@ namespace DeadBoat.Online
                 Page.Levels => Text("Для одиночной игры есть отдельная кнопка.",
                     "Use the separate button for solo play."),
                 Page.Configure => Text("Публичный экипаж · до ", "Public crew · up to ") + seats,
-                _ => Text("Игроков: ", "Players: ") + online.DeparturePlayerCount +
+                _ => online.DepartureAborted
+                    ? Text("Отправление отменено. Покиньте экипаж и создайте новый.",
+                        "Departure canceled. Leave the crew and create a new one.")
+                    : Text("Игроков: ", "Players: ") + online.DeparturePlayerCount +
                     "/" + online.DepartureTargetPlayers + (online.DepartureCountingDown
                         ? Text(" · Отправление через ", " · Departing in ") + online.DepartureCountdownSeconds
                         : "")
@@ -153,7 +156,7 @@ namespace DeadBoat.Online
             secondary.gameObject.SetActive(page == Page.Browser || page == Page.Configure);
             primary.interactable = !busy && (page != Page.Browser || online.IsBrowsingDepartures);
             if (page == Page.Waiting)
-                primary.interactable = online.IsDepartureLeader && !online.DepartureCountingDown;
+                primary.interactable = online.CanLaunchDepartureNow;
             secondary.interactable = !busy;
             back.interactable = !busy && !online.IsConnecting;
 
@@ -248,8 +251,8 @@ namespace DeadBoat.Online
                     "Crew ready. Other players can join from the directory."));
                 AddMessage(Text("Полный экипаж отправится через 5 секунд. Лидер может запустить раньше.",
                     "A full crew departs after 5 seconds. The leader can launch earlier."));
-                AddMessage(Text("Тест совместной загрузки: взаимодействия и физика ещё не синхронизированы.",
-                    "Shared loading preview: interactions and physics are not synchronized yet."));
+                AddMessage(Text("При изменении состава отсчёт отменяется. Полный экипаж начнёт новый отсчёт; меньшим составом может запустить лидер.",
+                    "Crew changes cancel the countdown. A full crew restarts it; the leader can launch a smaller crew."));
             }
         }
 

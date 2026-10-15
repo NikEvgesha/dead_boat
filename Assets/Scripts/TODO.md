@@ -273,3 +273,9 @@ Implementation backlog for eggs:
 - [x] Legacy solo button duplicate guard; loader failure resets bootstrap flags/mode UI; invalid departure releases launch flag.
 - [x] Isolated real level: pending/real stop, duplicate calls, failed-start retry, save-preserving picker, disconnect without silent solo, one-member countdown, no Photon on solo activation, selected lobby mode return.
 - [ ] Combined independent WebGL/mobile/failure acceptance per Docs/COOP_BATCH_ACCEPTANCE.md; no build/upload.
+
+
+### DB-ON-016 — countdown membership audit (2026-10-15)
+- [x] Audit actual Cloud leave/join/refill/master migration and sealed admission; add countdown-scoped membership callback guard and clear canceled roster.
+- [x] Launch UI requires waiting phase; aborted loading explains outcome and disables stale relaunch.
+- [ ] Combined independent WebGL/timer-zero/mobile acceptance per Docs/COOP_BATCH_ACCEPTANCE.md; no build/upload.

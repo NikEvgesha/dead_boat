@@ -98,3 +98,10 @@ StopRunnerAsync теперь возвращает общую stopTask: повт�
 LeaveDepartureForSoloSelectionAsync защищён transition и очищает queued reconnect; открытие одиночной карты сохраняет незавершённый solo-save. Один член экипажа после отсчёта закрывает Photon и идёт обычным соло без SharedRunContext; несколько членов сохраняют сетевой путь. LobbyManager защищает старую кнопку от повторного запуска. Ошибка загрузки снимает startingSoloRun/launchingDeparture и возвращает mode UI; LevelMapUI обрабатывает также синхронный отказ. Неверный roster/version не оставляет launchingDeparture навсегда.
 
 SoloDepartureProbe — настоящий LevelForest/возврат в Lobby, отдельные hidden network rooms и изолированный save; проверяет общую остановку/повторы/отказ/обрыв/одиночный countdown и отсутствие Photon на активации сцены. Это не WebGL-приёмка. Сценарии в Docs/COOP_BATCH_ACCEPTANCE.md; без сборки/загрузки, SDK и протокол не менялись.
+
+
+## Отмена отсчёта и состав — 2026-10-15 (DB-ON-016)
+
+SharedDepartureState сравнивает roster с ActivePlayers и учитывает IPlayerJoined/IPlayerLeft во время countdown. Локальный event guard привязан к TargetTick конкретного отсчёта, чтобы старое событие прокси не отменяло следующий отсчёт после передачи authority. Быстрые leave+join между тиками могут дать прежний набор PlayerRef; callback всё равно требует новый отсчёт. При отмене очищаются timer/crew/ready/deadline. Полный состав автоматически начинает новый5-секундный таймер, неполный ждёт добора или нового решения лидера.
+
+CanLaunchDepartureNow разрешает кнопку только лидеру в Phase0. После отмены загрузочного барьера (Phase4) UI объясняет отмену и предлагает покинуть экипаж/создать новый; не показывает неработающий «Запустить сейчас» доступным. Убрана устаревшая надпись, что синхронизации взаимодействий ещё нет. SDK/сетевые поля/протокол не менялись. Независимая WebGL-приёмка в Docs/COOP_BATCH_ACCEPTANCE.md, без сборки.
