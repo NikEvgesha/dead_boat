@@ -235,3 +235,12 @@ Implementation backlog for eggs:
 - [x] Explicit runtime fallback factory; scene manager takes ownership, removes only fallback child and loads existing storage. Reset HUD binding on disable.
 - [x] Play Mode probe: real EggSystem clone survives handoff/reentry, four nests and HUD retained, stored stock unchanged, online hidden/offline visible.
 - [ ] Browser acceptance through actual GameLoader transitions with egg pickup/return/repeated entry, in the combined package. No build/upload requested.
+
+
+## 2026-10-15 — DB-ON-037 remote avatar names
+
+- [x] Sparse replicated display name from cached platform/Cloud profile, bounded sanitized single line and localized guest fallback.
+- [x] Input-free, depth-tested remote-only world label; distance fade, menu/behind-camera hiding, camera reacquisition, position after avatar origin/driver anchoring.
+- [x] Two real Photon Cloud peers: late join, live rename, fallback, local-hidden/input-free gates, camera distance, nearby labels and opaque wall render. RU preview reviewed.
+- [x] Isolate avatar layout via copied Photon AppVersion settings; reject incompatible invitation/return versions.
+- [ ] Independent WebGL/mobile and 10-player crowd, Lobby/Run/origin/driver/reconnect acceptance in the combined package. No build/upload.

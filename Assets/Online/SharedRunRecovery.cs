@@ -18,6 +18,8 @@ namespace DeadBoat.Online
     // This ticket is a capability for a live room, never a persisted online world.
     public sealed class SharedRunRecovery : MonoBehaviour
     {
+        private const string ProtocolSuffix = "-dbnames1";
+        public static string ClientVersion => Application.version + ProtocolSuffix;
         private const string TicketKey = "DeadBoat.SharedReturn.v1";
         private const string IdentityKey = "DeadBoat.FusionIdentity.v1";
         private static bool loggedStartupTicket;
@@ -97,6 +99,7 @@ namespace DeadBoat.Online
         public static Fusion.Photon.Realtime.FusionAppSettings Settings(string region = null)
         {
             var settings = Fusion.Photon.Realtime.PhotonAppSettings.Global.AppSettings.GetCopy();
+            settings.AppVersion = (settings.AppVersion ?? "") + ProtocolSuffix;
             settings.emptyRoomTtl = 0; // Last player leaves => this run cannot be revived.
             if (!string.IsNullOrEmpty(region)) settings.FixedRegion = region;
             return settings;
@@ -109,7 +112,7 @@ namespace DeadBoat.Online
             {
                 Room = runner.SessionInfo.Name, Region = runner.SessionInfo.Region, Lobby = lobbyName,
                 PlayerId = LocalId, Seed = state.Seed, Level = state.LevelId,
-                Generator = state.GenerationVersion, Version = Application.version
+                Generator = state.GenerationVersion, Version = ClientVersion
             };
             bool durable = SharedReturnStorage.Write(TicketKey, JsonUtility.ToJson(ticket));
             Debug.Log($"[Shared recovery storage] Run record written; durable={durable}; backend={SharedReturnStorage.Backend}.");
@@ -233,7 +236,7 @@ namespace DeadBoat.Online
             Message = "Проверяем, продолжает ли экипаж забег…";
             try
             {
-                if (requested.Version != Application.version || requested.Generator != RunRandom.Version)
+                if (requested.Version != ClientVersion || requested.Generator != RunRandom.Version)
                 { Message = "Версия забега изменилась. Вернуться не получится."; InvalidateReturn(); return; }
                 var lobby = FindAnyObjectByType<LobbyOnlineBootstrap>();
                 if (lobby != null) await AwaitCheck(lobby.SuspendForRecoveryAsync(), attempt, 7, "stop lobby");

@@ -67,7 +67,7 @@ namespace DeadBoat.Online
                 {
                     room = roomFull ? "" : currentRoom,
                     region = region,
-                    version = Application.version,
+                    version = SharedRunRecovery.ClientVersion,
                     target = profileId,
                     expires = DateTimeOffset.UtcNow.AddMinutes(3).ToUnixTimeSeconds(),
                     ready = false
@@ -243,7 +243,7 @@ namespace DeadBoat.Online
                         throw new InvalidOperationException("Invite group disappeared");
                     Rendezvous state = JsonUtility.FromJson<Rendezvous>(group.Result.Data.Metadata ?? "{}");
                     if (state.schema != 1 || state.target != social.FriendId ||
-                        state.version != Application.version ||
+                        state.version != SharedRunRecovery.ClientVersion ||
                         DateTimeOffset.UtcNow.ToUnixTimeSeconds() >= state.expires)
                         throw new InvalidOperationException("Invite version, identity or expiry mismatch");
                     if (state.region != lobby.CurrentRegion)

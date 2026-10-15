@@ -19,6 +19,8 @@ namespace DeadBoat.Online
         private float retryAfter;
         private float refreshAfter;
         private float mutationAfter;
+        public static string CachedDisplayName => instance != null && instance.Ready
+            ? instance.sdk.PlayerAccount?.PlayerAccountInfo?.Nickname : null;
         public bool Busy { get; private set; }
         internal MirraCloudSDK Sdk => sdk;
         public bool Ready => sdk?.Authentication?.IsAuth == true && !string.IsNullOrEmpty(PlayerId);

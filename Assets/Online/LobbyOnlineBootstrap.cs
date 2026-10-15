@@ -261,7 +261,7 @@ namespace DeadBoat.Online
                     return false;
 
                 departureBrowser = CreateRunner();
-                var joinTask = runner.JoinSessionLobby(SessionLobby.Custom, DepartureLobbyName);
+                var joinTask = runner.JoinSessionLobby(SessionLobby.Custom, DepartureLobbyName, customAppSettings: SharedRunRecovery.Settings());
                 if (await Task.WhenAny(joinTask, Task.Delay(TimeSpan.FromSeconds(12))) != joinTask)
                 {
                     RecordTimeout(revision);
@@ -605,7 +605,7 @@ namespace DeadBoat.Online
                     var browser = runnerObject.AddComponent<LobbySessionBrowser>();
                     runner.AddCallbacks(browser);
 
-                    var joinTask = runner.JoinSessionLobby(SessionLobby.Custom, MatchmakingLobbyName);
+                    var joinTask = runner.JoinSessionLobby(SessionLobby.Custom, MatchmakingLobbyName, customAppSettings: SharedRunRecovery.Settings());
                     if (await Task.WhenAny(joinTask, Task.Delay(TimeSpan.FromSeconds(12))) != joinTask)
                     {
                         RecordTimeout(attempt);
@@ -644,6 +644,7 @@ namespace DeadBoat.Online
                     var startTask = runner.StartGame(new StartGameArgs
                     {
                         GameMode = GameMode.Shared,
+                        CustomPhotonAppSettings = SharedRunRecovery.Settings(),
                         CustomLobbyName = MatchmakingLobbyName,
                         SessionName = selected?.Name,
                         MatchmakingMode = Photon.Realtime.MatchmakingMode.FillRoom,
@@ -741,6 +742,7 @@ namespace DeadBoat.Online
                 var start = runner.StartGame(new StartGameArgs
                 {
                     GameMode = GameMode.Shared,
+                    CustomPhotonAppSettings = SharedRunRecovery.Settings(region),
                     CustomLobbyName = MatchmakingLobbyName,
                     SessionName = name,
                     EnableClientSessionCreation = create,

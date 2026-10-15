@@ -37,6 +37,7 @@ namespace DeadBoat.Online
         [Networked] private int AttackStyle { get; set; }
         [Networked] private byte HeldItemId { get; set; }
         [Networked] public NetworkString<_64> MirraProfileId { get; private set; }
+        [Networked] public NetworkString<_32> DisplayName { get; private set; }
         [Networked] public float Health { get; private set; }
         public Transform WorldTransform => visualRoot != null ? visualRoot : transform;
         private BoardController seatBoard;
@@ -61,6 +62,8 @@ namespace DeadBoat.Online
         // its NetworkTransform can remain unchanged while the seat is occupied.
         public Vector3 LogicalPosition => DrivingSeat != null ? DrivingSeat.position + Origin : transform.position;
 
+        private double nextNameRefresh;
+        private string lastLocalName;
         private PlayerMovement localPlayer;
         private bool wasDriving;
         private bool snapRequested;
@@ -131,7 +134,24 @@ namespace DeadBoat.Online
                     avatarRenderer.enabled = false;
 
                 localPlayer = PlayerMovement.Instance;
+                RefreshLocalName();
             }
+            else
+            {
+                var nameplate = new GameObject("Avatar nameplate", typeof(RectTransform));
+                nameplate.transform.SetParent(transform, false);
+                nameplate.AddComponent<AvatarNameplate>().Initialize(this);
+            }
+        }
+
+        private void RefreshLocalName()
+        {
+            if (Runner.SimulationTime < nextNameRefresh) return;
+            nextNameRefresh = Runner.SimulationTime + 2;
+            string raw = AvatarDisplayName.Local();
+            if (raw == lastLocalName) return;
+            lastLocalName = raw;
+            DisplayName = AvatarDisplayName.Sanitize(raw);
         }
 
         [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
@@ -176,6 +196,7 @@ namespace DeadBoat.Online
             if (!Object.HasStateAuthority)
                 return;
 
+            RefreshLocalName();
             if (string.IsNullOrEmpty(MirraProfileId.ToString()))
             {
                 var profileId = MirraSocialService.Instance.FriendId;
