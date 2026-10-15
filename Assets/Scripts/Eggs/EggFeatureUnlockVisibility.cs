@@ -9,6 +9,14 @@ public class EggFeatureUnlockVisibility : MonoBehaviour
     [SerializeField] private GameObject[] _animalPlacementTutorialObjects;
 
     private EggHatchingManager _manager;
+    private bool _worldHidden;
+
+    public void SetWorldHidden(bool hidden)
+    {
+        if (_worldHidden == hidden) return;
+        _worldHidden = hidden;
+        Refresh();
+    }
 
     private void OnEnable()
     {
@@ -20,6 +28,7 @@ public class EggFeatureUnlockVisibility : MonoBehaviour
     {
         if (_manager != null)
             _manager.StateChanged -= Refresh;
+        _manager = null;
     }
 
     private void Update()
@@ -33,6 +42,16 @@ public class EggFeatureUnlockVisibility : MonoBehaviour
 
     public void Refresh()
     {
+        if (_worldHidden)
+        {
+            SetActive(_eggNestObjects, false);
+            SetActive(_animalPlacementObjects, false);
+            SetActive(_animalMergeObjects, false);
+            SetActive(_eggNestTutorialObjects, false);
+            SetActive(_animalPlacementTutorialObjects, false);
+            return;
+        }
+
         EggFeatureState storedState = EggFeatureStorage.Load();
         bool showEggNests = HasDiscoveredEggs(storedState);
         bool showAnimalMeta = HasHatchedAnimal(storedState);

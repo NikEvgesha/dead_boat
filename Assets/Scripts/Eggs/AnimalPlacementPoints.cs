@@ -51,8 +51,19 @@ public sealed class AnimalPlacementPoints : MonoBehaviour
         RefreshNow();
     }
 
+    private bool _worldHidden;
+
+    public void SetWorldHidden(bool hidden)
+    {
+        if (_worldHidden == hidden) return;
+        _worldHidden = hidden;
+        if (hidden) ClearSpawnedAnimals();
+        else if (isActiveAndEnabled) RefreshNow();
+    }
+
     public void RefreshNow()
     {
+        if (_worldHidden) return;
         EnsureCatalogAssigned();
         EnsureSlotAnchorsAssigned();
 

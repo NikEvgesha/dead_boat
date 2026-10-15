@@ -277,12 +277,11 @@ public class EggHatchingManager : MonoBehaviour
         if (_catalog == null || !_catalog.TryGet(eggId, out EggDefinition definition))
             return false;
 
+        // Reject a stale UI click before consuming another egg.
+        if (GetNestState(nestId) != null) return false;
+
         if (!_state.TryConsumeEgg(eggId, 1))
             return false;
-
-        EggNestState nest = GetNestState(nestId);
-        if (nest != null)
-            _state.nests.Remove(nest);
 
         _state.nests.Add(new EggNestState
         {
@@ -916,6 +915,23 @@ public class EggHatchingManager : MonoBehaviour
             _state.hasUnlockedAnimalMerge = true;
     }
 
+    private bool _worldHidden;
+
+    // Presentation only: incubation, inventory, saves and buffs remain active.
+    public void SetWorldHidden(bool hidden)
+    {
+        if (_worldHidden == hidden) return;
+        _worldHidden = hidden;
+        if (_state != null) RestoreSpawnedAnimals();
+        RefreshNestVisuals();
+    }
+
+    public IReadOnlyList<EggNestPoint> GetNestPoints()
+    {
+        RefreshSceneReferencesIfNeeded();
+        return _nests;
+    }
+
     private void RestoreSpawnedAnimals()
     {
         foreach (GameObject value in _spawnedAnimals.Values)
@@ -925,6 +941,7 @@ public class EggHatchingManager : MonoBehaviour
         }
 
         _spawnedAnimals.Clear();
+        if (_worldHidden) return;
 
         foreach (PlacedAnimalState placed in _state.placedAnimals)
         {
@@ -947,7 +964,7 @@ public class EggHatchingManager : MonoBehaviour
 
     private void TryRestoreMissingSpawnedAnimals()
     {
-        if (_state == null || _state.placedAnimals == null || _state.placedAnimals.Count == 0)
+        if (_worldHidden || _state == null || _state.placedAnimals == null || _state.placedAnimals.Count == 0)
             return;
 
         foreach (PlacedAnimalState placed in _state.placedAnimals)
@@ -974,7 +991,7 @@ public class EggHatchingManager : MonoBehaviour
 
     private void SpawnAnimal(string animalId, int stage, GameObject animalPrefab, Transform anchor, string key)
     {
-        if (anchor == null || animalPrefab == null || string.IsNullOrWhiteSpace(key))
+        if (_worldHidden || anchor == null || animalPrefab == null || string.IsNullOrWhiteSpace(key))
             return;
 
         if (_spawnedAnimals.TryGetValue(key, out GameObject oldAnimal) && oldAnimal != null)
@@ -1155,6 +1172,12 @@ public class EggHatchingManager : MonoBehaviour
         {
             if (nestPoint == null)
                 continue;
+
+            if (_worldHidden)
+            {
+                nestPoint.ClearEggPreview();
+                continue;
+            }
 
             EggNestState nest = _state.nests.Find(x => x.nestId == nestPoint.NestId);
             if (nest == null)

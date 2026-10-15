@@ -6,6 +6,21 @@ using UnityEngine;
 
 public static class EggFeatureStorage
 {
+#if UNITY_EDITOR
+    private static TemporaryStorage _temporaryStorage;
+    // Editor probes exercise real Load/Save without touching PlayerPrefs or the platform SDK.
+    public static IDisposable UseTemporaryStorageForTests()
+    {
+        if (_temporaryStorage != null) throw new InvalidOperationException("Temporary egg storage already active");
+        return _temporaryStorage = new TemporaryStorage();
+    }
+    private sealed class TemporaryStorage : IDisposable
+    {
+        public string Json = string.Empty;
+        public void Dispose() { if (_temporaryStorage == this) _temporaryStorage = null; }
+    }
+#endif
+
     private const string StorageKey = "EggFeatureState_v1";
 
     public static EggFeatureState Load()
@@ -43,6 +58,9 @@ public static class EggFeatureStorage
     public static void Reset()
     {
         SaveRaw(string.Empty);
+#if UNITY_EDITOR
+        if (_temporaryStorage != null) return;
+#endif
         PlayerPrefs.DeleteKey(StorageKey);
         PlayerPrefs.Save();
     }
@@ -89,6 +107,9 @@ public static class EggFeatureStorage
 
     private static string LoadRaw()
     {
+#if UNITY_EDITOR
+        if (_temporaryStorage != null) return _temporaryStorage.Json;
+#endif
         string prefsValue = PlayerPrefs.GetString(StorageKey, string.Empty);
 
         try
@@ -129,6 +150,9 @@ public static class EggFeatureStorage
 
     private static void SaveRaw(string value)
     {
+#if UNITY_EDITOR
+        if (_temporaryStorage != null) { _temporaryStorage.Json = value; return; }
+#endif
         string safeValue = value ?? string.Empty;
         PlayerPrefs.SetString(StorageKey, safeValue);
         PlayerPrefs.Save();

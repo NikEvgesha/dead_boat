@@ -217,3 +217,13 @@ Implementation backlog for eggs:
 - [x] Add temporary replaceable UI for animal inventory and merge panel if production UI is not ready.
 - [ ] Update Google Sheets balance export/import for egg result weights, animal stages, merge costs, and buffs.
 - [ ] Run full smoke: pickup -> storage -> nest -> timer -> collect -> place -> buff in run -> remove -> merge -> save reload.
+
+
+## 2026-10-15 — DB-ON-041 private lobby eggs/animals
+
+- [x] Online private hub using the four existing nests, inventory/bonus/merge panels and existing rewarded incubation boost.
+- [x] Hide personal world roots/previews/spawners without stopping incubation or changing saves; restore unlock presentation offline.
+- [x] Reject occupied-nest replacement before egg consumption; restore visibility subscription after disable/enable.
+- [x] Isolated Editor probe with real Lobby/GameCanvas bindings and temporary RAM storage; Russian UI render reviewed.
+- [ ] Independent WebGL/mobile acceptance with actual ads and full child-panel flow: Docs/COOP_BATCH_ACCEPTANCE.md. No build requested.
+- [ ] DB-ON-034 still needs separate offline-pen reproduction; do not equate the visibility subscription fix with full closure.

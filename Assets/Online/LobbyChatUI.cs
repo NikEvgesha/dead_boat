@@ -95,7 +95,7 @@ namespace DeadBoat.Online
         }
         private void SetOpen(bool value)
         {
-            if (value && (!owner.IsOnline || owner.IsInDepartureRoom || owner.IsBrowsingDepartures ||
+            if (value && (GetComponent<LobbyPersonalEggMenu>()?.IsOpen == true || !owner.IsOnline || owner.IsInDepartureRoom || owner.IsBrowsingDepartures ||
                 owner.GetComponent<LobbyFriendsUI>()?.IsOpen == true || owner.GetComponent<LobbyOnlineModeUI>()?.IsOpen == true)) return;
             panel.SetActive(value);
             friendFeedback = null;

@@ -114,6 +114,7 @@ namespace DeadBoat.Online
             gameObject.AddComponent<LobbyFriendInvites>().Initialize(this);
             gameObject.AddComponent<LobbyFriendsUI>().Initialize(this);
             gameObject.AddComponent<MirraLobbyChat>().Initialize(this);
+            gameObject.AddComponent<LobbyPersonalEggMenu>().Initialize(this);
             _ = SharedRunRecovery.Instance;
             if (mode == LobbyOnlineMode.Online && !SharedRunRecovery.HasPending)
                 _ = ConnectAsync();
