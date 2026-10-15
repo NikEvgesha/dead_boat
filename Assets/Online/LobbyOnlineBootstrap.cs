@@ -28,6 +28,7 @@ namespace DeadBoat.Online
         [SerializeField, Min(5)] private int idleWarningSeconds = 30;
 
         private NetworkRunner runner;
+        private Task stopTask = Task.CompletedTask;
         private string status = "Waiting for player";
         private bool leaving;
         private bool connectedOnce;
@@ -111,6 +112,7 @@ namespace DeadBoat.Online
             if (leaving)
                 yield break;
 
+            if (GameLoader.Instance != null) GameLoader.Instance.OnLoadFailed += OnSoloLoadFailed;
             bool hasPreference = PlayerPrefs.HasKey(ModePreferenceKey);
             mode = hasPreference && PlayerPrefs.GetInt(ModePreferenceKey) == 1
                 ? LobbyOnlineMode.Online
@@ -433,16 +435,19 @@ namespace DeadBoat.Online
 
         public async Task LeaveDepartureForSoloSelectionAsync()
         {
-            if (departureTransition)
+            if (departureTransition || startingSoloRun || launchingDeparture)
                 return;
 
+            departureTransition = true;
             ++connectionRevision;
+            reconnectRequested = false;
             connectedOnce = false;
             browsingDepartures = false;
             inDepartureRoom = false;
             departureBrowser = null;
             status = "Solo map selection";
-            await StopRunnerAsync();
+            try { await StopRunnerAsync(); }
+            finally { departureTransition = false; }
         }
 
         public void LaunchDepartureNow()
@@ -461,6 +466,7 @@ namespace DeadBoat.Online
                 lastFailure = "Incompatible departure or roster";
                 await StopRunnerAsync();
                 connectedOnce = inDepartureRoom = false;
+                launchingDeparture = false;
                 return;
             }
 
@@ -880,14 +886,20 @@ namespace DeadBoat.Online
             return LobbyConnectionFailure.Other;
         }
 
-        private async Task StopRunnerAsync()
+        private Task StopRunnerAsync()
         {
+            // runner is detached immediately, but teardown is still in flight.
+            // Every caller must await that same operation before loading a solo scene.
+            if (runner == null) return stopTask;
             var currentRunner = runner;
             runner = null;
-            if (currentRunner == null)
-                return;
-
             stopping = true;
+            stopTask = StopRunnerCoreAsync(currentRunner);
+            return stopTask;
+        }
+
+        private async Task StopRunnerCoreAsync(NetworkRunner currentRunner)
+        {
             try
             {
                 var shutdown = currentRunner.Shutdown();
@@ -899,10 +911,26 @@ namespace DeadBoat.Online
             catch (Exception exception) { Debug.LogWarning($"[Lobby online] Shutdown: {exception.Message}"); }
             finally
             {
+                // Destroy is deferred until end of frame. Wait for removal as well,
+                // including timeout/exception fallback, before releasing solo callers.
+                if (currentRunner != null) Destroy(currentRunner.gameObject);
+                while (currentRunner != null) await Awaitable.NextFrameAsync();
                 stopping = false;
-                Destroy(currentRunner.gameObject);
                 TryPendingReconnect();
             }
+        }
+
+        private void OnSoloLoadFailed(string message) => CancelSoloRunStart();
+
+        public void CancelSoloRunStart()
+        {
+            if (!startingSoloRun || SharedRunContext.Active || leaving) return;
+            startingSoloRun = launchingDeparture = false;
+            status = "Solo level load failed";
+            lastFailure = "Level load failed";
+            var modeUI = GetComponent<LobbyOnlineModeUI>();
+            if (modeUI == null) gameObject.AddComponent<LobbyOnlineModeUI>().Initialize(this, false);
+            StayOnline();
         }
 
 #if UNITY_EDITOR || DEADBOAT_ONLINE_DIAGNOSTICS
@@ -957,6 +985,7 @@ namespace DeadBoat.Online
 
         private void OnDestroy()
         {
+            if (GameLoader.Instance != null) GameLoader.Instance.OnLoadFailed -= OnSoloLoadFailed;
             leaving = true;
             ++connectionRevision;
             _ = StopRunnerAsync();

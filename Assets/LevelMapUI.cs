@@ -82,6 +82,7 @@ public class LevelMapUI : MonoBehaviour
     private void OnLoadFailed()
     {
         GameLoader.Instance?.HideLoadingScreen();
+        FindFirstObjectByType<LobbyOnlineBootstrap>()?.CancelSoloRunStart();
         _transitionStarted = false;
         if (ControlManager.Instance != null)
             ControlManager.Instance.CursorActive = true;

@@ -753,3 +753,14 @@ ItemStore.SelectAssortment — тот же игровой выбор отдел�
 LobbyIdleProbe.Validate PASS и сетевой Run log67074 PASS: два реальных Cloud peers в пустой Play-сцене, UI Stay/guards/реальный countdown/loading/отмена/уход участника/сохранение mode/кнопка reconnect/скрытое тестовое повторное подключение. Не проверка реального мобильного ввода/настоящей рекламы/браузерного фона. VerifyRestored PASS, owner keys/start scene восстановлены, Play остановлен. DB40 in_review, общий чеклист/README/TODO дополнены. SDK и протокол-layout не менялись. Без сборки/загрузки.
 
 Следующий шаг — ИИ: DB-ON-039, аудит одиночного старта из ожидания и закрытия Photon. Владелец позже проходит весь пакет по COOP_BATCH_ACCEPTANCE; сейчас действий не нужно.
+
+
+## 2026-10-15 — DB-ON-039: одиночный старт и освобождение Photon, без сборки
+
+StopRunnerAsync имел гонку detached runner: повторный вызов возвращался до завершения первой остановки. Общая stopTask теперь ожидается всеми; после Shutdown/5s fallback ждём фактическое удаление Runner в конце кадра. Solo-picker защищён transition и queued reconnect очищается. LobbyManager старая кнопка защищена от повторного coroutine; ошибка загрузки разблокирует флаги/mode UI (также LevelMapUI catch), неверный roster/version снимает launchingDeparture.
+
+SoloDepartureProbe log67165 PASS в изолированном Lobby→Forest→Lobby: два pending solo-вызова ждут общий barrier; настоящая stopTask одна, Runner удалён; повтор после имитации отказа; незавершённый save321 переживает выбор карты; shutdown ожидания не запускает соло; один член4-местного экипажа ждёт countdown онлайн, двойной LaunchNow даёт ровно один обычный соло-уровень без connected Photon на scene activation, return-ticket/context/fork отсутствуют, возврат восстанавливает online preference. Это Editor, не WebGL; CCU dashboard/реальный timeout не измерялись.
+
+Первый shared regression подряд в той же Play после Single-run при смене test Global.PeerMode на Multiple дал NRE Connect и timeout log67168. После возврата PeerMode retry удался; стек NRE не локализован, причину фиксируем как гипотезу fixture mode transition, не объявляем runtime-исправлением. В новом изолированном Play SharedRecoveryGameplayProbe.RunColdRestart PASS67316/67317/67331: два Cloud peers, настоящий общий уровень/новый ticket component/reload личного и общего состояния/solo-fork. VerifyRestored PASS обоих запусков; owner keys/startscene восстановлены, Play остановлен.
+
+DB39 in_review, общий чеклист/README/TODO обновлены. SDK/пакеты/protocol не меняли, без сборки и загрузки. Следующий шаг — ИИ: DB16 изменение состава и отмена отсчёта на текущем коде. Владелец позже общий WebGL-проход; сейчас действий не нужно.

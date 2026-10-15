@@ -41,9 +41,25 @@ public class LobbyManager : MonoBehaviour
     }
 
 
+    private bool _startingSolo;
+
     public void StartGame()
     {
+        if (_startingSolo) return;
+        _startingSolo = true;
+        if (GameLoader.Instance != null) GameLoader.Instance.OnLoadFailed += OnSoloLoadFailed;
         StartCoroutine(StartSoloGame());
+    }
+
+    private void OnSoloLoadFailed(string message)
+    {
+        _startingSolo = false;
+        if (GameLoader.Instance != null) GameLoader.Instance.OnLoadFailed -= OnSoloLoadFailed;
+    }
+
+    private void OnDestroy()
+    {
+        if (GameLoader.Instance != null) GameLoader.Instance.OnLoadFailed -= OnSoloLoadFailed;
     }
 
     private IEnumerator StartSoloGame()
@@ -58,10 +74,18 @@ public class LobbyManager : MonoBehaviour
                 Debug.LogException(disconnect.Exception);
         }
 
-        ControlManager.Instance.ForceGameplayCursor();
-        // The player explicitly starts a new solo run here. Merely entering
-        // the lobby must leave any unfinished saved run intact.
-        SaveManager.Instance.SaveGameProgress(-1, new List<PickableItem>());
-        LoadingManager.Instance.LoadLocation(Location.Game);
+        try
+        {
+            ControlManager.Instance.ForceGameplayCursor();
+            // Only the explicit start replaces an unfinished solo run.
+            SaveManager.Instance.SaveGameProgress(-1, new List<PickableItem>());
+            LoadingManager.Instance.LoadLocation(Location.Game);
+        }
+        catch (System.Exception exception)
+        {
+            Debug.LogException(exception);
+            online?.CancelSoloRunStart();
+            OnSoloLoadFailed(exception.Message);
+        }
     }
 }

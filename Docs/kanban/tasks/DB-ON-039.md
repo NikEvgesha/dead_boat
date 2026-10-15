@@ -1,7 +1,7 @@
 ---
 id: DB-ON-039
 title: Запускать одиночный заплыв без Photon
-status: in_progress
+status: in_review
 when: next
 ai: true
 ---
@@ -28,3 +28,26 @@ ai: true
 - `Docs/WEB_MULTIPLAYER_PLAYER_FLOW.md`
 - `Docs/kanban/tasks/DB-ON-016.md`
 - `Docs/kanban/tasks/DB-ON-038.md`
+
+
+## Аудит 2026-10-15 — исходники, без сборки
+
+Найдена гонка StopRunnerAsync: ссылка runner обнулялась в первом вызове, второй возвращался сразу, хотя Photon Shutdown ещё шёл. Теперь общая stopTask передаётся всем ожидающим; после Shutdown/прежнего timeout fallback ожидается фактическое уничтожение Runner в конце кадра. Это позволяет запускать одиночную сцену после освобождения транспорта. Серверный CCU-счётчик в dashboard не измерялся: при аварийном сетевом разрыве освобождение зависит также от таймаута Photon.
+
+LeaveDepartureForSoloSelectionAsync защищён transition и сбрасывает queued reconnect. Выбор карты не очищает незавершённый solo-save. Один участник через LaunchNow/countdown закрывает Photon и запускает нормальный solo; count>=2 оставляет сетевой путь. Неверный roster/version сбрасывает launchingDeparture. Старая кнопка LobbyManager получает повторный guard; ошибка загрузки разблокирует старт/bootstrap mode UI, включая LevelMapUI catch.
+
+SoloDepartureProbe log67165 PASS в изолированном настоящем Lobby→LevelForest→Lobby:
+- Два solo-вызова ждут общий искусственно задержанный stopTask; два вызова реального Stop получают один Task и ждут исчезновения Runner.
+- Вызов отмены после имитации отказа возвращает режим/UI и возможность повторить подключение. Это не имитация поломки Unity SceneManager.
+- Открытие solo-picker/teardown оставляет сохранённую distance321. Shutdown транспорта во время ожидания не запускает solo сам; создание после отказа повторяется успешно.
+- Один член4-местного экипажа запускает общий отсчёт, оставаясь онлайн; двойной LaunchNow даёт одну активацию LevelForest, на SceneLoaded нет connected NetworkRunner. Нет SharedRunContext/return-ticket/solo-fork, старт обычный и заменяет прежний run только по явному действию.
+- После выхода из одиночного уровня восстановлен выбранный online-режим и один рабочий lobby Runner; затем тест отключён.
+
+SDK/пакеты и протокол не менялись. Общая ручная приёмка: Docs/COOP_BATCH_ACCEPTANCE.md. Отключение интернета/мобильный фон/настоящий отказ загрузчика и принудительный timeout остаются ручными/дополнительными проверками, не доказаны нормальным shutdown теста.
+
+
+Дополнительная регрессия SharedRecoveryGameplayProbe.RunColdRestart в **отдельном чистом Play** PASS logs67316/67317/67331: общий уровень с двумя Cloud peers, новый recovery component/билет, реальный reload с прежними gold/bag/ammo/HP и отдельная сохраняемая solo-ветка. Один игровой мир, не две WebGL-симуляции. VerifyRestored PASS, owner return/identity/solo/mode keys/start scene восстановлены, редактор остановлен.
+
+Первый дополнительный прогон в той же Play-сессии после SoloDepartureProbe не прошёл: при переключении тестом Global.PeerMode Single→Multiple ConnectAsync получил NullReferenceException, затем ожидание online lobby истекло (log67168). После возврата PeerMode повторное подключение удалось. Чистый отдельный прогон прошёл; источник NRE по стеку не локализован и исправленным дефектом runtime не объявляется. Не запускать разные peer-mode harness подряд без нового изолированного Play. SDK не правился.
+
+Следующий шаг — ИИ: проверить изменение состава/отмену отсчёта DB-ON-016 на текущем коде, без сборки. Владелец: позднее общий WebGL-пакет по чеклисту; сейчас действий не требуется. До ручной приёмки статус in_review.

@@ -266,3 +266,10 @@ Implementation backlog for eggs:
 - [x] Monotonic unscaled clock, held input/touch/scroll activity, protected countdown/loading/transitions/ads and focus/pause return grace.
 - [x] Warning indicator renews allowance; idle shutdown rechecks eligibility, blocks duplicates and queued reconnect, preserves mode.
 - [ ] Combined WebGL/mobile/background/ad/input acceptance in Docs/COOP_BATCH_ACCEPTANCE.md; no build/upload.
+
+
+### DB-ON-039 — single-member departure / Photon teardown (2026-10-15)
+- [x] Share in-flight StopRunner task and await actual Runner destruction; serialize solo-picker transition and clear queued reconnect.
+- [x] Legacy solo button duplicate guard; loader failure resets bootstrap flags/mode UI; invalid departure releases launch flag.
+- [x] Isolated real level: pending/real stop, duplicate calls, failed-start retry, save-preserving picker, disconnect without silent solo, one-member countdown, no Photon on solo activation, selected lobby mode return.
+- [ ] Combined independent WebGL/mobile/failure acceptance per Docs/COOP_BATCH_ACCEPTANCE.md; no build/upload.

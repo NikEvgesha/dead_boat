@@ -89,3 +89,12 @@ LobbyIdleClock использует Time.realtimeSinceStartupAsDouble, а не D
 IdleProtected исключает переходы, рекламу, PauseManager, фазы1–3 отправления; отменённая фаза4 не блокирует idle. После защищённого промежутка и событий focus/pause выдаётся полный срок. Если браузер не исполняет кадры, локальный код не может мгновенно освободить CCU; разрывы транспорта живут по прежним правилам. Idle-disconnect проверяет условия повторно, блокирует дубли, очищает queued reconnect и сохраняет выбранный режим. Нажатие предупреждающего индикатора явно продлевает время.
 
 Проверки: LobbyIdleProbe.Validate и изолированный Play Mode/два Cloud peers; общий сценарий браузера/мобильного ввода в Docs/COOP_BATCH_ACCEPTANCE.md. SDK/сетевой layout/версия протокола не менялись. Без сборки/загрузки.
+
+
+## Одиночный старт из экипажа — 2026-10-15 (DB-ON-039)
+
+StopRunnerAsync теперь возвращает общую stopTask: повторный вызов не считает detached runner завершённым shutdown. Остановка ждёт Shutdown либо прежний5-секундный fallback, затем фактическое удаление Runner в конце кадра (unscaled frame wait). Только после этого одиночный путь начинает загрузку.
+
+LeaveDepartureForSoloSelectionAsync защищён transition и очищает queued reconnect; открытие одиночной карты сохраняет незавершённый solo-save. Один член экипажа после отсчёта закрывает Photon и идёт обычным соло без SharedRunContext; несколько членов сохраняют сетевой путь. LobbyManager защищает старую кнопку от повторного запуска. Ошибка загрузки снимает startingSoloRun/launchingDeparture и возвращает mode UI; LevelMapUI обрабатывает также синхронный отказ. Неверный roster/version не оставляет launchingDeparture навсегда.
+
+SoloDepartureProbe — настоящий LevelForest/возврат в Lobby, отдельные hidden network rooms и изолированный save; проверяет общую остановку/повторы/отказ/обрыв/одиночный countdown и отсутствие Photon на активации сцены. Это не WebGL-приёмка. Сценарии в Docs/COOP_BATCH_ACCEPTANCE.md; без сборки/загрузки, SDK и протокол не менялись.
