@@ -733,3 +733,14 @@ AvatarNamesProbe.Validate PASS и Run PASS с двумя настоящими Cl
 Real level SharedItemAmmoGameplayProbe log66556 PASS и полный SharedItemGameplayProbe log66589 PASS. SharedRecoveryGameplayProbe.RunColdRestart logs66733/66734/66748 PASS: persisted ticket/new recovery instance, real reload, inventory/gold, magazine3/reserve31, coins/cards/HP/exp, затем отдельная solo-ветка. Один игровой мир + два Cloud peers, не независимые браузеры. ValidateInactiveHud/AvatarNamesProbe.Validate PASS; owner keys/start scene восстановлены, редактор остановлен. Последние недоставленные действия не объявлены гарантированно сохранёнными. DB19 in_review, общий чеклист дополнен. Сборку/загрузку не выполняли.
 
 Следующий шаг — ИИ: DB-ON-043, аудит общего сида/ассортимента магазинов. Владелец позже принимает весь пакет; сейчас действий не нужно.
+
+
+## 2026-10-15 — DB-ON-043: общий seed и магазины, без сборки
+
+Проверены реальные четыре игровые сцены, Castle, ItemStore/StorePoint и fixed BoatShop. Seed/level/version задаются общим состоянием до загрузки. Найдена зависимость авторских world/store ключей от порядка корней; старый key в тесте даёт расхождение 7 магазинов после вставки постороннего root. Новый StableScenePath не включает sibling index корня, использует scene/root name; дочерняя authored-структура по-прежнему часть контента. City anchors и procedural keys сохранены. RunRandom v4, protocol -dbseed4; проверка возврата сверяет также level/generator. Это несовместимая схема ключей: будущая общая приёмка только на одной новой сборке и новых экипажах. SDK не редактировался.
+
+ItemStore.SelectAssortment — тот же игровой выбор отдельным методом без UI, исходный pool не мутирует. SharedStoreSeedProbe PASS: 48 store contexts / 140 слотов /420 сравнений, пять seed, три city-key, root reorder/разный RNG и порядок/fixed slots/price data. SharedRunValidation log66793 PASS четыре layout-пула x200. AvatarNamesProbe.Validate PASS. SharedRecoveryGameplayProbe.RunColdRestart logs66924/66925/66940 PASS реальный reload/persisted ticket/новый recovery instance, gold/bag/HP/ammo и сохранённая solo-ветка. Один game world с двумя Cloud peers; независимые витрины в браузере ещё не приняты. VerifyRestored PASS, редактор остановлен.
+
+Обновлены дизайн/карточка DB43(in_review)/общий чеклист/TODO/Online README; старые статусы документа отмечены историческими, перечислены локальные RNG и authority/snapshot системы. Сборку, архив и загрузку не делали.
+
+Следующий шаг — владелец: позже общий проход по COOP_BATCH_ACCEPTANCE после согласованной сборки. ИИ: продолжать исходные задачи до запроса сборки; приёмку не отмечать done. Сейчас владельцу действий не требуется.

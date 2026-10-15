@@ -27,7 +27,7 @@ namespace DeadBoat.Online.Editor
             Require(!Show(true, Vector3.forward * 31, 31, false) && !Show(true, Vector3.back, -1, false), "distance/behind-camera hidden");
             Require(!Show(false, Vector3.forward, 1, false) && !Show(true, Vector3.forward, 1, true), "local/menu hidden");
             var original = Fusion.Photon.Realtime.PhotonAppSettings.Global.AppSettings.AppVersion;
-            Require(SharedRunRecovery.Settings().AppVersion == (original ?? "") + "-dbitems2" &&
+            Require(SharedRunRecovery.Settings().AppVersion == (original ?? "") + "-dbseed4" &&
                 Fusion.Photon.Realtime.PhotonAppSettings.Global.AppSettings.AppVersion == original, "protocol copy leaves global SDK config untouched");
             return "PASS: safe bounded single-line names, Unicode boundaries, guest/localization, distance/behind/local/menu gates, protocol settings copy";
         }

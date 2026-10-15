@@ -1,7 +1,7 @@
 ---
 id: DB-ON-043
 title: Спроектировать сиды и восстановление случайных событий совместного забега
-status: in_progress
+status: in_review
 when: now
 ai: true
 ---
@@ -36,3 +36,21 @@ ai: true
 Дизайн, ограничения и порядок: `Docs/SHARED_RUN_SEED_AND_PHYSICS.md`.
 
 WebGL BuildPipeline завершился Success; архив `Builds/DeadBoatSharedSeedPreview-20260930.zip` (33 201 995 байт / 28 файлов) проверен ZIP CRC и загружен/сохранён в черновике 424778, file-id 13619742 (23:02:39). Совместная проверка двух клиентов ещё не выполнена.
+
+
+## Аудит и проверка 2026-10-15 — без сборки
+
+Проверен текущий общий seed, независимые layout/items/enemies/store потоки, сценовые/процедурные/city-ключи, фиксированные магазины, стоимость и путь покупки PublishDrop. Нашлась зависимость StablePath и scene-content key от mutable root sibling index. Добавление соседнего корня воспроизводит разный ассортимент в 7 авторских магазинах при прежнем алгоритме. StableScenePath теперь использует scene name + уникальное authored root name; anchored city и procedural index сохраняются. Генерация v4 / AppVersion -dbseed4 изолируют несовместимые комнаты и билеты. При возврате дополнительно сверяются уровень и версия сетевого генератора.
+
+ItemStore.SelectAssortment отделён от UI; игровой Start использует тот же выбор. Пул копируется, fixed slots не расходуют RNG; restock отсутствует. Новых правил магазина/дефицита товаров не вводили. SDK и его глобальные настройки не правили.
+
+Проверки:
+- SharedStoreSeedProbe.Run PASS: четыре реальные игровые сцены, Castle в трёх city-key, 48 store contexts / 140 слотов / 420 сравнений на пяти seed; независимость от Unity Random/чужих потоков/порядка инициализации, пересоздание города, reorder корней, фиксированные предложения, StoreItem price data, отсутствие мутации pool и вариативность seed.
+- SharedRunValidation PASS, log66793: независимые потоки/ключи, четыре реальных layout-пула x200 локаций.
+- AvatarNamesProbe.Validate PASS: общий settings-copy version gate обновлён, SDK config не мутирует.
+- SharedRecoveryGameplayProbe.RunColdRestart PASS logs66924/66925/66940 с v4: настоящий reload уровня, новый recovery component/persisted ticket, world gold/bag/magazine/reserve/HP и отдельная сохранённая solo-ветка. Один игровой мир + два Cloud peers, **не** две независимые WebGL-симуляции/сравнение витрин в браузере.
+- VerifyRestored PASS: owner return/identity/solo/mode keys и playModeStartScene восстановлены, Play Mode остановлен.
+
+Карта Random, snapshot/authority и ограничения обновлены в Docs/SHARED_RUN_SEED_AND_PHYSICS.md; сид не заменяет синхронизацию действий. Декорации/звуки и некоторые личные случайные решения остаются локальными. Приёмка ассортимента двух браузеров, следующего города, возврата/solo — в общем Docs/COOP_BATCH_ACCEPTANCE.md. Сборку/черновик не обновляли, поэтому **in_review**.
+
+Следующий шаг — владелец: позднее принять общий пакет на двух одинаковых новых WebGL-клиентах и новых экипажах. ИИ: до запроса сборки продолжать оставшиеся исходные задачи/исправлять найденные ошибки; сейчас действия владельца не нужны.

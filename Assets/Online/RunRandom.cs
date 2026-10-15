@@ -2,11 +2,11 @@ using System;
 
 namespace DeadBoat.Online
 {
-    // Version 1: integer arithmetic is identical in Editor and WebAssembly.
+    // Integer arithmetic is identical in Editor and WebAssembly.
     // A new generator per stable key prevents unrelated calls from changing the map.
     public sealed class RunRandom
     {
-        public const int Version = 3; // Stable city keys survive regeneration/reconnect.
+        public const int Version = 4; // Authored scene roots no longer depend on mutable root sibling indices.
         private uint state;
 
         public RunRandom(int seed, string stream, int index)

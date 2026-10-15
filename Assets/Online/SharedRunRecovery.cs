@@ -18,7 +18,7 @@ namespace DeadBoat.Online
     // This ticket is a capability for a live room, never a persisted online world.
     public sealed class SharedRunRecovery : MonoBehaviour
     {
-        private const string ProtocolSuffix = "-dbitems2";
+        private const string ProtocolSuffix = "-dbseed4";
         public static string ClientVersion => Application.version + ProtocolSuffix;
         private const string TicketKey = "DeadBoat.SharedReturn.v1";
         private const string IdentityKey = "DeadBoat.FusionIdentity.v1";
@@ -291,7 +291,8 @@ namespace DeadBoat.Online
                     Message = "Состояние экипажа ещё не получено. Можно повторить подключение.";
                     await AwaitCheck(StopProbeAsync(), attempt, 7, "stop incomplete probe"); return;
                 }
-                if (probeState.Seed != requested.Seed ||
+                if (probeState.Seed != requested.Seed || probeState.LevelId != requested.Level ||
+                    probeState.GenerationVersion != requested.Generator ||
                     !probeState.CanReturn(probe.LocalPlayer) || !probeState.HasOtherPlayingCrew(probe.LocalPlayer))
                 { Message = "Этот забег уже недоступен для возврата."; InvalidateReturn(); await AwaitCheck(StopProbeAsync(), attempt, 7, "stop unavailable probe"); return; }
                 Message = "Экипаж ещё в пути. Можно вернуться к команде.";

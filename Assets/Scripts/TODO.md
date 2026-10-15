@@ -252,4 +252,11 @@ Implementation backlog for eggs:
 - [x] Suppress consumed/tombstone side effects while restoring; deduplicate world IDs and repeated inventory insertion.
 - [x] One-shot ammo box during animation; active-weapon-only reload, reserve setter sign/listener/HUD fixes, prompt reserve progress capture.
 - [x] Real level + two Photon peers: transfer magazine/local reserve, stale snapshots, reconstruction, duplicate rows, reload accounting and ammo box. Cold reload reconnect and saved solo fork PASS.
-- [ ] Independent WebGL/weak-network/full-bag/simultaneous-claim acceptance in combined package; current protocol -dbitems2, no build/upload.
+- [ ] Independent WebGL/weak-network/full-bag/simultaneous-claim acceptance in combined package; protocol at this step -dbitems2 (superseded by DB-ON-043), no build/upload.
+
+
+### DB-ON-043 — common seed and store assortment (2026-10-15, source only)
+- [x] Remove mutable root sibling indices from authored scene generation/store keys; generator v4 and protocol -dbseed4 gate old worlds.
+- [x] Audit real store pools/fixed slots/prices, independent RNG and regenerated city assortment; no shared asset mutation or local restock counter.
+- [x] Editor: 48 store contexts / 140 slots / 420 comparisons; legacy divergence reproduced in 7 authored stores; four layout pools x 200 locations.
+- [ ] Independent WebGL comparison/reconnect/solo branch acceptance with combined package (Docs/COOP_BATCH_ACCEPTANCE.md); no build/upload requested.

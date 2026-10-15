@@ -33,7 +33,7 @@ public class LocationContentSpawner : MonoBehaviour
     private string stableGenerationKey;
     public void InitializeStableGeneration(string key) => stableGenerationKey = key;
     public string SharedGenerationKey => stableGenerationKey ?? (generationIndex >= 0
-        ? "procedural:" + generationIndex : "scene:" + HierarchyKey(transform));
+        ? "procedural:" + generationIndex : DeadBoat.Online.WorldSpawnIdentity.StableScenePath(transform));
 
     private void Start()
     {
@@ -165,17 +165,6 @@ public class LocationContentSpawner : MonoBehaviour
             return;
 
         _balanceProfile = Resources.Load<LocationBalanceProfile>(DefaultBalanceProfileResourcePath);
-    }
-
-    private static string HierarchyKey(Transform part)
-    {
-        string key = part.GetSiblingIndex().ToString();
-        while (part.parent != null)
-        {
-            part = part.parent;
-            key = part.GetSiblingIndex() + "/" + key;
-        }
-        return key;
     }
 
     private static void Shuffle<T>(List<T> values, DeadBoat.Online.RunRandom random)

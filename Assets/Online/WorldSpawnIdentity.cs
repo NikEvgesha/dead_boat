@@ -77,17 +77,32 @@ namespace DeadBoat.Online
         public bool Prunable => key != null && !key.StartsWith("scene:") && !key.StartsWith("boss:") && !key.StartsWith("test:");
         public int ItemTemplate { get; set; }
         public ulong TemplateId { get; set; }
+        // Root sibling indices change when persistent UI or duplicate managers are removed.
+        // Authored world roots have unique names (validated in the game scenes).
+        public static string StableScenePath(Transform part)
+        {
+            string path = "";
+            while (part.parent != null)
+            {
+                path = part.name + "[" + part.GetSiblingIndex() + "]/" + path;
+                part = part.parent;
+            }
+            return "scene:" + part.gameObject.scene.name + "/" + part.name + "/" + path;
+        }
         public static string StablePath(Transform part)
         {
             string path = "";
             var location = part.GetComponentInParent<LocationContentSpawner>();
             var anchor = part.GetComponentInParent<WorldGenerationAnchor>();
-            while (part != null && (location == null || part != location.transform) && (anchor == null || part != anchor.transform))
+            if (location == null && anchor == null) return StableScenePath(part);
+            while (part != null)
             {
+                if (location != null && part == location.transform) return location.SharedGenerationKey + "/" + path;
+                if (anchor != null && part == anchor.transform) return anchor.Key + "/" + path;
                 path = part.name + "[" + part.GetSiblingIndex() + "]/" + path;
                 part = part.parent;
             }
-            return location != null ? location.SharedGenerationKey + "/" + path : anchor != null ? anchor.Key + "/" + path : "scene:" + path;
+            throw new System.InvalidOperationException("Missing generation root");
         }
         public void InitializeRemote(ulong id, ulong template)
         {
