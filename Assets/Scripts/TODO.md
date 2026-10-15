@@ -260,3 +260,9 @@ Implementation backlog for eggs:
 - [x] Audit real store pools/fixed slots/prices, independent RNG and regenerated city assortment; no shared asset mutation or local restock counter.
 - [x] Editor: 48 store contexts / 140 slots / 420 comparisons; legacy divergence reproduced in 7 authored stores; four layout pools x 200 locations.
 - [ ] Independent WebGL comparison/reconnect/solo branch acceptance with combined package (Docs/COOP_BATCH_ACCEPTANCE.md); no build/upload requested.
+
+
+### DB-ON-040 — lobby idle safety (2026-10-15, source only)
+- [x] Monotonic unscaled clock, held input/touch/scroll activity, protected countdown/loading/transitions/ads and focus/pause return grace.
+- [x] Warning indicator renews allowance; idle shutdown rechecks eligibility, blocks duplicates and queued reconnect, preserves mode.
+- [ ] Combined WebGL/mobile/background/ad/input acceptance in Docs/COOP_BATCH_ACCEPTANCE.md; no build/upload.

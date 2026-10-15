@@ -57,7 +57,11 @@ namespace DeadBoat.Online
             scaler.matchWidthOrHeight = 0.5f;
 
             var chip = CreateButton(root.transform, "Mode button", new Vector2(1, 1),
-                new Vector2(-172, -32), new Vector2(330, 54), () => SetOpen(!open));
+                new Vector2(-172, -32), new Vector2(330, 54), () =>
+                {
+                    if (bootstrap.IdleWarning) bootstrap.StayOnline();
+                    else SetOpen(!open);
+                });
             chipText = chip.GetComponentInChildren<Text>();
 
             panel = new GameObject("Mode panel", typeof(RectTransform), typeof(Image));

@@ -38,7 +38,7 @@ namespace DeadBoat.Online
         private int connectionRevision;
         private LobbyOnlineMode mode;
         private LobbyConnectionFailure failure;
-        private DateTime lastActivityUtc;
+        private readonly LobbyIdleClock idleClock = new();
         private bool idleDisconnected;
         private bool startingSoloRun;
         private bool departureTransition;
@@ -75,10 +75,14 @@ namespace DeadBoat.Online
         public int DepartureTargetPlayers => departureTargetPlayers;
         public int DeparturePlayerCount => IsInDepartureRoom ? runner.ActivePlayers.Count() : 0;
         public bool IdleDisconnected => idleDisconnected;
+        private bool IdleProtected => leaving || startingSoloRun || launchingDeparture ||
+            connecting || stopping || departureTransition || SharedAdProtection.IsShowing ||
+            (PauseManager.Instance != null && PauseManager.Instance.IsPaused) ||
+            (inDepartureRoom && (departureState == null || (departureState.Phase >= 1 && departureState.Phase <= 3)));
+        private bool IdleEligible => (IsOnline || browsingDepartures) && !idleDisconnected && !IdleProtected;
         public int IdleSecondsRemaining => IsOnline || browsingDepartures
-            ? Mathf.Max(0, idleDisconnectSeconds - (int)(DateTime.UtcNow - lastActivityUtc).TotalSeconds)
-            : 0;
-        public bool IdleWarning => (IsOnline || browsingDepartures) && IdleSecondsRemaining <= idleWarningSeconds;
+            ? idleClock.Remaining(Time.realtimeSinceStartupAsDouble, Mathf.Max(60, idleDisconnectSeconds)) : 0;
+        public bool IdleWarning => IdleEligible && IdleSecondsRemaining <= Mathf.Clamp(idleWarningSeconds, 5, Mathf.Max(60, idleDisconnectSeconds));
         public string CurrentSessionName => runner != null && runner.SessionInfo.IsValid
             ? runner.SessionInfo.Name
             : null;
@@ -92,6 +96,7 @@ namespace DeadBoat.Online
 
         private void Awake()
         {
+            StayOnline();
             RecoveryAvatarPrefab = avatarPrefab;
             Debug.Log("[Lobby online] Bootstrap active.");
         }
@@ -145,15 +150,14 @@ namespace DeadBoat.Online
 
             if (IsOnline || browsingDepartures)
             {
-                if (Input.anyKeyDown || Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(1) ||
-                    Input.touchCount > 0 || Mathf.Abs(Input.GetAxisRaw("Mouse X")) > 0.01f ||
-                    Mathf.Abs(Input.GetAxisRaw("Mouse Y")) > 0.01f)
-                    StayOnline();
-
-                // Ads and pause overlays must not consume the idle allowance.
-                if (PauseManager.Instance != null && PauseManager.Instance.IsPaused)
-                    StayOnline();
-                else if (IdleSecondsRemaining == 0)
+                // Held movement, touch, scrolling and UI input all count as local activity.
+                // Incoming messages/session-list refreshes deliberately do not.
+                bool activity = Input.anyKey || Input.GetMouseButton(0) || Input.GetMouseButton(1) ||
+                    Input.touchCount > 0 || Input.mouseScrollDelta.sqrMagnitude > 0 ||
+                    Mathf.Abs(Input.GetAxisRaw("Mouse X")) > 0.01f ||
+                    Mathf.Abs(Input.GetAxisRaw("Mouse Y")) > 0.01f;
+                idleClock.Observe(Time.realtimeSinceStartupAsDouble, activity, IdleProtected);
+                if (IdleEligible && IdleSecondsRemaining == 0)
                     _ = DisconnectForIdleAsync();
             }
 
@@ -545,8 +549,13 @@ namespace DeadBoat.Online
 
         public void StayOnline()
         {
-            lastActivityUtc = DateTime.UtcNow;
+            idleClock.Touch(Time.realtimeSinceStartupAsDouble);
         }
+
+        // A browser may suspend all frames during an ad/system dialog. Give the
+        // returning player a full allowance rather than timing out on its first frame.
+        private void OnApplicationFocus(bool focused) => StayOnline();
+        private void OnApplicationPause(bool paused) => StayOnline();
 
         public async Task SuspendForRecoveryAsync()
         {
@@ -558,10 +567,11 @@ namespace DeadBoat.Online
 
         private async Task DisconnectForIdleAsync()
         {
-            if (idleDisconnected || (!IsOnline && !browsingDepartures) || leaving)
+            if (!IdleEligible || IdleSecondsRemaining > 0)
                 return;
 
             idleDisconnected = true;
+            reconnectRequested = false;
             ++connectionRevision;
             connectedOnce = false;
             browsingDepartures = false;
