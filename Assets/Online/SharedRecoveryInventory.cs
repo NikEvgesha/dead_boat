@@ -20,7 +20,7 @@ namespace DeadBoat.Online
                     if (!state.Items.TryGet(item.WorldId, out var current) || current.Owner != state.Runner.LocalPlayer ||
                         (current.Mode != 1 && current.Mode != 2)) continue;
                     item.Ammo = current.WeaponAmmo;
-                    seen.Add(item.WorldId);
+                    if (!seen.Add(item.WorldId)) continue;
                 }
                 items.Add(item);
             }
@@ -38,8 +38,10 @@ namespace DeadBoat.Online
             {
                 Inventory.Instance.SetLoadedInventory(new List<string>());
                 PickableItem active = null;
+                var seen = new HashSet<ulong>();
                 foreach (var entry in items)
                 {
+                    if (entry.WorldId != 0 && !seen.Add(entry.WorldId)) continue;
                     var prefab = SharedItemCatalog.Load()?.Find(entry.Template);
                     if (prefab == null) continue;
                     PickableItem item;

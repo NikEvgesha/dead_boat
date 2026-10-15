@@ -96,6 +96,7 @@ public class PlayerAmmoManager : MonoBehaviour
 
 
     public void Save() {
+        DeadBoat.Online.SharedRunRecovery.PersonalChanged();
         foreach (WeaponType type in _ammo.Keys)
         {
             SaveManager.Instance.SaveAmmo(type, _ammo[type]);

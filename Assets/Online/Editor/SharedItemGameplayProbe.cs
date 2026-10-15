@@ -50,9 +50,10 @@ namespace DeadBoat.Online.Editor
                     System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)
                     .Invoke(null, new object[] { state, Replica(peer) });
                 await Proxies(state, Replica(peer));
+                await SharedItemAmmoGameplayProbe.Check(state, Replica(peer));
                 await SharedBoatReturnGameplayProbe.Check(state);
                 await SharedRearFireGameplayProbe.Check(state);
-                Result = "PASS: city pickup/drop/purchase, driver anchor, remote carry interpolation between audits, inventory hide/drop, boat attachment, rewarded return, rear fire";
+                Result = "PASS: city pickup/drop/purchase, driver anchor, remote carry interpolation between audits, inventory hide/drop, boat attachment, item/ammo transfer/recovery, rewarded return, rear fire";
                 Debug.Log("[Item gameplay probe] " + Result);
             }
             catch (Exception e) { Result = "FAIL: " + e; Debug.LogWarning("[Item gameplay probe] " + Result); }

@@ -11,6 +11,8 @@ namespace DeadBoat.Online
         public RangedWeaponController Weapon { get; private set; }
         public Animator Animator { get; private set; }
         public UnityEngine.AI.NavMeshAgent Agent { get; private set; }
+        internal bool PersonalRegistrationPending;
+        internal double NextPersonalRegistration;
         private bool cached;
         private bool proxyInitialized, proxyAIStopped, animationApplied;
         private int proxyHP, proxyMaxHP, proxyAnimation;
@@ -111,7 +113,7 @@ namespace DeadBoat.Online
 
         private void OnDestroy()
         {
-            SoloRunBranch.RememberDestroyed(this);
+            if (!SharedRecoveryInventory.Applying) SoloRunBranch.RememberDestroyed(this);
             SharedItemsRuntime.Unregister(this);
         }
     }

@@ -18,7 +18,7 @@ namespace DeadBoat.Online
     // This ticket is a capability for a live room, never a persisted online world.
     public sealed class SharedRunRecovery : MonoBehaviour
     {
-        private const string ProtocolSuffix = "-dbnames1";
+        private const string ProtocolSuffix = "-dbitems2";
         public static string ClientVersion => Application.version + ProtocolSuffix;
         private const string TicketKey = "DeadBoat.SharedReturn.v1";
         private const string IdentityKey = "DeadBoat.FusionIdentity.v1";
@@ -205,11 +205,13 @@ namespace DeadBoat.Online
             var inventory = Inventory.Instance.GetInventoryList();
             if (inventory.Count > SharedDepartureState.RecoverySlots) return;
             var items = new List<SharedRecoveryItem>();
+            bool ownershipReady = true;
             var active = Inventory.Instance.GetComponent<ActiveItemManager>()?.Active;
             foreach (var item in inventory)
             {
                 int template = SharedItemCatalog.Load()?.Identify(item) ?? 0;
                 if (template == 0) return; // Never replace a complete bag with a partial one.
+                if (!SharedItemsRuntime.EnsurePersonalIdentity(item, template)) ownershipReady = false;
                 items.Add(new SharedRecoveryItem
                 {
                     Template = template, WorldId = item.GetComponent<WorldSpawnIdentity>()?.Id ?? 0,
@@ -217,6 +219,7 @@ namespace DeadBoat.Online
                     Equipped = item == active ? 1 : 0
                 });
             }
+            if (!ownershipReady) return; // Register all personal items in one pass, commit only acknowledged ownership.
             // Currency/cards/HP use the small progress message. A changed header
             // alone must not resend every inventory slot.
             bool changed = lastItems == null || !items.SequenceEqual(lastItems);

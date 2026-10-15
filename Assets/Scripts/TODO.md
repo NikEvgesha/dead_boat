@@ -244,3 +244,12 @@ Implementation backlog for eggs:
 - [x] Two real Photon Cloud peers: late join, live rename, fallback, local-hidden/input-free gates, camera distance, nearby labels and opaque wall render. RU preview reviewed.
 - [x] Isolate avatar layout via copied Photon AppVersion settings; reject incompatible invitation/return versions.
 - [ ] Independent WebGL/mobile and 10-player crowd, Lobby/Run/origin/driver/reconnect acceptance in the combined package. No build/upload.
+
+
+## 2026-10-15 — DB-ON-019 item/ammo transfer and recovery audit
+
+- [x] Confirm personal-item world ownership before committing recovery; keep the same ID through transfer, reject stale former-owner bag entries.
+- [x] Suppress consumed/tombstone side effects while restoring; deduplicate world IDs and repeated inventory insertion.
+- [x] One-shot ammo box during animation; active-weapon-only reload, reserve setter sign/listener/HUD fixes, prompt reserve progress capture.
+- [x] Real level + two Photon peers: transfer magazine/local reserve, stale snapshots, reconstruction, duplicate rows, reload accounting and ammo box. Cold reload reconnect and saved solo fork PASS.
+- [ ] Independent WebGL/weak-network/full-bag/simultaneous-claim acceptance in combined package; current protocol -dbitems2, no build/upload.

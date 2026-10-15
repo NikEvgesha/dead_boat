@@ -41,6 +41,42 @@ namespace DeadBoat.Online
         public static void CopyTo(List<WorldSpawnIdentity> destination) { destination.Clear(); destination.AddRange(identities.Values); }
         internal static void CopyEnemiesTo(List<WorldSpawnIdentity> destination) { destination.Clear(); destination.AddRange(enemyIdentities.Values); }
 
+        // A personal weapon needs acknowledged world ownership before entering a recovery snapshot.
+        public static bool EnsurePersonalIdentity(PickableItem item, int template)
+        {
+            var state = SharedRunContext.State;
+            if (!SharedRunContext.Playing || state == null || item == null || template == 0) return false;
+            var identity = item.GetComponent<WorldSpawnIdentity>();
+            if (identity == null)
+            {
+                identity = item.gameObject.AddComponent<WorldSpawnIdentity>();
+                identity.ItemTemplate = template;
+                identity.PersonalRegistrationPending = true;
+                identity.InitializeRemote(BitConverter.ToUInt64(Guid.NewGuid().ToByteArray(), 0), 0);
+            }
+            if (state.Items.TryGet(identity.Id, out var record))
+                return record.Owner == state.Runner.LocalPlayer && (record.Mode == 1 || record.Mode == 2);
+            if (!identity.PersonalRegistrationPending) return false;
+            double now = Time.realtimeSinceStartupAsDouble;
+            if (now >= identity.NextPersonalRegistration)
+            {
+                identity.NextPersonalRegistration = now + .5;
+                Vector3 position = PlayerMovement.Instance != null ? PlayerMovement.Instance.transform.position : item.transform.position;
+                state.RPC_DropPersonalItem(identity.Id, template, position + LobbyNetworkAvatar.Origin,
+                    item.transform.rotation, identity.Weapon?.CurrentAmmo ?? -1, true);
+            }
+            return false;
+        }
+
+        public static void Consume(PickableItem item)
+        {
+            var state = SharedRunContext.State;
+            var identity = item.GetComponent<WorldSpawnIdentity>();
+            if (!SharedRunContext.Playing || state == null || identity == null) return;
+            if (state.Items.TryGet(identity.Id, out var record) && record.Owner == state.Runner.LocalPlayer)
+                state.RPC_ItemState(identity.Id, 4, record.Position, record.Rotation, identity.Weapon?.CurrentAmmo ?? -1);
+        }
+
         public static void PublishDrop(PickableItem item)
         {
             if ((!SharedRunContext.Playing && !SoloRunBranch.Active) || item.GetComponent<WorldSpawnIdentity>() != null) return;
@@ -91,7 +127,7 @@ namespace DeadBoat.Online
             var enemy = identity.GetComponent<EnemyCore>();
             if (SharedRunContext.Playing && enemy != null && enemy.IsDead && state.Object.HasStateAuthority)
                 state.MarkEnemyDead(identity.Id);
-            if (SharedRunContext.Playing && state.Items.TryGet(identity.Id, out var record) &&
+            if (!SharedRecoveryInventory.Applying && !SharedRunRecovery.Restoring && SharedRunContext.Playing && state.Items.TryGet(identity.Id, out var record) &&
                 record.Owner == state.Runner.LocalPlayer && record.Mode != 4)
                 state.RPC_ItemState(identity.Id, 4, record.Position, record.Rotation);
             identities.Remove(identity.Id);
@@ -190,7 +226,7 @@ namespace DeadBoat.Online
                 if (item == null || identity.Enemy != null) continue;
                 bool hasRecord = state.Items.TryGet(identity.Id, out var record);
                 // Existing records need no registration or repeated dictionary lookup.
-                if (!hasRecord && state.Object.HasStateAuthority)
+                if (!hasRecord && state.Object.HasStateAuthority && !identity.PersonalRegistrationPending)
                 {
                     state.RegisterItem(identity);
                     hasRecord = state.Items.TryGet(identity.Id, out record);

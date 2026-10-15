@@ -52,7 +52,7 @@ namespace DeadBoat.Online
         }
 
         [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-        public void RPC_DropPersonalItem(ulong id, int template, Vector3 position, Quaternion rotation, int ammo, RpcInfo info = default)
+        public void RPC_DropPersonalItem(ulong id, int template, Vector3 position, Quaternion rotation, int ammo, bool inInventory = false, RpcInfo info = default)
         {
             if (Phase != 3 || !CanAct(info.Source) || Items.ContainsKey(id) || !Finite(position) ||
                 !Finite(new Vector3(rotation.x, rotation.y, rotation.z)) ||
@@ -65,7 +65,8 @@ namespace DeadBoat.Online
             Items.Add(id, new SharedItemRecord
             {
                 Template = template, WeaponAmmo = Mathf.Clamp(ammo, -1, 10000), Position = position, Rotation = rotation,
-                Owner = PlayerRef.None, HomeZ = position.z, Prunable = true, Dropped = true
+                Owner = inInventory ? info.Source : PlayerRef.None, Mode = inInventory ? 2 : 0,
+                HomeZ = position.z, Prunable = true, Dropped = true
             });
         }
 

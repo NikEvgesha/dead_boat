@@ -203,6 +203,9 @@ public class PickableItem : MonoBehaviour
         {
             if (this.GetComponent<AmmoItem>().AddAmmo())
             {
+                _status = ItemStatus.InInventory;
+                if (_collider != null) _collider.enabled = false;
+                DeadBoat.Online.SharedItemsRuntime.Consume(this);
                 StartCoroutine(PutAnimation(true));
                 //Destroy(this.gameObject);
                 return;

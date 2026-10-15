@@ -119,6 +119,9 @@ public class Inventory : MonoBehaviour
 
     public bool AddItem(PickableItem item)
     {
+        if (item == null) return false;
+        if (_bagItems.Contains(item) || _quickPanelItems.Contains(item)) return true;
+        if (item.GetComponent<AmmoItem>() != null && item.Status == ItemStatus.InInventory) return false;
         if (DeadBoat.Online.SharedItemsRuntime.Request(item, claimed => AddItem(claimed))) return false;
         bool added = false;
         if (item.Attached) return false;

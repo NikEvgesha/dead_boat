@@ -91,7 +91,7 @@ public class RangedWeaponController : MonoBehaviour
         {
             int change = PlayerAmmoManager.Instance.GetAmmo(weaponType) - value;
             if (change < 0)
-                PlayerAmmoManager.Instance.AddAmmo(weaponType,change);
+                PlayerAmmoManager.Instance.AddAmmo(weaponType, -change);
 
             if (change > 0)
                 PlayerAmmoManager.Instance.UseAmmo(weaponType, change);
@@ -115,11 +115,13 @@ public class RangedWeaponController : MonoBehaviour
 
     private void OnDisable()
     {
+        bool wasActive = _active;
         StopAllCoroutines();
+        if (PlayerAmmoManager.Instance != null) PlayerAmmoManager.Instance.NewAmmo -= NewAmmo;
         _isShooting = false;
         _active = false;
         _isReloading = false;
-        AmmoUI.UseGun?.Invoke(_active);
+        if (wasActive) AmmoUI.UseGun?.Invoke(false);
         _usableItem.Active -= SetActiveUse;
         _usableItem.Use -= UseUpdate;
         //ControlUI.Instance.ShowAttackButton(_active);
@@ -129,7 +131,7 @@ public class RangedWeaponController : MonoBehaviour
     private void Update()
     {
         // ƒополнительна€ проверка дл€ перезар€дки (клавиша R)
-        if (PlayerInput.Instance.Reload && !_isReloading && _currentAmmo < maxAmmo && ReserveAmmo > 0)
+        if (_active && _usableItem.IsActive && PlayerInput.Instance != null && PlayerInput.Instance.Reload && !_isReloading && _currentAmmo < maxAmmo && ReserveAmmo > 0)
         {
             StartCoroutine(Reload());
         }
