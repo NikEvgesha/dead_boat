@@ -1,7 +1,7 @@
 ---
 id: DB-ON-007
 title: Предел 100 одновременных игроков и поведение при переполнении
-status: in_progress
+status: in_review
 when: next
 ai: true
 ---
@@ -28,3 +28,19 @@ ai: true
 
 - `Docs/WEB_MULTIPLAYER_IMPLEMENTATION_ROADMAP.md`
 - `Docs/WEB_FUSION_SHARED_FEASIBILITY.md`
+
+
+## Обработка отказов 2026-10-15 — без сборки
+
+Общий100-CCU тариф повторно не меняли/не проверяли в dashboard. Исправлялась игровая обработка отказов: в JoinFriendLobbyAsync результат мог терять классификацию и автоматически запускать публичный reconnect даже при MaxCcuReached; адаптер приглашения считал любой false заполненной комнатой и ждал другой адрес. UI отправления показывал только общее «не удалось создать».
+
+LobbyConnectionMessages разделяет Capacity/RoomFull/NoNetwork/Timeout, общий RU/EN текст используется mode/departure UI. LastFriendJoinFailure сохраняет причину после публичного fallback, но сбрасывается при новом приглашении. При Capacity/NoNetwork/Timeout нет немедленного автоматического retry и очищается queued reconnect; RoomFull/прочие обычные ошибки сохраняют публичный fallback. Получатель ждёт другой адрес только при RoomFull, не при глобальном CCU; при reconnect ждёт окончания подключения перед сравнением региона. Recovery MaxCcuReached показывает нехватку мест и сохраняет return-ticket.
+
+Проверки:
+- ConnectionCapacityProbe.Validate PASS: MaxCcuReached/room full/timeout/network, RU/EN, ограниченная retry-policy.
+- ConnectionCapacityProbe.Run log67586 PASS: настоящий host с PlayerCount1 и отказ второму peer в занятой комнате → RoomFull → публичный fallback; затем **инъекция причины MaxCcuReached в обработчик игры**, не SDK: Capacity/сброс queued retry, UI режима и отправления, offline/manual retry доступны, билет возврата не уничтожается, stale friend failure сбрасывается; новое настоящее hidden-подключение проходит и очищает ошибку.
+- VerifyRestored PASS: owner return/identity/solo/mode keys/start scene восстановлены, Play Mode остановлен. SDK/глобальные настройки/сетевой layout/protocol не менялись. Одна изолированная Editor-сцена, не100 клиентов/не общий CCU стресс.
+
+Не проверены новым прогоном Mirra Groups/два независимых браузерных аккаунта, естественный отказ account MaxCcuReached, освобождение server-side CCU после аварийного разрыва и прохождение группы у потолка тарифа. Ни обещания100-CCU нагрузочной устойчивости, ни VIP-резерва эта задача не добавляет. Реальная связка100CCU/10мест лобби/4места забега остаётся архитектурой; spare quota при reconnect не резервируется локальным счётчиком. Сборка/загрузка и платный тариф не запускались.
+
+Следующий шаг — владелец: позднее общий WebGL-проход по Docs/COOP_BATCH_ACCEPTANCE.md, при естественном переполнении сохранить диагностический лог. ИИ: DB-ON-004, проверить отказ/отмену подключения и сохранение solo fallback без сборки. Статус in_review до ручной приёмки.

@@ -61,8 +61,8 @@ namespace DeadBoat.Online
             if (this == null)
                 return;
             busy = false;
-            localMessage = success ? null : Text("Не удалось получить список. Можно повторить поиск.",
-                "Could not load crews. You can retry.");
+            localMessage = success ? null : FailureMessage(Text("Не удалось получить список. Можно повторить поиск.",
+                "Could not load crews. You can retry."));
             rowSignature = null;
             Refresh();
         }
@@ -79,8 +79,8 @@ namespace DeadBoat.Online
                 return;
             busy = false;
             page = success ? Page.Waiting : Page.Browser;
-            localMessage = success ? null : Text("Экипаж уже недоступен. Вернитесь в лобби и попробуйте снова.",
-                "This crew is no longer available. Return to the lobby and try again.");
+            localMessage = success ? null : FailureMessage(Text("Экипаж уже недоступен. Вернитесь в лобби и попробуйте снова.",
+                "This crew is no longer available. Return to the lobby and try again."));
             rowSignature = null;
             Refresh();
         }
@@ -97,10 +97,17 @@ namespace DeadBoat.Online
                 return;
             busy = false;
             page = success ? Page.Waiting : Page.Configure;
-            localMessage = success ? null : Text("Не удалось создать экипаж. Попробуйте снова.",
-                "Could not create the crew. Please retry.");
+            localMessage = success ? null : FailureMessage(Text("Не удалось создать экипаж. Попробуйте снова.",
+                "Could not create the crew. Please retry."));
             rowSignature = null;
             Refresh();
+        }
+
+        private string FailureMessage(string fallback)
+        {
+            if (online.Failure == LobbyConnectionFailure.None || online.Failure == LobbyConnectionFailure.Other) return fallback;
+            bool english = Text("ru", "en") == "en";
+            return LobbyConnectionMessages.Describe(online.Failure, english);
         }
 
         private void Update()

@@ -53,6 +53,7 @@ namespace DeadBoat.Online
             Code = null;
             Changed?.Invoke();
             int epoch = ++generation;
+            lobby.ResetFriendJoinFailure();
             string groupId = null;
             string inviteId = null;
             bool hiddenRoom = false;
@@ -183,7 +184,7 @@ namespace DeadBoat.Online
             {
                 if (hiddenRoom) lobby.OpenFriendLobbyToPublic();
                 Debug.LogWarning("[Lobby invite] Failed: " + exception.GetType().Name);
-                SetStatus("Не удалось пригласить или перевести друга. Проверьте сеть и повторите.");
+                SetStatus(FriendTransportFailure("Не удалось пригласить или перевести друга. Проверьте сеть и повторите."));
             }
             finally
             {
@@ -226,6 +227,7 @@ namespace DeadBoat.Online
 
             busy = true;
             int epoch = ++generation;
+            lobby.ResetFriendJoinFailure();
             try
             {
                 if (!await social.ConnectAsync()) throw new InvalidOperationException("Mirra offline");
@@ -246,6 +248,10 @@ namespace DeadBoat.Online
                         state.version != SharedRunRecovery.ClientVersion ||
                         DateTimeOffset.UtcNow.ToUnixTimeSeconds() >= state.expires)
                         throw new InvalidOperationException("Invite version, identity or expiry mismatch");
+                    // A room-full fallback may still be reconnecting to the public lobby.
+                    // Its region is temporarily null; do not mistake this for a cross-region invite.
+                    if (lobby.IsConnecting) { await Task.Delay(1000); continue; }
+                    if (!lobby.IsOnline) throw new InvalidOperationException("Friend transport unavailable");
                     if (state.region != lobby.CurrentRegion)
                         throw new InvalidOperationException("Friend is in another Photon region");
                     if (state.ready && !string.IsNullOrEmpty(state.room) && state.room != failedRoom &&
@@ -254,6 +260,8 @@ namespace DeadBoat.Online
                         SetStatus("Вход в " + state.room + " (" + state.region + ", v" + state.version + ")…");
                         if (!await lobby.JoinFriendLobbyAsync(state.room, state.region, false, false))
                         {
+                            if (lobby.LastFriendJoinFailure != LobbyConnectionFailure.RoomFull)
+                                throw new InvalidOperationException("Friend transport unavailable");
                             failedRoom = state.room;
                             SetStatus("Комната заполнилась. Ожидание другого лобби…");
                             continue;
@@ -269,9 +277,16 @@ namespace DeadBoat.Online
             catch (Exception exception)
             {
                 Debug.LogWarning("[Lobby invite] Join failed: " + exception.GetType().Name);
-                SetStatus("Не удалось войти по приглашению. Вы остались в текущем лобби или переподключаетесь.");
+                SetStatus(FriendTransportFailure("Не удалось войти по приглашению. Вы остались в текущем лобби или переподключаетесь."));
             }
             finally { busy = false; Changed?.Invoke(); }
+        }
+
+        private string FriendTransportFailure(string fallback)
+        {
+            var reason = lobby.Failure == LobbyConnectionFailure.None ? lobby.LastFriendJoinFailure : lobby.Failure;
+            return reason == LobbyConnectionFailure.Capacity || reason == LobbyConnectionFailure.NoNetwork || reason == LobbyConnectionFailure.Timeout
+                ? LobbyConnectionMessages.Describe(reason, false) : fallback;
         }
 
         private bool IsCurrent(int epoch) => this != null && isActiveAndEnabled && epoch == generation;

@@ -179,24 +179,7 @@ namespace DeadBoat.Online
             retryButton.interactable = !bootstrap.IsConnecting;
         }
 
-        private string FailureText(bool english)
-        {
-            switch (bootstrap.Failure)
-            {
-                case LobbyConnectionFailure.NoNetwork:
-                    return english ? "No network. Play offline or reconnect later." :
-                        "Нет сети. Играйте офлайн или подключитесь позже.";
-                case LobbyConnectionFailure.Capacity:
-                    return english ? "Online is full. Try again later; offline play is available." :
-                        "Сейчас нет мест. Попробуйте позже; офлайн доступен.";
-                case LobbyConnectionFailure.Timeout:
-                    return english ? "Connection timed out. You can retry." :
-                        "Сервер не ответил. Можно попробовать ещё раз.";
-                default:
-                    return english ? "Offline. You can reconnect at any time." :
-                        "Офлайн. Можно подключиться в любой момент.";
-            }
-        }
+        private string FailureText(bool english) => LobbyConnectionMessages.Describe(bootstrap.Failure, english);
 
         internal static Button CreateButton(Transform parent, string name, Vector2 anchor,
             Vector2 position, Vector2 size, UnityEngine.Events.UnityAction action)

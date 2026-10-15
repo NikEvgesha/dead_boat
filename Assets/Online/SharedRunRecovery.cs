@@ -317,6 +317,8 @@ namespace DeadBoat.Online
             { Message = "Экипаж уже завершил забег. Можно начать новую поездку."; InvalidateReturn(); }
             else if (reason.ToString().Contains("GameClosed"))
                 Message = "Комната пока закрыта. Подожди смены ведущего и повтори подключение.";
+            else if (reason == ShutdownReason.MaxCcuReached)
+                Message = LobbyConnectionMessages.Describe(LobbyConnectionFailure.Capacity, false);
             else Message = "Не удалось проверить экипаж. Попробуй переподключиться позже.";
         }
         private int BeginCheck()

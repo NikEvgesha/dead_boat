@@ -105,3 +105,12 @@ SoloDepartureProbe — настоящий LevelForest/возврат в Lobby, �
 SharedDepartureState сравнивает roster с ActivePlayers и учитывает IPlayerJoined/IPlayerLeft во время countdown. Локальный event guard привязан к TargetTick конкретного отсчёта, чтобы старое событие прокси не отменяло следующий отсчёт после передачи authority. Быстрые leave+join между тиками могут дать прежний набор PlayerRef; callback всё равно требует новый отсчёт. При отмене очищаются timer/crew/ready/deadline. Полный состав автоматически начинает новый5-секундный таймер, неполный ждёт добора или нового решения лидера.
 
 CanLaunchDepartureNow разрешает кнопку только лидеру в Phase0. После отмены загрузочного барьера (Phase4) UI объясняет отмену и предлагает покинуть экипаж/создать новый; не показывает неработающий «Запустить сейчас» доступным. Убрана устаревшая надпись, что синхронизации взаимодействий ещё нет. SDK/сетевые поля/протокол не менялись. Независимая WebGL-приёмка в Docs/COOP_BATCH_ACCEPTANCE.md, без сборки.
+
+
+## Переполнение / переход к другу — 2026-10-15 (DB-ON-007)
+
+LobbyConnectionMessages различает global Capacity (MaxCcuReached), RoomFull, Timeout и NoNetwork, даёт общий RU/EN текст. Mode UI и departure UI используют ту же причину. JoinFriendLobby сохраняет LastFriendJoinFailure даже когда fallback уже очистил текущую ошибку после успеха; в начале нового приглашения snapshot сбрасывается. При Capacity/NoNetwork/Timeout нет немедленного автоматического повторного входа, queued reconnect очищается; обычная ошибка/RoomFull сохраняют прежний публичный fallback.
+
+Mirra invite adapter ждёт другой адрес только при RoomFull; глобальный отказ не выдаётся за заполненную комнату. Во время публичного reconnect регион временно может отсутствовать — до его окончания сравнение региона откладывается. Ошибка Cloud до транспортной попытки не заимствует прошлый friend failure. Recovery MaxCcuReached оставляет билет и понятное сообщение для повторной попытки. SDK/Cloud API/схемы/тариф не менялись, протокол тот же -dbseed4.
+
+Реальный full-room refusal, UI/ручной retry и инъекция MaxCcuReached описаны в DB-ON-007;100-клиентного насыщения и новой Mirra API-проверки не было. Общий чеклист Docs/COOP_BATCH_ACCEPTANCE.md, без сборки.

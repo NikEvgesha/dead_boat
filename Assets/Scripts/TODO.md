@@ -279,3 +279,9 @@ Implementation backlog for eggs:
 - [x] Audit actual Cloud leave/join/refill/master migration and sealed admission; add countdown-scoped membership callback guard and clear canceled roster.
 - [x] Launch UI requires waiting phase; aborted loading explains outcome and disables stale relaunch.
 - [ ] Combined independent WebGL/timer-zero/mobile acceptance per Docs/COOP_BATCH_ACCEPTANCE.md; no build/upload.
+
+
+### DB-ON-007 — capacity failure handling (2026-10-15, source only)
+- [x] Distinguish global CCU/room-full/network/timeout; shared mode/departure/invite messages and bounded friend fallback.
+- [x] Preserve friend failure snapshot, clear stale/queued retry, retain recovery ticket after MaxCcuReached; wait for region during public reconnect.
+- [ ] Independent WebGL/Mirra invite/actual CCU refusal acceptance per Docs/COOP_BATCH_ACCEPTANCE.md; no100-client saturation/build/upload or tariff change.

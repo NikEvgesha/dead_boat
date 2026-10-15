@@ -9,7 +9,7 @@ using UnityEngine;
 namespace DeadBoat.Online
 {
     public enum LobbyOnlineMode { Unselected, Online, Offline }
-    public enum LobbyConnectionFailure { None, NoNetwork, Capacity, Timeout, Other }
+    public enum LobbyConnectionFailure { None, NoNetwork, Capacity, Timeout, Other, RoomFull }
 
     public sealed class LobbyOnlineBootstrap : MonoBehaviour
     {
@@ -70,6 +70,8 @@ namespace DeadBoat.Online
         public string LastFailure => lastFailure;
         public LobbyOnlineMode Mode => mode;
         public LobbyConnectionFailure Failure => failure;
+        public LobbyConnectionFailure LastFriendJoinFailure { get; private set; }
+        internal void ResetFriendJoinFailure() => LastFriendJoinFailure = LobbyConnectionFailure.None;
         public bool IsConnecting => mode == LobbyOnlineMode.Online && (connecting || stopping || departureTransition);
         public bool IsOnline => connectedOnce && runner != null && runner.IsConnectedToServer;
         public bool IsBrowsingDepartures => browsingDepartures;
@@ -745,6 +747,7 @@ namespace DeadBoat.Online
                 (IsOnline && CurrentRegion != region)) return false;
 
             if (IsOnline && CurrentSessionName == name) return true;
+            LastFriendJoinFailure = LobbyConnectionFailure.None;
             int revision = ++connectionRevision;
             connecting = true;
             connectedOnce = false;
@@ -777,13 +780,14 @@ namespace DeadBoat.Online
                 });
                 if (await Task.WhenAny(start, Task.Delay(TimeSpan.FromSeconds(20))) != start)
                 {
-                    lastFailure = "Invitation room timed out";
+                    RecordFriendFailure("Invitation room timed out", null);
                     return false;
                 }
                 var result = await start;
-                if (leaving || revision != connectionRevision || !result.Ok)
+                if (leaving || revision != connectionRevision) return false;
+                if (!result.Ok)
                 {
-                    lastFailure = result.ErrorMessage ?? result.ShutdownReason.ToString();
+                    RecordFriendFailure(result.ShutdownReason.ToString(), result.ErrorMessage);
                     return false;
                 }
                 connectedOnce = true;
@@ -796,7 +800,7 @@ namespace DeadBoat.Online
             }
             catch (Exception exception)
             {
-                lastFailure = exception.GetType().Name;
+                if (revision == connectionRevision) RecordFriendFailure(exception.GetType().Name, exception.Message);
                 Debug.LogWarning("[Lobby invite] Room transition failed: " + exception.Message);
                 return false;
             }
@@ -806,8 +810,13 @@ namespace DeadBoat.Online
                 if (!connectedOnce)
                 {
                     await StopRunnerAsync();
-                    status = "Reconnecting to lobby";
-                    RetryConnection();
+                    if (LobbyConnectionMessages.CanFallbackAfterInvite(LastFriendJoinFailure) &&
+                        revision == connectionRevision && !leaving && !startingSoloRun)
+                    {
+                        status = "Reconnecting to lobby";
+                        RetryConnection();
+                    }
+                    else status = "Solo mode";
                 }
             }
         }
@@ -875,19 +884,16 @@ namespace DeadBoat.Online
             _ = ConnectAsync();
         }
 
-        private static LobbyConnectionFailure ClassifyFailure(string reason, string message)
+        private void RecordFriendFailure(string reason, string message)
         {
-            if (Application.internetReachability == NetworkReachability.NotReachable)
-                return LobbyConnectionFailure.NoNetwork;
-
-            string details = (reason + " " + message).ToLowerInvariant();
-            if (details.Contains("maxccu") || details.Contains("ccu") ||
-                details.Contains("full") || details.Contains("capacity"))
-                return LobbyConnectionFailure.Capacity;
-            if (details.Contains("timeout") || details.Contains("timed out"))
-                return LobbyConnectionFailure.Timeout;
-            return LobbyConnectionFailure.Other;
+            lastFailure = reason;
+            LastFriendJoinFailure = failure = ClassifyFailure(reason, message);
+            // Repeated clicks queued during the failed attempt must not hide a CCU refusal.
+            if (!LobbyConnectionMessages.CanFallbackAfterInvite(failure)) reconnectRequested = false;
         }
+
+        private static LobbyConnectionFailure ClassifyFailure(string reason, string message) =>
+            LobbyConnectionMessages.Classify(reason, message, Application.internetReachability == NetworkReachability.NotReachable);
 
         private Task StopRunnerAsync()
         {
