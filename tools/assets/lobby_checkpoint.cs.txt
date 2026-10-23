@@ -1,0 +1,16 @@
+using System; using System.IO; using System.Linq; using UnityEngine; using UnityEditor; using UnityEditor.SceneManagement;
+public static class LobbyCheckpoint {
+ public static string Run() {
+ var s=UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+ if(s.path!="Assets/Scenes/Lobby.unity" || EditorApplication.isPlaying) throw new Exception("Expected Lobby in Edit Mode");
+ Directory.CreateDirectory("Docs/assets/lobby-island/checkpoint");
+ File.Copy(s.path,"Docs/assets/lobby-island/checkpoint/Lobby.before-save.unity",false);
+ if(!EditorSceneManager.SaveScene(s)) throw new Exception("Save failed");
+ File.Copy(s.path,"Docs/assets/lobby-island/checkpoint/Lobby.saved.unity",false);
+ File.Copy(s.path+".meta","Docs/assets/lobby-island/checkpoint/Lobby.unity.meta",false);
+ File.Copy("ProjectSettings/EditorBuildSettings.asset","Docs/assets/lobby-island/checkpoint/EditorBuildSettings.asset",false);
+ if(!AssetDatabase.CopyAsset(s.path,"Assets/Scenes/LobbyIslandWorkshop.unity")) throw new Exception("Copy failed");
+ var copy=EditorSceneManager.OpenScene("Assets/Scenes/LobbyIslandWorkshop.unity",OpenSceneMode.Single);
+ return "Saved checkpoint and opened isolated copy. Roots: "+string.Join(", ",copy.GetRootGameObjects().Select(g=>g.name));
+ }
+}

@@ -1,0 +1,22 @@
+using System;
+using System.IO;
+using System.Linq;
+using UnityEngine;
+using UnityEditor;
+using UnityEditor.SceneManagement;
+public static class RaiseTreesCornerCell {
+ static Bounds B(GameObject g){var rs=g.GetComponentsInChildren<Renderer>().Where(r=>r is MeshRenderer).ToArray();var b=rs[0].bounds;foreach(var r in rs.Skip(1))b.Encapsulate(r.bounds);return b;}
+ static Bounds LocalBounds(Transform h,Renderer[] rs){var b=new Bounds();bool first=true;foreach(var r in rs){var bb=r.bounds;foreach(float x in new[]{bb.min.x,bb.max.x})foreach(float y in new[]{bb.min.y,bb.max.y})foreach(float z in new[]{bb.min.z,bb.max.z}){var p=h.InverseTransformPoint(new Vector3(x,y,z));if(first){b=new Bounds(p,Vector3.zero);first=false;}else b.Encapsulate(p);}}return b;}
+ public static void Main(){
+ var scene=UnityEngine.SceneManagement.SceneManager.GetActiveScene();if(scene.path!="Assets/Scenes/CastleServicesWorkshop.unity"||EditorApplication.isPlayingOrWillChangePlaymode)throw new Exception("Castle Edit Mode required");var root=GameObject.Find("Castle_Services_Prototype").transform;var house=root.Find("03_Service_Houses/05_Nursery");var original=house.Find("18_Original_Sheriff_Interior");if(original.Find("Cage_For_Prisoner")!=null)throw new Exception("Already moved to corner");var report=new System.Text.StringBuilder();report.AppendLine("Discarded unsaved owner movements by reopening the saved DB-ON-074 scene before work.");
+ var houses=root.Find("03_Service_Houses").Cast<Transform>().ToArray();
+ foreach(var t in root.GetComponentsInChildren<Transform>().Where(t=>t.name=="Shade_Tree"&&t.GetComponentsInChildren<Renderer>().Length>0)){
+  var before=B(t.gameObject);var nearest=houses.OrderBy(h=>new Vector2(h.position.x-before.center.x,h.position.z-before.center.z).sqrMagnitude).First();float roof=B(nearest.Find("04_Roof").gameObject).max.y;float target=roof+.3f;var s=t.localScale;s.y*=(target-before.min.y)/before.size.y;t.localScale=s;var after=B(t.gameObject);t.position+=Vector3.up*(before.min.y-after.min.y);after=B(t.gameObject);if(after.max.y<roof||Mathf.Abs(after.min.y-before.min.y)>.001f)throw new Exception("Tree height/base failed");report.AppendLine(t.parent.name+": top "+before.max.y.ToString("F2")+" -> "+after.max.y.ToString("F2")+", nearest roof "+roof.ToString("F2")+", footprint/base unchanged.");
+ }
+ var cage=new GameObject("Cage_For_Prisoner").transform;cage.SetParent(original,false);foreach(var t in original.Cast<Transform>().Where(t=>t.name.StartsWith("wall_")||t.name.StartsWith("bed_")||t.name.StartsWith("torch_")||t.name=="keyring_hanging").ToArray())t.SetParent(cage,true);
+ var rs=cage.GetComponentsInChildren<Renderer>().Where(r=>r.name.StartsWith("wall_")).ToArray();var bounds=LocalBounds(house,rs);var delta=new Vector3(-2.60f-bounds.min.x,0,2.60f-bounds.max.z);cage.position+=house.TransformVector(delta);bounds=LocalBounds(house,rs);if(Mathf.Abs(bounds.min.x+2.6f)>.001f||Mathf.Abs(bounds.max.z-2.6f)>.001f)throw new Exception("Corner alignment failed");
+ var sell=house.Find("15_Gameplay_Source/SellPoint");var money=sell.GetComponentsInChildren<Transform>(true).First(t=>t.name=="MoneyBagPoint");var output=money.position;sell.localPosition+=delta;money.position=output;report.AppendLine("Cage moved as one unit (including bed, torches and keys), delta house="+delta+"; left edge="+bounds.min.x+", rear edge="+bounds.max.z+". Furniture in front unchanged. Enemy trigger follows cage; payout remains in front.");
+ var probe=new GameObject("Temporary_Corner_Aisle_Probe");try{var cc=probe.AddComponent<CharacterController>();cc.height=1.8f;cc.radius=.4f;cc.center=new Vector3(0,.9f,0);cc.stepOffset=.3f;cc.skinWidth=.08f;probe.transform.position=house.TransformPoint(new Vector3(0,.55f,-4.5f));Physics.SyncTransforms();for(int i=0;i<55;i++)cc.Move(house.TransformVector(new Vector3(0,0,.04f))+Vector3.down*.025f);for(int i=0;i<40;i++)cc.Move(house.TransformVector(new Vector3(.04f,0,0))+Vector3.down*.025f);for(int i=0;i<90;i++)cc.Move(house.TransformVector(new Vector3(0,0,.04f))+Vector3.down*.025f);var p=house.InverseTransformPoint(probe.transform.position);if(p.z<.5f||!cc.isGrounded)throw new Exception("Aisle blocked "+p);report.AppendLine("Player-size controller entry/right aisle PASS: "+p);}finally{UnityEngine.Object.DestroyImmediate(probe);}
+ AssetDatabase.SaveAssets();if(!EditorSceneManager.SaveScene(scene))throw new Exception("Save failed");File.WriteAllText("Docs/assets/examples/CASTLE_ROLLBACK_TREES_CELL_VALIDATION.txt",report.ToString());
+ }
+}

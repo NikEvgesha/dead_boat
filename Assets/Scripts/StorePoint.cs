@@ -80,6 +80,8 @@ public class StorePoint : MonoBehaviour
             _currencyIcon.sprite = CurrencyManager.Instance.GetCurrencyIcon(currencyType);
                 
             _name.text = LocalizationManager.Instance.LocalizationData.GetTranslation(_itemPrefab.Data.name, LocalizationManager.Instance.CurrentLanguage, LocalizationKeyType.Item.ToString());
+            LocalizationManager.Instance.OnLanguageChanged -= RefreshItemName;
+            LocalizationManager.Instance.OnLanguageChanged += RefreshItemName;
 
             _BuyInfoCanvas.SetActive(false);
             _PriceCanvas.SetActive(false);
@@ -92,10 +94,18 @@ public class StorePoint : MonoBehaviour
 
     private void OnDisable()
     {
+        if (LocalizationManager.Instance != null)
+            LocalizationManager.Instance.OnLanguageChanged -= RefreshItemName;
         if (_store != null)
             _store.PlayerEnter -= SwitchPriceVisibility;
         if (_buyTouchPanel != null)
             _buyTouchPanel.PointerDown -= TryBuy;
+    }
+
+    private void RefreshItemName(string language)
+    {
+        if (_name != null && _itemPrefab != null && LocalizationManager.Instance != null)
+            _name.text = LocalizationManager.Instance.LocalizationData.GetTranslation(_itemPrefab.Data.name, language, LocalizationKeyType.Item.ToString());
     }
 
 
@@ -216,8 +226,19 @@ public class StorePoint : MonoBehaviour
     }
 
     private void GiveItem() {
-        PickableItem item = Instantiate(_itemPrefab, _buyPoint);
-        DeadBoat.Online.SharedItemsRuntime.PublishDrop(item);
+        // World purchases fall at the configured pickup spot, independent of
+        // the shop transform. Lobby purchases continue straight to inventory.
+        PickableItem item = Instantiate(_itemPrefab, _buyPoint.position, _buyPoint.rotation);
+        Transform dropCenter = _buyPoint.Find("PublicDropCenter");
+        if (dropCenter != null)
+        {
+            Collider itemCollider = item.GetComponent<Collider>();
+            if (itemCollider != null)
+            {
+                Physics.SyncTransforms();
+                item.transform.position += dropCenter.position - itemCollider.bounds.center;
+            }
+        }
         item.CheckTags();
         if (LoadingManager.Instance.CurrentLocation == Location.Lobby)
         {
@@ -225,6 +246,10 @@ public class StorePoint : MonoBehaviour
             if (!item.HaveTag(ItemTag.Ammo))
                 SaveManager.Instance.SaveLobbyItem(item.Data.Name);
 
+        }
+        else
+        {
+            DeadBoat.Online.SharedItemsRuntime.PublishDrop(item);
         }
 
         ItemTag tag =

@@ -1,0 +1,18 @@
+using System; using System.IO; using System.Linq; using System.Text; using UnityEngine; using UnityEditor;
+public static class LobbyAudit {
+ public static string Run(){
+ var b=new StringBuilder(); var s=UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+ b.AppendLine("Scene="+s.path+" compiling="+EditorApplication.isCompiling+" playing="+EditorApplication.isPlaying);
+ foreach(var root in s.GetRootGameObjects()) foreach(var t in root.GetComponentsInChildren<Transform>(true)) {
+ string path=t.name; var p=t.parent; while(p!=null){path=p.name+"/"+path;p=p.parent;}
+ b.AppendLine(path+" @"+t.position+" components="+string.Join(",",t.GetComponents<Component>().Select(c=>c==null?"MISSING":c.GetType().Name)));
+ }
+ b.AppendLine("ASSET BOUNDS");
+ foreach(var id in AssetDatabase.FindAssets("t:Prefab",new[]{"Assets/Prefabs"})){
+ var path=AssetDatabase.GUIDToAssetPath(id); if(!(path.Contains("Workshop")||path.Contains("Board")||path.Contains("Leaderboard")||path.ToLower().Contains("boat"))) continue;
+ var g=AssetDatabase.LoadAssetAtPath<GameObject>(path); var rs=g.GetComponentsInChildren<Renderer>(true); var bounds=new Bounds(); bool first=true; foreach(var r in rs){if(first){bounds=r.bounds;first=false;}else bounds.Encapsulate(r.bounds);}
+ b.AppendLine(path+" bounds="+bounds+" rootScale="+g.transform.localScale);
+ }
+ File.WriteAllText("Docs/assets/lobby-island/audit.txt",b.ToString()); return b.ToString();
+ }
+}

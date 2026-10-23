@@ -1,0 +1,5 @@
+{
+  "methodName": "Run",
+  "csharpCode": "using System; using System.Linq; using UnityEngine; using UnityEditor;\npublic static class LobbyBoatProbe088 { public static string Run(){var a=AssetDatabase.LoadAssetAtPath<GameObject>(\"Assets/Prefabs/BoardController.prefab\");return string.Join(\"\\n\",a.GetComponentsInChildren<Renderer>(true).Select(r=>r.GetType().Name+\" \"+r.name+\" enabled=\"+r.enabled+\" active=\"+r.gameObject.activeSelf+\" mesh=\"+(r.GetComponent<MeshFilter>()==null||r.GetComponent<MeshFilter>().sharedMesh==null?\"none\":r.GetComponent<MeshFilter>().sharedMesh.name)+\" materials=\"+string.Join(\",\",r.sharedMaterials.Select(m=>m==null?\"null\":m.name))));}}\n",
+  "className": "LobbyBoatProbe088"
+}

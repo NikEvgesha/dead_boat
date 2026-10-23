@@ -1,0 +1,5 @@
+{
+  "methodName": "Run",
+  "className": "LobbyUIProbe088",
+  "csharpCode": "using System; using System.Linq; using UnityEngine; using UnityEditor;\npublic static class LobbyUIProbe088 {public static string Run(){var s=UnityEngine.SceneManagement.SceneManager.GetActiveScene();var g=s.GetRootGameObjects().First(x=>x.name==\"Leaderboard\");return string.Join(\"\\n\",g.GetComponentsInChildren<RectTransform>(true).Select(t=>t.name+\" size=\"+t.rect.size+\" localScale=\"+t.localScale+\" localPos=\"+t.localPosition+\" rotation=\"+t.localEulerAngles));}}\n"
+}

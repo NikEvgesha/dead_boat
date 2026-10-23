@@ -1,0 +1,4 @@
+PASS: armory stone wall and roof style; cell 2.41 x 2.51m including posts versus old 4.2 x 4.4m; height 2m retained; player 1.8m / radius .35 reaches cell entrance (-0.96, 0.56, 1.10). Disabled obsolete enclosing collider on original interior (it blocked the new entry). Old cage retained inactive; sell trigger moved to entry; reward position retained; scene saved. Actual criminal delivery/reward untested (Fusion missing); SellPoint currently destroys accepted criminal, no persistent prisoner.
+PASS: 64 existing changed serialized objects belong only to Sheriff; no existing objects removed. Sheriff source retains gameplay fields/references, except delivery Transform and trigger geometry overrides. All local prefab references resolved.
+
+PASS: Sheriff prefab import; roof materials exactly match armory; player-size right aisle (1.12, 0.56, 1.82); SellPoint retains trigger=true; scene dirty=False

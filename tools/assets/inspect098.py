@@ -1,0 +1,6 @@
+from pathlib import Path
+import json
+code=r'''using System;using System.Linq;using System.Text;using UnityEngine;using UnityEditor;
+public static class Inspect098{public static string Run(){var b=new StringBuilder();var main=GameObject.Find("Lobby_Island_Visual_Prototype").transform.Find("01_Central_Island");foreach(var t in main.GetComponentsInChildren<Transform>()){if(t.name.Contains("Path")||t.name.Contains("Walk")||t.name.Contains("Pier")||t.name.Contains("Arrival"))b.AppendLine("MAIN "+t.name+" "+main.InverseTransformPoint(t.position)+" scale="+t.localScale);}
+foreach(var path in new[]{"Assets/Prefabs/Locations/Bilding/Hospital.prefab","Assets/Prefabs/Store/StorePoints.prefab","Assets/Prefabs/Items/Heal.prefab"}){var a=AssetDatabase.LoadAssetAtPath<GameObject>(path);b.AppendLine("ASSET "+path);foreach(var t in a.GetComponentsInChildren<Transform>(true)){b.AppendLine(t.name+" parent="+(t.parent==null?"":t.parent.name)+" mesh="+(t.GetComponent<MeshFilter>()!=null));}}System.IO.File.WriteAllText("Library/WorkshopBackups/DB-ON-098/inspect.txt",b.ToString());return b.ToString();}}'''
+Path('Library/WorkshopBackups/DB-ON-098/inspect.json').write_text(json.dumps({'csharpCode':code,'className':'Inspect098','methodName':'Run'}),encoding='utf-8')
