@@ -25,6 +25,14 @@ namespace DeadBoat.Online.Editor
         public static void Prepare()
         {
             if (EditorApplication.isPlaying) throw new System.InvalidOperationException("Prepare before Play Mode");
+            if (!SessionState.GetBool(Flag + ".RestoreProfiler", false))
+            {
+                SessionState.SetBool(Flag + ".ProfilerEnabled", UnityEditorInternal.ProfilerDriver.enabled);
+                SessionState.SetBool(Flag + ".RestoreProfiler", true);
+            }
+            // Recording thousands of Editor frames contaminates total-memory stress
+            // measurements. Preserve existing frames; restore recording after Play.
+            UnityEditorInternal.ProfilerDriver.enabled = false;
             var type = typeof(UnityEditor.Editor).Assembly.GetType("UnityEditor.LogEntries");
             var flags = (int)type.GetProperty("consoleFlags", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(null);
             SessionState.SetBool(Flag + ".ErrorPause", (flags & 4) != 0);
@@ -64,6 +72,11 @@ namespace DeadBoat.Online.Editor
             original = null;
             preview = null;
             SessionState.SetBool(Flag, false);
+            if (SessionState.GetBool(Flag + ".RestoreProfiler", false))
+            {
+                UnityEditorInternal.ProfilerDriver.enabled = SessionState.GetBool(Flag + ".ProfilerEnabled", false);
+                SessionState.SetBool(Flag + ".RestoreProfiler", false);
+            }
             if (SessionState.GetBool(Flag + ".RestoreConsole", false))
             {
                 typeof(UnityEditor.Editor).Assembly.GetType("UnityEditor.LogEntries")
