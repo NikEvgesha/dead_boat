@@ -92,9 +92,9 @@ public class LocationSpawner : MonoBehaviour
         // Вычисляем случайное расстояние до следующего объекта и обновляем lastSpawnZ
         var random = DeadBoat.Online.SharedRunContext.GenerationActive
             ? DeadBoat.Online.SharedRunContext.Random("layout", generationIndex) : null;
-        float distance = random != null ? random.Range(minDistance, maxDistance)
-            : UnityEngine.Random.Range(minDistance, maxDistance);
-        lastSpawnZ += distance;
+        var step = DeadBoat.Online.LocationLayoutPlan.Advance(generationIndex, lastSpawnZ,
+            minDistance, maxDistance, locationCollection, random);
+        lastSpawnZ = step.LogicalZ;
         int currentIndex = generationIndex++;
 
         // Фиксируем позицию спавна: spawnX, spawnY и динамический Z = lastSpawnZ
@@ -103,9 +103,12 @@ public class LocationSpawner : MonoBehaviour
         // Берём случайный префаб из коллекции
         if (locationCollection != null)
         {
-            LocationContentSpawner chosenPrefab = locationCollection.GetRandomSpawnPrefab(lastSpawnZ, random);
-            if (chosenPrefab != null && lastSpawnZ >= rear)
+            LocationContentSpawner chosenPrefab = step.Prefab;
+            if (chosenPrefab != null)
             {
+                // Skipping already retired geometry is normal; pool history must
+                // still advance, but this is not a missing-prefab warning.
+                if (lastSpawnZ < rear) return;
                 LocationContentSpawner spawnedObj = Instantiate(chosenPrefab, spawnPosition, Quaternion.identity);
                 spawnedObj.ZPosition = spawnPosition.z + FixCoordinate.Instance.BoardAddPos;
                 spawnedLocations.Add(spawnedObj);

@@ -818,3 +818,15 @@ ZombieController кооп: планирование0.2с, новый target/сд
 SharedNavigationProbe PASS sharedtrue/false на собственной NavMesh-площадке; исходный игровой fixture и синхронное hasPath/pathPending были неверной проверкой, заменены действительными запросами/destination. Нативный ABBA32агента×90кадров:2880→480запросов, submit0.0514–0.0625→0.0157–0.0169мс, nativeManager прогревается и его ускорение не заявляется. Полный стресс дважды PASS включая финал с исходными материалами;35с/4Cloud profile PASS; ReadyBarrier2Cloud regression PASS подбора/прикрепления/топлива/патронов/страниц/боя/победы/бонусов/реальной смены ведущего. Все подробности/ограничения в Docs/COOP_CPU_RENDER_20261102.md.
 
 Конечный VerifyRestored+диск4/4 PASS, Play/paused/compiling=false, ошибкиC#нет, Runner0/NavAgent0/PeerModeSingle, clockfixturefalse, Profilertrue/frame1982–3981 сохранены. Несвязанные рабочие изменения не трогать. Без сборки/черновика. DB027 остаётся in_progress: ИИ дальше отрисовка/прочие скрипты/бюджет мира; владелец позже общий WebGL, сейчас действий не нужно.
+
+## 2026-11-02 — продолжение без владельца: UI и layout
+
+Владелец подтвердил: последующие «продолжи» продолжают самостоятельную разработку; по возвращении нужен отчёт с сообщения «Я отошел…». Создан Docs/AFK_PROGRESS_20261102.md с якорем послеf7a7b2f0 и результатами последующих этапов.
+
+SharedBillboardProbe:200панелей,исходныйSeeInCamera mode0/12,unchangedWrites0,40000вызовов61.740/73.865мс,Canvas.BuildBatch0.0141/0.0150мс/120кадров. Гипотеза загрязнения неподвижного UI опровергнута, рантайм UI не менялся.
+
+LocationLayoutPlan выделяет расчёт последовательности из Instantiate; cp1251/CRLF LocationSpawner сохранены, исправлено только ложное предупреждение пропуска за rear. LocationLayoutProbe4пула/11264сравнения legacy/plan/replay/unrelatedRNG/solo/retiredSkip PASS, SharedRunValidation PASS. Первоначальный вызов валидатора ошибочно пытался сложить string+void, исправлен без исполнения тестов; фактический повтор PASS.
+
+Интеграционный4Cloud stress PASS100предметов/20трупов/маршрут5000/очисткаrear4000. Split span7751,230предметов/118врагов13.8–14.4FPS; caught61предмет/57врагов21.8–22.7FPS. Это не WebGL и не улучшение FPS. Созданы DB-ON-125 и Docs/WORLD_STREAMING_PLAN.md: до разрушительной выгрузки нужен манифест, canonical mutations и атомарное восстановление при lateJoin/authorityTransfer. Онлайн-сохранение между пустыми комнатами не вводить.
+
+Конечный VerifyRestored+диск4/4 PASS, Play/compilingfalse,Runner0,Agent0,PeerModeSingle,Profilertrue/1982–3981 сохранены. SDK/несвязанные изменения не тронуты, сборка/черновик не обновлялись. Далее ИИ — теневой манифест DB125; владелец позднее принимает общий WebGL, сейчас действий не нужно.
