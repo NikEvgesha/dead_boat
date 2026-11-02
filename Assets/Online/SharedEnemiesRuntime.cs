@@ -159,6 +159,33 @@ namespace DeadBoat.Online
             return true;
         }
 
+        // Materialize only a living, absent actor. Never use ApplySharedHealth here:
+        // its damage/death side effects belong to subsequent gameplay snapshots.
+        // The supplied record must be the latest canonical value, not an archive copy.
+        public static bool TryCreateReplica(ZombieController prefab, ulong id, SharedEnemyRecord record,
+            out WorldSpawnIdentity identity)
+        {
+            identity = null;
+            if (prefab == null || id == 0 || record.Template == 0 || record.Level < 1 || record.Level > 10 ||
+                record.MaxHP <= 0 || record.HP <= 0 || record.HP > record.MaxHP ||
+                !Finite(record.Position.x) || !Finite(record.Position.y) || !Finite(record.Position.z) ||
+                !Finite(record.Rotation.x) || !Finite(record.Rotation.y) || !Finite(record.Rotation.z) ||
+                !Finite(record.Rotation.w) || Quaternion.Dot(record.Rotation, record.Rotation) < .000001f ||
+                SharedItemsRuntime.TryFind(id, out _) ||
+                SharedRunContext.Regions?.AllowsEnemyReplica(id, record) == false) return false;
+            var enemy = Instantiate(prefab, record.Position - LobbyNetworkAvatar.Origin, record.Rotation);
+            if (!enemy.TryInitializeReplica(record.Level, record.HP, record.MaxHP))
+            {
+                enemy.gameObject.SetActive(false);
+                Destroy(enemy.gameObject);
+                return false;
+            }
+            identity = enemy.gameObject.AddComponent<WorldSpawnIdentity>();
+            identity.InitializeRemote(id, record.Template);
+            return true;
+        }
+        private static bool Finite(float value) => !float.IsNaN(value) && !float.IsInfinity(value);
+
         private void Awake() => EndGameUIManager.EndGame += OnEndGame;
         private void OnDestroy() => EndGameUIManager.EndGame -= OnEndGame;
         private void OnEndGame(EndGameState outcome)
@@ -210,9 +237,7 @@ namespace DeadBoat.Online
                         if (record.Template == 0 || record.HP <= 0 || SharedItemsRuntime.TryFind(entry.Key, out _) ||
                             !templates.TryGetValue(record.Template, out var prefab)) continue;
                         if (SharedRunContext.Regions?.AllowsEnemyReplica(entry.Key, record) == false) continue;
-                        var enemy = Instantiate(prefab, record.Position - LobbyNetworkAvatar.Origin, record.Rotation);
-                        enemy.InitializeLevel(record.Level);
-                        enemy.gameObject.AddComponent<WorldSpawnIdentity>().InitializeRemote(entry.Key, record.Template);
+                        TryCreateReplica(prefab, entry.Key, record, out _);
                     }
                 }
             }

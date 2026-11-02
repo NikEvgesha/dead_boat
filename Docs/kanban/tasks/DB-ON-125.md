@@ -43,6 +43,8 @@ Pure и финальный2peer ReadyBarrier с authored pickup/store exclusion/
 
 Следующий шаг — ИИ: контролируемая транзакция capture/remove/rehydrate одной целой процедурной локации с обработкой detached/moved вещей; затем пространственные интересы и адаптеры городов/динамических спавнов. Пул LocationSpawnCollection имеет историю неиспользованных вариантов; индекс+сид недостаточны для произвольного доступа. Не редактировать SDK. Окончательную очистку за WorldRear не смешивать с удалением реплик из неактивного региона.
 
+Дополнительный шаг перед полной транзакцией: исправлен сброс HP при Start новой сетевой копии ZombieController. Одноразовая инициализация не вызывает урон/смерть и не применяется к уже запущенному объекту. Отсутствующие proxy-враги используют общий TryCreateReplica; существующие ID/dead/invalid HP/level/pose отклоняются до создания. Настоящий Zombie.prefab + два Cloud peers: HP17/150 переживает ручной Start, новая каноническая HP11/150 — автоматический Start; копии не дублируются, SampleEnemy сохраняет burn-поля, DamagePopup/Death не возникают, обычный спавн с HP по уровню не меняется. Лог EnemyRehydration-20261102.log. Полная локация/её геометрия ещё не удалялась и не восстанавливалась этим шагом; DB-ON-125 остаётся in_progress, сборку не делать.
+
 ## Источники
 
 - `Docs/WORLD_STREAMING_PLAN.md`
@@ -57,3 +59,5 @@ Pure и финальный2peer ReadyBarrier с authored pickup/store exclusion/
 - `Assets/Online/WorldRegionCapture.cs`
 
 Ответственные: ИИ — реализация и воспроизводимые проверки; владелец — будущая приёмка общей WebGL-сборки. Сейчас сборку/черновик не обновлять.
+
+Финальный ReadyBarrier regression с новым enemy probe PASS: capture/archive/removal, предметы/топливо/оружие/страницы, бой/победа/бонусы, реальная смена ведущего, ready/leave/timeout. Проверка восстановления PASS: диск4/4 ключа, Play/compilefalse, Runner/Agent/registry0, Membership/Regions=null, Shared/SoloFalse, PeerSingle. Editor ProfilerDriver recording=true и кадры1982–3981 сохранены (это отдельный флаг от runtime Profiler.enabled). Логи EnemyRehydration-20261102.log и EnemyRehydrationReady-20261102.log. Доска126карточек проверена. Автоматическая выгрузка/сборка/черновик не включены. Далее ИИ — транзакция целой процедурной локации; владельцу сейчас ничего делать не нужно.

@@ -48,9 +48,30 @@ public class ZombieController : LevelledEnemy
         target = player?.transform;
     }
 
+    // Only a newly instantiated replica may bypass the ordinary spawn-health path.
+    // This does not simulate damage, death, XP, loot or a local burn coroutine.
+    private bool replicaHealthInitialized;
+    private bool started;
+    internal bool TryInitializeReplica(int level, int hp, int maximum)
+    {
+        if (started || replicaHealthInitialized || isDead || level < 1 || level > 10 ||
+            maximum <= 0 || hp <= 0 || hp > maximum) return false;
+        InitializeLevel(level);
+        _maxHP = maximum;
+        currentHP = hp;
+        if (hpBar != null)
+        {
+            hpBar.size = (float)hp / maximum;
+            hpBar.gameObject.SetActive(hp < maximum);
+        }
+        replicaHealthInitialized = true;
+        return true;
+    }
+
     void Start()
     {
-        InitializeLevel(mobLevel);
+        started = true;
+        if (!replicaHealthInitialized) InitializeLevel(mobLevel);
         if (target == null || Vector3.Distance(transform.position, target.position) > detectionDistance)
             agent.enabled = false;
         else
