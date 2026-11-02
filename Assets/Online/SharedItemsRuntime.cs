@@ -25,6 +25,7 @@ namespace DeadBoat.Online
         internal static readonly Unity.Profiling.ProfilerMarker UpdateMarker = new("DeadBoat.SharedItems");
         public static void Register(WorldSpawnIdentity identity)
         {
+            if (identity.RemovingReplica) return;
             if (identities.TryGetValue(identity.Id, out var restored) && restored != null && restored != identity && restored.RecoveryReplica)
             {
                 UnityEngine.Object.Destroy(identity.gameObject);
@@ -120,6 +121,8 @@ namespace DeadBoat.Online
             return true;
         }
 
+        internal static bool HasPendingRequest(ulong id) => pending.ContainsKey(id);
+
         public static void Unregister(WorldSpawnIdentity identity)
         {
             // A regenerated duplicate or stale pre-reload instance must never
@@ -127,9 +130,9 @@ namespace DeadBoat.Online
             if (!identities.TryGetValue(identity.Id, out var current) || current != identity) return;
             var state = SharedRunContext.State;
             var enemy = identity.GetComponent<EnemyCore>();
-            if (SharedRunContext.Playing && enemy != null && enemy.IsDead && state.Object.HasStateAuthority)
+            if (!identity.RemovingReplica && SharedRunContext.Playing && enemy != null && enemy.IsDead && state.Object.HasStateAuthority)
                 state.MarkEnemyDead(identity.Id);
-            if (!SharedRecoveryInventory.Applying && !SharedRunRecovery.Restoring && SharedRunContext.Playing && state.Items.TryGet(identity.Id, out var record) &&
+            if (!identity.RemovingReplica && !SharedRecoveryInventory.Applying && !SharedRunRecovery.Restoring && SharedRunContext.Playing && state.Items.TryGet(identity.Id, out var record) &&
                 record.Owner == state.Runner.LocalPlayer && record.Mode != 4)
                 state.RPC_ItemState(identity.Id, 4, record.Position, record.Rotation);
             identities.Remove(identity.Id);

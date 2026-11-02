@@ -29,6 +29,8 @@ ai: true
 
 ## Подсказки ИИ
 
+Жизненный цикл временной копии: WorldReplicaRemoval выполняет предварительную проверку всего дерева, выставляет instance-флаги и удаляет локальную реплику без tombstone; не используется автоматической выгрузкой. Архив мутаций остаётся обязательным предусловием, interest gating ещё не реализован. Solo-проверка сохраняет free item/ammo7/enemyHP55, обычное Destroy пишет consumed/dead, проверены deferred OnDestroy/replacement, отказ без частичной пометки, pending, inactive untracked inventory и unregistered ID. Финальный двухсторонний тест с guard mode3/remote inventory PASS; ReadyBarrier regression PASS подбора/прикрепления/топлива/патронов/страниц/боя/победы/бонусов/реальной смены ведущего, ready/leave/timeout. VerifyRestored и диск4/4 PASS, Playfalse/Runner0/registry0/soloFalse/sharedFalse/PeerSingle, Profiler и кадры1982–3981 восстановлены. Без сборки. Следующий шаг — ИИ: архив мутаций и подавление автоматического пересоздания вне активных регионов; владелец позже общий WebGL, сейчас действий не нужно.
+
 Следующий шаг: теневой манифест, затем canonical state/rehydration по этапам WORLD_STREAMING_PLAN. Пул LocationSpawnCollection имеет историю неиспользованных вариантов; индекс+сид недостаточны для произвольного доступа. Не редактировать SDK. Не включать разрушительную выгрузку до сохранения мутаций. Окончательную очистку за WorldRear не смешивать с удалением реплик из неактивного региона.
 
 ## Источники

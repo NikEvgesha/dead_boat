@@ -54,6 +54,7 @@ namespace DeadBoat.Online
         }
         public bool PhysicsNearby { get; set; } = true;
         public bool RecoveryReplica { get; set; }
+        internal bool RemovingReplica { get; set; }
         private Rigidbody[] corpseBodies;
         public void ApplyCorpsePhysics(bool simulate)
         {
@@ -128,7 +129,7 @@ namespace DeadBoat.Online
 
         private void OnDestroy()
         {
-            if (!SharedRecoveryInventory.Applying) SoloRunBranch.RememberDestroyed(this);
+            if (!RemovingReplica && !SharedRecoveryInventory.Applying) SoloRunBranch.RememberDestroyed(this);
             SharedItemsRuntime.Unregister(this);
         }
     }

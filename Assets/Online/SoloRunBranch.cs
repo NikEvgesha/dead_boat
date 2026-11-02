@@ -312,7 +312,7 @@ namespace DeadBoat.Online
 
         public static void RememberDestroyed(WorldSpawnIdentity identity)
         {
-            if (!Active || instance.waitingScene || identity == null) return;
+            if (!Active || instance.waitingScene || identity == null || identity.RemovingReplica) return;
             if (!SharedItemsRuntime.TryFind(identity.Id, out var registered) || registered != identity) return;
             instance.applied.Remove(identity.Id);
             if (identity.Item != null)
