@@ -33,6 +33,17 @@ namespace DeadBoat.Online
             }
             if (identities.TryGetValue(identity.Id, out var existing) && existing != null && existing.Key != identity.Key)
                 throw new InvalidOperationException("Shared world identity collision");
+            // Only explicit dormant archives participate. Missing/newer live records win.
+            var state = SharedRunContext.State;
+            var archive = SharedRunContext.Regions;
+            if (SharedRunContext.Playing && archive != null && archive.RecordCount > 0 && !HasPendingRequest(identity.Id) &&
+                ((identity.Item != null && state.Items.TryGet(identity.Id, out var itemRecord) && !archive.AllowsItemReplica(identity.Id, itemRecord)) ||
+                (identity.Enemy != null && state.TryEnemy(identity.Id, out var enemyRecord) && !archive.AllowsEnemyReplica(identity.Id, enemyRecord))))
+            {
+                identity.RemovingReplica = true;
+                UnityEngine.Object.Destroy(identity.gameObject);
+                return;
+            }
             identities[identity.Id] = identity;
             if (identity.Enemy != null) { enemyIdentities[identity.Id] = identity; EnemyRevision++; }
             else if (enemyIdentities.Remove(identity.Id)) EnemyRevision++;
@@ -210,6 +221,7 @@ namespace DeadBoat.Online
             if (sample)
             {
                 nextSample = now + 0.1;
+                SharedRunContext.Regions?.RetireBefore(state.WorldRear);
                 CaptureCrewPositions(state);
             }
             bool authority = state.Object.HasStateAuthority;
@@ -223,6 +235,7 @@ namespace DeadBoat.Online
             {
                 if ((!entry.Value.Dropped && entry.Value.Mode != 3) || entry.Value.Template == 0 || entry.Value.Mode == 4 || TryFind(entry.Key, out _) ||
                     (entry.Value.Prunable && entry.Value.HomeZ < state.WorldRear && entry.Value.Position.z < state.WorldRear)) continue;
+                if (!HasPendingRequest(entry.Key) && SharedRunContext.Regions?.AllowsItemReplica(entry.Key, entry.Value) == false) continue;
                 var prefab = SharedItemCatalog.Load()?.Find(entry.Value.Template);
                 if (prefab == null) continue;
                 var spawned = Instantiate(prefab, entry.Value.Position - LobbyNetworkAvatar.Origin, entry.Value.Rotation);

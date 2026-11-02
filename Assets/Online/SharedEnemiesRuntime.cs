@@ -209,6 +209,7 @@ namespace DeadBoat.Online
                         var record = entry.Value;
                         if (record.Template == 0 || record.HP <= 0 || SharedItemsRuntime.TryFind(entry.Key, out _) ||
                             !templates.TryGetValue(record.Template, out var prefab)) continue;
+                        if (SharedRunContext.Regions?.AllowsEnemyReplica(entry.Key, record) == false) continue;
                         var enemy = Instantiate(prefab, record.Position - LobbyNetworkAvatar.Origin, record.Rotation);
                         enemy.InitializeLevel(record.Level);
                         enemy.gameObject.AddComponent<WorldSpawnIdentity>().InitializeRemote(entry.Key, record.Template);

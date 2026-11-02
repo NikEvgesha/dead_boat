@@ -115,6 +115,7 @@ namespace DeadBoat.Online.Editor
             float scale = Time.timeScale;
             var owner = new GameObject("Temporary replica context"); owned.Add(owner);
             SharedRunContext.Begin(authority.Seed, authority.LevelId, owner, null, authority);
+            var archive = SharedRunContext.Regions;
             try
             {
                 Require(SharedRunContext.Playing, "shared context not playing");
@@ -123,6 +124,10 @@ namespace DeadBoat.Online.Editor
                 authority.RegisterItem(item); var record = authority.Items[7201]; record.WeaponAmmo = 7; authority.Items.Set(7201, record);
                 authority.SampleEnemy(enemy, enemy.Enemy);
                 await Until(() => remote.Items.TryGet(7201, out var r) && r.WeaponAmmo == 7 && remote.TryEnemy(7202, out var e) && e.HP == 55);
+                authority.TryEnemy(7202, out var capturedEnemy);
+                Require(archive.TryStore(0, 1, 0, new[] { new KeyValuePair<ulong, SharedItemRecord>(7201, record) },
+                    new[] { new KeyValuePair<ulong, SharedEnemyRecord>(7202, capturedEnemy) }, out var archiveRefusal), archiveRefusal);
+                archive.SetDormant(0, true);
                 // Exercise the dead-enemy teardown branch while canonical state is still alive.
                 typeof(EnemyCore).GetField("isDead", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(enemy.Enemy, true);
                 Require(WorldReplicaRemoval.TryRemoveLocalTree(root, out var refusal), refusal);
@@ -132,6 +137,39 @@ namespace DeadBoat.Online.Editor
                     authority.TryEnemy(7202, out var localEnemy) && localEnemy.HP == 55 &&
                     remote.TryEnemy(7202, out var remoteEnemy) && remoteEnemy.HP == 55,
                     "replica removal changed network item/ammo/enemy");
+                var duplicateItem = Item(7201); var duplicateEnemy = Enemy(7202, null);
+                await Frames();
+                Require(duplicateItem == null && duplicateEnemy == null && !SharedItemsRuntime.TryFind(7201, out _) &&
+                    !SharedItemsRuntime.TryFind(7202, out _), "dormant procedural registration resurrected copies");
+                archive.SetDormant(0, false);
+                var reopened = Item(7201);
+                Require(SharedItemsRuntime.TryFind(7201, out var found) && found == reopened, "active region did not allow registration");
+                Require(WorldReplicaRemoval.TryRemoveLocalTree(reopened.gameObject, out var reopenRefusal), reopenRefusal);
+                await Frames(); archive.SetDormant(0, true);
+                record.WeaponAmmo = 8; authority.Items.Set(7201, record);
+                foreach (var page in SharedWorldPage.All(authority.Runner))
+                    if (page.Object.HasStateAuthority && page.Enemies.TryGet((ulong)7202, out var updated))
+                    { updated.HP = 54; page.Enemies.Set((ulong)7202, updated); }
+                var latestItem = Item(7201); var latestEnemy = Enemy(7202, null);
+                Require(SharedItemsRuntime.TryFind(7201, out found) && found == latestItem &&
+                    SharedItemsRuntime.TryFind(7202, out found) && found == latestEnemy, "archive hid changed live records");
+                await Until(() => remote.Items.TryGet(7201, out var liveItem) && liveItem.WeaponAmmo == 8 &&
+                    remote.TryEnemy(7202, out var liveEnemy) && liveEnemy.HP == 54);
+                Require(archive.TryItem(0, 7201, out var oldItem) && oldItem.WeaponAmmo == 7 &&
+                    archive.TryEnemy(0, 7202, out var oldEnemy) && oldEnemy.HP == 55, "archive did not retain independent copies");
+                authority.TryEnemy(7202, out var currentEnemy);
+                Require(archive.TryStore(0, 2, 0, new[] { new KeyValuePair<ulong, SharedItemRecord>(7201, authority.Items[7201]) },
+                    new[] { new KeyValuePair<ulong, SharedEnemyRecord>(7202, currentEnemy) }, out archiveRefusal), archiveRefusal);
+                var collision = new GameObject("Temporary forced identity collision"); owned.Add(collision); collision.SetActive(false);
+                collision.AddComponent<PickableItem>().enabled = false;
+                var collisionId = collision.AddComponent<WorldSpawnIdentity>();
+                typeof(WorldSpawnIdentity).GetMethod("CacheComponents", Private).Invoke(collisionId, null);
+                typeof(WorldSpawnIdentity).GetField("<Id>k__BackingField", Private).SetValue(collisionId, (ulong)7201);
+                typeof(WorldSpawnIdentity).GetField("key", Private).SetValue(collisionId, "forced different key");
+                bool rejectedCollision = false;
+                try { SharedItemsRuntime.Register(collisionId); } catch (InvalidOperationException) { rejectedCollision = true; }
+                Require(rejectedCollision, "dormancy bypassed identity collision detection");
+                Debug.Log("[Region archive] PASS shared: dormant duplicates blocked; reopen allowed; latest ammo/HP replicate without rollback; collision protection preserved");
 
                 var ordinary = Item(7210); authority.RegisterItem(ordinary);
                 record = authority.Items[7210]; record.Mode = 3; authority.Items.Set(7210, record);
@@ -156,6 +194,7 @@ namespace DeadBoat.Online.Editor
                         page.Enemies.Remove((ulong)7202);
                     }
                 SharedRunContext.End(); Time.timeScale = scale;
+                Require(archive.RegionCount == 0 && archive.RecordCount == 0 && SharedRunContext.Regions == null, "archive survived context end");
                 foreach (var go in owned) if (go != null) Object.Destroy(go);
                 owned.Clear();
             }

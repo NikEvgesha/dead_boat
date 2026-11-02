@@ -31,7 +31,13 @@ ai: true
 
 Жизненный цикл временной копии: WorldReplicaRemoval выполняет предварительную проверку всего дерева, выставляет instance-флаги и удаляет локальную реплику без tombstone; не используется автоматической выгрузкой. Архив мутаций остаётся обязательным предусловием, interest gating ещё не реализован. Solo-проверка сохраняет free item/ammo7/enemyHP55, обычное Destroy пишет consumed/dead, проверены deferred OnDestroy/replacement, отказ без частичной пометки, pending, inactive untracked inventory и unregistered ID. Финальный двухсторонний тест с guard mode3/remote inventory PASS; ReadyBarrier regression PASS подбора/прикрепления/топлива/патронов/страниц/боя/победы/бонусов/реальной смены ведущего, ready/leave/timeout. VerifyRestored и диск4/4 PASS, Playfalse/Runner0/registry0/soloFalse/sharedFalse/PeerSingle, Profiler и кадры1982–3981 восстановлены. Без сборки. Следующий шаг — ИИ: архив мутаций и подавление автоматического пересоздания вне активных регионов; владелец позже общий WebGL, сейчас действий не нужно.
 
-Следующий шаг: теневой манифест, затем canonical state/rehydration по этапам WORLD_STREAMING_PLAN. Пул LocationSpawnCollection имеет историю неиспользованных вариантов; индекс+сид недостаточны для произвольного доступа. Не редактировать SDK. Не включать разрушительную выгрузку до сохранения мутаций. Окончательную очистку за WorldRear не смешивать с удалением реплик из неактивного региона.
+Добавлен WorldRegionArchive на SharedRunContext: копии полных item/enemy records, ревизия, seed/level/version, consumed/dead, атомарная замена, явная dormancy и предварительные лимиты128регионов/4096записей. Перечисление ограничено ещё при подготовке; отказ не меняет прежний снимок. Это локальный кэш, не постоянное сохранение и не замена сетевых страниц. Register/восстановление dropped items/proxy enemies учитывают только явно спящие записи, живое владение или изменение записи разрешают материализацию. Автоматической активации/выгрузки пока нет.
+
+Проверки архива PASS: изолированные копии/лимиты/атомарность/ревизии/членство/очистка; финальный2peer ReadyBarrier с dormancy/reopen/живыми ammo/HP/защитой коллизий ID и прежним общим regression PASS. Настоящий dropped shotgun в Forest/4Cloud: отсутствие пересоздания при dormancy, одна копия с ammo5 после открытия и новая живая ammo4 без отката PASS; собственный record/registry/GO cleanup PASS. Полный стресс100предметов/20трупов/5000маршрут/rear4000 PASS. Широкая автоматическая выгрузка не включена, критерии карты остаются открыты.
+
+Финальный35с/4Cloud profile PASS,12предметов после cleanup. VerifyRestored/диск4/4 PASS, Play/compilefalse, Runner/registry0, Regions=null, Solo/SharedFalse, PeerSingle, Profiler и кадры1982–3981 восстановлены. Без сборки/черновика. Далее ИИ — полный membership/транзакция региона; владелец позже общий WebGL, сейчас действий не нужно.
+
+Следующий шаг: полное стабильное членство записей в реальной локации, включая уже consumed/dead и перенесённые вещи; затем capture/remove/rehydrate по этапам WORLD_STREAMING_PLAN. Пул LocationSpawnCollection имеет историю неиспользованных вариантов; индекс+сид недостаточны для произвольного доступа. Не редактировать SDK. Не включать разрушительную выгрузку до сохранения мутаций. Окончательную очистку за WorldRear не смешивать с удалением реплик из неактивного региона.
 
 ## Источники
 
@@ -41,5 +47,7 @@ ai: true
 - `Assets/Online/SharedDepartureState.World.cs`
 - `Assets/Online/SharedDepartureState.Items.cs`
 - `Assets/Online/SharedWorldPage.cs`
+- `Assets/Online/WorldRegionArchive.cs`
+- `Assets/Online/WorldReplicaRemoval.cs`
 
 Ответственные: ИИ — реализация и воспроизводимые проверки; владелец — будущая приёмка общей WebGL-сборки. Сейчас сборку/черновик не обновлять.
