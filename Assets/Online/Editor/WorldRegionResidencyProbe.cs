@@ -12,7 +12,7 @@ namespace DeadBoat.Online.Editor
     public static class WorldRegionResidencyProbe
     {
         private const BindingFlags Private = BindingFlags.Instance | BindingFlags.NonPublic;
-        public static async Task RunShared(SharedDepartureState authority, SharedDepartureState remote)
+        public static async Task RunShared(SharedDepartureState authority, SharedDepartureState remote, bool handoff = false)
         {
             Require(!SharedRunContext.Active && LoadingManager.Instance == null, "isolated scene required");
             var ownerObject = new GameObject("Temporary residency owner");
@@ -22,7 +22,12 @@ namespace DeadBoat.Online.Editor
             var balance = ScriptableObject.CreateInstance<LocationBalanceProfile>();
             var itemIds = new List<ulong>(); var enemyIds = new List<ulong>();
             float scale = Time.timeScale;
-            SharedRunContext.Begin(authority.Seed, authority.LevelId, ownerObject, null, authority);
+            Require(FixCoordinate.Instance == null, "no owner coordinate controller in isolated scene");
+            var coordinates = new GameObject("Temporary origin controller"); coordinates.SetActive(false);
+            var coordinate = coordinates.AddComponent<FixCoordinate>(); coordinate.enabled = false;
+            FixCoordinate.Instance = coordinate; // Awake would require the real save/boat bootstrap.
+
+            SharedRunContext.Begin(authority.Seed, authority.LevelId, ownerObject, null, handoff ? remote : authority);
             try
             {
                 Time.timeScale = 0;
@@ -93,6 +98,11 @@ namespace DeadBoat.Online.Editor
                 foreach (var page in SharedWorldPage.All(authority.Runner))
                     if (page.Object.HasStateAuthority && page.Enemies.TryGet(woundedId, out var e))
                     { e.HP = 13; page.Enemies.Set(woundedId, e); }
+                await Until(() => SharedRunContext.State.Items.TryGet(weaponId, out var currentAmmo) && currentAmmo.WeaponAmmo == 1 &&
+                    SharedRunContext.State.TryEnemy(woundedId, out var currentEnemy) && currentEnemy.HP == 13);
+                typeof(FixCoordinate).GetField("_boardAddPos", Private).SetValue(coordinate, 500f);
+                typeof(FixCoordinate).GetField("_playerAddPos", Private).SetValue(coordinate, 500f);
+                detached.transform.position -= Vector3.forward * 500;
                 Require(WorldRegionResidency.TryRestore(ticket, out root, out reason), reason);
                 Quiet(root);
                 Check(root, manifest, weaponId, usedId, deadId, woundedId, detachedId, detached);
@@ -100,6 +110,14 @@ namespace DeadBoat.Online.Editor
                 await Task.Delay(150); // Unity completes deferred removal of skipped prefab children.
                 Require(WorldRegionResidency.TrySuspend(root, 2, out ticket, out reason), reason);
                 await Task.Delay(150);
+                if (handoff)
+                {
+                    var formerMaster = authority.Runner;
+                    authority = remote;
+                    await formerMaster.Shutdown();
+                    await Until(() => remote.Object.HasStateAuthority && SharedWorldPage.All(remote.Runner).All(p => p.Object.HasStateAuthority));
+                    Require(SharedRunContext.Playing, "survivor context lost during region dormancy");
+                }
                 // Missing canonical state must roll back partial replicas, not infer a
                 // pristine item from the seed or overwrite the live world from archive.
                 foreach (var page in SharedWorldPage.All(authority.Runner)) if (page.Object.HasStateAuthority) page.Items.Remove(weaponId);
@@ -114,7 +132,7 @@ namespace DeadBoat.Online.Editor
                 await Until(() => remote.Items.TryGet(weaponId, out var w) && w.WeaponAmmo == 1 &&
                     remote.Items.TryGet(usedId, out var c) && c.Mode == 4 &&
                     remote.TryEnemy(deadId, out var d) && d.HP == 0 && remote.TryEnemy(woundedId, out var e) && e.HP == 13);
-                string result = "[Region residency] PASS: real ruins geometry + controlled seeded content; two suspend/restore cycles; consumed/dead absent; wounded HP13/ammo1 latest; detached dropped actor retained; layout cursor unchanged; nearby guard; partial failure rollback/retry; two-peer records unchanged";
+                string result = "[Region residency] PASS handoff=" + handoff + "; origin500; real ruins geometry + controlled seeded content; two suspend/restore cycles; consumed/dead absent; wounded HP13/ammo1 latest; detached dropped actor retained; layout cursor unchanged; nearby guard; partial failure rollback/retry; two-peer records unchanged";
                 Debug.Log(result); System.IO.File.WriteAllText("Logs/WorldRegionResidency-20261102.log", result);
             }
             finally
@@ -127,6 +145,7 @@ namespace DeadBoat.Online.Editor
                 { foreach (ulong id in itemIds) page.Items.Remove(id); foreach (ulong id in enemyIds) page.Enemies.Remove(id); }
                 SharedRunContext.End(); Time.timeScale = scale;
                 Object.Destroy(ownerObject); Object.Destroy(staging); Object.Destroy(balance);
+                FixCoordinate.Instance = null; Object.Destroy(coordinates);
             }
         }
         private static void Quiet(LocationContentSpawner root)
@@ -141,9 +160,15 @@ namespace DeadBoat.Online.Editor
         {
             Require(root != null && root.gameObject.activeInHierarchy && manifest.NextIndex == 1 && manifest.LastLogicalZ == 1000,
                 "restore advanced layout");
+            Require((root.transform.position + LobbyNetworkAvatar.Origin - new Vector3(10, 0, 1000)).sqrMagnitude < .0001f,
+                "region logical position changed after origin shift");
             Require(!SharedItemsRuntime.TryFind(used, out _) && !SharedItemsRuntime.TryFind(dead, out _), "consumed/dead actor resurrected");
-            Require(SharedItemsRuntime.TryFind(weapon, out var gun) && gun.Weapon.CurrentAmmo == 1 &&
-                SharedItemsRuntime.TryFind(wounded, out var enemy) && enemy.Enemy.SharedHP == 13, "archive overwrote latest HP/ammo");
+            Require(SharedItemsRuntime.TryFind(weapon, out var gun) && gun.Weapon.CurrentAmmo == 1, "archive overwrote latest ammo");
+            Require(SharedItemsRuntime.TryFind(wounded, out var enemy) && enemy.Enemy.SharedHP == 13, "archive overwrote latest HP");
+            var state = SharedRunContext.State;
+            Require((gun.transform.position + LobbyNetworkAvatar.Origin - state.Items[weapon].Position).sqrMagnitude < .0001f &&
+                state.TryEnemy(wounded, out var record) && (enemy.transform.position + LobbyNetworkAvatar.Origin - record.Position).sqrMagnitude < .0001f,
+                "restored actor logical pose changed");
             Require(SharedItemsRuntime.TryFind(detachedId, out var kept) && kept == detached && !kept.transform.IsChildOf(root.transform),
                 "detached duplicate/reparent");
             foreach (ulong id in new[] { weapon, wounded, detachedId })

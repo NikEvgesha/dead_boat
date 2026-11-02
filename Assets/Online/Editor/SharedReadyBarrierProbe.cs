@@ -22,6 +22,7 @@ namespace DeadBoat.Online.Editor
             try
             {
                 await Case("ready", 0);
+                await Case("region handoff", 3);
                 await Case("leave", 1);
                 await Case("timeout", 2);
                 Debug.Log("[Ready probe] PASS: two-peer readiness, duplicate ACK, paused clock, leave, timeout.");
@@ -62,16 +63,20 @@ namespace DeadBoat.Online.Editor
                 await Until(() => authority.IsReady(first.LocalPlayer), "first ACK");
                 await Task.Delay(750);
                 Require(authority.Phase == 2 && !authority.IsReady(second.LocalPlayer), "premature start");
-                if (mode == 0)
+                if (mode == 0 || mode == 3)
                 {
                     remote.RPC_SceneReady();
                     await Until(() => authority.Phase == 3 && remote.Phase == 3, "all ready");
                     Require(authority.ReadyMask == 3, "ready mask");
+                    if (mode == 3) await WorldRegionResidencyProbe.RunShared(authority, remote, true);
+                    else
+                    {
                     await WorldEnemyRehydrationProbe.RunShared(authority, remote);
                     await WorldRegionResidencyProbe.RunShared(authority, remote);
                     await WorldRegionMembershipProbe.RunShared(authority, remote);
                     await WorldReplicaRemovalProbe.RunShared(authority, remote);
                     await BoatCase(first, second, authority, remote);
+                    }
                 }
                 else if (mode == 1)
                 {
