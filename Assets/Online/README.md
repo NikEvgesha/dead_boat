@@ -114,3 +114,10 @@ LobbyConnectionMessages различает global Capacity (MaxCcuReached), Room
 Mirra invite adapter ждёт другой адрес только при RoomFull; глобальный отказ не выдаётся за заполненную комнату. Во время публичного reconnect регион временно может отсутствовать — до его окончания сравнение региона откладывается. Ошибка Cloud до транспортной попытки не заимствует прошлый friend failure. Recovery MaxCcuReached оставляет билет и понятное сообщение для повторной попытки. SDK/Cloud API/схемы/тариф не менялись, протокол тот же -dbseed4.
 
 Реальный full-room refusal, UI/ручной retry и инъекция MaxCcuReached описаны в DB-ON-007;100-клиентного насыщения и новой Mirra API-проверки не было. Общий чеклист Docs/COOP_BATCH_ACCEPTANCE.md, без сборки.
+
+
+## Отмена ожидающего подключения — 2026-11-02 (DB-ON-004)
+
+LobbyConnectionWait завершает ожидание игры по отмене/таймауту и наблюдает поздние faulted tasks. Он не отменяет SDK API: Runner закрывается прежним StopRunnerAsync. AdvanceConnectionRevision сигналит отмену до ожидания нового состояния; первоначальный JoinSessionLobby, список комнат, StartGame и переход к другу больше не обязаны ждать12/20 секунд после явного выбора офлайна. Проверка revision остаётся перед принятием результата.
+
+Friend-finally заканчивает cleanup до снятия connecting, затем обрабатывает queued reconnect через TryPendingReconnect. Это сохраняет последний выбор online→offline→online и не перезапускает автоматический вход после Capacity/NoNetwork/Timeout. Отмена не записывает timeout поверх явно выбранного офлайна. SDK/протокол/сохранения не менялись. Общая приёмка — Docs/COOP_BATCH_ACCEPTANCE.md, без сборки.

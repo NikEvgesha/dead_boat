@@ -37,6 +37,7 @@ namespace DeadBoat.Online
         private bool reconnectRequested;
         private string lastFailure;
         private int connectionRevision;
+        private LobbyConnectionWait connectionWait;
         private LobbyOnlineMode mode;
         private LobbyConnectionFailure failure;
         private readonly LobbyIdleClock idleClock = new();
@@ -205,7 +206,7 @@ namespace DeadBoat.Online
             mode = LobbyOnlineMode.Offline;
             PlayerPrefs.SetInt(ModePreferenceKey, 0);
             PlayerPrefs.Save();
-            ++connectionRevision;
+            AdvanceConnectionRevision();
             reconnectRequested = false;
             connectedOnce = false;
             browsingDepartures = false;
@@ -231,7 +232,7 @@ namespace DeadBoat.Online
             SharedRunRecovery.Forget();
             SoloRunBranch.Clear(); // Explicitly starting a new solo run replaces an old fork.
             startingSoloRun = true;
-            ++connectionRevision;
+            AdvanceConnectionRevision();
             reconnectRequested = false;
             connectedOnce = false;
             browsingDepartures = false;
@@ -262,7 +263,7 @@ namespace DeadBoat.Online
                 return false;
 
             departureTransition = true;
-            int revision = ++connectionRevision;
+            int revision = AdvanceConnectionRevision();
             connectedOnce = false;
             status = "Finding departures";
             try
@@ -444,7 +445,7 @@ namespace DeadBoat.Online
                 return;
 
             departureTransition = true;
-            ++connectionRevision;
+            AdvanceConnectionRevision();
             reconnectRequested = false;
             connectedOnce = false;
             browsingDepartures = false;
@@ -482,7 +483,7 @@ namespace DeadBoat.Online
             foreach (var departureUI in FindObjectsByType<LobbyDepartureUI>(FindObjectsSortMode.None))
                 departureUI.Close();
             connectedOnce = inDepartureRoom = false;
-            ++connectionRevision;
+            AdvanceConnectionRevision();
             SaveManager.Instance.FlushProgress();
             if (count == 1)
             {
@@ -513,7 +514,7 @@ namespace DeadBoat.Online
                 return;
 
             departureTransition = true;
-            ++connectionRevision;
+            AdvanceConnectionRevision();
             connectedOnce = false;
             browsingDepartures = false;
             inDepartureRoom = false;
@@ -570,7 +571,7 @@ namespace DeadBoat.Online
 
         public async Task SuspendForRecoveryAsync()
         {
-            ++connectionRevision;
+            AdvanceConnectionRevision();
             reconnectRequested = false;
             connectedOnce = false;
             await StopRunnerAsync();
@@ -583,7 +584,7 @@ namespace DeadBoat.Online
 
             idleDisconnected = true;
             reconnectRequested = false;
-            ++connectionRevision;
+            AdvanceConnectionRevision();
             connectedOnce = false;
             browsingDepartures = false;
             inDepartureRoom = false;
@@ -598,7 +599,8 @@ namespace DeadBoat.Online
                 connecting || stopping || runner != null)
                 return;
 
-            int attempt = ++connectionRevision;
+            int attempt = AdvanceConnectionRevision();
+            var pending = connectionWait = new LobbyConnectionWait();
             connecting = true;
             lastFailure = null;
             failure = LobbyConnectionFailure.None;
@@ -627,7 +629,7 @@ namespace DeadBoat.Online
                     runner.AddCallbacks(browser);
 
                     var joinTask = runner.JoinSessionLobby(SessionLobby.Custom, MatchmakingLobbyName, customAppSettings: SharedRunRecovery.Settings());
-                    if (await Task.WhenAny(joinTask, Task.Delay(TimeSpan.FromSeconds(12))) != joinTask)
+                    if (!await pending.WaitAsync(joinTask, TimeSpan.FromSeconds(12)))
                     {
                         RecordTimeout(attempt);
                         await StopRunnerAsync();
@@ -650,9 +652,9 @@ namespace DeadBoat.Online
                     }
 
                     SessionInfo selected = null;
-                    if (await Task.WhenAny(browser.FirstList, Task.Delay(TimeSpan.FromSeconds(2))) == browser.FirstList)
+                    if (await pending.WaitAsync(browser.FirstList, TimeSpan.FromSeconds(2)))
                         selected = SelectRoom(await browser.FirstList, lobbyCapacity);
-                    else
+                    else if (!pending.IsCanceled)
                         Debug.LogWarning("[Lobby online] Room list was delayed; using Photon FillRoom matchmaking.");
 
                     if (leaving || attempt != connectionRevision || mode != LobbyOnlineMode.Online)
@@ -682,7 +684,7 @@ namespace DeadBoat.Online
                         ObjectProvider = objectProvider
                     });
 
-                    if (await Task.WhenAny(startTask, Task.Delay(TimeSpan.FromSeconds(20))) != startTask)
+                    if (!await pending.WaitAsync(startTask, TimeSpan.FromSeconds(20)))
                     {
                         RecordTimeout(attempt);
                         await StopRunnerAsync();
@@ -733,6 +735,7 @@ namespace DeadBoat.Online
             }
             finally
             {
+                if (ReferenceEquals(connectionWait, pending)) connectionWait = null;
                 connecting = false;
                 TryPendingReconnect();
             }
@@ -748,7 +751,8 @@ namespace DeadBoat.Online
 
             if (IsOnline && CurrentSessionName == name) return true;
             LastFriendJoinFailure = LobbyConnectionFailure.None;
-            int revision = ++connectionRevision;
+            int revision = AdvanceConnectionRevision();
+            var pending = connectionWait = new LobbyConnectionWait();
             connecting = true;
             connectedOnce = false;
             status = "Joining friend's lobby";
@@ -778,9 +782,9 @@ namespace DeadBoat.Online
                     SceneManager = sceneManager,
                     ObjectProvider = objectProvider
                 });
-                if (await Task.WhenAny(start, Task.Delay(TimeSpan.FromSeconds(20))) != start)
+                if (!await pending.WaitAsync(start, TimeSpan.FromSeconds(20)))
                 {
-                    RecordFriendFailure("Invitation room timed out", null);
+                    if (revision == connectionRevision) RecordFriendFailure("Invitation room timed out", null);
                     return false;
                 }
                 var result = await start;
@@ -806,7 +810,6 @@ namespace DeadBoat.Online
             }
             finally
             {
-                connecting = false;
                 if (!connectedOnce)
                 {
                     await StopRunnerAsync();
@@ -814,10 +817,13 @@ namespace DeadBoat.Online
                         revision == connectionRevision && !leaving && !startingSoloRun)
                     {
                         status = "Reconnecting to lobby";
-                        RetryConnection();
+                        reconnectRequested = true;
                     }
-                    else status = "Solo mode";
+                    else if (revision == connectionRevision) status = "Solo mode";
                 }
+                if (ReferenceEquals(connectionWait, pending)) connectionWait = null;
+                connecting = false;
+                TryPendingReconnect();
             }
         }
 
@@ -882,6 +888,14 @@ namespace DeadBoat.Online
 
             reconnectRequested = false;
             _ = ConnectAsync();
+        }
+
+        private int AdvanceConnectionRevision()
+        {
+            int next = ++connectionRevision;
+            connectionWait?.Cancel();
+            connectionWait = null;
+            return next;
         }
 
         private void RecordFriendFailure(string reason, string message)
@@ -996,7 +1010,7 @@ namespace DeadBoat.Online
         {
             if (GameLoader.Instance != null) GameLoader.Instance.OnLoadFailed -= OnSoloLoadFailed;
             leaving = true;
-            ++connectionRevision;
+            AdvanceConnectionRevision();
             _ = StopRunnerAsync();
         }
 

@@ -285,3 +285,10 @@ Implementation backlog for eggs:
 - [x] Distinguish global CCU/room-full/network/timeout; shared mode/departure/invite messages and bounded friend fallback.
 - [x] Preserve friend failure snapshot, clear stale/queued retry, retain recovery ticket after MaxCcuReached; wait for region during public reconnect.
 - [ ] Independent WebGL/Mirra invite/actual CCU refusal acceptance per Docs/COOP_BATCH_ACCEPTANCE.md; no100-client saturation/build/upload or tariff change.
+
+
+### DB-ON-004 — connection cancellation / solo fallback (2026-11-02, source only)
+- [x] Cancel game waits on revision change, observe late faults, retain SDK Runner shutdown and stale-result guards.
+- [x] Drain queued ordinary online after canceled friend join, finish teardown before releasing connecting.
+- [x] Real Lobby/Forest probe: three cancels, latest mode wins/one Runner, transport shutdown, solo distance/ammo/coins/cards preserved and resume without Photon.
+- [ ] Independent WebGL/physical outage/mobile background/cold startup acceptance per Docs/COOP_BATCH_ACCEPTANCE.md; no build/upload.

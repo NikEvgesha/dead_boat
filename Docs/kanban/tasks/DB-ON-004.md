@@ -1,7 +1,7 @@
 ---
 id: DB-ON-004
 title: Проверить WebGL-подключение, обрыв и одиночный fallback
-status: in_progress
+status: in_review
 when: now
 ai: true
 ---
@@ -32,3 +32,22 @@ ai: true
 
 - `Docs/WEB_MULTIPLAYER_IMPLEMENTATION_ROADMAP.md`
 - `Assets/Online/README.md`
+
+
+## Продолжение 2026-11-02 — отмена ожидания и сохранность соло, без сборки
+
+Перед работой получен fast-forward5f27538f с мастерскими/ассетами и изменением StorePoint. Несвязанные изменения не перезаписывались. Unity первоначально остановилась на Low disk space (E:~570МБ); владелец освободил место, тест продолжен. Сборка/загрузка/публикация не запускались.
+
+Найдено по коду: SelectOffline менял revision, но ожидающий JoinSessionLobby/StartGame продолжал ждать12/20s, удерживая connecting. В friend-finally отсутствовала общая обработка queued online после отмены, а cleanup снимал connecting до остановки Runner. Добавлен LobbyConnectionWait: отменяется ожидание **игры**, не SDK; StopRunnerAsync по-прежнему закрывает транспорт. AdvanceConnectionRevision сигналит отмену всем текущим ожиданиям; поздняя faulted task наблюдается, результат по-прежнему принимается только при текущей revision. Friend-finally завершает shutdown до снятия connecting и обрабатывает очередь через TryPendingReconnect. Capacity/no-network/timeout policy не отменена.
+
+Проверки:
+- Точный исходник LobbyConnectionWait скомпилирован Add-Type в .NET: отмена незавершённой20s задачи не ждёт timeout, поздний success не возобновляет её, новая попытка независима,30ms timeout/поздний fault обработаны. Это отдельная проверка класса, не доказательство поведения Unity/WebGL.
+- LobbyFallbackProbe log67693 PASS в изолированном настоящем Lobby/LevelForest: три начатых Photon-подключения отменены, queued online→offline→online приходит к одному Runner; отменённый настоящий named-friend StartGame не сообщает успех и не теряет queued online; штатный Shutdown транспорта оставляет лобби; distance987/reserve31/coins77/cardHP25 сохранены через действия подключения. Реальный solo-resume уровень загружен без connected Photon/SharedRunContext, дистанция/патроны доступны. Резерв fixture заранее согласован в runtime и временном save; это не холодный запуск приложения с дисковым сохранением.
+- Owner return/identity/solo/mode keys и playModeStartScene восстановлены после прогона (VerifyRestored PASS), затем отдельный чистый Play для capacity-регрессии. Game-save использовал SharedRunPreviewSave, данные владельца не очищались.
+
+Сценарии в Docs/COOP_BATCH_ACCEPTANCE.md. Физическое отключение интернета/реальный WebSocket timeout в iframe, мобильный фон и независимые устройства ещё требуют общей приёмки; обычный Shutdown и искусственная late task этого не доказывают. SDK/пакеты/сетевые поля/protocol не менялись. Статус in_review до WebGL-прохода.
+
+Следующий шаг — владелец: позже общий пакет по чеклисту после отдельной команды на сборку. ИИ: разбор результатов и дальнейшая проверка сетевых переходов/нагрузки; сейчас действий владельца не требуется.
+
+
+Capacity-регрессия в отдельном чистом Play log67750 PASS: реальная заполненная комната/публичный fallback, инъекция MaxCcuReached в игровой обработчик, отсутствие queued retry при CCU, mode/departure UI, сохранённый return-ticket и реальный ручной named reconnect. После второго прогона VerifyRestored PASS, Play=false. Нагрузку100 клиентов/Cloud Groups не запускали.
