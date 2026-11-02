@@ -100,6 +100,9 @@ namespace DeadBoat.Online.Editor
                     { e.HP = 13; page.Enemies.Set(woundedId, e); }
                 await Until(() => SharedRunContext.State.Items.TryGet(weaponId, out var currentAmmo) && currentAmmo.WeaponAmmo == 1 &&
                     SharedRunContext.State.TryEnemy(woundedId, out var currentEnemy) && currentEnemy.HP == 13);
+                // A fresh peer cannot rely on this former replica's local name map.
+                ((Dictionary<ulong, string>)typeof(WorldRegionResidency.Ticket).GetField("ItemNames", Private).GetValue(ticket)).Clear();
+                Require(itemIds.All(id => SharedRunContext.State.Items[id].Template > 0), "spawn record missing catalog template");
                 typeof(FixCoordinate).GetField("_boardAddPos", Private).SetValue(coordinate, 500f);
                 typeof(FixCoordinate).GetField("_playerAddPos", Private).SetValue(coordinate, 500f);
                 detached.transform.position -= Vector3.forward * 500;
