@@ -15,6 +15,7 @@ namespace DeadBoat.Online
             public bool Dormant;
             public Dictionary<ulong, SharedItemRecord> Items;
             public Dictionary<ulong, SharedEnemyRecord> Enemies;
+            public HashSet<ulong> DormantItems, DormantEnemies;
             public int Count => Items.Count + Enemies.Count;
         }
         private readonly Dictionary<int, Region> regions = new();
@@ -76,7 +77,23 @@ namespace DeadBoat.Online
         public bool SetDormant(int index, bool dormant)
         {
             if (!regions.TryGetValue(index, out var region)) return false;
-            region.Dormant = dormant; return true;
+            region.Dormant = dormant;
+            region.DormantItems = region.DormantEnemies = null;
+            return true;
+        }
+        // Capture contains the entire historical region. Only removed local actors
+        // sleep: detached/owned/cargo objects elsewhere must remain materializable.
+        public bool SetReplicaDormancy(int index, IEnumerable<ulong> items, IEnumerable<ulong> enemies)
+        {
+            if (!regions.TryGetValue(index, out var region)) return false;
+            var itemSet = new HashSet<ulong>(); var enemySet = new HashSet<ulong>();
+            foreach (ulong id in items)
+                if (!region.Items.ContainsKey(id) || !itemSet.Add(id)) return false;
+            foreach (ulong id in enemies)
+                if (!region.Enemies.ContainsKey(id) || !enemySet.Add(id)) return false;
+            region.DormantItems = itemSet; region.DormantEnemies = enemySet;
+            region.Dormant = true;
+            return true;
         }
         public bool TryItem(int index, ulong id, out SharedItemRecord item)
         {
@@ -92,6 +109,7 @@ namespace DeadBoat.Online
             // Ownership/cargo always escapes dormancy. Any newer/different live state also wins.
             if (live.Owner != PlayerRef.None || live.Mode == 1 || live.Mode == 2 || live.Mode == 3) return true;
             if (!membership.TryGetValue(id, out int index) || !regions[index].Dormant ||
+                (regions[index].DormantItems != null && !regions[index].DormantItems.Contains(id)) ||
                 !regions[index].Items.TryGetValue(id, out var old)) return true;
             return !(live.Template == old.Template && live.WeaponAmmo == old.WeaponAmmo && live.Mode == old.Mode &&
                 live.Owner == old.Owner && live.Position.Equals(old.Position) && live.Rotation.Equals(old.Rotation) &&
@@ -101,6 +119,7 @@ namespace DeadBoat.Online
         public bool AllowsEnemyReplica(ulong id, SharedEnemyRecord live)
         {
             if (!membership.TryGetValue(id, out int index) || !regions[index].Dormant ||
+                (regions[index].DormantEnemies != null && !regions[index].DormantEnemies.Contains(id)) ||
                 !regions[index].Enemies.TryGetValue(id, out var old)) return true;
             return !(live.Template == old.Template && live.HP == old.HP && live.MaxHP == old.MaxHP &&
                 live.Position.Equals(old.Position) && live.Rotation.Equals(old.Rotation) && live.Level == old.Level &&

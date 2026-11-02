@@ -25,6 +25,20 @@ public class LocationContentSpawner : MonoBehaviour
     public float ZPosition;
 
     private int _level = 1;
+    private bool contentInitialized, rehydrating;
+    private float restoredLogicalZ;
+    private IReadOnlyDictionary<ulong, string> restoredItemNames;
+    public int GenerationLevel => _level;
+    // Called only on an inactive staging root by the explicit residency transaction.
+    public void RestoreGeneration(int index, float logicalZ, IReadOnlyDictionary<ulong, string> itemNames)
+    {
+        if (contentInitialized || gameObject.activeInHierarchy) throw new System.InvalidOperationException("Inactive fresh location required");
+        rehydrating = true;
+        restoredItemNames = itemNames;
+        restoredLogicalZ = logicalZ;
+        InitializeGeneration(index);
+        Start();
+    }
     private int generationIndex = -1;
     private string generationKey;
     private DeadBoat.Online.RunRandom itemRandom;
@@ -53,6 +67,8 @@ public class LocationContentSpawner : MonoBehaviour
 
     private void Start()
     {
+        if (contentInitialized) return;
+        contentInitialized = true;
         if (DeadBoat.Online.SharedRunContext.GenerationActive)
         {
             // Scene-authored locations use their stable hierarchy path; procedural ones use their index.
@@ -67,12 +83,15 @@ public class LocationContentSpawner : MonoBehaviour
             float logicalZ = transform.position.z + (FixCoordinate.Instance != null ? FixCoordinate.Instance.PlayerAddPos : DeadBoat.Online.LobbyNetworkAvatar.Origin.z);
             var owner = GetComponentInParent<LocationSpawner>();
             if (owner != null && owner.LayoutManifest != null && owner.LayoutManifest.TryGet(generationIndex, out var step)) logicalZ = step.LogicalZ;
-            tracked = membership.Begin(generationIndex, logicalZ);
+            tracked = membership.Begin(generationIndex, rehydrating ? restoredLogicalZ : logicalZ);
         }
         if (DeadBoat.Online.SharedRunContext.GenerationActive && authoredItems != null)
             foreach (var authored in authoredItems)
                 if (authored.item != null && authored.item.GetComponent<DeadBoat.Online.WorldSpawnIdentity>() == null)
-                    authored.item.gameObject.AddComponent<DeadBoat.Online.WorldSpawnIdentity>().Key = authored.key;
+                {
+                    if (rehydrating) DeadBoat.Online.WorldRegionRestore.InitializeItem(authored.item.gameObject, authored.key, restoredItemNames);
+                    else authored.item.gameObject.AddComponent<DeadBoat.Online.WorldSpawnIdentity>().Key = authored.key;
+                }
         LocationSceneBalance balance = ResolveBalance();
         SpawnItems(ResolveItemCollection());
         SpawnEnemies(balance);
@@ -102,10 +121,11 @@ public class LocationContentSpawner : MonoBehaviour
                 continue;
 
             var item = Instantiate(itemPrefab.gameObject, spawnPoint.spawnTransform.position, spawnPoint.spawnTransform.rotation, transform);
-            if (DeadBoat.Online.SharedRunContext.GenerationActive)
+            if (rehydrating) DeadBoat.Online.WorldRegionRestore.InitializeItem(item, generationKey + ":item:" + i, restoredItemNames);
+            else if (DeadBoat.Online.SharedRunContext.GenerationActive)
                 item.AddComponent<DeadBoat.Online.WorldSpawnIdentity>().Key = generationKey + ":item:" + i;
 
-            if (LocationItemSpawnCollection.IsEggPrefab(itemPrefab))
+            if (!rehydrating && LocationItemSpawnCollection.IsEggPrefab(itemPrefab))
                 EggSpawnRuntimeState.OnEggSpawned();
         }
     }
@@ -163,11 +183,23 @@ public class LocationContentSpawner : MonoBehaviour
             if (enemyPrefab == null)
                 continue;
 
+            if (rehydrating)
+            {
+                // Consume exactly the same RNG choices and spawn budget, even for
+                // a dead or detached actor that must not be instantiated again.
+                DeadBoat.Online.WorldRegionRestore.InitializeEnemy(enemyPrefab, generationKey + ":enemy:" + i, transform);
+                spawnedCount++;
+                continue;
+            }
             Transform enemyPoint = spawnPoints[i];
             ZombieController enemy = Instantiate(enemyPrefab, enemyPoint.position, enemyPoint.rotation, transform);
             enemy.InitializeLevel(enemyLevel);
             if (DeadBoat.Online.SharedRunContext.GenerationActive)
-                enemy.gameObject.AddComponent<DeadBoat.Online.WorldSpawnIdentity>().Key = generationKey + ":enemy:" + i;
+            {
+                var identity = enemy.gameObject.AddComponent<DeadBoat.Online.WorldSpawnIdentity>();
+                identity.TemplateId = DeadBoat.Online.SharedEnemiesRuntime.RegisterTemplate(enemyPrefab);
+                identity.Key = generationKey + ":enemy:" + i;
+            }
             spawnedCount++;
         }
     }

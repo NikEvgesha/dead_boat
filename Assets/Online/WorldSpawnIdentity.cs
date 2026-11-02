@@ -93,8 +93,8 @@ namespace DeadBoat.Online
         public static string StablePath(Transform part)
         {
             string path = "";
-            var location = part.GetComponentInParent<LocationContentSpawner>();
-            var anchor = part.GetComponentInParent<WorldGenerationAnchor>();
+            var location = part.GetComponentInParent<LocationContentSpawner>(true);
+            var anchor = part.GetComponentInParent<WorldGenerationAnchor>(true);
             if (location == null && anchor == null) return StableScenePath(part);
             while (part != null)
             {

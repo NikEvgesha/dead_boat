@@ -90,6 +90,10 @@ public class LocationSpawner : MonoBehaviour
         }
     }
 
+    internal bool OwnsReplica(LocationContentSpawner root) => spawnedLocations.Contains(root);
+    internal void ForgetReplica(LocationContentSpawner root) => spawnedLocations.Remove(root);
+    internal void TrackReplica(LocationContentSpawner root) => spawnedLocations.Add(root);
+
     void SpawnLocation(float rear)
     {
         Change?.Invoke();

@@ -12,8 +12,19 @@ namespace DeadBoat.Online
             var owner = item.GetComponentInParent<ZombieController>(true);
             return owner != null && owner.OwnsDormantCorpse(item) && owner.GetComponent<WorldSpawnIdentity>() != null;
         }
+        public static bool CanRemoveLocalTree(GameObject root, out string refusal) => Validate(root, out _, out refusal);
         public static bool TryRemoveLocalTree(GameObject root, out string refusal)
         {
+            if (!Validate(root, out var identities, out refusal)) return false;
+            foreach (var identity in identities) identity.RemovingReplica = true;
+            foreach (var identity in identities) SharedItemsRuntime.Unregister(identity);
+            root.SetActive(false);
+            Object.Destroy(root); // instance flags survive Unity's deferred OnDestroy callbacks
+            return true;
+        }
+        private static bool Validate(GameObject root, out WorldSpawnIdentity[] identities, out string refusal)
+        {
+            identities = null;
             refusal = null;
             if (root == null) { refusal = "missing root"; return false; }
             if ((!SharedRunContext.Playing && !SoloRunBranch.Active) ||
@@ -23,7 +34,7 @@ namespace DeadBoat.Online
                 root.GetComponentInChildren<PlayerMovement>(true) != null ||
                 root.GetComponentInChildren<BoardController>(true) != null)
             { refusal = "persistent or network root"; return false; }
-            var identities = root.GetComponentsInChildren<WorldSpawnIdentity>(true);
+            identities = root.GetComponentsInChildren<WorldSpawnIdentity>(true);
             // Validate the WHOLE tree before marking anything, including inactive descendants.
             foreach (var item in root.GetComponentsInChildren<PickableItem>(true))
             {
@@ -47,10 +58,6 @@ namespace DeadBoat.Online
                     (record.Owner != Fusion.PlayerRef.None || record.Mode == 1 || record.Mode == 2 || record.Mode == 3))
                 { refusal = "owned or attached record"; return false; }
             }
-            foreach (var identity in identities) identity.RemovingReplica = true;
-            foreach (var identity in identities) SharedItemsRuntime.Unregister(identity);
-            root.SetActive(false);
-            Object.Destroy(root); // instance flags survive Unity's deferred OnDestroy callbacks
             return true;
         }
     }

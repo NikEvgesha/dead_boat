@@ -68,6 +68,7 @@ namespace DeadBoat.Online.Editor
                     await Until(() => authority.Phase == 3 && remote.Phase == 3, "all ready");
                     Require(authority.ReadyMask == 3, "ready mask");
                     await WorldEnemyRehydrationProbe.RunShared(authority, remote);
+                    await WorldRegionResidencyProbe.RunShared(authority, remote);
                     await WorldRegionMembershipProbe.RunShared(authority, remote);
                     await WorldReplicaRemovalProbe.RunShared(authority, remote);
                     await BoatCase(first, second, authority, remote);
