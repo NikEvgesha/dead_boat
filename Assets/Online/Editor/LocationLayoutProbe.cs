@@ -19,6 +19,7 @@ namespace DeadBoat.Online.Editor
             var savedRandom = Random.state;
             try
             {
+                CheckManifest();
                 foreach (string guid in AssetDatabase.FindAssets("t:LocationSpawnCollection"))
                 {
                     var source = AssetDatabase.LoadAssetAtPath<LocationSpawnCollection>(AssetDatabase.GUIDToAssetPath(guid));
@@ -26,6 +27,7 @@ namespace DeadBoat.Online.Editor
                     {
                         var legacy = Object.Instantiate(source); var planned = Object.Instantiate(source);
                         var replay = Object.Instantiate(source);
+                        var manifest = new LocationLayoutManifest(seed);
                         try
                         {
                             float a = 0, b = 0, c = 0;
@@ -39,6 +41,11 @@ namespace DeadBoat.Online.Editor
                                 Random.Range(0, 100); new RunRandom(seed, "items:other", index).Value.ToString();
                                 var step = LocationLayoutPlan.Advance(index, b, min, max, planned, new RunRandom(seed, "layout", index));
                                 b = step.LogicalZ;
+                                manifest.Record(step);
+                                manifest.RetireBefore(b - 500);
+                                Require(manifest.TryGet(index, out var retained) && retained.Prefab == step.Prefab &&
+                                    retained.LogicalZ == step.LogicalZ && manifest.Count <= 11,
+                                    "manifest lost current layout or retained retired history");
                                 var reconstructed = LocationLayoutPlan.Advance(index, c, min, max, replay, new RunRandom(seed, "layout", index));
                                 c = reconstructed.LogicalZ;
                                 Require(step.Index == index && a == b && b == c && originalPrefab == step.Prefab && step.Prefab == reconstructed.Prefab,
@@ -73,7 +80,7 @@ namespace DeadBoat.Online.Editor
                     pools++;
                 }
                 Require(pools > 0, "actual location pools missing");
-                string result = $"[Layout probe] PASS pools={pools} comparisons={comparisons}; legacy/plan/replay, unrelated RNG, solo RNG, retired skip/no false warning";
+                string result = $"[Layout probe] PASS pools={pools} comparisons={comparisons}; legacy/plan/replay, unrelated RNG, solo RNG, manifest/order/retirement, retired skip/no false warning";
                 Debug.Log(result); System.IO.File.WriteAllText("Logs/LocationLayout-20261102.log", result); return result;
             }
             finally { Random.state = savedRandom; }
@@ -96,6 +103,8 @@ namespace DeadBoat.Online.Editor
                 FixCoordinate.Instance = root.AddComponent<FixCoordinate>(); // inactive: no Awake/save access
                 var spawner = root.AddComponent<LocationSpawner>(); spawner.locationCollection = pool;
                 spawner.minDistance = spawner.maxDistance = 100;
+                var manifest = new LocationLayoutManifest(0); manifest.RetireBefore(1000000);
+                typeof(LocationSpawner).GetProperty("LayoutManifest").SetValue(spawner, manifest);
                 var spawn = typeof(LocationSpawner).GetMethod("SpawnLocation", Private);
                 Application.logMessageReceived += log; LocationSpawner.Change += changed;
                 for (int i = 0; i < 10; i++) spawn.Invoke(spawner, new object[] { 1000000f });
@@ -103,6 +112,8 @@ namespace DeadBoat.Online.Editor
                 Require((int)typeof(LocationSpawner).GetField("generationIndex", Private).GetValue(spawner) == 10 &&
                     (float)typeof(LocationSpawner).GetField("lastSpawnZ", Private).GetValue(spawner) == 1000 && root.transform.childCount == 0,
                     "retired skip did not advance without creating geometry");
+                Require(manifest.NextIndex == 10 && manifest.LastLogicalZ == 1000 && manifest.Count == 0,
+                    "spawner did not record skipped history without retention");
             }
             finally
             {
@@ -110,6 +121,79 @@ namespace DeadBoat.Online.Editor
                 FixCoordinate.Instance = originalFix;
                 Object.Destroy(root); Object.Destroy(pool);
             }
+        }
+
+        private static void CheckManifest()
+        {
+            var manifest = new LocationLayoutManifest(-19);
+            Require(manifest.Seed == -19 && manifest.GeneratorVersion == RunRandom.Version, "manifest identity");
+            manifest.Record(new LocationLayoutStep(0, 100, null));
+            manifest.Record(new LocationLayoutStep(1, 200, null));
+            manifest.RetireBefore(200);
+            Require(manifest.Count == 1 && !manifest.TryGet(0, out _) && manifest.TryGet(1, out _), "rear boundary equality");
+            manifest.RetireBefore(50);
+            Require(manifest.RetiredBefore == 200, "retirement must not move backwards");
+            Reject(() => manifest.Record(new LocationLayoutStep(1, 300, null)));
+            Reject(() => manifest.Record(new LocationLayoutStep(3, 300, null)));
+            Reject(() => manifest.Record(new LocationLayoutStep(2, 199, null)));
+            Reject(() => manifest.Record(new LocationLayoutStep(2, float.NaN, null)));
+            Reject(() => manifest.Record(new LocationLayoutStep(2, float.PositiveInfinity, null)));
+            Reject(() => manifest.RetireBefore(float.NaN));
+            Require(manifest.NextIndex == 2 && manifest.Count == 1 && manifest.LastLogicalZ == 200, "rejection mutated manifest");
+            // Long traversal with a moving rear must retain only its live window.
+            for (int i = 2; i < 10000; i++)
+            {
+                manifest.Record(new LocationLayoutStep(i, (i + 1) * 100, null));
+                manifest.RetireBefore(manifest.LastLogicalZ - 300);
+                Require(manifest.Count <= 4, "manifest grows with retired route");
+            }
+            manifest.RetireBefore(manifest.LastLogicalZ + 1);
+            Require(manifest.Count == 0 && manifest.NextIndex == 10000, "retirement lost generation cursor");
+            void Reject(Action action)
+            {
+                bool rejected = false;
+                try { action(); } catch (InvalidOperationException) { rejected = true; }
+                catch (ArgumentOutOfRangeException) { rejected = true; }
+                Require(rejected, "invalid manifest change accepted");
+            }
+        }
+
+        public static string CheckLive()
+        {
+            Require(EditorApplication.isPlaying && SharedRunContext.Playing, "live shared level required");
+            int spawners = 0, locations = 0, authoredMeshes = 0, generatedMeshes = 0;
+            foreach (var spawner in Object.FindObjectsByType<LocationSpawner>(FindObjectsSortMode.None))
+            {
+                var manifest = spawner.LayoutManifest;
+                Require(manifest != null && manifest.Seed == SharedRunContext.Seed, "live manifest missing/wrong seed");
+                Require(manifest.NextIndex == (int)typeof(LocationSpawner).GetField("generationIndex", Private).GetValue(spawner) &&
+                    manifest.LastLogicalZ == (float)typeof(LocationSpawner).GetField("lastSpawnZ", Private).GetValue(spawner), "live cursor diverged");
+                var active = (List<LocationContentSpawner>)typeof(LocationSpawner).GetField("spawnedLocations", Private).GetValue(spawner);
+                foreach (var location in active)
+                {
+                    int index = int.Parse(location.SharedGenerationKey.Substring("procedural:".Length));
+                    Require(manifest.TryGet(index, out var step) &&
+                        location.name == step.Prefab.name + "(Clone)" &&
+                        Mathf.Abs(step.LogicalZ - (location.transform.position.z + FixCoordinate.Instance.PlayerAddPos)) < .01f,
+                        "live geometry differs from descriptor");
+                    // Runtime Instantiate has no Editor prefab connection. ProBuilder also
+                    // generates meshes at runtime; only authored shared meshes are comparable.
+                    foreach (var mesh in step.Prefab.GetComponentsInChildren<MeshFilter>(true))
+                    {
+                        if (mesh.sharedMesh == null) { generatedMeshes++; continue; }
+                        var path = new Stack<int>(); var part = mesh.transform;
+                        while (part != step.Prefab.transform) { path.Push(part.GetSiblingIndex()); part = part.parent; }
+                        var target = location.transform;
+                        while (path.Count > 0) target = target.GetChild(path.Pop());
+                        Require(target.GetComponent<MeshFilter>()?.sharedMesh == mesh.sharedMesh, "authored shared mesh differs");
+                        authoredMeshes++;
+                    }
+                    locations++;
+                }
+                spawners++;
+            }
+            Require(spawners > 0 && locations > 0, "live procedural layout not generated yet");
+            return $"[Layout live] PASS spawners={spawners} locations={locations} authoredMeshes={authoredMeshes} generatedMeshesExcluded={generatedMeshes}; seed/cursor/clone name/logical position";
         }
         private static void Require(bool condition, string message) { if (!condition) throw new InvalidOperationException(message); }
     }

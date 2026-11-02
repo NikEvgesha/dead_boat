@@ -27,6 +27,8 @@ public class LocationSpawner : MonoBehaviour
     private float lastSpawnZ;                            // Z-координата последнего созданного объекта
     private List<LocationContentSpawner> spawnedLocations = new List<LocationContentSpawner>();
 
+    public DeadBoat.Online.LocationLayoutManifest LayoutManifest { get; private set; }
+
     public static Action Change;
 
     void Start()
@@ -51,6 +53,8 @@ public class LocationSpawner : MonoBehaviour
         {
             locationCollection = Instantiate(locationCollection);
             ownsRuntimeCollection = true;
+            LayoutManifest = new DeadBoat.Online.LocationLayoutManifest(
+                DeadBoat.Online.SharedRunContext.Active ? DeadBoat.Online.SharedRunContext.Seed : DeadBoat.Online.SoloRunBranch.Seed);
         }
     }
 
@@ -66,6 +70,7 @@ public class LocationSpawner : MonoBehaviour
         float front = DeadBoat.Online.SharedRunContext.Playing ? shared.WorldFront : _player.zPositionFix;
         float rear = DeadBoat.Online.SharedRunContext.Playing ? shared.WorldRear : DeadBoat.Online.SoloRunBranch.Active ? DeadBoat.Online.SoloRunBranch.Rear : _boardController.TotalDistanceTraveled - removalDistance;
         if (DeadBoat.Online.SharedRunContext.Active && !DeadBoat.Online.SharedRunContext.Playing) return;
+        LayoutManifest?.RetireBefore(rear);
         if (front + spawnThreshold > lastSpawnZ && lastSpawnZ < _stopSpawnDistance)
         {
             int budget = 128;
@@ -94,6 +99,7 @@ public class LocationSpawner : MonoBehaviour
             ? DeadBoat.Online.SharedRunContext.Random("layout", generationIndex) : null;
         var step = DeadBoat.Online.LocationLayoutPlan.Advance(generationIndex, lastSpawnZ,
             minDistance, maxDistance, locationCollection, random);
+        LayoutManifest?.Record(step);
         lastSpawnZ = step.LogicalZ;
         int currentIndex = generationIndex++;
 

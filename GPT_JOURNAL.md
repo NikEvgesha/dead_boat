@@ -830,3 +830,13 @@ LocationLayoutPlan выделяет расчёт последовательно�
 Интеграционный4Cloud stress PASS100предметов/20трупов/маршрут5000/очисткаrear4000. Split span7751,230предметов/118врагов13.8–14.4FPS; caught61предмет/57врагов21.8–22.7FPS. Это не WebGL и не улучшение FPS. Созданы DB-ON-125 и Docs/WORLD_STREAMING_PLAN.md: до разрушительной выгрузки нужен манифест, canonical mutations и атомарное восстановление при lateJoin/authorityTransfer. Онлайн-сохранение между пустыми комнатами не вводить.
 
 Конечный VerifyRestored+диск4/4 PASS, Play/compilingfalse,Runner0,Agent0,PeerModeSingle,Profilertrue/1982–3981 сохранены. SDK/несвязанные изменения не тронуты, сборка/черновик не обновлялись. Далее ИИ — теневой манифест DB125; владелец позднее принимает общий WebGL, сейчас действий не нужно.
+
+## 2026-11-02 — DB125 локальный манифест после «продолжи»
+
+LocationLayoutManifest подключён к seeded LocationSpawner (кооп/soloBranch):seed/version,последовательныйиндекс,Z,локальнаяссылкаprefab,Queue+Dictionary и монотонное окончательное удаление заrear. Не включает разгрузку/сетевойархив/постоянноеonlineсохранение. Старое несидированное соло не создаёт манифест. Код legacycp1251/CRLF сохранён, SDK не тронуты.
+
+LayoutProbe10000шагов/окнонеболее4,0послеокончательнойочистки;дубликаты/пропуски/NaN/retrograde/rearEquality/retiredSkip PASS.4пула/11264сравнения и SharedRunValidation PASS. MCP дважды не доставил вызовы при domainReload, после готовности повторены; это не результаты тестов.
+
+Первый стресс основнойPASS,live-checkFAIL из-за неверного ожидания Editor prefab connection у runtimeInstantiate. Диагностическая попытка прямого mesh-сравнения также неверна для генерируемых ProBuilder meshes; позже сцена уже вернулась вLobby, пустая выборка не зачтена. Исправленный CheckLive проверяет seed/cursor/cloneName/logicalZ и authored shared meshes, отдельно считает исключённые runtimegenerated.
+
+Финальный повтор:4Cloud stress PASS100предметов/20трупов/маршрут5000/rear4000. Live23локации/2005мешей(65исключены) и12/1124(35исключены) PASS. Split7376/226предметов/113врагов16.4–17.9FPS,caught58/52/24.2–24.4FPS; не WebGL и не A/Bускорение. VerifyRestored+диск4/4PASS,Play/compilefalse,Runner0/Agent0/PeerSingle,Profilertrue/1982–3981 сохранены. При будущей выгрузке OnDestroy не должен вызывать SoloRunBranch.RememberDestroyed для временных копий. Далее ИИ — причина удаления реплик и архив мутаций (DB125), владелец позже общий WebGL. Без сборки/черновика; накопительный отчёт AFK_PROGRESS_20261102 обновлён.
