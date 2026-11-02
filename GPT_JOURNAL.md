@@ -807,3 +807,14 @@ DB-ON-027: код и оба стресс-прогона сохранились, 
 ## 2026-11-02 — источник роста памяти в стенде
 
 Пока владелец отошёл, DB027 продолжена без сборки. Обнаружен ProfilerDriver.enabled=true при Profiler.enabled=false в Edit Mode (profileEditor=false), хранилось 2000 кадров. SharedPerformanceTestSave временно выключает запись, сохраняя кадры и исходную настройку. SharedMemoryAudit собирает Editor object/native/Gfx/Mono/GC/сырые Fusion snapshots каждые10с; сам скан влияет на hitches и не пригоден для приёмки FPS. Контроль полного stress PASS без ослабления guard: sleep/wake/sleep, 100 предметов/20 трупов, маршрут5000/rear4000. Baseline4385MiB, split4424MiB, caught4414MiB, cleanup4345MiB; span7544/230предметов/118врагов13.6–15.5FPS. Прежний guardFAIL нельзя считать доказанной игровой утечкой. WebGL и длинное расхождение остаются открытыми. VerifyRestored PASS + дисковая сверка4/4, Runner0, PeerModeSingle, ошибокC#нет; ProfilerRecording=true/frame1982–3981 сохранены. Далее ИИ: CPU/рендеринг/навигация/бюджет мира; владелец позже принимает WebGL, действий сейчас не нужно.
+
+
+## 2026-11-02 — большой блок CPU/навигации без владельца
+
+SharedCpuAudit выделил RenderLoop/BehaviourUpdate как основные участки; навигация не единственная причина просадки. Эксперимент instancing2794→1307batches и31материал: проверка ресурсов1646vs2720batches при неизменных486549треугольниках, но FPS40.31vs42.60, поэтому все31правки материалов возвращены, не выдавать за принятую оптимизацию.
+
+ZombieController кооп: планирование0.2с, новый target/сдвиг2м/Origin/authority-reset немедленно; атаки каждый кадр, соло путь каждый кадр. CheckSee больше не продолжает работу после неудачного EnsureOnNavMesh, online retry0.5с; Start допускает target=null. cp1251/CRLF сохранены; счётчик запросов только UNITY_EDITOR, SDK/протокол не менялись.
+
+SharedNavigationProbe PASS sharedtrue/false на собственной NavMesh-площадке; исходный игровой fixture и синхронное hasPath/pathPending были неверной проверкой, заменены действительными запросами/destination. Нативный ABBA32агента×90кадров:2880→480запросов, submit0.0514–0.0625→0.0157–0.0169мс, nativeManager прогревается и его ускорение не заявляется. Полный стресс дважды PASS включая финал с исходными материалами;35с/4Cloud profile PASS; ReadyBarrier2Cloud regression PASS подбора/прикрепления/топлива/патронов/страниц/боя/победы/бонусов/реальной смены ведущего. Все подробности/ограничения в Docs/COOP_CPU_RENDER_20261102.md.
+
+Конечный VerifyRestored+диск4/4 PASS, Play/paused/compiling=false, ошибкиC#нет, Runner0/NavAgent0/PeerModeSingle, clockfixturefalse, Profilertrue/frame1982–3981 сохранены. Несвязанные рабочие изменения не трогать. Без сборки/черновика. DB027 остаётся in_progress: ИИ дальше отрисовка/прочие скрипты/бюджет мира; владелец позже общий WebGL, сейчас действий не нужно.

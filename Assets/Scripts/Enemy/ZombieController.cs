@@ -22,6 +22,12 @@ public class ZombieController : LevelledEnemy
     private NavMeshAgent agent;
     private Animator animator;
     private float lastAttack;
+    private DeadBoat.Online.SharedEnemyPathSchedule sharedPath;
+    private float nextNavMeshProbe;
+#if UNITY_EDITOR
+    private int pathRequests;
+#endif
+    private static readonly Unity.Profiling.ProfilerMarker PathMarker = new("DeadBoat.EnemyPath");
     private SimpleRagdoll ragdoll;
     private PickableItem pickable;
     private PlayerStatsManager player;
@@ -45,7 +51,7 @@ public class ZombieController : LevelledEnemy
     void Start()
     {
         InitializeLevel(mobLevel);
-        if (Vector3.Distance(transform.position, target.position) > detectionDistance)
+        if (target == null || Vector3.Distance(transform.position, target.position) > detectionDistance)
             agent.enabled = false;
         else
             EnsureOnNavMesh();
@@ -53,13 +59,25 @@ public class ZombieController : LevelledEnemy
 
     void Update()
     {
-        if (!DeadBoat.Online.SharedEnemiesRuntime.Authority) return;
+        if (!DeadBoat.Online.SharedEnemiesRuntime.Authority) { sharedPath.Reset(); return; }
+        if (isDead) return;
         target = DeadBoat.Online.SharedEnemiesRuntime.Target(transform, target);
-        if (isDead || target == null) return;
+        if (target == null) { sharedPath.Reset(); return; }
         float dist = Vector3.Distance(transform.position, target.position);
         if (!CheckSee(dist)) return;
-        Vector3 navTarget = GetNavMeshTarget(target.position);
-        agent.SetDestination(navTarget);
+        bool shared = DeadBoat.Online.SharedRunContext.Playing;
+        if (!shared || sharedPath.ShouldRefresh(target.GetInstanceID(), target.position,
+            DeadBoat.Online.LobbyNetworkAvatar.Origin, Time.time))
+        {
+            using (PathMarker.Auto())
+            {
+                Vector3 navTarget = GetNavMeshTarget(target.position);
+#if UNITY_EDITOR
+                pathRequests++;
+#endif
+                agent.SetDestination(navTarget);
+            }
+        }
         HandleAttack(dist);
     }
     Vector3 GetNavMeshTarget(Vector3 worldPos)
@@ -94,6 +112,7 @@ public class ZombieController : LevelledEnemy
     {
         if (dist > chaseDistance)
         {
+            sharedPath.Reset();
             if (agent.enabled)
             {
                 agent.enabled = false;
@@ -101,8 +120,13 @@ public class ZombieController : LevelledEnemy
             }
             return false;
         }
-        if (!agent.enabled)
-            EnsureOnNavMesh();
+        if (!agent.enabled || !agent.isOnNavMesh)
+        {
+            sharedPath.Reset();
+            if (DeadBoat.Online.SharedRunContext.Playing && Time.time < nextNavMeshProbe) return false;
+            nextNavMeshProbe = Time.time + 0.5f;
+            return EnsureOnNavMesh();
+        }
         return true;
     }
 
@@ -184,9 +208,10 @@ public class ZombieController : LevelledEnemy
         NavMeshHit hit;
         if (NavMesh.SamplePosition(transform.position, out hit, 50f, NavMesh.AllAreas))
         {
+            if (agent.enabled) agent.enabled = false;
             transform.position = hit.position;
             agent.enabled = true;
-            return true;
+            return agent.isOnNavMesh;
         }
         Debug.LogWarning($"{name} не нашёл NavMesh");
         return false;
