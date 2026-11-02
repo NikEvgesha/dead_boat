@@ -14,6 +14,8 @@ namespace DeadBoat.Online
         private static readonly Dictionary<ulong, double> deadlines = new();
         private readonly List<WorldSpawnIdentity> snapshot = new();
         private readonly List<WorldSpawnIdentity> interpolated = new();
+        private readonly List<Vector3> crewPositions = new(4);
+        private Vector3 sampleOrigin;
         private static int registryRevision;
         private int observedRevision = -1;
         private SharedDepartureState observedState;
@@ -175,15 +177,23 @@ namespace DeadBoat.Online
             identity.ApplyCorpsePhysics(simulate && item.Status != ItemStatus.InInventory && !item.Attached);
         }
 
-        private static bool NearCrew(PickableItem item, bool wasNearby)
+        private void CaptureCrewPositions(SharedDepartureState state)
         {
-            var state = SharedRunContext.State;
-            Vector3 position = item.transform.position + LobbyNetworkAvatar.Origin;
-            // Small hysteresis avoids repeatedly toggling bodies at the boundary.
-            float radius = item.PhysicsActivationDistance + (wasNearby ? 5 : 0);
+            crewPositions.Clear();
+            sampleOrigin = LobbyNetworkAvatar.Origin;
             foreach (var avatar in LobbyNetworkAvatar.All)
-                if (avatar.Runner == state.Runner && state.Includes(avatar.Object.StateAuthority) &&
-                    (avatar.LogicalPosition - position).sqrMagnitude <= radius * radius) return true;
+                if (avatar.Runner == state.Runner && state.Includes(avatar.Object.StateAuthority))
+                    crewPositions.Add(avatar.LogicalPosition);
+        }
+
+        private bool NearCrew(PickableItem item, bool wasNearby)
+        {
+            Vector3 position = item.transform.position + sampleOrigin;
+            // The same crew snapshot is used for every item in this audit. Include
+            // dead/ad-watching members and the driver's current logical seat position.
+            float radius = item.PhysicsActivationDistance + (wasNearby ? 5 : 0);
+            foreach (var crew in crewPositions)
+                if ((crew - position).sqrMagnitude <= radius * radius) return true;
             return false;
         }
 
@@ -194,7 +204,11 @@ namespace DeadBoat.Online
             if (!SharedRunContext.Playing || state == null) return;
             double now = Time.realtimeSinceStartupAsDouble;
             bool sample = now >= nextSample;
-            if (sample) nextSample = now + 0.1;
+            if (sample)
+            {
+                nextSample = now + 0.1;
+                CaptureCrewPositions(state);
+            }
             bool authority = state.Object.HasStateAuthority;
             // Physics and state reconciliation follow the snapshot cadence. Only
             // visible proxies need frame interpolation between samples. A pending

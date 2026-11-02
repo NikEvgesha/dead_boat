@@ -75,7 +75,7 @@ namespace DeadBoat.Online
                 if (values.TryGetValue(FusionStatType.OutBandwidth, out v)) outgoing = v;
             }
             Debug.Log(string.Format(CultureInfo.InvariantCulture,
-                "[Coop perf] editor={0} authority={1} players={2} fps={3:F1} p95Ms={4:F1} maxMs={5:F1} hitches100ms={6} allocatedMB={7:F1} reservedMB={8:F1} items={9} enemyRecords={10} pages={11} routeSpan={12:F0} rttMs={13:F1} fusionInRaw={14:F1} fusionOutRaw={15:F1} retainedFrames={16}/{17} bodies={18} awakeDynamicBodies={19} itemsCpuMs={20:F3} enemiesCpuMs={21:F3} authorityCpuMs={22:F3} stage={23}",
+                "[Coop perf] editor={0} authority={1} players={2} fps={3:F1} p95Ms={4:F1} maxMs={5:F1} hitches100ms={6} allocatedMB={7:F1} reservedMB={8:F1} items={9} enemyRecords={10} pages={11} routeSpan={12:F0} rttMs={13:F1} fusionInRaw={14:F1} fusionOutRaw={15:F1} retainedFrames={16}/{17} bodies={18} awakeDynamicBodies={19} itemsCpuMs={20:F3} enemiesCpuMs={21:F3} authorityCpuMs={22:F3} stage={23} monoUsedMB={24:F1} monoHeapMB={25:F1}",
                 Application.isEditor, state.Object.HasStateAuthority, players, frames / elapsed,
                 sorted[Math.Max(0, (int)Math.Ceiling(n * 0.95) - 1)], max, hitches,
                 Profiler.GetTotalAllocatedMemoryLong() / 1048576.0,
@@ -83,7 +83,8 @@ namespace DeadBoat.Online
                 enemies, pages, state.WorldFront - state.WorldRear, rtt, incoming, outgoing, n, frames,
                 bodies, awakeBodies, itemsCpu.Valid ? itemsNs / frames / 1000000 : -1,
                 enemiesCpu.Valid ? enemiesNs / frames / 1000000 : -1,
-                authorityCpu.Valid ? authorityNs / frames / 1000000 : -1, Stage));
+                authorityCpu.Valid ? authorityNs / frames / 1000000 : -1, Stage,
+                Profiler.GetMonoUsedSizeLong() / 1048576.0, Profiler.GetMonoHeapSizeLong() / 1048576.0));
             ResetWindow();
         }
     }

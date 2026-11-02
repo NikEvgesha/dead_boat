@@ -38,6 +38,8 @@ namespace DeadBoat.Online.Editor
             int preference = PlayerPrefs.GetInt("DeadBoat.OnlineMode.v1");
             try
             {
+                if (!(SaveManager.Instance?.PersistentProvider is SharedRunPreviewSave))
+                    throw new Exception("Prepare isolated save before Play");
                 NetworkProjectConfig.Global.PeerMode = NetworkProjectConfig.PeerModes.Multiple;
                 // LoadingManager may reload Lobby after SDK initialization; do not
                 // capture the bootstrap from the outgoing scene.
@@ -98,7 +100,7 @@ namespace DeadBoat.Online.Editor
                     if (peer != null) UnityEngine.Object.Destroy(peer.gameObject);
                 }
                 await SharedRunLifetime.LeaveAsync();
-                SharedPerformanceTestSave.Restore();
+                // Keep the temporary save active until Edit Mode; never restore owner data in a live level.
                 NetworkProjectConfig.Global.PeerMode = previousMode;
                 if (hadPreference) PlayerPrefs.SetInt("DeadBoat.OnlineMode.v1", preference);
                 else PlayerPrefs.DeleteKey("DeadBoat.OnlineMode.v1");
@@ -120,6 +122,11 @@ namespace DeadBoat.Online.Editor
             if (lagAvatar == null) throw new Exception("Lagging avatar missing");
             var localPlayerField = typeof(LobbyNetworkAvatar).GetField("localPlayer", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
             object oldPlayer = localPlayerField.GetValue(lagAvatar);
+            var protection = typeof(SharedAdProtection).GetField("until", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+            double oldProtection = (double)protection.GetValue(null);
+            protection.SetValue(null, Time.realtimeSinceStartupAsDouble + 600);
+            stressMemoryLimit = UnityEngine.Profiling.Profiler.GetTotalAllocatedMemoryLong() + 1400L * 1048576;
+            Debug.Log($"[Stress probe] fixture memory guard={stressMemoryLimit / 1048576} MB; local damage suppressed, AI still targets crew.");
             try
             {
                 // Inactive dummy has no Awake/Update and never replaces the game's singleton.
@@ -129,7 +136,7 @@ namespace DeadBoat.Online.Editor
                 lagging.transform.position = PlayerMovement.Instance.transform.position;
                 localPlayerField.SetValue(lagAvatar, lagPlayer);
                 monitor.BeginStage("baseline");
-                await Task.Delay(22000);
+                await StressDelay(22000);
                 var itemPrefab = SharedItemCatalog.Load().entries.Select(e => e.prefab)
                     .FirstOrDefault(p => p != null && p.GetComponent<Rigidbody>() != null && p.GetComponent<FuelItem>() != null);
                 if (itemPrefab == null) throw new Exception("Fuel item fixture prefab missing");
@@ -141,25 +148,25 @@ namespace DeadBoat.Online.Editor
                         origin + new Vector3(10 + (i % 10) * 1.5f, 6 + i / 10 * 0.15f, (i / 10) * 1.5f), Quaternion.identity);
                     spawned.Add(item.gameObject);
                     item.gameObject.AddComponent<WorldSpawnIdentity>().Key = "perf:item:" + i;
-                    if (i % 10 == 9) await Task.Delay(100);
+                    if (i % 10 == 9) await StressDelay(100);
                 }
                 var far = UnityEngine.Object.Instantiate(itemPrefab, origin + new Vector3(300, 5, 0), Quaternion.identity);
                 spawned.Add(far.gameObject);
                 var farIdentity = far.gameObject.AddComponent<WorldSpawnIdentity>();
                 farIdentity.Key = "perf:far";
                 ulong farId = farIdentity.Id;
-                await Task.Delay(2000);
+                await StressDelay(2000);
                 Debug.Log("[Stress probe] far-item kinematic=" + far.GetComponent<Rigidbody>().isKinematic + " (expected true when no crew nearby)");
                 if (!far.GetComponent<Rigidbody>().isKinematic) throw new Exception("Distant free item physics is still enabled");
                 lagging.transform.position = far.transform.position + Vector3.up;
-                await Task.Delay(1500);
+                await StressDelay(1500);
                 if (far.GetComponent<Rigidbody>().isKinematic) throw new Exception("Item did not wake near remote crew member");
                 lagging.transform.position = origin;
-                await Task.Delay(1500);
+                await StressDelay(1500);
                 if (!far.GetComponent<Rigidbody>().isKinematic) throw new Exception("Item did not sleep after remote crew moved away");
                 Debug.Log("[Stress probe] PASS: far body sleeps, wakes near remote crew, sleeps after separation.");
                 monitor.BeginStage("100-items");
-                await Task.Delay(22000);
+                await StressDelay(22000);
 
                 var live = UnityEngine.Object.FindAnyObjectByType<ZombieController>();
                 var enemyPrefab = live != null ? PrefabUtility.GetCorrespondingObjectFromSource(live) : null;
@@ -176,40 +183,54 @@ namespace DeadBoat.Online.Editor
                     enemy.gameObject.AddComponent<WorldSpawnIdentity>().Key = "perf:enemy:" + i;
                     enemies.Add(enemy);
                 }
-                await Task.Delay(1500); // Start initializes the ragdoll arrays.
+                await StressDelay(1500); // Start initializes the ragdoll arrays.
                 foreach (var enemy in enemies) if (enemy != null) SharedEnemiesRuntime.ApplyDamage(enemy, 50000);
                 int createdCorpses = UnityEngine.Object.FindObjectsByType<WorldSpawnIdentity>(FindObjectsSortMode.None)
                     .Count(i => i.Key != null && i.Key.StartsWith("corpse:"));
                 RequireCreatedCorpses(createdCorpses);
-                await Task.Delay(1500);
+                await StressDelay(1500);
                 int corpses = UnityEngine.Object.FindObjectsByType<WorldSpawnIdentity>(FindObjectsSortMode.None)
                     .Count(i => i.Key != null && i.Key.StartsWith("corpse:"));
                 Debug.Log($"[Stress probe] created actual corpses={createdCorpses}; remaining after physics={corpses}");
                 BenchmarkItems();
                 monitor.BeginStage("100-items-20-corpses");
-                await Task.Delay(22000);
+                await StressDelay(22000);
 
                 // Force progress for profiling; this is not a physical sailing test.
                 typeof(SharedDepartureState).GetProperty("BoatDistance").SetValue(state, 5000f);
                 PlayerMovement.Instance.transform.position = new Vector3(0, 3, 5000) - LobbyNetworkAvatar.Origin;
                 monitor.BeginStage("route-5000-lagging");
-                await Task.Delay(22000);
+                await StressDelay(22000);
                 float retained = state.WorldFront - state.WorldRear;
                 int before = state.Items.Count;
                 Debug.Log($"[Stress probe] separated route span={retained:F0} items={before}");
                 lagging.transform.position = PlayerMovement.Instance.transform.position;
                 monitor.BeginStage("route-caught-up");
-                await Task.Delay(22000);
+                await StressDelay(22000);
                 if (state.WorldRear < 3900 || state.Items.ContainsKey(farId))
                     throw new Exception("Rear cleanup did not advance after crew caught up");
                 Debug.Log($"[Stress probe] PASS: 100 physical items, 20 ragdoll corpses, split/caught-up 5000-unit route; rear={state.WorldRear:F0} items={state.Items.Count}; far-body policy logged separately.");
             }
             finally
             {
+                protection.SetValue(null, oldProtection);
                 if (lagAvatar != null) localPlayerField.SetValue(lagAvatar, oldPlayer);
                 if (lagging != null) UnityEngine.Object.Destroy(lagging);
                 foreach (var go in spawned) if (go != null) UnityEngine.Object.Destroy(go);
             }
+        }
+
+        private static long stressMemoryLimit;
+        private static async Task StressDelay(int milliseconds)
+        {
+            double end = Time.realtimeSinceStartupAsDouble + milliseconds / 1000d;
+            do
+            {
+                long memory = UnityEngine.Profiling.Profiler.GetTotalAllocatedMemoryLong();
+                if (memory > stressMemoryLimit)
+                    throw new Exception("Stress safety stop: allocated memory " + memory / 1048576 + " MB");
+                await Task.Delay(Math.Min(250, milliseconds));
+            } while (Time.realtimeSinceStartupAsDouble < end);
         }
 
         private static void RequireCreatedCorpses(int count)
