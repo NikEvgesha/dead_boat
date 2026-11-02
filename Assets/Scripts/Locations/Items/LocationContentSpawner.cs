@@ -29,7 +29,23 @@ public class LocationContentSpawner : MonoBehaviour
     private string generationKey;
     private DeadBoat.Online.RunRandom itemRandom;
     private DeadBoat.Online.RunRandom enemyRandom;
-    public void InitializeGeneration(int index) => generationIndex = index;
+    private List<(PickableItem item, string key)> authoredItems;
+    public void InitializeGeneration(int index)
+    {
+        generationIndex = index;
+        authoredItems = null;
+        if (!DeadBoat.Online.SharedRunContext.GenerationActive) return;
+        // Snapshot asset-authored pickups before Start can create store display models
+        // or generated loot. Capture paths now, before sibling lists can change.
+        foreach (var item in GetComponentsInChildren<PickableItem>(true))
+        {
+            if (item.GetComponent<DeadBoat.Online.WorldSpawnIdentity>() != null ||
+                item.GetComponentInParent<EnemyCore>(true) != null || item.GetComponentInParent<StorePoint>(true) != null ||
+                item.GetComponentInParent<Inventory>(true) != null) continue;
+            authoredItems ??= new();
+            authoredItems.Add((item, "authored:" + gameObject.scene.name + ":" + DeadBoat.Online.WorldSpawnIdentity.StablePath(item.transform)));
+        }
+    }
     private string stableGenerationKey;
     public void InitializeStableGeneration(string key) => stableGenerationKey = key;
     public string SharedGenerationKey => stableGenerationKey ?? (generationIndex >= 0
@@ -44,9 +60,23 @@ public class LocationContentSpawner : MonoBehaviour
             itemRandom = DeadBoat.Online.SharedRunContext.Random("items:" + generationKey, 0);
             enemyRandom = DeadBoat.Online.SharedRunContext.Random("enemies:" + generationKey, 0);
         }
+        var membership = DeadBoat.Online.SharedRunContext.Membership;
+        bool tracked = false;
+        if (generationIndex >= 0 && membership != null)
+        {
+            float logicalZ = transform.position.z + (FixCoordinate.Instance != null ? FixCoordinate.Instance.PlayerAddPos : DeadBoat.Online.LobbyNetworkAvatar.Origin.z);
+            var owner = GetComponentInParent<LocationSpawner>();
+            if (owner != null && owner.LayoutManifest != null && owner.LayoutManifest.TryGet(generationIndex, out var step)) logicalZ = step.LogicalZ;
+            tracked = membership.Begin(generationIndex, logicalZ);
+        }
+        if (DeadBoat.Online.SharedRunContext.GenerationActive && authoredItems != null)
+            foreach (var authored in authoredItems)
+                if (authored.item != null && authored.item.GetComponent<DeadBoat.Online.WorldSpawnIdentity>() == null)
+                    authored.item.gameObject.AddComponent<DeadBoat.Online.WorldSpawnIdentity>().Key = authored.key;
         LocationSceneBalance balance = ResolveBalance();
         SpawnItems(ResolveItemCollection());
         SpawnEnemies(balance);
+        if (tracked) membership.Seal(generationIndex);
     }
 
     private void SpawnItems(LocationItemSpawnCollection activeItemCollection)

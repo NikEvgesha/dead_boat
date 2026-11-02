@@ -26,6 +26,7 @@ namespace DeadBoat.Online
         public static void Register(WorldSpawnIdentity identity)
         {
             if (identity.RemovingReplica) return;
+            SharedRunContext.Membership?.Observe(identity.Key, identity.Id, identity.Enemy != null);
             if (identities.TryGetValue(identity.Id, out var restored) && restored != null && restored != identity && restored.RecoveryReplica)
             {
                 UnityEngine.Object.Destroy(identity.gameObject);
@@ -222,6 +223,7 @@ namespace DeadBoat.Online
             {
                 nextSample = now + 0.1;
                 SharedRunContext.Regions?.RetireBefore(state.WorldRear);
+                SharedRunContext.Membership?.RetireBefore(state.WorldRear);
                 CaptureCrewPositions(state);
             }
             bool authority = state.Object.HasStateAuthority;

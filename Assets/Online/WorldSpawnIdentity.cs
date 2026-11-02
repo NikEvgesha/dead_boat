@@ -120,11 +120,16 @@ namespace DeadBoat.Online
             {
                 CacheComponents();
                 key = value;
-                ulong hash = 14695981039346656037UL;
-                foreach (byte b in System.Text.Encoding.UTF8.GetBytes(value)) hash = (hash ^ b) * 1099511628211UL;
-                Id = hash;
+                Id = IdForKey(value);
                 SharedItemsRuntime.Register(this);
             }
+        }
+
+        public static ulong IdForKey(string value)
+        {
+            ulong hash = 14695981039346656037UL;
+            foreach (byte b in System.Text.Encoding.UTF8.GetBytes(value)) hash = unchecked((hash ^ b) * 1099511628211UL);
+            return hash;
         }
 
         private void OnDestroy()

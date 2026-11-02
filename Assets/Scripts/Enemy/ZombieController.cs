@@ -174,6 +174,9 @@ public class ZombieController : LevelledEnemy
             audioSource.PlayOneShot(audioHit);*/
     }
 
+    internal bool OwnsDormantCorpse(PickableItem candidate) =>
+        candidate != null && candidate == pickable && !candidate.enabled && !IsDead;
+
     public override void TakeDamage(int damage)
     {
         if (DeadBoat.Online.SharedEnemiesRuntime.RequestDamage(this, damage)) return;

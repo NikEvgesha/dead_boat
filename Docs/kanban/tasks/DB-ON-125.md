@@ -37,7 +37,11 @@ ai: true
 
 Финальный35с/4Cloud profile PASS,12предметов после cleanup. VerifyRestored/диск4/4 PASS, Play/compilefalse, Runner/registry0, Regions=null, Solo/SharedFalse, PeerSingle, Profiler и кадры1982–3981 восстановлены. Без сборки/черновика. Далее ИИ — полный membership/транзакция региона; владелец позже общий WebGL, сейчас действий не нужно.
 
-Следующий шаг: полное стабильное членство записей в реальной локации, включая уже consumed/dead и перенесённые вещи; затем capture/remove/rehydrate по этапам WORLD_STREAMING_PLAN. Пул LocationSpawnCollection имеет историю неиспользованных вариантов; индекс+сид недостаточны для произвольного доступа. Не редактировать SDK. Не включать разрушительную выгрузку до сохранения мутаций. Окончательную очистку за WorldRear не смешивать с удалением реплик из неактивного региона.
+Добавлены WorldRegionMembership и WorldRegionCapture для procedural-регионов: begin/seal, история ID после удаления GO, parent→corpse, authored prefab pickups, канонический capture без удаления/активации dormancy. Неполный состав/лимит/конфликт/отсутствующий record отклоняются, старый архив не меняется. Исходный UTF8/FNV hash и RNG сохранены. Выключенная часть будущего трупа распознаётся строго по cached ZombieController.pickable; исключение не действует на произвольного ребёнка, активированный/отсоединённый труп или инвентарь.
+
+Pure и финальный2peer ReadyBarrier с authored pickup/store exclusion/consumed/dead/never-materialized corpse/moved inventory/atomic refusal PASS. Настоящий4Cloud stress100предметов/20трупов/route5000 PASS. Capture при split25регионов/222записи/9authored pickups, после caught-up14/129/6 PASS; rear4000. Найденные неучтённые FinSword/statueGold/skull в ruins_1 исправлены в DB-ON-126 (in_review до WebGL). Города, ночные мобы и полная выгрузка/rehydration ещё не включены, in_progress.
+
+Следующий шаг — ИИ: контролируемая транзакция capture/remove/rehydrate одной целой процедурной локации с обработкой detached/moved вещей; затем пространственные интересы и адаптеры городов/динамических спавнов. Пул LocationSpawnCollection имеет историю неиспользованных вариантов; индекс+сид недостаточны для произвольного доступа. Не редактировать SDK. Окончательную очистку за WorldRear не смешивать с удалением реплик из неактивного региона.
 
 ## Источники
 
@@ -49,5 +53,7 @@ ai: true
 - `Assets/Online/SharedWorldPage.cs`
 - `Assets/Online/WorldRegionArchive.cs`
 - `Assets/Online/WorldReplicaRemoval.cs`
+- `Assets/Online/WorldRegionMembership.cs`
+- `Assets/Online/WorldRegionCapture.cs`
 
 Ответственные: ИИ — реализация и воспроизводимые проверки; владелец — будущая приёмка общей WebGL-сборки. Сейчас сборку/черновик не обновлять.
