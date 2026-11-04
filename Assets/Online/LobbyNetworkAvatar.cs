@@ -31,6 +31,7 @@ namespace DeadBoat.Online
         public override void Despawned(NetworkRunner runner, bool hasState) => spawned.Remove(this);
         private void OnDestroy() => spawned.Remove(this);
 
+        [Networked, Capacity(3)] public NetworkArray<CompanionRecord> Companions => default;
         [SerializeField] private LobbyHeldItemCatalog itemCatalog;
 
         [Networked] private TickTimer AttackVisual { get; set; }
@@ -99,6 +100,7 @@ namespace DeadBoat.Online
         public override void Spawned()
         {
             if (!spawned.Contains(this)) spawned.Add(this);
+            (GetComponent<AvatarCompanions>() ?? gameObject.AddComponent<AvatarCompanions>()).Initialize(this);
             // Runs on every peer: remote instances must survive the lobby unload too.
             Runner.MakeDontDestroyOnLoad(gameObject);
             networkTransform = GetComponent<NetworkTransform>();

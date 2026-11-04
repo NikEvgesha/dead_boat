@@ -73,6 +73,7 @@ namespace DeadBoat.Online.Editor
                     else if (mode == 3) await WorldRegionResidencyProbe.RunShared(authority, remote, true);
                     else
                     {
+                    await CompanionProbe.RunShared(authority, remote);
                     await InventoryExpansionProbe.RunShared(authority, remote);
                     await WorldEnemyRehydrationProbe.RunShared(authority, remote);
                     await WorldRegionResidencyProbe.RunShared(authority, remote);
