@@ -12,13 +12,14 @@ namespace DeadBoat.Online.Editor
     public static class WorldRegionResidencyProbe
     {
         private const BindingFlags Private = BindingFlags.Instance | BindingFlags.NonPublic;
-        public static async Task RunShared(SharedDepartureState authority, SharedDepartureState remote, bool handoff = false)
+        public static async Task RunShared(SharedDepartureState authority, SharedDepartureState remote, bool handoff = false, bool cold = false)
         {
             Require(!SharedRunContext.Active && LoadingManager.Instance == null, "isolated scene required");
             var ownerObject = new GameObject("Temporary residency owner");
             var staging = new GameObject("Temporary residency source"); staging.SetActive(false);
             LocationContentSpawner root = null, template = null;
             WorldSpawnIdentity detached = null;
+            Fusion.NetworkRunner newcomer = null;
             var balance = ScriptableObject.CreateInstance<LocationBalanceProfile>();
             var itemIds = new List<ulong>(); var enemyIds = new List<ulong>();
             float scale = Time.timeScale;
@@ -113,6 +114,37 @@ namespace DeadBoat.Online.Editor
                 await Task.Delay(150); // Unity completes deferred removal of skipped prefab children.
                 Require(WorldRegionResidency.TrySuspend(root, 2, out ticket, out reason), reason);
                 await Task.Delay(150);
+                if (cold)
+                {
+                    string room = authority.Runner.SessionInfo.Name;
+                    await remote.Runner.Shutdown();
+                    Require(WorldReplicaRemoval.TryRemoveLocalTree(detached.gameObject, out reason), reason);
+                    detached = null;
+                    SharedRunContext.End(); // lose archive, membership, registry and the old ticket's context
+                    await Task.Delay(150);
+                    newcomer = SharedReadyBarrierProbe.NewRunner();
+                    await SharedReadyBarrierProbe.Start(newcomer, room);
+                    await Until(() => Object.FindObjectsByType<SharedDepartureState>(FindObjectsSortMode.None).Any(s => s.Runner == newcomer && s.Phase == 3));
+                    remote = Object.FindObjectsByType<SharedDepartureState>(FindObjectsSortMode.None).First(s => s.Runner == newcomer);
+                    await Until(() => remote.Items.TryGet(weaponId, out var w) && w.WeaponAmmo == 1 && remote.TryEnemy(woundedId, out var e) && e.HP == 13);
+                    SharedRunContext.Begin(remote.Seed, remote.LevelId, ownerObject, null, remote);
+                    Require(SharedRunContext.Regions.RegionCount == 0 && SharedRunContext.Membership.BindingCount == 0, "cold state retained local history");
+                    Require(!WorldRegionResidency.TryRestore(ticket, out _, out _), "stale ticket accepted by fresh context");
+                    manifest = new LocationLayoutManifest(remote.Seed);
+                    manifest.Record(new LocationLayoutStep(0, 1000, template));
+                    typeof(LocationSpawner).GetProperty("LayoutManifest").SetValue(owner, manifest);
+                    root = Object.Instantiate(template, new Vector3(10, 0, 1000) - LobbyNetworkAvatar.Origin, Quaternion.identity, staging.transform);
+                    root.ZPosition = 1000; root.SetLevel(4); root.InitializeGeneration(0);
+                    typeof(LocationContentSpawner).GetMethod("Start", Private).Invoke(root, null);
+                    Quiet(root); root.transform.SetParent(owner.transform, true);
+                    typeof(LocationSpawner).GetMethod("TrackReplica", Private).Invoke(owner, new object[] { root });
+                    Require(SharedItemsRuntime.TryFind(detachedId, out detached), "cold dropped actor missing");
+                    detached.transform.SetParent(null, true);
+                    Check(root, manifest, weaponId, usedId, deadId, woundedId, detachedId, detached);
+                    Require(SharedRunContext.Membership.TryCopy(0, new(), new(), out _), "cold membership incomplete");
+                    Debug.Log("[Region cold join] PASS: new Photon Runner, no old archive/membership/ticket; seeded content uses replicated consumed/dead/HP13/ammo1/moved item; origin500; no duplicates");
+                    return;
+                }
                 if (handoff)
                 {
                     var formerMaster = authority.Runner;
@@ -147,6 +179,7 @@ namespace DeadBoat.Online.Editor
                 foreach (var page in SharedWorldPage.All(authority.Runner)) if (page.Object.HasStateAuthority)
                 { foreach (ulong id in itemIds) page.Items.Remove(id); foreach (ulong id in enemyIds) page.Enemies.Remove(id); }
                 SharedRunContext.End(); Time.timeScale = scale;
+                if (newcomer != null) await newcomer.Shutdown();
                 Object.Destroy(ownerObject); Object.Destroy(staging); Object.Destroy(balance);
                 FixCoordinate.Instance = null; Object.Destroy(coordinates);
             }

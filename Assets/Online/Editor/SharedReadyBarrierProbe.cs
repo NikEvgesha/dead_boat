@@ -23,6 +23,7 @@ namespace DeadBoat.Online.Editor
             {
                 await Case("ready", 0);
                 await Case("region handoff", 3);
+                await Case("region cold join", 4);
                 await Case("leave", 1);
                 await Case("timeout", 2);
                 Debug.Log("[Ready probe] PASS: two-peer readiness, duplicate ACK, paused clock, leave, timeout.");
@@ -63,12 +64,13 @@ namespace DeadBoat.Online.Editor
                 await Until(() => authority.IsReady(first.LocalPlayer), "first ACK");
                 await Task.Delay(750);
                 Require(authority.Phase == 2 && !authority.IsReady(second.LocalPlayer), "premature start");
-                if (mode == 0 || mode == 3)
+                if (mode == 0 || mode == 3 || mode == 4)
                 {
                     remote.RPC_SceneReady();
                     await Until(() => authority.Phase == 3 && remote.Phase == 3, "all ready");
                     Require(authority.ReadyMask == 3, "ready mask");
-                    if (mode == 3) await WorldRegionResidencyProbe.RunShared(authority, remote, true);
+                    if (mode == 4) await WorldRegionResidencyProbe.RunShared(authority, remote, false, true);
+                    else if (mode == 3) await WorldRegionResidencyProbe.RunShared(authority, remote, true);
                     else
                     {
                     await WorldEnemyRehydrationProbe.RunShared(authority, remote);
@@ -99,7 +101,7 @@ namespace DeadBoat.Online.Editor
             }
         }
 
-        private static NetworkRunner NewRunner()
+        internal static NetworkRunner NewRunner()
         {
             var go = new GameObject("Ready barrier probe");
             go.AddComponent<LobbySceneManager>();
@@ -342,7 +344,7 @@ namespace DeadBoat.Online.Editor
             Debug.Log("[Bonus probe] PASS: best profession/animal per stat, additive cards, idempotent profile reports.");
         }
 
-        private static async Task Start(NetworkRunner runner, string room)
+        internal static async Task Start(NetworkRunner runner, string room)
         {
             var config = NetworkProjectConfig.Deserialize(NetworkProjectConfig.Serialize(NetworkProjectConfig.Global));
             config.PrefabTable = NetworkProjectConfig.Global.PrefabTable;

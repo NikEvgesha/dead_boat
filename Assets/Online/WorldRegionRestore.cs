@@ -12,6 +12,7 @@ namespace DeadBoat.Online
             var state = SharedRunContext.State;
             if (!SharedRunContext.Playing || !state.Items.TryGet(id, out var record))
                 throw new InvalidOperationException("Missing canonical restored item: " + key);
+            SharedRunContext.Membership?.Observe(key, id, false);
             if (record.Mode != 0 || record.Owner != Fusion.PlayerRef.None || SharedItemsRuntime.TryFind(id, out _))
             {
                 candidate.SetActive(false);
@@ -37,6 +38,7 @@ namespace DeadBoat.Online
             var state = SharedRunContext.State;
             if (!SharedRunContext.Playing || !state.TryEnemy(id, out var record))
                 throw new InvalidOperationException("Missing canonical restored enemy: " + key);
+            SharedRunContext.Membership?.Observe(key, id, true);
             if (record.HP <= 0 || SharedItemsRuntime.TryFind(id, out _)) return;
             if (SharedEnemiesRuntime.RegisterTemplate(prefab) != record.Template ||
                 !SharedEnemiesRuntime.TryCreateReplica(prefab, id, record, out var identity))

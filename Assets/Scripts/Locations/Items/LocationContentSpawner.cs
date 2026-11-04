@@ -89,7 +89,7 @@ public class LocationContentSpawner : MonoBehaviour
             foreach (var authored in authoredItems)
                 if (authored.item != null && authored.item.GetComponent<DeadBoat.Online.WorldSpawnIdentity>() == null)
                 {
-                    if (rehydrating) DeadBoat.Online.WorldRegionRestore.InitializeItem(authored.item.gameObject, authored.key, restoredItemNames);
+                    if (rehydrating || HasItemRecord(authored.key)) DeadBoat.Online.WorldRegionRestore.InitializeItem(authored.item.gameObject, authored.key, restoredItemNames);
                     else authored.item.gameObject.AddComponent<DeadBoat.Online.WorldSpawnIdentity>().Key = authored.key;
                 }
         LocationSceneBalance balance = ResolveBalance();
@@ -121,11 +121,12 @@ public class LocationContentSpawner : MonoBehaviour
                 continue;
 
             var item = Instantiate(itemPrefab.gameObject, spawnPoint.spawnTransform.position, spawnPoint.spawnTransform.rotation, transform);
-            if (rehydrating) DeadBoat.Online.WorldRegionRestore.InitializeItem(item, generationKey + ":item:" + i, restoredItemNames);
+            bool restoringKnownItem = rehydrating || HasItemRecord(generationKey + ":item:" + i);
+            if (restoringKnownItem) DeadBoat.Online.WorldRegionRestore.InitializeItem(item, generationKey + ":item:" + i, restoredItemNames);
             else if (DeadBoat.Online.SharedRunContext.GenerationActive)
                 item.AddComponent<DeadBoat.Online.WorldSpawnIdentity>().Key = generationKey + ":item:" + i;
 
-            if (!rehydrating && LocationItemSpawnCollection.IsEggPrefab(itemPrefab))
+            if (!restoringKnownItem && LocationItemSpawnCollection.IsEggPrefab(itemPrefab))
                 EggSpawnRuntimeState.OnEggSpawned();
         }
     }
@@ -183,7 +184,8 @@ public class LocationContentSpawner : MonoBehaviour
             if (enemyPrefab == null)
                 continue;
 
-            if (rehydrating)
+            if (rehydrating || (DeadBoat.Online.SharedRunContext.Playing &&
+                DeadBoat.Online.SharedRunContext.State.TryEnemy(DeadBoat.Online.WorldSpawnIdentity.IdForKey(generationKey + ":enemy:" + i), out _)))
             {
                 // Consume exactly the same RNG choices and spawn budget, even for
                 // a dead or detached actor that must not be instantiated again.
@@ -203,6 +205,9 @@ public class LocationContentSpawner : MonoBehaviour
             spawnedCount++;
         }
     }
+
+    private static bool HasItemRecord(string key) => DeadBoat.Online.SharedRunContext.Playing &&
+        DeadBoat.Online.SharedRunContext.State.Items.ContainsKey(DeadBoat.Online.WorldSpawnIdentity.IdForKey(key));
 
     public void SetLevel(int level)
     {
