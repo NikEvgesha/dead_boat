@@ -1,8 +1,8 @@
 ---
 id: DB-ON-042
 title: Прототипировать перк расширения личного инвентаря
-status: backlog
-when: next
+status: in_review
+when: now
 ai: true
 ---
 
@@ -27,3 +27,21 @@ ai: true
 - `Docs/EGG_SYSTEM_SPEC.md`
 - `Docs/kanban/tasks/DB-ON-019.md`
 - `Docs/kanban/tasks/DB-ON-024.md`
+
+## 04.11 — реализация расширения инвентаря
+
+Владелец поручил выбрать получателей бонуса самостоятельно: выбран trader +3; paca по стадиям +1/+2/+4. Добавлены InventorySlots (конец BoostType, прежние enum ID сохранены), поле Stats, profession/animal fields и суммирование; ресурс BoostItem_InventorySlots с редкостями1/2/3/5/7/10 и иконкой сумки, подключение через LevelStatManager.Subscriptions. UI переводы RU/EN; предел сумки27 +5quick=32, текущий сетевой recovery budget32 не увеличен. Resize сохраняет экземпляры/ID ячеек, занятые высокие позиции и вещи при уменьшении; отдельная admissionCapacity ограничивает новый подбор. Personal snapshot несёт карточный InventorySlots, карты применяются до восстановления вещей, старый JSON даёт0. Изменение INetworkStruct требует нового суффикса -dbseed4-inv1; тест AvatarNamesProbe обновлён. SDK не трогали.
+
+Подготовлен InventoryExpansionProbe: настоящий slot prefab, рост/предел/уменьшение с предметом в27-й ячейке, сохранность ID, JSON/recovery, животные/карточка; двухсторонний Photon бонус11/3 включён в ReadyBarrier. Это пока НЕ выполненные проверки: MCP22348/20353 сейчас connection refused; CUA не запускается (kernel assets path not found). У владельца запрошено активировать Unity/Start MCP. Сборки/черновика нет, код пока незакоммичен. Не объявлять задачу завершённой до компиляции/Editor-тестов и будущей приёмки UI/баланса. Далее ИИ — дождаться сервера, проверить и довести механику; владелец — Start MCP при остановленном сервере, позднее общий WebGL-тест.
+
+## 04.11 — проверки реализации
+
+InventoryExpansionProbe PASS с настоящим InventorySlotPrefab: базовая/добавочная вместимость, предел27, неизменность ID ячеек, занятый27-й слот не пропадает при уменьшении, лимит нового подбора при уменьшении, освобождение возвращает исходную вместимость, старый JSON0/новый JSON/SharedPersonalData, сумма животных и ресурс карточки1..10. Два реальных Photon peers подтвердили раздельные личные карточные бонусы11/3; полный ReadyBarrier включая cold join/handoff/предметы/бой PASS.
+
+Расширен настоящий SharedRecoveryGameplayProbe: карта+10,14дополнительных предметов плюс штатные вещи/городской pickup,17предметов всего. После cold restart/reconnect получены17предметов при20местах, карта+10, деньги237, здоровье80, магазин3/резерв31 и ожидаемые карты/выборы. После второго разрыва ContinueSolo отдельная ветка также сохранила17вещей; весь probe PASS. Первый старт Photon ExceptionOnConnect до уровня не засчитывается. Первый успешный игровой запуск выявил гонку стенда: локальное подтверждение нового прогресса237 ещё не означало доставку companion; перед выключением теперь явно ждём его237/cards/itemCount. Повторный полный cold/solo PASS. Это один настоящий игровой мир и transport companion в Editor, не два независимых WebGL-устройства.
+
+Скрин Logs/InventoryExpansion-20261104.png визуально проверен:15/20в сумке,2быстрых предмета, вертикальная прокрутка. Прочие несвязанные SDK/Packages/Recovery изменения не коммитить. OnDestroy LevelStatManager снимает подписки карточек, чтобы повторный запуск не накапливал обработчики.
+
+Ответственные: ИИ — код/проверки/commit/push; владелец — будущая общая WebGL-приёмка UI и баланса1/2/3/5/7/10, торговца+3 и paca1/2/4. Новый протокол -dbseed4-inv1 отделяет комнаты от старых сборок из-за нового поля личного snapshot. Сборку и черновик пока не обновлять. Механика готова к приёмке, in_review.
+
+Финальная очистка подтверждена VerifyRestored: owner keys/playModeStartScene PASS, Runner/registry0, Shared/SoloFalse, PeerSingle, Profiler восстановлен. AvatarNamesProbe.Validate PASS с новым protocol suffix.

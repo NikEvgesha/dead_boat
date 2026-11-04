@@ -58,6 +58,9 @@ public class ItemMenuUI : MonoBehaviour
         string text = "";
         switch (_item.BoostType)
         {
+            case BoostType.InventorySlots:
+                text = "+" + (stats.InventorySlots + profession.inventorySlots + animals.inventorySlots);
+                break;
             case BoostType.HP:
                 text = FormatFlatAndMultiplier(
                     stats.HP + profession.maxHealthFlat + animals.maxHealthFlat,
@@ -184,6 +187,7 @@ public class ItemMenuUI : MonoBehaviour
 
     private string GetText(string key, BoostUI boostUI)
     {
+        if (key == nameof(BoostType.InventorySlots)) return InventoryExpansionText.Get(boostUI);
         LocalizationData lData = LocalizationManager.Instance.LocalizationData;
 
         return lData.GetTranslation(lData.GetTranslation(BoostType.Boost.ToString()) + key + "/" + boostUI.ToString());

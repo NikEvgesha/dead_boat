@@ -24,7 +24,29 @@ public class Inventory : MonoBehaviour
     public Action<PickableItem> ItemDropOut;
 
     public int QuickPanelCapacity => _quickSlotsCapacity;
+    public const int MaximumBagCapacity = 27; // 27 bag + 5 quick slots fit the 32-slot recovery snapshot.
+    private int _baseBagCapacity;
+    private int _admissionCapacity;
     public int BagCapacity => _capacity;
+    public void RefreshCapacity()
+    {
+        if (_bagItems == null) return;
+        int cards = LevelStatManager.Instance != null ? LevelStatManager.Instance.Stats.InventorySlots : 0;
+        int profession = ProfessionService.GetCurrentPassiveBonuses().inventorySlots;
+        int animals = EggAnimalBuffService.InventorySlots;
+        int desired = Mathf.Clamp(_baseBagCapacity + Mathf.Clamp(cards, 0, MaximumBagCapacity) +
+            Mathf.Clamp(profession, 0, MaximumBagCapacity) + Mathf.Clamp(animals, 0, MaximumBagCapacity), 1, MaximumBagCapacity);
+        // A reduction never destroys occupied items. No new pickup until space is available.
+        _admissionCapacity = desired;
+        desired = Mathf.Max(desired, _bagItems.Count, InventoryUI.Instance != null ? InventoryUI.Instance.OccupiedBagExtent : 0);
+        if (_capacity == desired) return;
+        _capacity = desired;
+        if (InventoryUI.Instance != null)
+        {
+            InventoryUI.Instance.ResizeBag(_capacity);
+            InventoryUI.Instance.UpdateCapacity(_bagItems.Count, _capacity);
+        }
+    }
 
     public Action<PickableItem> ItemActivation;
 
@@ -42,12 +64,14 @@ public class Inventory : MonoBehaviour
         _starterPack = GetComponent<StarterPackManager>();
 
 
+        _baseBagCapacity = Mathf.Clamp(_capacity, 1, MaximumBagCapacity);
         _bagItems = new List<PickableItem>(_capacity);
         _quickPanelItems = new List<PickableItem>(_quickSlotsCapacity);
     }
 
     private void Start()
     {
+        RefreshCapacity();
         InventoryUI.Instance.UpdateCapacity(_bagItems.Count, _capacity);
         //InventoryUI.Instance.SpawnSlots(_capacityTotal - _quickSlotsCapacity, _quickSlotsCapacity);
         //InventoryUI.Instance.UpdateCapacity(_items.Count, _capacityTotal);
@@ -66,6 +90,7 @@ public class Inventory : MonoBehaviour
 
     private void Update()
     {
+        RefreshCapacity();
         for (int i = 0; i < _quickSlotsCapacity; i++)
         {
             if (Input.GetKeyDown(KeyCode.Alpha1 + i))
@@ -119,6 +144,7 @@ public class Inventory : MonoBehaviour
 
     public bool AddItem(PickableItem item)
     {
+        RefreshCapacity();
         if (item == null) return false;
         if (_bagItems.Contains(item) || _quickPanelItems.Contains(item)) return true;
         if (item.GetComponent<AmmoItem>() != null && item.Status == ItemStatus.InInventory) return false;
@@ -160,7 +186,7 @@ public class Inventory : MonoBehaviour
 
         if (!added)
         {
-            if (_bagItems.Count < _capacity)
+            if (_bagItems.Count < _admissionCapacity)
             {
                 _bagItems.Add(item);
                 InventoryUI.Instance.AddItemToBag(item);
@@ -293,7 +319,7 @@ public class Inventory : MonoBehaviour
                 {
                     activeUpdated = true;
                 }
-                if (_bagItems.Count < _capacity)
+                if (_bagItems.Count < _admissionCapacity)
                 {
                     _bagItems.Add(dropped.CurrentItem);
                     InventoryUI.Instance.AddItemToBag(dropped.CurrentItem);
@@ -369,7 +395,7 @@ public class Inventory : MonoBehaviour
         {
             haveEmptySlot = _quickPanelItems.Count < _quickSlotsCapacity;
         }
-        haveEmptySlot = _bagItems.Count < _capacity;
+        haveEmptySlot = _bagItems.Count < _admissionCapacity;
 
         if (!haveEmptySlot)
         {

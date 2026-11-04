@@ -21,6 +21,7 @@ public struct RareChance
 public struct Stats
 {
     public bool Save;
+    public int InventorySlots;
     [Header("Игрок")]
     public float HP;
     public float MultExp;
@@ -102,6 +103,12 @@ public class LevelStatManager : MonoBehaviour
         LoadStats();
         Subscriptions();
     }
+    private void OnDestroy()
+    {
+        foreach (var item in _boostItems) if (item != null) item.Change -= Change;
+        if (Instance == this) Instance = null;
+    }
+
     private void Start()
     {
         PlayerStatsManager.Instance.Experience().NewLevel.AddListener(AddNewLevelNum);
@@ -145,6 +152,8 @@ public class LevelStatManager : MonoBehaviour
     }
     private void Subscriptions()
     {
+        var slots = Resources.Load<BoostItem>("BoostItem_InventorySlots");
+        if (slots != null && !_boostItems.Contains(slots)) _boostItems.Add(slots);
         foreach (var item in _boostItems)
         {
             item.Change += Change;
@@ -166,6 +175,10 @@ public class LevelStatManager : MonoBehaviour
     {
         switch (boost)
         {
+            case BoostType.InventorySlots:
+                Stats.InventorySlots = Mathf.Clamp(Stats.InventorySlots + Mathf.Max(0, Mathf.RoundToInt(count)), 0, 27);
+                Inventory.Instance?.RefreshCapacity();
+                break;
             case BoostType.HP:
                 Stats.HP += count;
                 PlayerStatsManager.Instance.AddHealth((int)count);
@@ -228,6 +241,7 @@ public class LevelStatManager : MonoBehaviour
 
         // Получаем 3 случайных и уникальных бустера
         List<BoostItem> selectedItems = _boostItems
+            .Where(x => x.BoostType != BoostType.InventorySlots || Inventory.Instance == null || Inventory.Instance.BagCapacity < Inventory.MaximumBagCapacity)
             .OrderBy(x => UnityEngine.Random.value)
             .Distinct()
             .Take(count)

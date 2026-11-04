@@ -3,6 +3,7 @@ using System;
 [Serializable]
 public class AnimalRunBuffs
 {
+    public int inventorySlots;
     public float maxHealthFlat;
     public float moveSpeedFlat;
     public float moveSpeedMultiplier = 1f;
@@ -32,6 +33,7 @@ public class AnimalRunBuffs
         if (other == null)
             return;
 
+        inventorySlots += other.inventorySlots;
         maxHealthFlat += other.maxHealthFlat;
         moveSpeedFlat += other.moveSpeedFlat;
         moveSpeedMultiplier *= other.SafeMoveSpeedMultiplier;

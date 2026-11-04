@@ -599,6 +599,7 @@ public static class ProfessionService
         if (bonuses == null || positiveLines == null || negativeLines == null)
             return;
 
+        AppendFlatLine(positiveLines, negativeLines, InventoryExpansionText.Get(BoostUI.Stats), bonuses.inventorySlots);
         AppendFlatLine(positiveLines, negativeLines, ProfessionLocalization.PassiveMoveSpeedFlatLabel, bonuses.moveSpeedFlat);
         AppendMultiplierLine(positiveLines, negativeLines, ProfessionLocalization.PassiveMoveSpeedMultLabel, bonuses.SafeMoveSpeedMultiplier);
         AppendFlatLine(positiveLines, negativeLines, ProfessionLocalization.PassiveMaxHealthFlatLabel, bonuses.maxHealthFlat);

@@ -13,6 +13,8 @@ public static class EggAnimalBuffService
         _dirty = true;
     }
 
+    public static int InventorySlots => Mathf.Max(0, GetCurrentBuffs().inventorySlots);
+
     public static float ApplyMoveSpeed(float baseValue)
     {
         AnimalRunBuffs buffs = GetCurrentBuffs();

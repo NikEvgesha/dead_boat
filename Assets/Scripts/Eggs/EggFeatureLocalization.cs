@@ -67,6 +67,7 @@ public static class EggFeatureLocalization
             return Text("UI/AnimalBuff/None", "Нет бонусов", "No buffs");
 
         List<string> parts = new();
+        AppendFlat(parts, "UI/Inventory/ExtraSlots", "Слоты сумки", "Bag slots", buffs.inventorySlots);
         AppendFlat(parts, "UI/AnimalBuff/HP", "Здоровье", "HP", buffs.maxHealthFlat);
         AppendFlat(parts, "UI/AnimalBuff/Speed", "Скорость", "Speed", buffs.moveSpeedFlat);
         AppendMultiplier(parts, "UI/AnimalBuff/Move", "Движение", "Move", buffs.SafeMoveSpeedMultiplier);

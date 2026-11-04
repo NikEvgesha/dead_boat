@@ -94,7 +94,15 @@ namespace DeadBoat.Online.Editor
                 LevelStatManager.Instance.RestoreRecovery(new Stats { Save = true, HP = 30, MultExp = 1.4f,
                     MoveSpeedMult = 1.3f, MoneyMultSale = 1.2f, ConsumptionFuel = .8f, AddMultFuel = 1.1f,
                     MaxFuel = 80, MaxSpeedBoard = 5, MeleDamage = 9, MeleAttackSpeed = 1.2f,
-                    RangeDamage = 7, RangeAttackSpeed = 1.1f, RangeReloadSpeed = .9f }, 1);
+                    RangeDamage = 7, RangeAttackSpeed = 1.1f, RangeReloadSpeed = .9f, InventorySlots = 10 }, 1);
+                Inventory.Instance.RefreshCapacity();
+                var extraPrefab = SharedItemCatalog.Load().entries.Select(e => e.prefab).First(p => p != null && !p.Usable &&
+                    p.GetComponent<AmmoItem>() == null && p.GetComponent<EggCollectibleItem>() == null);
+                for (int i = 0; i < 14; i++)
+                {
+                    var extra = UnityEngine.Object.Instantiate(extraPrefab, PlayerMovement.Instance.transform.position, Quaternion.identity);
+                    Require(Inventory.Instance.AddItem(extra), "expanded bag pickup " + i);
+                }
                 CurrencyManager.Instance.AddCurrency(CurrencyType.Coins, 205 - CurrencyManager.Instance.Coins);
                 PlayerStatsManager.Instance.RestoreRecoveryHealth(80);
                 var gold = UnityEngine.Object.FindObjectsByType<PickableItem>(FindObjectsSortMode.None).Where(p =>
@@ -111,7 +119,7 @@ namespace DeadBoat.Online.Editor
                 Debug.Log("[Recovery game probe] pickup confirmed.");
                 int expectedCount = Inventory.Instance.GetInventoryList().Count;
                 await Until(() => state.Personal.TryGet(state.Runner.LocalPlayer, out var data) && data.ItemCount == expectedCount &&
-                    data.Pistol == 31 && data.Health == 80 && data.Coins == 205 && data.CardHP == 30 && data.Upgrades == 1, "personal confirmed");
+                    data.InventorySlots == 10 && data.Pistol == 31 && data.Health == 80 && data.Coins == 205 && data.CardHP == 30 && data.Upgrades == 1, "personal confirmed");
                 int bagRevision = state.Personal[state.Runner.LocalPlayer].Revision;
                 var cardsAfterPurchase = LevelStatManager.Instance.Stats;
                 cardsAfterPurchase.HP = 35;
@@ -122,6 +130,9 @@ namespace DeadBoat.Online.Editor
                     "progress after bag confirmation");
                 Require(state.Personal[state.Runner.LocalPlayer].Revision == bagRevision,
                     "currency and cards do not resend bag");
+                await Until(() => Replica(peer).Personal.TryGet(state.Runner.LocalPlayer, out var confirmed) &&
+                    confirmed.Coins == 237 && confirmed.InventorySlots == 10 && confirmed.CardHP == 35 &&
+                    confirmed.Upgrades == 2 && confirmed.ItemCount == expectedCount, "companion confirmed latest progress");
                 Debug.Log("[Recovery game probe] personal snapshot confirmed; disconnecting.");
                 var oldRef = state.Runner.LocalPlayer;
                 await state.Runner.Shutdown();
@@ -150,9 +161,9 @@ namespace DeadBoat.Online.Editor
                 await SharedRunRecovery.Instance.ResumeAsync();
                 Require(SharedRunContext.Playing && SharedRunContext.State.Runner.LocalPlayer == oldRef, "actual reconnect");
                 await Task.Delay(600);
-                Require(Inventory.Instance.GetInventoryList().Count == expectedCount, "restored bag count");
+                Require(Inventory.Instance.GetInventoryList().Count == expectedCount && expectedCount > 15 && Inventory.Instance.BagCapacity >= 20, "restored expanded bag count");
                 Require(CurrencyManager.Instance.Coins == 237 && SharedRunContext.Save.LoadGameCoin() == 237, "coins restored");
-                Require(LevelStatManager.Instance.Stats.HP == 35 && LevelStatManager.Instance.Stats.MeleDamage == 9 &&
+                Require(LevelStatManager.Instance.Stats.InventorySlots == 10 && LevelStatManager.Instance.Stats.HP == 35 && LevelStatManager.Instance.Stats.MeleDamage == 9 &&
                     Mathf.Abs(LevelStatManager.Instance.Stats.MoveSpeedMult - 1.3f) < .001f &&
                     SaveManager.Instance.LoadLevelUp() == 2 && LevelStatManager.Instance.HaveLevelUp(), "cards and pending choices restored");
                 Require(PlayerAmmoManager.Instance.GetAmmo(WeaponType.Pistol) == 31, "personal reserve restored");

@@ -257,7 +257,8 @@ public enum BoostType
 
     RangeDamage,
     RangeAttackSpeed,
-    RangeReloadSpeed
+    RangeReloadSpeed,
+    InventorySlots
 }
 public enum RareType
 {

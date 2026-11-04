@@ -12,6 +12,7 @@ public class ProfessionStarterItem
 [Serializable]
 public class ProfessionPassiveBonuses
 {
+    [Min(0)] public int inventorySlots;
     [Header("Player")]
     public float maxHealthFlat;
     public float maxHealthMultiplier = 1f;

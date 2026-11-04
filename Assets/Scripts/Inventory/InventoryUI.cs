@@ -33,6 +33,15 @@ public class InventoryUI : MonoBehaviour
     private bool _initialized;
 
     public bool IsOpen => _isOpen;
+    public int OccupiedBagExtent
+    {
+        get
+        {
+            for (int i = _mainSlots.Count - 1; i >= 0; i--)
+                if (!_mainSlots[i].Empty) return i + 1;
+            return 0;
+        }
+    }
 
     void Awake()
     {
@@ -233,6 +242,22 @@ public class InventoryUI : MonoBehaviour
             if (slot != null && slot.CurrentItem == item)
                 slot.InitSlot(null);
         }
+    }
+
+    public void ResizeBag(int total)
+    {
+        if (!_initialized) return;
+        _bagCapacity = Mathf.Max(1, total);
+        while (_mainSlots.Count < _bagCapacity)
+        {
+            var slot = Instantiate(_InventorySlotPrefab, _inventorySlotsParent);
+            slot.QuickSlot = false;
+            slot.ID = _mainSlots.Count;
+            slot.InitSlot(null);
+            _mainSlots.Add(slot);
+        }
+        for (int i = 0; i < _mainSlots.Count; i++)
+            _mainSlots[i].gameObject.SetActive(i < _bagCapacity || !_mainSlots[i].Empty);
     }
 
     public void UpdateCapacity(int occupied, int total)

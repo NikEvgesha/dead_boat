@@ -33,6 +33,7 @@ namespace DeadBoat.Online
         }
         public static void Restore(SharedRecoveryItem[] items, bool networked)
         {
+            Inventory.Instance.RefreshCapacity();
             Applying = true;
             try
             {
