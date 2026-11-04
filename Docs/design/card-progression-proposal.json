@@ -1,0 +1,217 @@
+{
+  "status": "proposal_not_implemented",
+  "date": "2026-11-04",
+  "cards": [
+    {
+      "id": "blood_pact",
+      "parameters": {
+        "maxHpLoss": 20,
+        "lifesteal": 4,
+        "healCap": 2
+      },
+      "ru": {
+        "title": "Кровавый договор",
+        "description": "Максимальное здоровье −{maxHpLoss}%. Прямой урон оружием по врагам лечит на {lifesteal}% фактически снятого HP, не более {healCap}% вашего максимального HP за секунду."
+      },
+      "en": {
+        "title": "Blood Pact",
+        "description": "Maximum health −{maxHpLoss}%. Direct weapon damage to enemies heals for {lifesteal}% of health removed, up to {healCap}% of your maximum health per second."
+      },
+      "proposed_rarity": "Rare",
+      "maximum_rank": 3
+    },
+    {
+      "id": "battle_rhythm",
+      "parameters": {
+        "hits": 3,
+        "window": 2,
+        "bonus": 40
+      },
+      "ru": {
+        "title": "Ритм боя",
+        "description": "Каждое {hits}-е попадание мечом в течение {window} с наносит на {bonus}% больше урона. Промах сбрасывает серию."
+      },
+      "en": {
+        "title": "Battle Rhythm",
+        "description": "Land {hits} consecutive sword hits within {window} s to deal {bonus}% more damage on the final hit. A missed swing resets the combo."
+      },
+      "proposed_rarity": "Uncommon",
+      "maximum_rank": 3
+    },
+    {
+      "id": "risk_fury",
+      "parameters": {
+        "threshold": 40,
+        "bonus": 25
+      },
+      "ru": {
+        "title": "На грани",
+        "description": "Пока здоровье не выше {threshold}%, прямой урон оружием повышен на {bonus}%."
+      },
+      "en": {
+        "title": "On the Edge",
+        "description": "While health is at or below {threshold}%, direct weapon damage is increased by {bonus}%."
+      },
+      "proposed_rarity": "Rare",
+      "maximum_rank": 3
+    },
+    {
+      "id": "steady_aim",
+      "parameters": {
+        "wait": 0.75,
+        "bonus": 30,
+        "cooldown": 3
+      },
+      "ru": {
+        "title": "Верная рука",
+        "description": "После {wait} с без движения следующий выстрел наносит на {bonus}% больше урона. Перезарядка эффекта: {cooldown} с."
+      },
+      "en": {
+        "title": "Steady Hand",
+        "description": "After standing still for {wait} s, your next shot deals {bonus}% more damage. Effect cooldown: {cooldown} s."
+      },
+      "proposed_rarity": "Uncommon",
+      "maximum_rank": 3
+    },
+    {
+      "id": "last_round",
+      "parameters": {
+        "bonus": 45,
+        "reloadPenalty": 15
+      },
+      "ru": {
+        "title": "Последний довод",
+        "description": "Последний патрон магазина наносит на {bonus}% больше урона. Перезарядка оружия длится на {reloadPenalty}% дольше."
+      },
+      "en": {
+        "title": "Last Argument",
+        "description": "The last round in a magazine deals {bonus}% more damage. Weapon reloads take {reloadPenalty}% longer."
+      },
+      "proposed_rarity": "Rare",
+      "maximum_rank": 3
+    },
+    {
+      "id": "powder_echo",
+      "parameters": {
+        "damage": 20,
+        "radius": 2,
+        "cooldown": 3
+      },
+      "ru": {
+        "title": "Пороховое эхо",
+        "description": "Попадание огнестрельным оружием вызывает взрыв: {damage}% снятого HP остальным врагам в радиусе {radius} м. Перезарядка: {cooldown} с. Взрыв не запускает эффекты карточек."
+      },
+      "en": {
+        "title": "Powder Echo",
+        "description": "A firearm hit causes an explosion: {damage}% of health removed to other enemies within {radius} m. Cooldown: {cooldown} s. The explosion does not trigger card effects."
+      },
+      "proposed_rarity": "Epic",
+      "maximum_rank": 3
+    },
+    {
+      "id": "ash_mark",
+      "parameters": {
+        "damage": 2,
+        "duration": 3,
+        "cooldown": 2
+      },
+      "ru": {
+        "title": "Тлеющий след",
+        "description": "Попадание оружием поджигает врага на {duration} с, нанося {damage} урона в секунду. Перезарядка: {cooldown} с. Повторный поджог не складывает урон."
+      },
+      "en": {
+        "title": "Smoldering Mark",
+        "description": "Weapon hits ignite an enemy for {duration} s, dealing {damage} damage per second. Cooldown: {cooldown} s. Reapplying burn does not stack damage."
+      },
+      "proposed_rarity": "Rare",
+      "maximum_rank": 3
+    },
+    {
+      "id": "safe_land",
+      "parameters": {
+        "wait": 12,
+        "reduction": 35
+      },
+      "ru": {
+        "title": "Вторая кожа",
+        "description": "После {wait} с без урона получите защиту: следующий удар врага нанесёт на {reduction}% меньше урона. Заряд только один."
+      },
+      "en": {
+        "title": "Second Skin",
+        "description": "After {wait} s without damage, gain protection: the next enemy hit deals {reduction}% less damage. Maximum one charge."
+      },
+      "proposed_rarity": "Uncommon",
+      "maximum_rank": 3
+    },
+    {
+      "id": "heavy_coat",
+      "parameters": {
+        "hp": 15,
+        "speedLoss": 8
+      },
+      "ru": {
+        "title": "Тяжёлый бушлат",
+        "description": "Максимальное здоровье +{hp}%. Скорость передвижения −{speedLoss}%."
+      },
+      "en": {
+        "title": "Heavy Peacoat",
+        "description": "Maximum health +{hp}%. Movement speed −{speedLoss}%."
+      },
+      "proposed_rarity": "Common",
+      "maximum_rank": 3
+    },
+    {
+      "id": "burden_bargain",
+      "parameters": {
+        "sale": 25,
+        "speedLoss": 10
+      },
+      "ru": {
+        "title": "Добыча дороже",
+        "description": "Личная выручка от продажи +{sale}%. Пока несёте предмет в руках, передвигаетесь на {speedLoss}% медленнее."
+      },
+      "en": {
+        "title": "Worth the Weight",
+        "description": "Your sale proceeds +{sale}%. While carrying an item in your hands, you move {speedLoss}% slower."
+      },
+      "proposed_rarity": "Rare",
+      "maximum_rank": 3
+    },
+    {
+      "id": "field_medic",
+      "parameters": {
+        "hits": 3,
+        "heal": 2,
+        "range": 6,
+        "cooldown": 6
+      },
+      "ru": {
+        "title": "Полевой медик",
+        "description": "После {hits} попаданий оружием вылечите одного раненого союзника в радиусе {range} м на {heal} HP. Если рядом нет раненого союзника, лечитесь сами. Перезарядка: {cooldown} с."
+      },
+      "en": {
+        "title": "Field Medic",
+        "description": "After {hits} weapon hits, heal one wounded ally within {range} m for {heal} HP. With no wounded ally in range, heal yourself. Cooldown: {cooldown} s."
+      },
+      "proposed_rarity": "Epic",
+      "maximum_rank": 3
+    },
+    {
+      "id": "patient_reload",
+      "parameters": {
+        "bonus": 25,
+        "window": 3
+      },
+      "ru": {
+        "title": "Новый заход",
+        "description": "После перезарядки пустого магазина первый выстрел за следующие {window} с наносит на {bonus}% больше урона."
+      },
+      "en": {
+        "title": "Fresh Start",
+        "description": "After reloading an empty magazine, the first shot within {window} s deals {bonus}% more damage."
+      },
+      "proposed_rarity": "Uncommon",
+      "maximum_rank": 3
+    }
+  ]
+}
