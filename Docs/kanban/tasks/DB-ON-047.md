@@ -1,7 +1,7 @@
 ---
 id: DB-ON-047
 title: Вести новичка в отдельную обучающую локацию только при первом входе
-status: backlog
+status: in_progress
 when: now
 ai: true
 ---
@@ -32,3 +32,9 @@ ai: true
 - `Docs/kanban/tasks/DB-ON-038.md`
 - `Docs/kanban/tasks/DB-ON-048.md`
 - `Docs/SAVE_SCOPE_AND_STAT_MODIFIERS.md`
+
+
+06.11: начат изолированный greybox FirstRunPrototype, seed14052026/content1. Маршрут/варианты/границы/интеграция описаны в Docs/FIRST_RUN_PROTOTYPE.md. Автоматический первый вход и профильная миграция НЕ подключены: нельзя считать DB-ON-047 закрытой. Прототип подменяет сумку/бой/лодку минимальными действиями, требует подключения штатных механик и мобильного ввода. Нет сборки/аналитики/постоянных наград. Проверки Editor и Play smoke записываются отдельно; приёмка темпа впереди. Далее ИИ — реальная интеграция и профильное состояние, владелец позже пакетная ручная проверка.
+
+
+06.11 итог первого этапа: Validate PASS (ordered gates, повторяемый seed-stream, threat clamp/retry, JSON resume, Completed/Skipped); Play Smoke PASS (проверка близости подбора, сумка внутрь/наружу, двигатель/руль, угроза/финиш), timeScale1, без SaveManager/Photon в отдельной сцене. Методами вызван выход завершённого прототипа: LoadingScene→настоящий Lobby, CurrentLocation=Lobby, временный SaveProvider изолирован, prototype уничтожен, одноразовый return flag=false. Stop/VerifyRestored PASS: owner keys/start scene, ключ прототипа и clock восстановлены; backup inactive, Play/compilefalse, Runner0, Shared/SoloFalse. Это не ручное прохождение, не мобильная приёмка, не первый вход реального профиля. Сборки нет. Далее ИИ — профильное состояние/миграция и штатные игровые механики; владелец позже общий тест темпа.

@@ -43,6 +43,13 @@ public class LoadingManager : MonoBehaviour
     private void StartGame()
     {
         GameLoader.Instance.StartAfterSDK();
+        // Explicit exit from the isolated first-run prototype boots normal services before Lobby.
+        if (DeadBoat.FirstRun.FirstRunPrototype.ConsumeLobbyReturn())
+        {
+            _location = Location.Lobby;
+            GameLoader.Instance.LoadNextScene(_lobbyScene, true, false);
+            return;
+        }
         bool haveSave = SaveManager.Instance.LoadGameProgress().Item1 >= 0;
         if (DeadBoat.Online.SharedRunRecovery.HasPending)
         {
