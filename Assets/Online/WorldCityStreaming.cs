@@ -22,6 +22,7 @@ namespace DeadBoat.Online
         private readonly List<Ticket> sleeping = new();
         private readonly List<float> focus = new(5);
         private double next;
+        private int cursor;
         private WorldRegionArchive archive;
         public int SleepingCount => sleeping.Count;
         public int Suspended { get; private set; }
@@ -30,14 +31,15 @@ namespace DeadBoat.Online
         public WorldCityStreaming(CitySpawner owner) { this.owner = owner; }
         public void Tick(List<GameObject> active, bool enabled)
         {
-            if (Time.timeScale <= 0 || Time.realtimeSinceStartupAsDouble < next || !WorldRegionStreaming.CollectFocus(focus)) return;
+            if (Time.timeScale <= 0 || Time.realtimeSinceStartupAsDouble < next || !WorldRegionStreaming.CollectFocus(focus) ||
+                SharedRunContext.StreamingBudget?.TryAcquire(Time.frameCount, 1) != true) return;
             next = Time.realtimeSinceStartupAsDouble + .25;
             Audit(active, focus, SharedRunContext.State.WorldRear, enabled);
         }
         public bool Audit(List<GameObject> active, IReadOnlyList<float> points, float rear, bool enabled = true)
         {
             if (!SharedRunContext.Playing || points == null || points.Count == 0) return false;
-            if (archive != SharedRunContext.Regions) { sleeping.Clear(); archive = SharedRunContext.Regions; }
+            if (archive != SharedRunContext.Regions) { sleeping.Clear(); cursor = 0; archive = SharedRunContext.Regions; }
             for (int i = 0; i < points.Count; i++) if (float.IsNaN(points[i]) || float.IsInfinity(points[i])) return false;
             sleeping.RemoveAll(t => t.Z < rear);
             foreach (var ticket in sleeping)
@@ -47,8 +49,10 @@ namespace DeadBoat.Online
                 sleeping.Remove(ticket); Restored++; return true;
             }
             if (!enabled) return false;
-            foreach (var city in active)
+            for (int i = 0; i < active.Count; i++)
             {
+                int index = (cursor + i) % active.Count;
+                var city = active[index];
                 var region = city != null ? city.GetComponent<WorldCityRegion>() : null;
                 if (region == null || region.Prefab == null || !region.Ready || region.LogicalZ < rear) continue;
                 var range = new Vector2(region.LogicalZ - 100, region.LogicalZ + 100);
@@ -59,6 +63,7 @@ namespace DeadBoat.Online
                     range.y = Mathf.Max(range.y, renderer.bounds.max.z + LobbyNetworkAvatar.Origin.z + 100);
                 }
                 if (WorldRegionStreaming.Near(range, points, 800)) continue;
+                cursor = (index + 1) % active.Count; // Advance BEFORE a guarded/refused transaction.
                 foreach (var shop in city.GetComponentsInChildren<StorePoint>(true)) if (!shop.CanSuspend) return Refuse("purchase in progress");
                 foreach (var bank in city.GetComponentsInChildren<BankStorePoint>(true)) if (!bank.CanSuspend) return Refuse("bank in progress");
                 if (!WorldReplicaRemoval.CanRemoveLocalTree(city, out var reason)) return Refuse(reason);

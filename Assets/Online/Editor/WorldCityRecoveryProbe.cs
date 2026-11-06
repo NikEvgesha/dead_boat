@@ -29,6 +29,7 @@ namespace DeadBoat.Online.Editor
                 Require(UnityEngine.SceneManagement.SceneManager.GetActiveScene().path == "Assets/Online/SmokeTest/RecoveryProtocolProbe.unity",
                     "prepared recovery fixture scene required");
                 NetworkProjectConfig.Global.PeerMode = NetworkProjectConfig.PeerModes.Multiple;
+                CheckBudget();
                 await Case(false);
                 await Case(true);
                 await Case(true, true);
@@ -161,6 +162,7 @@ namespace DeadBoat.Online.Editor
                 Require(fixture.Stream.Audit(fixture.Active, new[] { 10000f }, 0, false), fixture.Stream.LastRefusal);
                 fixture.Quiet(); await Task.Delay(100);
                 Check(fixture, stock, gunId, usedId, deadId, hurtId, movedId, true); CheckBought(boughtId);
+                if (!cold) await CheckCityQueue(fixture.Owner);
                 string scenario = formerMaster ? "former master reconnect after takeover" : cold ? "cold reconnect + both load orders" : "master takeover";
                 Debug.Log($"[City recovery] {scenario} PASS: meshes={meshes}, stores={stock.Count}; origin500, stable stock, ammo1/HP13, consumed/dead absent, detached drop outside city, purchase snapshot unique, death during second sleep.");
             }
@@ -216,6 +218,58 @@ namespace DeadBoat.Online.Editor
         private static async Task Until(Func<bool> condition, string label)
         { double end = Time.realtimeSinceStartupAsDouble + 30; while (!condition()) { Require(Time.realtimeSinceStartupAsDouble < end, label); await Task.Delay(50); } }
         private static void Require(bool value, string message) { if (!value) throw new InvalidOperationException(message); }
+
+        private static void CheckBudget()
+        {
+            var budget = new WorldStreamingBudget();
+            int[] counts = new int[3];
+            for (int frame = 0; frame < 120; frame++)
+            {
+                int granted = 0;
+                for (int n = 0; n < 3; n++)
+                {
+                    int lane = (n + frame / 3) % 3;
+                    if (budget.TryAcquire(frame, lane)) { counts[lane]++; granted++; }
+                    Require(!budget.TryAcquire(frame, lane), "duplicate audit in one frame");
+                }
+                Require(granted == 1, "automatic budget exceeded or starved");
+            }
+            Require(counts.All(n => n == 40) && !budget.TryAcquire(-1, 0) && !budget.TryAcquire(120, 3), "lane fairness/invalid input");
+            Require(new WorldStreamingBudget().TryAcquire(0, 0), "fresh run inherited old frame budget");
+            Debug.Log("[Streaming budget] PASS: 120 frames, one audit each, 40 grants per lane independent of caller order; duplicate/invalid denied, fresh context clean.");
+        }
+        private static async Task CheckCityQueue(CitySpawner owner)
+        {
+            var source = new GameObject("Empty queue fixture prefab"); source.SetActive(false);
+            var first = Object.Instantiate(source, owner.transform); first.transform.position = new Vector3(0, 0, 30000) - LobbyNetworkAvatar.Origin;
+            var second = Object.Instantiate(source, owner.transform); second.transform.position = new Vector3(0, 0, 40000) - LobbyNetworkAvatar.Origin;
+            var list = new List<GameObject> { first, second };
+            var stream = new WorldCityStreaming(owner);
+            var shop = first.AddComponent<StorePoint>(); shop.enabled = false;
+            try
+            {
+                foreach (var root in list)
+                {
+                    var region = root.AddComponent<WorldCityRegion>();
+                    region.Initialize(owner, source, (root.transform.position + LobbyNetworkAvatar.Origin).z);
+                    var start = (System.Collections.IEnumerator)typeof(WorldCityRegion).GetMethod("Start", Private).Invoke(region, null);
+                    while (start.MoveNext()) { }
+                }
+                typeof(StorePoint).GetField("rewardPending", Private).SetValue(shop, true);
+                Require(!stream.Audit(list, new[] { 0f }, 0) && stream.LastRefusal == "purchase in progress", "pending shop guard");
+                Require(stream.Audit(list, new[] { 0f }, 0) && list.Count == 1 && list[0] == first, "blocked first city starved second");
+                await Task.Delay(100);
+                Require(second == null && stream.SleepingCount == 1, "second city not removed");
+                Require(stream.Audit(list, new[] { 40000f }, 0) && list.Count == 2, "queued city not restored");
+                Debug.Log("[City queue] PASS: pending purchase keeps first city alive; next audit suspends second, then restores it.");
+            }
+            finally
+            {
+                typeof(StorePoint).GetField("rewardPending", Private).SetValue(shop, false);
+                foreach (var root in list) if (root != null) Object.Destroy(root);
+                Object.Destroy(source);
+            }
+        }
 
         private sealed class Fixture : IDisposable
         {

@@ -21,7 +21,8 @@ namespace DeadBoat.Online
         private void LateUpdate()
         {
             if (SharedRunContext.Independent != this || Time.timeScale <= 0 || Time.realtimeSinceStartupAsDouble < next ||
-                !WorldRegionStreaming.CollectFocus(focus)) return;
+                !WorldRegionStreaming.CollectFocus(focus) ||
+                SharedRunContext.StreamingBudget?.TryAcquire(Time.frameCount, 2) != true) return;
             next = Time.realtimeSinceStartupAsDouble + .25;
             Audit(focus, streamActors);
         }

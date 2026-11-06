@@ -50,8 +50,8 @@ namespace DeadBoat.Online
             var state = SharedRunContext.State;
             if (!SharedRunContext.Playing || state == null || !state.BoatInitialized || Time.timeScale <= 0 ||
                 Time.realtimeSinceStartupAsDouble < nextAudit) return;
+            if (!CollectFocus(focus) || SharedRunContext.StreamingBudget?.TryAcquire(Time.frameCount, 0) != true) return;
             nextAudit = Time.realtimeSinceStartupAsDouble + .25;
-            if (!CollectFocus(focus)) return;
             Audit(active, focus, state.WorldRear, allowSuspension);
         }
         public static bool CollectFocus(List<float> focus)
