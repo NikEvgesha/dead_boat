@@ -9,8 +9,8 @@ public class LocationSpawner : MonoBehaviour
     public BoardController _boardController;              // Ссылка на компонент BoardController с TotalDistanceTraveled (лодка)
     public PlayerMovement _player;                             // Ссылка на Transform игрока
     public LocationSpawnCollection locationCollection;   // ScriptableObject с вариантами объектов для спавна
-    public float minDistance = 100f;                     // Минимальное расстояние до следующего объекта
-    public float maxDistance = 200f;                     // Максимальное расстояние до следующего объекта
+    public float minDistance = 50f;                     // Минимальное расстояние до следующего объекта
+    public float maxDistance = 100f;                     // Максимальное расстояние до следующего объекта
     public float spawnThreshold = 20f;                   // Насколько впереди игрок должен быть для спавна
 
     [Header("Настройки позиции")]

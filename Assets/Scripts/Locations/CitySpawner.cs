@@ -11,10 +11,10 @@ public class CitySpawner : MonoBehaviour
     public GameObject cityPrefab;
 
     [Tooltip("Ѕазовое рассто€ние между спавнами городов (в метрах)")]
-    public float baseSpawnDistance = 10000f;
+    public float baseSpawnDistance = 3333.3333f;
 
     [Tooltip("ѕри каждом спавне рассто€ние до следующего города увеличиваетс€ на это значение (в метрах)")]
-    public float additionalDistanceIncrement = 100f;
+    public float additionalDistanceIncrement = 33.333332f;
 
     [Header("Ѕуфер спавна и удалени€")]
     [Tooltip("√ород будет заспавнен, когда поезд приблизитс€ к точке спавна на это рассто€ние (в метрах)")]
