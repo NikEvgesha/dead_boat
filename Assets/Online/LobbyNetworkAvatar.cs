@@ -37,6 +37,7 @@ namespace DeadBoat.Online
         [Networked] private TickTimer AttackVisual { get; set; }
         [Networked] private int AttackStyle { get; set; }
         [Networked] private byte HeldItemId { get; set; }
+        [Networked] public byte ProfessionSkin { get; private set; }
         [Networked] public NetworkString<_64> MirraProfileId { get; private set; }
         [Networked] public NetworkString<_32> DisplayName { get; private set; }
         [Networked] public float Health { get; private set; }
@@ -82,6 +83,7 @@ namespace DeadBoat.Online
         private PickableItem observedItem;
         private Renderer[] avatarRenderers;
         private Animator animator;
+        private AvatarProfessionVisual professionVisual;
         private Transform rightArm;
         private Transform leftArm;
         private Transform handSocket;
@@ -116,6 +118,11 @@ namespace DeadBoat.Online
             Debug.Log($"[Lobby online] Avatar spawned; authority={Object.HasStateAuthority}");
             avatarRenderers = GetComponentsInChildren<Renderer>(true);
             animator = GetComponentInChildren<Animator>(true);
+            if (animator != null)
+            {
+                professionVisual = gameObject.AddComponent<AvatarProfessionVisual>();
+                professionVisual.Initialize(animator.transform);
+            }
             foreach (var part in GetComponentsInChildren<Transform>(true))
             {
                 if (part.name == "arm-right") rightArm = part;
@@ -146,6 +153,7 @@ namespace DeadBoat.Online
 
                 localPlayer = PlayerMovement.Instance;
                 RefreshLocalName();
+                ProfessionSkin = AvatarProfessionVisual.SkinFor(ProfessionService.CurrentProfessionId);
             }
             else
             {
@@ -220,6 +228,8 @@ namespace DeadBoat.Online
             if (localPlayer == null)
                 return;
 
+            ProfessionSkin = AvatarProfessionVisual.SkinFor(ProfessionService.CurrentProfessionId);
+
             bool driving = DrivingSeat != null;
             if (!driving)
             {
@@ -247,6 +257,7 @@ namespace DeadBoat.Online
 
         private void Update()
         {
+            if (Object != null && Object.IsValid) professionVisual?.Apply(ProfessionSkin);
             if (animator == null || Object == null || Object.HasStateAuthority)
                 return;
 

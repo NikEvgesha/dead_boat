@@ -1,7 +1,7 @@
 ---
 id: DB-ON-045
 title: Сделать пробные облики сетевого аватара для двух профессий
-status: backlog
+status: in_review
 when: next
 ai: true
 ---
@@ -26,3 +26,6 @@ ai: true
 
 - `Docs/kanban/tasks/DB-ON-030.md`
 - `Docs/kanban/tasks/DB-ON-031.md`
+
+
+07.11: реализованы два пробных производных UV-атласа Kenney — mechanic/navy и hunter/green-brown. Оригинал/модель/скелет/аниматор не менялись. Импорт512px+mips, общий материал на облик, без material-клонов на игрока. Найдены отрицательныеUV уFBX: нужен Repeat, Clamp давал тёмные участки; исправлено и проверено на3D. В аватар добавлен стабильный byte ProfessionSkin (0default/1mechanic/2hunter/unknown→original), ID обновляется с выбором профессии; материалы загружаются на устройстве. Сетевой protocol suffix skins1 отделяет несовместимые старые клиенты, SDK не менялся. Два настоящих Photon peers PASS: late join mechanic, смена hunter, fallback, animator и предмет в руке сохранены. PreviewScene рендер просмотрен: Docs/previews/ProfessionSkins.png (слева hunter, в центре mechanic, справа original). Editor memory textures350448+175672bytes; это не размер WebGL-архива. Прирост сборки НЕ измерен по запрету сборки, ручной вид/движение/руки в вебе ещё не приняты. Происхождение текстур: imagegen-редактирование original texture-a, новые siblingPNG. Далее владелец — позже оценить два облика в общем тесте; ИИ — поправить замечания, не делать все13 до выбора направления. Следующая задача по согласованному порядку — DB-ON-035 (ИИ).
