@@ -28,7 +28,14 @@ public class LevelUpUi : MonoBehaviour
     private RareType _rare;
     private int _countLevelUp;
     private bool _cardClaimed;
-    public bool TryClaimCard() { if (_cardClaimed) return false; _cardClaimed = true; return true; }
+    private CardChoiceFeedback _choiceFeedback;
+    private double _nextChoiceAt;
+    public void ShowCardChoice(Sprite icon, RareType rarity)
+    {
+        _nextChoiceAt = Time.unscaledTimeAsDouble + .25; // Prevent click-through to the next offer, independent of FX.
+        _choiceFeedback?.Show(icon, rarity);
+    }
+    public bool TryClaimCard() { if (_cardClaimed || Time.unscaledTimeAsDouble < _nextChoiceAt) return false; _cardClaimed = true; return true; }
     public void ReleaseCardClaim() { _cardClaimed = false; }
     public RareBack GetRareBackUI(RareType rare) 
     {
@@ -47,6 +54,8 @@ public class LevelUpUi : MonoBehaviour
             return;
         }
         _panel.SetActive(false);
+        _choiceFeedback = gameObject.AddComponent<CardChoiceFeedback>();
+        _choiceFeedback.Initialize(transform);
         _textPrice.text = _price.ToString();
     }
     public void AddNewLevelCount(int count)
@@ -112,6 +121,7 @@ public class LevelUpUi : MonoBehaviour
     }
     public void _RefreshClickAds()
     {
+        if (_cardClaimed || DeadBoat.Online.SharedAdProtection.IsShowing) return;
         AdsManager.Instance.ShowRewardedAd(
             "Refresh",
             (success) =>
@@ -124,6 +134,7 @@ public class LevelUpUi : MonoBehaviour
 
     public void _RefreshClickGems()
     {
+        if (_cardClaimed || DeadBoat.Online.SharedAdProtection.IsShowing) return;
         if (CurrencyManager.Instance.CheckEnoughCurrency(CurrencyType.Gems, _price))
         {
             CurrencyManager.Instance.RemoveCurrency(CurrencyType.Gems, _price);
@@ -136,6 +147,7 @@ public class LevelUpUi : MonoBehaviour
     }
     public void Refresh()
     {
+        if (_cardClaimed) return;
         LevelStatManager.Instance.Refresh();
     }
     public void ChoiceBoost(BoostItem item, RareType rare) 

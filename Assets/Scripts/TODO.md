@@ -306,3 +306,10 @@ Implementation backlog for eggs:
 - [x] Study installed FEEL5.9.1 / Built-in uGUI, verify paused-UI scale and cleanup in isolated Play; document auto-disable restore caveat.
 - [ ] Implement small local card entrance/press/confirmed-choice feedback per Docs/FEEL_WEB_GUIDE.md, without gameplay/time/network ownership.
 - [ ] Measure real target-browser cost after separately authorized build; owner visual/mobile acceptance.
+
+
+### DB-ON-128 — FEEL card feedback source prototype (2026-11-06)
+- [x] Entrance, pointer/keyboard press, rarity border and reused confirmed reward icon, unscaled/ad cleanup, existing sound routing.
+- [x] Preserve Animator paths/layout/game RNG; exactly-once/versioned ad callbacks and next-offer click debounce; no gameplay from FEEL events.
+- [x] Real Lobby prefab: pause, 30 rerolls/10 reopens stable7 players, failed/duplicate/stale ads, no extra camera/audio source, RU/EN and cleanup PASS.
+- [ ] Independent browser/mobile performance/readability and owner acceptance after future batch build (in_review); no build/upload here.

@@ -2,7 +2,7 @@
 
 Изучено 06.11.2026. Установлен FEEL **5.9.1** (`Assets/Feel/readme.txt`); Unity остаётся **6000.3.9f1**, обновление движка отменено владельцем. MCP обновлён владельцем до1.7.0 и отвечает на запросы. Текущий GraphicsSettings указывает Built-in pipeline; в manifest нет Cinemachine/URP/HDRP. Применяется существующий uGUI, включая `UnityEngine.UI.Text`.
 
-Это руководство по интеграции, а не уже включённые эффекты. SDK/FEEL не изменяем. Современная онлайн-документация описывает FEEL6.3; точные поля и методы сверяем с локальным5.9.1.
+Первый прототип интеграции карточек реализован в DB-ON-128; остальные эффекты ниже остаются планом. SDK/FEEL не изменяем. Современная онлайн-документация описывает FEEL6.3; точные поля и методы сверяем с локальным5.9.1.
 
 ## Как работать с установленным API
 
@@ -63,3 +63,12 @@ Unity на установленной версии разрешает тип MMF
 Основные локальные источники: `Assets/Feel/readme.txt`, `MMFeedbacks/MMFeedbacks/Core/MMF_Player/MMF_Player.cs`, `Core/Legacy/MMFeedbacks.cs`, `Core/MMFeedbackTiming.cs`, исходники соответствующих feedbacks и `NiceVibrations/Scripts/Components/LofeltHaptics.cs`.
 
 Документация автора (версию учитывать): [MMF Player](https://feel-docs.moremountains.com/mmf-player.html), [основные понятия и время](https://feel-docs.moremountains.com/core-concepts), [перечень feedbacks](https://feel-docs.moremountains.com/list_mmfeedbacks.html).
+
+
+## Подключение карточек — DB-ON-128
+
+CardFeelFeedback создаётся LevelUpButtomUI один раз: анимирует существующий Point/LevelUpElement, к которому не привязаны кривые Animator. Иерархия Point/Choise и Button не меняется. Два MMF_Player на карту: вход0.2с (scale0.94→1.018→1 и alpha0.72→1), нажатие0.14с (scale1→0.965→1) и alpha рамки. Рамка — четыре UI Image без текстуры/материала/частиц, цвет по редкости. PointerDown поддерживает touch; select/hover добавляют умеренное выделение. Рекламная защита возвращает нейтральный вид и запрещает проигрывание позади рекламы.
+
+CardChoiceFeedback — один переиспользуемый значок подтверждённой награды вне закрываемой панели; исчезает за0.48с и прекращает Update. Нет нового AudioSource: используется SoundManager.PlayUIClick с текущим mixer/настройками. Всего7 MMF_Player для трёх карточек, никаких новых камер/RenderTexture/сетевых сообщений. Инициализация/Play сохраняют UnityEngine.Random.state, поэтому визуал не должен менять выдачу карт/генерацию.
+
+Выдача происходит в обычном игровом callback сразу после результата рекламы; прежняя искусственная задержка0.2с удалена. FEEL ничего не выдаёт. Версия предложения и флаг завершения отвергают старый/повторный callback. Следующее предложение не принимает выбор в первые0.25с после награды: это debounce от двойного клика, независимо от длительности FEEL. Реролл во время занятого выбора не списывает валюту. Проверки: Assets/Online/Editor/CardFeelProbe.cs. Все изменения создаются на runtime-объектах; исходные FEEL, prefab и Animator не переписываются.
