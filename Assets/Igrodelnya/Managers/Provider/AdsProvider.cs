@@ -9,5 +9,7 @@ public abstract class AdsProvider : MonoBehaviour
     public abstract void ShowRewardedAd(string rewardId, Action<bool> onComplete); // Показ rewarded-рекламы с коллбэком
     public abstract void ShowInterstitialAd(Action<bool> onComplete = null); // Показ interstitial-рекламы
 
+    public event Action AdOpened;
+    protected void NotifyOpened() => AdOpened?.Invoke();
     public Action AdClosed;
 }

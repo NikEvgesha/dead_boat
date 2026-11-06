@@ -36,6 +36,7 @@ public class MirraSDKAdsProvider : AdsProvider
         MirraSDK.Ads.InvokeRewarded(
             onOpen: () =>
             {
+                NotifyOpened();
             },
             rewardTag: rewardId,
             onClose: (success) =>
@@ -64,6 +65,7 @@ public class MirraSDKAdsProvider : AdsProvider
         MirraSDK.Ads.InvokeInterstitial(
             onOpen: () =>
             {
+                NotifyOpened();
                 Debug.Log("MirraSDK: Interstitial ad opened");
             },
             onClose: (success) =>

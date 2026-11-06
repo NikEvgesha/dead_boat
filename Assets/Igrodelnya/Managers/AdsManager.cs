@@ -24,6 +24,10 @@ public class AdsManager : MonoBehaviour
     [SerializeField] private List<AdsProvider> adsProviders = new List<AdsProvider>(); // Список активных провайдеров
 
     public Action AdClosed;
+    public event Action<bool> ShownAdClosed;
+    private AdsProvider observedProvider;
+    private Action openedHandler;
+    private bool providerOpened, requestRewarded;
 
     void Awake()
     {
@@ -37,6 +41,7 @@ public class AdsManager : MonoBehaviour
 
         // Инициализация всех провайдеров
         InitializeProviders();
+        if (GetComponent<AdRemovalOffer>() == null) gameObject.AddComponent<AdRemovalOffer>();
     }
 
 
@@ -57,6 +62,9 @@ public class AdsManager : MonoBehaviour
     {
         if (!active || id != request) return;
         active = false;
+        if (observedProvider != null) observedProvider.AdOpened -= openedHandler;
+        observedProvider = null; openedHandler = null;
+        bool shown = providerOpened; bool rewarded = requestRewarded; providerOpened = false;
         var callback = completion;
         completion = null;
         DeadBoat.Online.SharedAdProtection.End();
@@ -66,12 +74,16 @@ public class AdsManager : MonoBehaviour
         adControl = null;
         AdClosed?.Invoke();
         callback?.Invoke(result);
+        if (shown) ShownAdClosed?.Invoke(rewarded);
     }
     private async void Show(AdsProvider provider, bool rewarded, string rewardId, Action<bool> callback)
     {
         if (active) { callback?.Invoke(false); return; }
         active = true;
         int id = ++request;
+        providerOpened = false; requestRewarded = rewarded; observedProvider = provider;
+        openedHandler = () => { if (active && request == id) providerOpened = true; };
+        provider.AdOpened += openedHandler;
         completion = callback;
         deadline = Time.realtimeSinceStartupAsDouble + DeadBoat.Online.SharedDepartureState.AdMaximumSeconds;
         try
@@ -134,6 +146,7 @@ public class AdsManager : MonoBehaviour
 
     public void ShowInterstitialAd(Action<bool> onComplete = null)
     {
+        if (AdRemovalPolicy.Owned) { onComplete?.Invoke(false); return; }
         if (active) { onComplete?.Invoke(false); return; }
         foreach (var provider in adsProviders)
             if (provider != null) { Show(provider, false, null, onComplete); return; }

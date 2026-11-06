@@ -2,7 +2,7 @@
 id: DB-ON-125
 title: Ограничить удержание мира без потери изменённых предметов и врагов
 status: in_progress
-when: now
+when: later
 ai: true
 ---
 
@@ -190,3 +190,6 @@ RunLongRoute функционально PASS:100physical items/20ragdoll corpses
 Производительность НЕ принята: последний Editor window10.5FPS/p95≈195.5мс/max≈319.1мс/27кадров>100мс. Refused2, причины монитором не сохранены, последующая обработка продолжилась. Runtime в этом этапе не изменялся; расширен только Editor-стенд. Подробные таблицы/ограничения: Docs/COOP_LONG_ROUTE_20261106.md, локальный Logs/LongRoute-20261106.log.
 
 Cleanup/VerifyRestored PASS: Play/compilefalse, Runner0, Shared/SoloFalse, StreamingBudget/Regions/Membership/Independent=null, PeerSingle, owner keys/start scene восстановлены. Без сборки/черновика. DB-ON-125 in_progress. ИИ далее: причины длинных кадров/отказов и долговременное удержание сетевых страниц; владелец позже пакетный WebGL-тест, сейчас действий не требуется.
+
+
+07.11: владелец выбрал сначала DB-ON-045→035→057. Работу над производительностью пока отложить; вернуться к её приоритету со следующей пачкой задач вместе с рыбалкой DB-ON-044. Накопленные измерения и незакрытые риски сохраняются.

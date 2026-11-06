@@ -112,6 +112,7 @@ public class PurchasesManager : MonoBehaviour
             {
                 try
                 {
+                    if (success) AdRemovalPolicy.RecognizePurchase(purchaseId);
                     onComplete?.Invoke(success);
                 }
                 finally

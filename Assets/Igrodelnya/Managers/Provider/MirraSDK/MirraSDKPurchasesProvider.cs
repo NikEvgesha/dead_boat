@@ -51,10 +51,11 @@ public class MirraSDKPurchaseProvider : PurchasesProvider
 
         MirraSDK.Payments.RestorePurchases((restoreData) =>
         {
+            AdRemovalPolicy.RestoreProducts(restoreData.AllPurchases);
             foreach (var id in restoreData.PendingProducts)
             {
                 restoreData.RestoreProduct(id, onProductRestore: () => {
-                    GemsShop.Instance.OnPurchaseRestore(id);
+                    if (!AdRemovalPolicy.RecognizePurchase(id)) GemsShop.Instance?.OnPurchaseRestore(id);
                     Debug.Log($"Product '{id}' restored");
                 });
             }
@@ -82,7 +83,7 @@ public class MirraSDKPurchaseProvider : PurchasesProvider
             data.Tag,
             "",
             "",
-            data.PriceInteger.ToString(),
+            data.PriceFloat.ToString("0.##", System.Globalization.CultureInfo.CurrentCulture),
             data.Currency
         );
     }
