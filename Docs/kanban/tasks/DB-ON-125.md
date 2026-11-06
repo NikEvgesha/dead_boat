@@ -181,3 +181,12 @@ CityStreaming теперь продвигает cursor до guarded/capture по
 Cleanup PASS: VerifyRestored owner return/identity/solo/mode keys и playModeStartScene, Play/compile=false, Runner0, Shared/Solo=false, StreamingBudget/Regions/Membership/Independent/FixCoordinate=null, PeerSingle. Логи локально Logs/StreamingBudget-20261106.log. Без сборки/черновика.
 
 DB-ON-125 in_progress. Далее ИИ: Forest/4Cloud автоматический Tick и профиль длинного мира с новым кадровым бюджетом, затем удержание сетевой истории/памяти; владелец позже — пакетная WebGL-приёмка. Сейчас действий владельца не требуется.
+
+
+## 06.11 — автоматический Forest/4Cloud и маршрут до40000
+
+RunLongRoute функционально PASS:100physical items/20ragdoll corpses, split/caught-up5000, настоящий LateUpdate возвратregion2 с8items/5enemies без измененияammo/HP/дубликатов, затем checkpoints10k/20k/30k/40k. Rear9k/19k/29k/39k; archive1/8→14/128→0/0→15/176; pages2→2→2→3. Allocated Editor1361.1→1375.4→1369.8→1388.0MB при разном активном составе; это не доказанное плато/отсутствие утечки и не WebGL heap. Front на двух этапах выше requested, точное физическое плавание не проверяется. IndependentSleeping0 на снимках.
+
+Производительность НЕ принята: последний Editor window10.5FPS/p95≈195.5мс/max≈319.1мс/27кадров>100мс. Refused2, причины монитором не сохранены, последующая обработка продолжилась. Runtime в этом этапе не изменялся; расширен только Editor-стенд. Подробные таблицы/ограничения: Docs/COOP_LONG_ROUTE_20261106.md, локальный Logs/LongRoute-20261106.log.
+
+Cleanup/VerifyRestored PASS: Play/compilefalse, Runner0, Shared/SoloFalse, StreamingBudget/Regions/Membership/Independent=null, PeerSingle, owner keys/start scene восстановлены. Без сборки/черновика. DB-ON-125 in_progress. ИИ далее: причины длинных кадров/отказов и долговременное удержание сетевых страниц; владелец позже пакетный WebGL-тест, сейчас действий не требуется.

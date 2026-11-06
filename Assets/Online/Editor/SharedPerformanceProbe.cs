@@ -18,6 +18,8 @@ namespace DeadBoat.Online.Editor
         private static bool running;
         private static bool stressRequested;
         private static bool adaptersRequested;
+        private static bool longRequested;
+        public static void RunLongRoute() { if (running) return; longRequested = true; RunStress(); }
         public static void RunRegionAdapters() { if (running) return; adaptersRequested = true; Run(); }
         [MenuItem("Tools/Online/Stress Physics And Route (Lobby Play Mode)")]
         public static void RunStress()
@@ -33,6 +35,7 @@ namespace DeadBoat.Online.Editor
             running = true;
             Result = "running";
             bool stress = stressRequested;
+            bool longRoute = longRequested; longRequested = false;
             bool adapters = adaptersRequested; adaptersRequested = false;
             stressRequested = false;
             var peers = new List<NetworkRunner>();
@@ -83,7 +86,7 @@ namespace DeadBoat.Online.Editor
                 foreach (var peer in peers) Replica(peer).RPC_BoatProfile(SharedBoatProfile.Local());
                 await Until(() => SharedRunContext.State.BoatInitialized, "boat profiles");
                 if (adapters) await WorldCityStreamingProbe.RunGame();
-                else if (stress) await Stress(peers);
+                else if (stress) await Stress(peers, longRoute);
                 else
                 {
                     BenchmarkAvatars();
@@ -114,7 +117,7 @@ namespace DeadBoat.Online.Editor
             }
         }
 
-        private static async Task Stress(List<NetworkRunner> peers)
+        private static async Task Stress(List<NetworkRunner> peers, bool longRoute)
         {
             var state = SharedRunContext.State;
             if (!state.Object.HasStateAuthority) throw new Exception("Stress fixture requires local master");
@@ -218,6 +221,24 @@ namespace DeadBoat.Online.Editor
                 if (state.WorldRear < 3900 || state.Items.ContainsKey(farId))
                     throw new Exception("Rear cleanup did not advance after crew caught up");
                 StreamingBudget("caught-up", false);
+                if (longRoute)
+                {
+                    foreach (int distance in new[] { 10000, 20000, 30000, 40000 })
+                    {
+                        typeof(SharedDepartureState).GetProperty("BoatDistance").SetValue(state, (float)distance);
+                        PlayerMovement.Instance.transform.position = new Vector3(0, 3, distance) - LobbyNetworkAvatar.Origin;
+                        lagging.transform.position = PlayerMovement.Instance.transform.position;
+                        monitor.BeginStage("long-route-" + distance);
+                        await StressDelay(15000);
+                        StreamingBudget("long-" + distance, false);
+                        int cityRoots = UnityEngine.Object.FindObjectsByType<WorldCityRegion>(FindObjectsSortMode.None).Length;
+                        int pages = SharedWorldPage.All(state.Runner).Count();
+                        int enemyRecords = SharedWorldPage.All(state.Runner).Sum(p => p.Enemies.Count);
+                        Debug.Log($"[Long route] requested={distance} front={state.WorldFront:F0} rear={state.WorldRear:F0} cities={cityRoots} pages={pages} items={state.Items.Count} enemies={enemyRecords} independentSleeping={SharedRunContext.Independent.SleepingCount} membership={SharedRunContext.Membership.RegionCount}/{SharedRunContext.Membership.BindingCount} reservedMB={UnityEngine.Profiling.Profiler.GetTotalReservedMemoryLong()/1048576.0:F1} monoMB={UnityEngine.Profiling.Profiler.GetMonoUsedSizeLong()/1048576.0:F1}");
+                        if (state.WorldRear < distance - 1100) throw new Exception("Long-route rear did not catch up");
+                    }
+                    Debug.Log("[Long route] PASS: automatic schedulers, four Cloud connections, checkpoints10k/20k/30k/40k; memory guard retained; not physical sailing or WebGL acceptance.");
+                }
                 Debug.Log($"[Stress probe] PASS: 100 physical items, 20 ragdoll corpses, split/caught-up 5000-unit route; rear={state.WorldRear:F0} items={state.Items.Count}; far-body policy logged separately.");
             }
             finally
