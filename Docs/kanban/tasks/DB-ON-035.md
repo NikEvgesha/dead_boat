@@ -1,7 +1,7 @@
 ---
 id: DB-ON-035
 title: Оформить места для яиц как гнёзда
-status: backlog
+status: in_review
 when: next
 ai: true
 ---
@@ -25,3 +25,6 @@ ai: true
 
 - `Docs/EGG_SYSTEM_SPEC.md`
 - `Docs/kanban/tasks/DB-ON-034.md`
+
+
+07.11: белая платформа Nest.prefab визуально заменена низкополигональной чашей/соломой (320vertices, общий mesh/material); исходный Cube renderer выключен, collider, EggAnchor, NestId, UI/actions и хранилище сохранены. EggNestPresentation отображает empty/amber-incubating/green-ready+ромб, подписывается на manager.StateChanged и проверяет время1Гц, без частиц/света/физики/SDK. Состояния используют MaterialPropertyBlock, а не material-клоны. PreviewScene три состояния PASS, рендер Docs/previews/EggNestStates.png. OfflineEggPenProbe на реальном EggSystem PASS:4гнезда живут после fallback/возврата/повторного входа, storage не меняется, online-hide/offline-show сохраняются. Онлайн-лобби не получает общий личный загон. Без сборки; внешняя приёмка/веб/touch ещё впереди. Далее владелец — общий тест внешнего вида/действий; ИИ — следующая DB-ON-057.
