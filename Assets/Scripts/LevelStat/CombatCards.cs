@@ -8,7 +8,7 @@ public static class CombatCards
     public sealed class Attack
     {
         internal bool Sword, Hit, Third, ThirdNotified;
-        internal float Edge;
+        internal float Edge, LastRound;
         internal int Blood, Rhythm;
         internal float MaximumHealth;
         internal readonly HashSet<EnemyCore> Targets = new();
@@ -33,13 +33,14 @@ public static class CombatCards
     }
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void Initialize() => Reset();
-    public static Attack Begin(bool sword)
+    public static Attack Begin(bool sword, int magazineBeforeShot = -1)
     {
         var stats = LevelStatManager.Instance != null ? LevelStatManager.Instance.Stats : default;
         var player = PlayerStatsManager.Instance;
         float maximum = player != null ? player.MaxHealth : 1;
         return new Attack
         {
+            LastRound = !sword && magazineBeforeShot == 1 ? CombatCardRules.LastRoundBonus(CombatCardRules.Rank(stats, BoostType.LastRound)) : 0,
             Sword = sword, Blood = CombatCardRules.Rank(stats, BoostType.BloodPact),
             Rhythm = CombatCardRules.Rank(stats, BoostType.BattleRhythm), MaximumHealth = maximum,
             Edge = player != null && CombatCardRules.EdgeActive(player.Health, maximum)
@@ -59,7 +60,7 @@ public static class CombatCards
             attack.Hit = true;
             if (attack.Sword && attack.Rhythm > 0) attack.Third = combo.Hit(Time.timeAsDouble);
         }
-        int damage = CombatCardRules.Damage(basicDamage, attack.Edge + (attack.Third ? CombatCardRules.RhythmBonus(attack.Rhythm) : 0));
+        int damage = CombatCardRules.Damage(basicDamage, attack.Edge + attack.LastRound + (attack.Third ? CombatCardRules.RhythmBonus(attack.Rhythm) : 0));
         if (SharedRunContext.Active)
         {
             var state = SharedRunContext.State;

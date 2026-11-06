@@ -261,7 +261,9 @@ public enum BoostType
     InventorySlots,
     BloodPact,
     BattleRhythm,
-    OnTheEdge
+    OnTheEdge,
+    LastRound,
+    HeavyCoat
 }
 public enum RareType
 {

@@ -6,10 +6,18 @@ using UnityEngine;
 public static class CombatCardRules
 {
     public const int MaximumRank = 3;
-    public static bool IsSpecial(BoostType type) => type == BoostType.BloodPact || type == BoostType.BattleRhythm || type == BoostType.OnTheEdge;
+    public static bool IsSpecial(BoostType type) => type == BoostType.BloodPact || type == BoostType.BattleRhythm || type == BoostType.OnTheEdge || type == BoostType.LastRound || type == BoostType.HeavyCoat;
     public static int Rank(Stats stats, BoostType type) => Mathf.Clamp(type == BoostType.BloodPact ? stats.BloodPactRank :
-        type == BoostType.BattleRhythm ? stats.BattleRhythmRank : type == BoostType.OnTheEdge ? stats.OnTheEdgeRank : 0, 0, MaximumRank);
-    public static float MaximumHealth(float original, int rank) => Mathf.Max(1, original * (rank > 0 ? .8f : 1));
+        type == BoostType.BattleRhythm ? stats.BattleRhythmRank : type == BoostType.OnTheEdge ? stats.OnTheEdgeRank : type == BoostType.LastRound ? stats.LastRoundRank : type == BoostType.HeavyCoat ? stats.HeavyCoatRank : 0, 0, MaximumRank);
+    public static float CoatHealth(int rank) => rank > 0 ? .1f + .05f * Mathf.Clamp(rank, 1, 3) : 0;
+    public static float CoatSpeed(int rank) => rank > 0 ? .92f : 1;
+    public static float LastRoundBonus(int rank) => rank > 0 ? .3f + .15f * Mathf.Clamp(rank, 1, 3) : 0;
+    public static float ReloadDurationMultiplier(int rank) => rank > 0 ? 1.15f : 1;
+    public static float MaximumHealth(float original, int rank, int coatRank = 0) => Mathf.Max(1, original * (1 + CoatHealth(coatRank)) * (rank > 0 ? .8f : 1));
+    public static float PreviewHealth(float maximum, int bloodRank, int coatRank, BoostType type) =>
+        maximum / (1 + CoatHealth(coatRank)) / (bloodRank > 0 ? .8f : 1) *
+        (1 + CoatHealth(type == BoostType.HeavyCoat ? Mathf.Min(3, coatRank + 1) : coatRank)) *
+        (bloodRank > 0 || type == BoostType.BloodPact ? .8f : 1);
     public static float Lifesteal(int rank) => rank > 0 ? .02f + .02f * Mathf.Clamp(rank, 1, 3) : 0;
     public static float HealLimit(int rank) => rank > 0 ? .01f + .01f * Mathf.Clamp(rank, 1, 3) : 0;
     public static float RhythmBonus(int rank) => rank > 0 ? .25f + .15f * Mathf.Clamp(rank, 1, 3) : 0;

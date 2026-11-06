@@ -32,7 +32,8 @@ public class PlayerMovement : MonoBehaviour
                 speed += LevelStatManager.Instance.Stats.MoveSpeedMult;
             }
             speed = ProfessionService.ApplyMoveSpeed(speed);
-            return EggAnimalBuffService.ApplyMoveSpeed(speed);
+            return EggAnimalBuffService.ApplyMoveSpeed(speed) * CombatCardRules.CoatSpeed(
+                LevelStatManager.Instance != null ? LevelStatManager.Instance.Stats.HeavyCoatRank : 0);
         }
         set { _moveSpeed = value; }
     }

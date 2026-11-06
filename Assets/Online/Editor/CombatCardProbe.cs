@@ -92,6 +92,102 @@ namespace DeadBoat.Online.Editor
                 Object.Destroy(Root);
             }
         }
+        public static string RunWeaponExpansion()
+        {
+            using var fixture = new Fixture();
+            GameObject target = null;
+            try
+            {
+                fixture.Cards.Stats.LastRoundRank = 3;
+                target = new GameObject("Temporary raycast victim"); target.transform.position = new Vector3(0, 0, 10);
+                target.AddComponent<BoxCollider>().size = new Vector3(5, 5, 1);
+                var victim = target.AddComponent<SharedProbeEnemy>(); victim.SetHP(10000);
+                var camera = fixture.Root.AddComponent<Camera>(); camera.enabled = false;
+                var gun = fixture.Root.AddComponent<RangedWeaponController>();
+                var ammo = fixture.Root.AddComponent<PlayerAmmoManager>(); PlayerAmmoManager.Instance = ammo;
+                typeof(PlayerAmmoManager).GetField("_ammo", Private).SetValue(ammo, new Dictionary<WeaponType, int> { [WeaponType.Pistol] = 50, [WeaponType.Shotgun] = 50 });
+                typeof(RangedWeaponController).GetField("fpsCam", Private).SetValue(gun, camera);
+                typeof(RangedWeaponController).GetField("muzzleTransform", Private).SetValue(gun, camera.transform);
+                typeof(RangedWeaponController).GetField("hitLayers", Private).SetValue(gun, (LayerMask)(~0));
+                typeof(RangedWeaponController).GetField("spreadAngle", Private).SetValue(gun, 0f);
+                Physics.SyncTransforms();
+                var fire = typeof(RangedWeaponController).GetMethod("Fire", Private);
+                foreach (var type in new[] { WeaponType.Pistol, WeaponType.Shotgun })
+                {
+                    typeof(RangedWeaponController).GetField("weaponType", Private).SetValue(gun, type);
+                    int basic = type == WeaponType.Shotgun ? 100 : 10;
+                    gun.ApplySharedAmmo(2); int before = victim.SharedHP; fire.Invoke(gun, null);
+                    Require(before - victim.SharedHP == basic, "real ordinary raycast damage");
+                    gun.ApplySharedAmmo(1); before = victim.SharedHP; fire.Invoke(gun, null);
+                    Require(before - victim.SharedHP == CombatCardRules.Damage(basic, .75f), "real last-round raycast/pellets");
+                    gun.ApplySharedAmmo(0);
+                    var reload = (System.Collections.IEnumerator)typeof(RangedWeaponController).GetMethod("Reload", Private).Invoke(gun, null);
+                    Require(reload.MoveNext() && reload.Current is WaitForSeconds, "real reload did not wait");
+                    float seconds = (float)typeof(WaitForSeconds).GetField("m_Seconds", Private).GetValue(reload.Current);
+                    Near(seconds, 1.15f, "actual coroutine reload duration");
+                    Require(gun.CurrentAmmo == 0 && ammo.GetAmmo(type) == 50, "cancelled reload created ammo");
+                    Require(!reload.MoveNext() && gun.CurrentAmmo == 10 && ammo.GetAmmo(type) == 40, "completed reload ammo balance");
+                }
+                camera.transform.rotation = Quaternion.Euler(0, 180, 0); gun.ApplySharedAmmo(1);
+                int unchanged = victim.SharedHP; fire.Invoke(gun, null); Require(victim.SharedHP == unchanged, "miss damages enemy");
+                Debug.Log("[Card weapons] PASS: real Fire raycasts, pistol/shotgun whole volley, real reload yield +15%, cancel before completion has no ammo, exact transfer after completion, miss. Editor fixture, no timed browser animation test.");
+                return "PASS";
+            }
+            finally { PlayerAmmoManager.Instance = null; if (target != null) Object.Destroy(target); }
+        }
+        public static string RunExpansion()
+        {
+            using var fixture = new Fixture();
+            var cards = fixture.Cards; var p = fixture.Player; float original = p.MaxHealth;
+            fixture.Health(10);
+            for (int rank = 1; rank <= 3; rank++)
+            {
+                fixture.Choose(BoostType.HeavyCoat);
+                Near(p.MaxHealth, original * (1 + CombatCardRules.CoatHealth(rank)), "coat maximum from original");
+                Near(p.Health, 10, "coat does not heal");
+                var movement = fixture.Root.GetComponent<PlayerMovement>() ?? fixture.Root.AddComponent<PlayerMovement>();
+                Near(movement.MoveSpeed, EggAnimalBuffService.ApplyMoveSpeed(ProfessionService.ApplyMoveSpeed(6)) * .92f, "actual movement getter/one speed price");
+                fixture.Choose(BoostType.LastRound);
+                int before = fixture.Enemy.SharedHP;
+                var ordinary = CombatCards.Begin(false, 2); CombatCards.Hit(ordinary, fixture.Enemy, 100);
+                Require(before - fixture.Enemy.SharedHP == 100, "ordinary round boosted");
+                before = fixture.Enemy.SharedHP;
+                var shot = CombatCards.Begin(false, 1); CombatCards.Hit(shot, fixture.Enemy, 100);
+                Require(before - fixture.Enemy.SharedHP == CombatCardRules.Damage(100, CombatCardRules.LastRoundBonus(rank)), "last round live damage");
+                CombatCards.Hit(shot, fixture.Enemy, 100);
+                Require(before - fixture.Enemy.SharedHP == CombatCardRules.Damage(100, CombatCardRules.LastRoundBonus(rank)), "same target repeated damage");
+                before = fixture.Enemy.SharedHP;
+                CombatCards.Hit(CombatCards.Begin(true, 1), fixture.Enemy, 100);
+                Require(before - fixture.Enemy.SharedHP == 100, "sword got magazine bonus");
+            }
+            fixture.Choose(BoostType.HeavyCoat); fixture.Choose(BoostType.LastRound);
+            Require(cards.Stats.HeavyCoatRank == 3 && cards.Stats.LastRoundRank == 3, "rank cap");
+            float preview = CombatCardRules.PreviewHealth(p.MaxHealth, 0, 3, BoostType.BloodPact);
+            fixture.Choose(BoostType.BloodPact); Near(p.MaxHealth, original, "coat III plus pact"); Near(p.MaxHealth, preview, "HP preview");
+            Near(p.Health, 10, "combined acquisition heals");
+            var saved = JsonUtility.FromJson<Stats>(JsonUtility.ToJson(cards.Stats));
+            for (int i = 0; i < 3; i++) cards.RestoreRecovery(saved, 0);
+            Near(p.MaxHealth, original, "repeat recovery compounds HP");
+            Require(saved.LastRoundRank == 3 && saved.HeavyCoatRank == 3, "solo JSON mapping");
+            var snapshot = new SharedPersonalData { LastRoundRank = 2, HeavyCoatRank = 1 };
+            Require(snapshot.Cards.LastRoundRank == 2 && snapshot.Cards.HeavyCoatRank == 1, "Shared mapping");
+            Require(JsonUtility.FromJson<Stats>("{}").HeavyCoatRank == 0 && (int)BoostType.OnTheEdge == 17 && (int)BoostType.LastRound == 18 && (int)BoostType.HeavyCoat == 19, "legacy/enum compatibility");
+            typeof(LevelStatManager).GetMethod("Subscriptions", Private).Invoke(cards, null);
+            cards._boostItems.Add(AssetDatabase.LoadAssetAtPath<BoostItem>("Assets/Scripts/LevelStat/Boosters/BoostItem_HP.asset"));
+            for (int i = 0; i < 40; i++) Require(cards.GetRandomBoostsWithRarity().TrueForAll(o => o.Item.BoostType != BoostType.HeavyCoat && o.Item.BoostType != BoostType.LastRound), "capped offer returned");
+            foreach (var type in new[] { BoostType.LastRound, BoostType.HeavyCoat })
+            {
+                var asset = Resources.Load<BoostItem>("BoostItem_" + type);
+                Require(asset != null && asset.BoostType == type && asset.RareRewards.Count == 1, "new card asset");
+                var offer = new List<ItemWithRare> { new ItemWithRare { Item = asset, Rare = RareType.Rare } };
+                Require(!LevelUpUi.TryUpgradeHighestRarity(offer, out _), "advertising upgraded rank");
+                Require(!CombatCardText.Description(type, 3, 100, 125).Contains("{"), "unresolved translation");
+            }
+            Near(CombatCardRules.ReloadDurationMultiplier(1), 1.15f, "reload price");
+            Near(CombatCardRules.ReloadDurationMultiplier(3), 1.15f, "reload price compounds");
+            Debug.Log("[Card expansion] PASS: actual damage/movement/maxHP, ranks/cap, recovery/solo JSON, offers/ad guard/assets/text. Editor fixture.");
+            return "PASS";
+        }
         public static string RunLocal()
         {
             using var fixture = new Fixture();
@@ -176,10 +272,10 @@ namespace DeadBoat.Online.Editor
                 CombatCards.Confirm(thirdSequence, 170);
                 await Task.Delay(200);
                 Require(CombatCards.ThirdHitRevision == 1 && fixture.Enemy.SharedHP == 630, "third hit replay repeats cue/damage");
-                authority.RPC_RecoveryProgress(new SharedPersonalData { BloodPactRank = 1, BattleRhythmRank = 2, OnTheEdgeRank = 3 });
-                remote.RPC_RecoveryProgress(new SharedPersonalData { BloodPactRank = 3, BattleRhythmRank = 1, OnTheEdgeRank = 2 });
+                authority.RPC_RecoveryProgress(new SharedPersonalData { BloodPactRank = 1, BattleRhythmRank = 2, OnTheEdgeRank = 3, LastRoundRank = 2, HeavyCoatRank = 1 });
+                remote.RPC_RecoveryProgress(new SharedPersonalData { BloodPactRank = 3, BattleRhythmRank = 1, OnTheEdgeRank = 2, LastRoundRank = 1, HeavyCoatRank = 3 });
                 await Until(() => remote.Personal.TryGet(authority.Runner.LocalPlayer, out var a) && a.Cards.BloodPactRank == 1 &&
-                    remote.Personal.TryGet(remote.Runner.LocalPlayer, out var b) && b.Cards.BloodPactRank == 3 && b.Cards.OnTheEdgeRank == 2);
+                    remote.Personal.TryGet(remote.Runner.LocalPlayer, out var b) && b.Cards.BloodPactRank == 3 && b.Cards.OnTheEdgeRank == 2 && a.Cards.LastRoundRank == 2 && a.Cards.HeavyCoatRank == 1 && b.Cards.LastRoundRank == 1 && b.Cards.HeavyCoatRank == 3);
                 Debug.Log("[Combat cards] PASS: two Cloud peers; actual HP confirmation to attacker, overkill, replay rejection, other attacker isolation and separate rank snapshots");
             }
             finally { SharedRunContext.End(); }

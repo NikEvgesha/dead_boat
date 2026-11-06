@@ -98,7 +98,8 @@ public class PlayerStatsManager : MonoBehaviour
                 health += LevelStatManager.Instance.Stats.HP;
             health = ProfessionService.ApplyMaxHealth(health);
             return CombatCardRules.MaximumHealth(EggAnimalBuffService.ApplyMaxHealth(health),
-                LevelStatManager.Instance != null ? LevelStatManager.Instance.Stats.BloodPactRank : 0);
+                LevelStatManager.Instance != null ? LevelStatManager.Instance.Stats.BloodPactRank : 0,
+                LevelStatManager.Instance != null ? LevelStatManager.Instance.Stats.HeavyCoatRank : 0);
         }
     }
 

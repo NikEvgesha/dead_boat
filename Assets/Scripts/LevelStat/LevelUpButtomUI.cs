@@ -90,7 +90,7 @@ public class LevelUpButtomUI : MonoBehaviour
         {
             int rank = CombatCardRules.Rank(LevelStatManager.Instance.Stats, item.BoostType);
             float maximum = PlayerStatsManager.Instance != null ? PlayerStatsManager.Instance.MaxHealth : 100;
-            float after = item.BoostType == BoostType.BloodPact && rank == 0 ? CombatCardRules.MaximumHealth(maximum, 1) : maximum;
+            float after = CombatCardRules.PreviewHealth(maximum, LevelStatManager.Instance.Stats.BloodPactRank, LevelStatManager.Instance.Stats.HeavyCoatRank, item.BoostType);
             _title.text = CombatCardText.Title(item.BoostType);
             _boostText.text = CombatCardText.RankPreview(rank);
             _description.resizeTextMinSize = 12;

@@ -948,3 +948,13 @@ Math/local combat и два Cloud-peer + полный ReadyBarrier PASS. Ито�
 Следующее: владелец — пакетная приёмка после будущей отдельно запрошенной сборки; остальные карточки из дизайн-документа ещё не реализованы.
 
 DB-ON-129 cleanup: VerifyRestored PASS, Play=false, MMF/Runner=0, Shared/Solo=false. Screenshot preview остался на загрузочном экране; визуальная приёмка HUD не засчитана, остаётся владельцу.
+
+## 06.11.2026 — DB-ON-130: вторая пара карточек, без сборки
+
+Добавлены Last Round и Heavy Coat из предложенного набора по поручению владельца расширять карточки. Последний патрон45/60/75% прямого урона, перезарядка+15% длительности/анимации; дробовик усиливает весь залп. Бушлат15/20/25% maxHP, скорость−8% один раз, без лечения; maxHP совместно с договором пересчитывается из исходного значения. Личные рангиI–III, capped offers/ad guard, RU/EN/HP-preview, старые enum сохранены. Capture/Cards/JSON/solo recovery включают два ранга; protocol cards2. Дополнительных proc/RPC/VFX/камер нет, SDK/FEEL не менялись.
+
+Math/RunLocal/RunExpansion PASS: реальный урон/maxHP/скорость, cap/выдача/реклама/повтор восстановления. Реальный Fire/Physics.Raycast pistol+shotgun и Reload IEnumerator PASS: обычный/последний выстрел, весь залп, промах, wait1.15вместо1, патроны до/после завершения. Полный двух-peer ReadyBarrier PASS, новые ранги игроков независимы. Реальный RunColdRestart PASS: persisted ticket/new recovery/живой peer, оба новых ранга сохранились после возврата и solo fork, деньги237/health80/items17+capacity20/magazine3+reserve31. RU/EN карточки в GameView осмотрены, тексты помещаются; Logs/CardExpansion-* локально. Не мобильная/WebGL/баланс-приёмка. DB-ON-130 in_review. Сборки/загрузки нет.
+
+Следующий шаг: ИИ — следующая ограниченная пара (Верная рука / Новый заход) с правилами подготовки/перезарядки и восстановления; владелец — позднее общий тест баланса/UI на WebGL. Остальные семь карт пока дизайн.
+
+DB-ON-130 cleanup: VerifyRestored PASS, Play=false, MMF/Runner=0, Shared/Solo=false, cold clock=false, PeerModeSingle.

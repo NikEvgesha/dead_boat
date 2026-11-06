@@ -208,17 +208,18 @@ public class RangedWeaponController : MonoBehaviour
         if (ReserveAmmo!=0)
         {
             _isReloading = true;
+            float cardReload = CombatCardRules.ReloadDurationMultiplier(LevelStatManager.Instance != null ? LevelStatManager.Instance.Stats.LastRoundRank : 0);
 
             if (_animator != null)
             {
-                _animator.speed = ReloadSpeed/_reloadTime;
+                _animator.speed = ReloadSpeed / (_reloadTime * cardReload);
                 _animator.SetTrigger("Reload");
             }
             if (_audioSource)
                 if (_audioReload)
                     _audioSource.PlayOneShot(_audioReload);
             Debug.Log("Перезарядка...");
-            yield return new WaitForSeconds(_reloadTime/ReloadSpeed);
+            yield return new WaitForSeconds(_reloadTime / ReloadSpeed * cardReload);
 
             int neededAmmo = maxAmmo - _currentAmmo;
             int ammoToReload = (ReserveAmmo >= neededAmmo) ? neededAmmo : ReserveAmmo;
@@ -243,7 +244,7 @@ public class RangedWeaponController : MonoBehaviour
     private void Fire()
     {
         _cardHits.Clear();
-        _cardAttack = CombatCards.Begin(false);
+        _cardAttack = CombatCards.Begin(false, CurrentAmmo);
         DeadBoat.Online.LobbyNetworkAvatar.ReportAttack(2);
         if (muzzleFlash != null)
             muzzleFlash.Play();

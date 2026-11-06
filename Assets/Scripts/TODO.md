@@ -319,3 +319,9 @@ Implementation backlog for eggs:
 - [x] Local snapshot presentation, 10 Hz, three reused FEEL players; no new network/save fields, cameras, particles or AudioSources.
 - [x] Cloud duplicate/multi-target/confirmation regressions and real Lobby/Forest/return HUD checks PASS; shared 40% float boundary fixed.
 - [ ] Owner batch WebGL/mobile readability, feel and cost acceptance after separately requested build (in_review).
+
+### DB-ON-130 — Last Round / Heavy Coat (2026-11-06)
+- [x] Personal ranks I–III, benefits/costs, weighted offers/cap/ad guard, RU/EN HP preview; enum append-only and protocol cards2.
+- [x] Actual Fire pistol/shotgun + real Reload IEnumerator; maxHP/movement/getters, additive damage cap and no acquisition heal.
+- [x] Two-peer full regression and real cold reconnect/solo fork preserve both ranks; RU/EN desktop preview inspected.
+- [ ] Owner batch WebGL/mobile/balance acceptance after future build (in_review).
