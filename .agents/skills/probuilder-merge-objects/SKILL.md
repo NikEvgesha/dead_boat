@@ -1,6 +1,8 @@
 ---
 name: probuilder-merge-objects
 description: Combine multiple `ProBuilderMesh` GameObjects into one merged mesh. The first GameObject in the list becomes the merge target. Source GameObjects are deleted by default. Useful for optimizing draw calls and unifying composite props.
+metadata:
+  generated-by: mcp-plugin-dotnet
 ---
 
 # Merge multiple ProBuilder meshes into one

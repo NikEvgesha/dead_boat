@@ -1,6 +1,8 @@
 ---
 name: probuilder-subdivide-edges
 description: Insert new vertices on selected edges of a `ProBuilderMesh`, splitting each edge into smaller segments. Supply either `edges` (explicit list) or `faceDirection` (subdivides all edges of faces facing that direction); exactly one is required.
+metadata:
+  generated-by: mcp-plugin-dotnet
 ---
 
 # Subdivide edges in a ProBuilder mesh

@@ -1,6 +1,8 @@
 ---
 name: probuilder-bevel
 description: Bevel (chamfer) selected edges of a `ProBuilderMesh`, replacing each sharp edge with an angled face. Identify edges by their `[vertexA, vertexB]` index pairs — use 'probuilder-get-mesh-info' to discover them. `amount` is clamped to (0, 1).
+metadata:
+  generated-by: mcp-plugin-dotnet
 ---
 
 # Bevel ProBuilder edges

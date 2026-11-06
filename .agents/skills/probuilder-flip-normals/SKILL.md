@@ -1,6 +1,8 @@
 ---
 name: probuilder-flip-normals
 description: Reverse the normal direction of selected faces in a `ProBuilderMesh`, flipping them inside-out. Useful for creating interior spaces (a room from the inside of a cube) or fixing inverted faces. Defaults to all faces when no selection is supplied.
+metadata:
+  generated-by: mcp-plugin-dotnet
 ---
 
 # Flip face normals in a ProBuilder mesh

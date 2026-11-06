@@ -1,6 +1,8 @@
 ---
 name: probuilder-extrude
 description: Extrude selected faces of a `ProBuilderMesh` along their normals, creating new geometry. Supply either `faceIndices` (explicit) or `faceDirection` (semantic); exactly one is required. Positive `distance` extrudes outward, negative inward.
+metadata:
+  generated-by: mcp-plugin-dotnet
 ---
 
 # Extrude ProBuilder faces

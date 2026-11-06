@@ -1,6 +1,8 @@
 ---
 name: probuilder-delete-faces
 description: Delete selected faces from a `ProBuilderMesh`, creating holes or removing geometry. Supply either `faceIndices` (explicit list) or `faceDirection` (semantic selection); exactly one is required.
+metadata:
+  generated-by: mcp-plugin-dotnet
 ---
 
 # Delete ProBuilder faces

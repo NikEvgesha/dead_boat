@@ -1,6 +1,8 @@
 ---
 name: probuilder-connect-edges
 description: Insert new edges connecting the midpoints of selected edges within faces of a `ProBuilderMesh` — adds edge loops and extra geometry detail. Supply either `edges` (explicit list) or `faceDirection` (semantic selection); exactly one is required.
+metadata:
+  generated-by: mcp-plugin-dotnet
 ---
 
 # Connect edges in a ProBuilder mesh

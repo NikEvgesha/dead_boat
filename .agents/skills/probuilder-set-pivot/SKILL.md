@@ -1,6 +1,8 @@
 ---
 name: probuilder-set-pivot
 description: Move the pivot (origin) of a `ProBuilderMesh` without shifting the visible geometry. Choose `Center` (mesh bounds), `FirstVertex`, or `Custom` (world-space position). The mesh data is rebaked so the visual position stays fixed.
+metadata:
+  generated-by: mcp-plugin-dotnet
 ---
 
 # Set the pivot point of a ProBuilder mesh

@@ -1,6 +1,8 @@
 ---
 name: probuilder-create-shape
 description: Create a new editable `ProBuilderMesh` GameObject in the active scene from a `ShapeType` primitive (Cube, Cylinder, Sphere, Plane, Prism, Cone, Stair, etc.). Optionally set name, parent, transform, size, and world/local space.
+metadata:
+  generated-by: mcp-plugin-dotnet
 ---
 
 # Create a ProBuilder shape

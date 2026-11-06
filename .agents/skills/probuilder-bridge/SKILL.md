@@ -1,6 +1,8 @@
 ---
 name: probuilder-bridge
 description: Create a single new face that bridges two existing edges of a `ProBuilderMesh`. Useful for connecting separate parts of geometry or filling gaps. Pair with 'probuilder-get-mesh-info' to discover valid edges.
+metadata:
+  generated-by: mcp-plugin-dotnet
 ---
 
 # Bridge two edges in a ProBuilder mesh

@@ -1,6 +1,8 @@
 ---
 name: probuilder-set-face-material
 description: Assign a material to specific faces of a `ProBuilderMesh`, enabling multi-material meshes (e.g., grass on top, dirt on sides). Supply either `faceIndices` (explicit) or `faceDirection` (semantic); exactly one is required.
+metadata:
+  generated-by: mcp-plugin-dotnet
 ---
 
 # Set material on ProBuilder faces

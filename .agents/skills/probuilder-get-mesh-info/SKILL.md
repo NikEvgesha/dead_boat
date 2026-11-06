@@ -1,6 +1,8 @@
 ---
 name: probuilder-get-mesh-info
 description: "Inspect a `ProBuilderMesh` — face/vertex/edge counts plus optional face-by-face detail. Use `detail=\"summary\"` for a token-efficient overview, `detail=\"full\"` for detailed face data. Often skippable when other tools accept `faceDirection` semantic selection."
+metadata:
+  generated-by: mcp-plugin-dotnet
 ---
 
 # Get ProBuilder mesh information

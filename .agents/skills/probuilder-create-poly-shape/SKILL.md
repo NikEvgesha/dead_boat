@@ -1,6 +1,8 @@
 ---
 name: probuilder-create-poly-shape
 description: Create a 3D `ProBuilderMesh` from a 2D polygon outline (x,z points) extruded upward by `height`. Perfect for floor plans, room layouts, terrain patches, walls, platforms — any shape definable by a 2D outline. Requires ≥3 points.
+metadata:
+  generated-by: mcp-plugin-dotnet
 ---
 
 # Create a ProBuilder shape from polygon points
