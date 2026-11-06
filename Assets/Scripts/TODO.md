@@ -300,3 +300,9 @@ Implementation backlog for eggs:
 - [x] One-time maxHP cost; actual-damage lifesteal with shared sliding budget; direct attack entry points and authority-confirmed healing in co-op.
 - [x] Personal rank fields in Stats/recovery/solo branch; old JSON zero defaults, enum values preserved, protocol cards1.
 - [ ] Owner gameplay/balance and RU/EN WebGL UI acceptance after the eventual shared build. Automated verification details: DB-ON-127 and Docs/design/CARD_COMBAT_PROTOTYPE.md.
+
+
+### DB-ON-128 — FEEL card feedback (2026-11-06)
+- [x] Study installed FEEL5.9.1 / Built-in uGUI, verify paused-UI scale and cleanup in isolated Play; document auto-disable restore caveat.
+- [ ] Implement small local card entrance/press/confirmed-choice feedback per Docs/FEEL_WEB_GUIDE.md, without gameplay/time/network ownership.
+- [ ] Measure real target-browser cost after separately authorized build; owner visual/mobile acceptance.
