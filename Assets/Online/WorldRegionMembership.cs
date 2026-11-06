@@ -20,6 +20,7 @@ namespace DeadBoat.Online
         private readonly int regionLimit, bindingLimit;
         public int RegionCount => regions.Count;
         public int BindingCount => owners.Count;
+        public bool Contains(ulong id) => owners.ContainsKey(id);
         public float RetiredBefore { get; private set; } = float.NegativeInfinity;
         public WorldRegionMembership(int regionLimit = 128, int bindingLimit = 8192)
         {
@@ -42,9 +43,11 @@ namespace DeadBoat.Online
         public bool Observe(string key, ulong id, bool enemy)
         {
             if (key == null) return false;
+            if (WorldCityRegion.TryIndex(key, out int city)) return Bind(city, id, enemy);
             if (key.StartsWith("authored:", StringComparison.Ordinal))
             {
                 int sceneEnd = key.IndexOf(':', 9);
+                if (sceneEnd >= 0 && WorldCityRegion.TryIndex(key.Substring(sceneEnd + 1), out city)) return Bind(city, id, enemy);
                 if (sceneEnd < 0 || string.CompareOrdinal(key, sceneEnd + 1, "procedural:", 0, 11) != 0) return false;
                 int start = sceneEnd + 12, slash = key.IndexOf('/', start);
                 if (slash < 0 || !int.TryParse(key.AsSpan(start, slash - start), NumberStyles.None, CultureInfo.InvariantCulture, out int origin)) return false;

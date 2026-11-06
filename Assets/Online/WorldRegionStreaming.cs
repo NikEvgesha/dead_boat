@@ -51,6 +51,13 @@ namespace DeadBoat.Online
             if (!SharedRunContext.Playing || state == null || !state.BoatInitialized || Time.timeScale <= 0 ||
                 Time.realtimeSinceStartupAsDouble < nextAudit) return;
             nextAudit = Time.realtimeSinceStartupAsDouble + .25;
+            if (!CollectFocus(focus)) return;
+            Audit(active, focus, state.WorldRear, allowSuspension);
+        }
+        public static bool CollectFocus(List<float> focus)
+        {
+            var state = SharedRunContext.State;
+            if (!SharedRunContext.Playing || state == null || !state.BoatInitialized) return false;
             focus.Clear(); focus.Add(state.BoatDistance);
             // Includes dead/ad-watching players. A live player without an avatar is
             // an incomplete snapshot: defer all suspensions/restorations this audit.
@@ -62,9 +69,9 @@ namespace DeadBoat.Online
                     if (avatar != null && avatar.Object != null && avatar.Object.IsValid &&
                         avatar.Runner == state.Runner && avatar.Object.StateAuthority == player)
                     { focus.Add(avatar.LogicalPosition.z); found = true; break; }
-                if (!found) return;
+                if (!found) return false;
             }
-            Audit(active, focus, state.WorldRear, allowSuspension);
+            return true;
         }
         // Deterministic audit seam used by the real two-peer scene tests. At most
         // one transaction, restoring before considering another suspension.

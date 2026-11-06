@@ -19,6 +19,15 @@ namespace DeadBoat.Online
                 !key.StartsWith("procedural:", StringComparison.Ordinal) ||
                 !int.TryParse(key.AsSpan(11), NumberStyles.None, CultureInfo.InvariantCulture, out int index))
             { refusal = "no live procedural region"; return false; }
+            return TryCaptureTree(root.gameObject, index, revision, out refusal);
+        }
+        public static bool TryCaptureTree(UnityEngine.GameObject root, int index, int revision, out string refusal)
+        {
+            refusal = null;
+            var state = SharedRunContext.State; var membership = SharedRunContext.Membership; var archive = SharedRunContext.Regions;
+            string key = "region:" + index;
+            if (!SharedRunContext.Playing || root == null || membership == null || archive == null)
+            { refusal = "no live region"; return false; }
             var itemIds = new List<ulong>(); var enemyIds = new List<ulong>();
             if (!membership.TryCopy(index, itemIds, enemyIds, out float logicalZ))
             { refusal = "incomplete membership"; return false; }
@@ -34,7 +43,7 @@ namespace DeadBoat.Online
             { refusal = "incomplete corpse membership"; return false; }
             foreach (var item in root.GetComponentsInChildren<PickableItem>(true))
             {
-                if (WorldReplicaRemoval.IsDormantCorpsePart(item)) continue;
+                if (WorldReplicaRemoval.IsDormantCorpsePart(item) || WorldReplicaRemoval.IsStoreDisplay(item)) continue;
                 var identity = item.GetComponent<WorldSpawnIdentity>();
                 if (identity == null || !membership.BelongsTo(index, identity.Id, false))
                 {

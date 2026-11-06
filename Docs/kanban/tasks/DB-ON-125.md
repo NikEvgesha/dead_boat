@@ -119,3 +119,26 @@ NextRevision из архива, canonical record всегда главнее с�
 На окончательном коде LayoutProbe4пула/11264сравнения PASS, полный ReadyBarrier с audit/handoff/cold join/предметами/боем/ready/leave/timeout PASS. Controlled geometry152–153→0→возврат. VerifyRestored PASS, Play/compilefalse, Runner0, Shared/SoloFalse, Regions/Membership/FixCoordinate=null, clockfalse, PeerSingle. Logs/WorldStreaming-20261106.log локально. Сборки/черновика нет.
 
 DB-ON-125 остаётся in_progress: ИИ далее — адаптеры городов/ночных независимых спавнов и общий бюджет длинного мира. Владелец — будущая пакетная WebGL-приёмка (пороги/видимое появление/предметы/физика на независимых клиентах). Сегодня действий владельца не требуется.
+
+## 06.11 — города и независимые акторы (проверки в работе)
+
+WorldCityRegion/WorldCityStreaming: полный город со стабильным city:Z, локальное namespace1000000000+Z, общее членство/capture/dormancy и inactive restore. Поддержаны authored pickups и вложенные LocationContentSpawner, seeded магазины создаются заново; деньги и опубликованные покупки остаются личным/внешним состоянием. Вводится guard активной покупки/рекламного callback; stock display распознаётся по точному StorePoint._displayModel, произвольный untracked предмет не считается витриной. CitySpawner в Shared ориентируется на WorldFront/WorldRear команды вместо одной лодки. Без membership-бюджета город остаётся живым.
+
+WorldIndependentStreaming: отдельные known-template free items/ночные враги/подходящие трупы удаляются только как реплики, их ID подавляют повторную материализацию вдали. Возврат читает актуальные canonical HP/ammo/ownership; мёртвые/consumed не возвращаются. Regional members/cargo/inventory/burning/pending/unknown template не удаляются. HashSet dormancy ограничен4096ID,4Гц/одна транзакция; отключение streamActors возвращает sleeping actors. Генератор ночных волн/его счётчик не перезапускается. Это ещё не полный бюджет всех сетевых страниц.
+
+Wire records не меняются, но совместимость игровых клиентов разделена суффиксом regions1 (новые city-identity правила). Старые черновики с новой версией не смешивать. SDK не редактируются, сборки нет.
+
+Стенд: реальный Forest/4Cloud и настоящий city prefab; в его временную копию добавлены два authored предмета и один контролируемый defender, ассеты не меняются. Покупка тратит только изолированные игровые coins, не IAP/настоящую рекламу. Первое предположение теста о готовой добыче в cityPrefab оказалось неверным; второй прогон правильно отказал публикации покупки от аватара в10км — стенд теперь подводит транспортный аватар к магазину, не ослабляя сетевую проверку. Исправлена test-only ошибка LINQ First для AvatarEnumerable. PASS пока не объявлен.
+
+
+Финальный повтор адаптеров PASS: настоящий Forest,4Cloud connections/один игровой мир; city prefab1177MeshFilter/9магазинов +2authored pickups/1seeded defender. Два цикла geometry removal/restore, pending reward guard, seeded stock неизменён, consumed отсутствует, ammo5/HP13 актуальны, canonical death не воскрешает. Coins и публичная покупка сохранены. Night-key Zombie возвращается один с тем же ID/HP17, dead while dormant не возвращается; disable-drain независимых акторов возвращает купленный drop с canonical ammo и без дубликата. Реальная реклама/IAP не вызывались. Сборки/загрузки нет.
+
+SharedStoreSeedProbe PASS:48stores/140slots/420comparisons (включая regenerated city). LayoutProbe PASS:4пула/11264сравнения. Повторы общего ReadyBarrier сначала прерывались потерей Spawned/Photon ServerLogic; полный результат учитывать отдельно от зелёного городского стенда. Конкретный city cold join/handoff ещё не проверен. Подробности: Docs/COOP_STREAMING_20261106.md.
+
+Далее ИИ: city cold join/handoff, справедливый аудит отказов, общий бюджет кадра/длинной сетевой истории. DB-ON-125 остаётся in_progress. Владелец позже проверяет общую WebGL-сборку; сейчас действий не требуется.
+
+
+Последний чистый повтор общего сетевого стенда: ready/boat PASS, следующий запуск комнаты отвергнут Photon с DisconnectedByPluginLogic. Три незелёных общих прогона не считать успешной регрессией; источник ServerLogic/PluginLogic ещё не установлен. Дополнительные повторы без новой диагностики не выполнять. Городской финальный adapter PASS выше остаётся действительным.
+
+
+Окончательная очистка PASS: VerifyRestored owner return/identity/solo/mode keys и playModeStartScene; Play/compile=false, Runner0, Shared/Solo=false, Regions/Membership/Independent=null, clock=false, PeerSingle. Редактор оставлен вне теста, сборки нет.

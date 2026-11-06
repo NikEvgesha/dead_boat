@@ -31,6 +31,9 @@ public class CitySpawner : MonoBehaviour
     private int spawnCount = 0;
     private List<GameObject> spawnedCities = new List<GameObject>();
 
+    public bool streamCities = true;
+    public DeadBoat.Online.WorldCityStreaming Streaming { get; private set; }
+    private void LateUpdate() => Streaming?.Tick(spawnedCities, streamCities);
     public int Cities => _citys;
 
     private void Awake()
@@ -79,10 +82,13 @@ public class CitySpawner : MonoBehaviour
 
     void Update()
     {
+        if (DeadBoat.Online.SharedRunContext.Active && !DeadBoat.Online.SharedRunContext.Playing) return;
+        float front = DeadBoat.Online.SharedRunContext.Playing ? DeadBoat.Online.SharedRunContext.State.WorldFront : boardController.TotalDistanceTraveled;
+        float rear = DeadBoat.Online.SharedRunContext.Playing ? DeadBoat.Online.SharedRunContext.State.WorldRear : boardController.TotalDistanceTraveled - removalDistance;
         // Спавним новый город, если:
         // 1. Общее число городов меньше _citys (включая стартовый)
         // 2. Поезд приблизился к точке спавна на spawnBuffer метров
-        if (spawnCount < _citys && boardController.TotalDistanceTraveled + spawnBuffer >= nextSpawnDistance)
+        if (spawnCount < _citys && front + spawnBuffer >= nextSpawnDistance)
         {
             SpawnCity();
             spawnCount++;
@@ -98,7 +104,7 @@ public class CitySpawner : MonoBehaviour
                 spawnedCities.RemoveAt(i);
                 continue;
             }
-            if (spawnedCities[i].transform.position.z < boardController.TotalDistanceTraveled - FixCoordinate.Instance.BoardAddPos - removalDistance)
+            if (spawnedCities[i].transform.position.z + FixCoordinate.Instance.BoardAddPos < rear)
             {
                 Destroy(spawnedCities[i]);
                 spawnedCities.RemoveAt(i);
@@ -118,6 +124,12 @@ public class CitySpawner : MonoBehaviour
         GameObject city = Instantiate(cityPrefab, spawnPosition, Quaternion.identity);
         spawnedCities.Add(city);
         city.transform.SetParent(transform);
+        if (DeadBoat.Online.SharedRunContext.Playing)
+        {
+            Streaming ??= new DeadBoat.Online.WorldCityStreaming(this);
+            city.AddComponent<DeadBoat.Online.WorldCityRegion>().Initialize(this, cityPrefab, nextSpawnDistance);
+            return;
+        }
         city.AddComponent<DeadBoat.Online.WorldGenerationAnchor>().Key = "city:" + Mathf.RoundToInt(nextSpawnDistance);
         int index = 0;
         foreach (var content in city.GetComponentsInChildren<LocationContentSpawner>(true))

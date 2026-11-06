@@ -27,6 +27,7 @@ namespace DeadBoat.Online
         public int GeneratorVersion { get; } = RunRandom.Version;
         public int RegionCount => regions.Count;
         public int RecordCount => membership.Count;
+        public int NextRevision(int index) => regions.TryGetValue(index, out var region) && region.Revision < int.MaxValue ? region.Revision + 1 : 1;
         public int NextRevision(string key)
         {
             if (key == null || !key.StartsWith("procedural:", StringComparison.Ordinal) || !int.TryParse(key.Substring(11), out int index)) return 1;

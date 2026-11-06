@@ -978,3 +978,18 @@ WorldRegionStreaming подключён к LocationSpawner в Shared:4Гц/од�
 Два Forest/4Cloud stress PASS:100physical items/20corpses/route5000. Финальный split13roots/1584meshes+11sleeping, archive11/95; caught-up rear4000:11roots/1380meshes+2sleeping, archive2/20,0отказов. Дополнительный настоящий LateUpdate/crew-interest return вернул region2,8items/5enemies, canonical modes/ammo/HP не изменились; root один. Не4независимых браузера, не FPS-гарантия; Editor17.5–19.8FPS при разрыве, память с плагинами около2305MB. Docs/COOP_STREAMING_20261106.md и локальный Logs/WorldStreaming-20261106.log.
 
 VerifyRestored PASS; Play/compilefalse, Runner0, Shared/SoloFalse, Regions/Membership/FixCoordinate=null, clockfalse, PeerSingle. Сборки/черновика/SDK-правок нет. DB-ON-125 in_progress: ИИ далее — города/независимые динамические спавны и общий бюджет мира; владелец позже общая WebGL-приёмка.
+
+
+## 2026-11-06 — DB-ON-125: города и независимые спавны
+
+Добавлены WorldCityRegion/WorldCityStreaming: полный seeded city root можно убрать и вернуть по стабильному city:Z с canonical HP/ammo/consumed/dead. Городская история включена в membership/archive; stock display распознаётся точно, pending purchase/reward/bank блокируют удаление. CitySpawner Shared опирается на WorldFront/WorldRear команды. WorldIndependentStreaming убирает только безопасные free known-template реплики предметов и независимых врагов, включая night keys; RNG волн не запускается повторно, ID/текущие записи сохраняются. Regional members/cargo/inventory/burning/unknown защищены.4Гц/одна транзакция на адаптер,4096ID dormancy; общего бюджета кадра/всех сетевых страниц пока нет. Совместимость regions1 без расширения wire records. SDK не трогали.
+
+Финальный Forest/4Cloud/один мир adapter PASS:1177city meshes/9shops/3controlled actors, два удаления/возврата, stable stock, HP13/ammo5, consumed/dead, paid public drop/coins; pending reward guard. Night-key Zombie HP17/sameID/one copy, dead dormant не воскрес; disable-drain вернул купленный предмет с ammo и без дубликата.48stores/140slots/420seed comparisons PASS; Layout4пула/11264 PASS. Общий ReadyBarrier в двух повторах прерывался потерей Spawned/ServerLogic, это не новый полный PASS. См. Docs/COOP_STREAMING_20261106.md; выдержки локально Logs/WorldCityStreaming-20261106.log.
+
+Без сборки/черновика. DB-ON-125 in_progress: ИИ далее city handoff/cold join, общий бюджет мира/кадра и справедливые отказы; владелец позже пакетный WebGL-тест. Несвязанные изменения MCP/SDK/Packages/ProjectSettings не включать в этот коммит.
+
+
+Последний чистый повтор общего сетевого стенда: ready/boat PASS, следующий запуск комнаты отвергнут Photon с DisconnectedByPluginLogic. Три незелёных общих прогона не считать успешной регрессией; источник ServerLogic/PluginLogic ещё не установлен. Дополнительные повторы без новой диагностики не выполнять. Городской финальный adapter PASS выше остаётся действительным.
+
+
+Окончательная очистка PASS: VerifyRestored owner return/identity/solo/mode keys и playModeStartScene; Play/compile=false, Runner0, Shared/Solo=false, Regions/Membership/Independent=null, clock=false, PeerSingle. Редактор оставлен вне теста, сборки нет.

@@ -237,7 +237,8 @@ namespace DeadBoat.Online
             {
                 if ((!entry.Value.Dropped && entry.Value.Mode != 3) || entry.Value.Template == 0 || entry.Value.Mode == 4 || TryFind(entry.Key, out _) ||
                     (entry.Value.Prunable && entry.Value.HomeZ < state.WorldRear && entry.Value.Position.z < state.WorldRear)) continue;
-                if (!HasPendingRequest(entry.Key) && SharedRunContext.Regions?.AllowsItemReplica(entry.Key, entry.Value) == false) continue;
+                if (!HasPendingRequest(entry.Key) && (SharedRunContext.Regions?.AllowsItemReplica(entry.Key, entry.Value) == false ||
+                    SharedRunContext.Independent?.AllowsItem(entry.Key, entry.Value) == false)) continue;
                 var prefab = SharedItemCatalog.Load()?.Find(entry.Value.Template);
                 if (prefab == null) continue;
                 var spawned = Instantiate(prefab, entry.Value.Position - LobbyNetworkAvatar.Origin, entry.Value.Rotation);

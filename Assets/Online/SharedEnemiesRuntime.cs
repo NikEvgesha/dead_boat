@@ -172,7 +172,7 @@ namespace DeadBoat.Online
                 !Finite(record.Rotation.x) || !Finite(record.Rotation.y) || !Finite(record.Rotation.z) ||
                 !Finite(record.Rotation.w) || Quaternion.Dot(record.Rotation, record.Rotation) < .000001f ||
                 SharedItemsRuntime.TryFind(id, out _) ||
-                SharedRunContext.Regions?.AllowsEnemyReplica(id, record) == false) return false;
+                SharedRunContext.Regions?.AllowsEnemyReplica(id, record) == false || SharedRunContext.Independent?.AllowsEnemy(id) == false) return false;
             var enemy = Instantiate(prefab, record.Position - LobbyNetworkAvatar.Origin, record.Rotation);
             if (!enemy.TryInitializeReplica(record.Level, record.HP, record.MaxHP))
             {
@@ -236,7 +236,7 @@ namespace DeadBoat.Online
                         var record = entry.Value;
                         if (record.Template == 0 || record.HP <= 0 || SharedItemsRuntime.TryFind(entry.Key, out _) ||
                             !templates.TryGetValue(record.Template, out var prefab)) continue;
-                        if (SharedRunContext.Regions?.AllowsEnemyReplica(entry.Key, record) == false) continue;
+                        if (SharedRunContext.Regions?.AllowsEnemyReplica(entry.Key, record) == false || SharedRunContext.Independent?.AllowsEnemy(entry.Key) == false) continue;
                         TryCreateReplica(prefab, entry.Key, record, out _);
                     }
                 }

@@ -61,7 +61,12 @@ public class LocationContentSpawner : MonoBehaviour
         }
     }
     private string stableGenerationKey;
-    public void InitializeStableGeneration(string key) => stableGenerationKey = key;
+    public void InitializeStableGeneration(string key) { stableGenerationKey = key; InitializeGeneration(-1); }
+    public void RestoreStableGeneration()
+    {
+        if (contentInitialized || gameObject.activeInHierarchy) throw new System.InvalidOperationException("Inactive city required");
+        rehydrating = true; Start();
+    }
     public string SharedGenerationKey => stableGenerationKey ?? (generationIndex >= 0
         ? "procedural:" + generationIndex : DeadBoat.Online.WorldSpawnIdentity.StableScenePath(transform));
 

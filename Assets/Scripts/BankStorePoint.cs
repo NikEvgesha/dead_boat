@@ -19,6 +19,7 @@ public class BankStorePoint : MonoBehaviour
     private float _progress;
     //private bool _buyInProgress;
 
+    public bool CanSuspend => !_active && _progress <= 0;
     private bool _active;
 
     private void Start()

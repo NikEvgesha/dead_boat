@@ -6,6 +6,12 @@ namespace DeadBoat.Online
     // Destruction of a scene replica is not consumption/death in the canonical world.
     public static class WorldReplicaRemoval
     {
+        public static bool IsStoreDisplay(PickableItem item)
+        {
+            var point = item != null ? item.GetComponentInParent<StorePoint>(true) : null;
+            return point != null && point.OwnsDisplay(item) && item.GetComponent<WorldSpawnIdentity>() == null &&
+                !item.Grabbed && !item.Attached && item.Status != ItemStatus.InInventory;
+        }
         public static bool IsDormantCorpsePart(PickableItem item)
         {
             if (item == null || item.enabled || item.Grabbed || item.Attached || item.Status == ItemStatus.InInventory) return false;
@@ -40,7 +46,7 @@ namespace DeadBoat.Online
             {
                 if (item.Grabbed || item.Attached || item.Status == ItemStatus.InInventory)
                 { refusal = "portable item"; return false; }
-                if (IsDormantCorpsePart(item)) continue;
+                if (IsDormantCorpsePart(item) || IsStoreDisplay(item)) continue;
                 if (item.GetComponent<WorldSpawnIdentity>() == null)
                 { refusal = "untracked item"; return false; }
             }

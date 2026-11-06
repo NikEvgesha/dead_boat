@@ -28,6 +28,10 @@ public class StorePoint : MonoBehaviour
 
     //[SerializeField] private AudioSource _audioSource;
 
+    private GameObject _displayModel;
+    private bool rewardPending;
+    public bool CanSuspend => !_active && !_buyInProgress && !rewardPending;
+    public bool OwnsDisplay(PickableItem item) => _displayModel != null && item != null && item.transform.IsChildOf(_displayModel.transform);
     private bool _active;
     private float _progress;
     private bool _buyInProgress;
@@ -56,11 +60,12 @@ public class StorePoint : MonoBehaviour
             List<Vector3> offset = _itemPrefab.GetSellPoint();
             if (offset.Count == 0)
             {
-                Instantiate(_itemPrefab.GetModel(), _sellPoint);
+                _displayModel = Instantiate(_itemPrefab.GetModel(), _sellPoint);
             }
             else
             {
                 GameObject model = Instantiate(_itemPrefab.GetModel(), _sellPoint);
+                _displayModel = model;
                 model.transform.localPosition = offset[0];
                 Quaternion deltaRotation = Quaternion.Euler(offset[1]);
                 model.transform.localRotation = deltaRotation;
@@ -205,12 +210,14 @@ public class StorePoint : MonoBehaviour
                 GiveItem();
             } else
             {
+                rewardPending = true;
                 AdsManager.Instance.ShowRewardedAd(
                     "buyItem",
                     (success) =>
                     {
-                        if (success)
-                            GiveItem();
+                        if (!rewardPending) return;
+                        rewardPending = false;
+                        if (success) GiveItem();
                     });
             }
 

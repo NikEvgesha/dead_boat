@@ -12,6 +12,7 @@ namespace DeadBoat.Online
         public static SharedDepartureState State { get; private set; }
         public static WorldRegionArchive Regions { get; private set; }
         public static WorldRegionMembership Membership { get; private set; }
+        public static WorldIndependentStreaming Independent { get; private set; }
         public static bool GenerationActive => Active || SoloRunBranch.Active;
         public static bool Playing => Active && !SharedRunRecovery.Disconnected && State != null && State.Runner != null && State.Runner.IsRunning && State.Object != null &&
             State.Object.IsValid && State.Phase == 3 && State.Runner.IsConnectedToServer && !SharedRunRecovery.Restoring;
@@ -25,6 +26,7 @@ namespace DeadBoat.Online
             State = state;
             Regions = new WorldRegionArchive(seed, levelId);
             Membership = new WorldRegionMembership();
+            Independent = owner.AddComponent<WorldIndependentStreaming>();
             var save = owner.AddComponent<SharedRunPreviewSave>();
             save.Persistent = persistentSave;
             Save = save;
@@ -36,6 +38,8 @@ namespace DeadBoat.Online
             Active = false;
             Regions?.Clear(); Regions = null;
             Membership?.Clear(); Membership = null;
+            if (Independent != null) Object.Destroy(Independent);
+            Independent = null;
             SharedItemsRuntime.Clear();
             SharedEnemiesRuntime.Clear();
             State = null;

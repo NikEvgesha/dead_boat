@@ -17,6 +17,8 @@ namespace DeadBoat.Online.Editor
         public static string Result { get; private set; } = "not run";
         private static bool running;
         private static bool stressRequested;
+        private static bool adaptersRequested;
+        public static void RunRegionAdapters() { if (running) return; adaptersRequested = true; Run(); }
         [MenuItem("Tools/Online/Stress Physics And Route (Lobby Play Mode)")]
         public static void RunStress()
         {
@@ -31,6 +33,7 @@ namespace DeadBoat.Online.Editor
             running = true;
             Result = "running";
             bool stress = stressRequested;
+            bool adapters = adaptersRequested; adaptersRequested = false;
             stressRequested = false;
             var peers = new List<NetworkRunner>();
             var previousMode = NetworkProjectConfig.Global.PeerMode;
@@ -79,14 +82,17 @@ namespace DeadBoat.Online.Editor
                 await Until(() => SharedRunContext.Playing && BoardController.Instance != null && BoardController.Instance.StartGame, "level loaded");
                 foreach (var peer in peers) Replica(peer).RPC_BoatProfile(SharedBoatProfile.Local());
                 await Until(() => SharedRunContext.State.BoatInitialized, "boat profiles");
-                if (stress) await Stress(peers);
+                if (adapters) await WorldCityStreamingProbe.RunGame();
+                else if (stress) await Stress(peers);
                 else
                 {
                     BenchmarkAvatars();
                     await Task.Delay(35000);
                 }
-                Result = "PASS: " + (stress ? "physics/corpses/route stress" : "four connections profile") + "; one game world";
-                Debug.Log(stress
+                Result = "PASS: " + (adapters ? "city/independent streaming adapters" : stress ? "physics/corpses/route stress" : "four connections profile") + "; one game world";
+                if (adapters) Debug.Log("[Region adapter probe] " + Result);
+                Debug.Log(adapters ? "[Performance probe] PASS: city/independent adapters, four Cloud connections, one local world."
+                    : stress
                     ? "[Performance probe] PASS: four Cloud connections, physics/corpses/route stress completed. Transport-only peers; not WebGL acceptance."
                     : "[Performance probe] PASS: four Cloud connections, real Forest scene, 35s capture. Transport-only peers; not WebGL acceptance.");
             }
