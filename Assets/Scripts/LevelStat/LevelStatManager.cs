@@ -91,6 +91,7 @@ public class LevelStatManager : MonoBehaviour
 };
     public List<BoostItem> _boostItems = new List<BoostItem>();
     public List<RareChance> _rarityChances;
+    public bool ScriptedOffersOnly { get; set; }
     private int _countLevelUp;
     private void Awake()
     {
@@ -131,6 +132,7 @@ public class LevelStatManager : MonoBehaviour
     }
     private void AddNewLevelNum()
     {
+        if (ScriptedOffersOnly) return;
         _countLevelUp++;
         SaveManager.Instance.SaveLevelUp(_countLevelUp);
         LevelUpUi.Instance.AddNewLevelCount(_countLevelUp);
@@ -141,7 +143,7 @@ public class LevelStatManager : MonoBehaviour
     }
     public bool CheckNewLevel()
     {
-        if (_countLevelUp <= 0) return false;
+        if (ScriptedOffersOnly || _countLevelUp <= 0) return false;
         _countLevelUp--;
         SaveManager.Instance.SaveLevelUp(_countLevelUp);
         NewLevel();

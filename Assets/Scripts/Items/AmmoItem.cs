@@ -5,9 +5,11 @@ public class AmmoItem : MonoBehaviour
 {
     [SerializeField] private int AmmoCount;
     [SerializeField] private WeaponType AmmoType;
+    public event System.Action Collected;
     public bool AddAmmo()
     {
         PlayerAmmoManager.Instance.AddAmmo(AmmoType, AmmoCount);
+        Collected?.Invoke();
         return true;
     }
 

@@ -7,6 +7,35 @@ public static class EggAnimalBuffService
     private static EggHatchingCatalog _catalog;
     private static AnimalRunBuffs _cachedBuffs;
     private static bool _dirty = true;
+    private static Object _temporaryOwner;
+    private static AnimalRunBuffs _temporaryBuffs;
+
+    // A lesson companion participates in the normal stat formulas without changing
+    // the player's permanent animal collection or equipped loadout.
+    public static void SetTemporaryCompanion(Object owner, AnimalRunBuffs buffs)
+    {
+        if (owner == null) throw new System.ArgumentNullException(nameof(owner));
+        if (_temporaryOwner != null && _temporaryOwner != owner)
+            throw new System.InvalidOperationException("A temporary companion is already active");
+        _temporaryOwner = owner;
+        _temporaryBuffs = new AnimalRunBuffs();
+        _temporaryBuffs.Add(buffs);
+        MarkDirty();
+    }
+    public static void ClearTemporaryCompanion(Object owner)
+    {
+        if (_temporaryOwner != owner) return;
+        _temporaryOwner = null;
+        _temporaryBuffs = null;
+        MarkDirty();
+    }
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetTemporaryCompanion()
+    {
+        _temporaryOwner = null;
+        _temporaryBuffs = null;
+        MarkDirty();
+    }
 
     public static void MarkDirty()
     {
@@ -110,6 +139,7 @@ public static class EggAnimalBuffService
             }
         }
 
+        if (_temporaryOwner != null) result.Add(_temporaryBuffs);
         _cachedBuffs = result;
         _dirty = false;
         return _cachedBuffs;

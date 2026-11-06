@@ -2888,6 +2888,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7842833225827124836, guid: 9cc1d9ce9a214b7bbbd81ac6a4fd9c8a, type: 3}
+      propertyPath: _collectOnce
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7842833225827124836, guid: 9cc1d9ce9a214b7bbbd81ac6a4fd9c8a, type: 3}
+      propertyPath: _uniqueCollectibleId
+      value: deadboat-first-run-egg-v2
+      objectReference: {fileID: 0}
     - target: {fileID: 8820928873436022462, guid: 9cc1d9ce9a214b7bbbd81ac6a4fd9c8a, type: 3}
       propertyPath: m_Name
       value: EggChicken
@@ -5545,6 +5553,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 619030921983631106, guid: 60d8d4cd0f12d234c92103a33fa8d2f3, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 619030921983631106, guid: 60d8d4cd0f12d234c92103a33fa8d2f3, type: 3}
       propertyPath: tutorialQuestPrefabs.Array.size
       value: 2
       objectReference: {fileID: 0}
@@ -5718,19 +5730,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5687039468869451587, guid: 60d8d4cd0f12d234c92103a33fa8d2f3, type: 3}
       propertyPath: m_AnchorMax.x
-      value: 0.285
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5687039468869451587, guid: 60d8d4cd0f12d234c92103a33fa8d2f3, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5687039468869451587, guid: 60d8d4cd0f12d234c92103a33fa8d2f3, type: 3}
       propertyPath: m_AnchorMin.x
-      value: 0.285
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5687039468869451587, guid: 60d8d4cd0f12d234c92103a33fa8d2f3, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 0
+      value: 71.09023
       objectReference: {fileID: 0}
     - target: {fileID: 6020234172417971066, guid: 60d8d4cd0f12d234c92103a33fa8d2f3, type: 3}
       propertyPath: m_Mesh
@@ -13820,6 +13832,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9140e96a4ee63a042a866473a219ed6a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1442110670 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3497082447748835320, guid: 1a56399d39bf05340988bda1e6af8ec1, type: 3}
+  m_PrefabInstance: {fileID: 1442110668}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0adaa72b7257ecf44a957625a4039982, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1445766630
 GameObject:
   m_ObjectHideFlags: 0
@@ -16966,9 +16989,18 @@ MonoBehaviour:
   - {fileID: 904130592}
   - {fileID: 1983481745}
   - {fileID: 1538206813}
+  supplyPrefabs:
+  - {fileID: 3796671755366204359, guid: 9808d3ffd59e7ce489b5ba5892d76692, type: 3}
+  - {fileID: 421986717421339281, guid: 97e69bae6b2189a459e41c91c98a6e2a, type: 3}
+  - {fileID: 3192157255420725035, guid: 9cc1d9ce9a214b7bbbd81ac6a4fd9c8a, type: 3}
+  - {fileID: 5837536643105673945, guid: 7b2258fc4ca43c3468d3df51c39cc56e, type: 3}
+  - {fileID: 8397905037114353727, guid: b620f7c3704de7648ba480dcf4b5fb26, type: 3}
+  - {fileID: 2603725126241143534, guid: 2d20f042ba948ca4f9747bba742737ec, type: 3}
   guards:
   - {fileID: 1341039994}
   - {fileID: 572272825}
+  miniDragonPrefab: {fileID: 3996685495933307176, guid: f06ae86dba670b0478c70ad39847fb7e, type: 3}
+  guideArrow: {fileID: 1442110670}
 --- !u!4 &1731451226
 Transform:
   m_ObjectHideFlags: 0
@@ -19833,6 +19865,10 @@ PrefabInstance:
     - target: {fileID: 6976785682978052845, guid: 5aa52b2635f2a8547810be246327b492, type: 3}
       propertyPath: _staticItem
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7189701434596761877, guid: 5aa52b2635f2a8547810be246327b492, type: 3}
+      propertyPath: m_Enabled
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7241811894071391563, guid: 5aa52b2635f2a8547810be246327b492, type: 3}
       propertyPath: m_Mesh

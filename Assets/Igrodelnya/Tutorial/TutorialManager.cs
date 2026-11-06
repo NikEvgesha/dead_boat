@@ -7,6 +7,8 @@ public class TutorialManager : MonoBehaviour
     [SerializeField] private List<TutorialStep> _tutorialSteps = new List<TutorialStep>();
     [SerializeField] private bool _authoredFirstRun;
     public bool AuthoredFirstRun => _authoredFirstRun;
+    public bool IntroComplete => _currentIndex >= _tutorialSteps.Count;
+    public int CurrentStepIndex => _currentIndex;
     private int _currentIndex;
     private void Awake()
     {

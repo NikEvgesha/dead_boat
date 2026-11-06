@@ -101,6 +101,7 @@ public class RangedWeaponController : MonoBehaviour
         }
     }
 
+    public event System.Action ShotFired;
     private bool _isShooting = false;
     private bool _active = false;
     private void Start()
@@ -205,6 +206,7 @@ public class RangedWeaponController : MonoBehaviour
             Fire();
             _isShooting = true;
             CurrentAmmo--; // Расходуем один патрон на выстрел (даже для дробовика)
+            ShotFired?.Invoke();
             StartCoroutine(ResetShooting());
         }
     }

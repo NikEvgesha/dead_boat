@@ -17,6 +17,7 @@ namespace DeadBoat.FirstRun.Editor
         private const string Backup = "DeadBoat.FirstRunAuthored.";
         [Serializable] private sealed class BuildBackup { public string[] paths; public bool[] enabled; }
         public static string Result { get; private set; } = "not run";
+        private static IDisposable eggStorage;
 
         static FirstRunAuthoredTools()
         {
@@ -24,6 +25,87 @@ namespace DeadBoat.FirstRun.Editor
                 if (state == PlayModeStateChange.EnteredEditMode) Restore();
             };
             EditorApplication.update += Tick;
+            SceneManager.sceneLoaded += (scene, mode) => {
+                if (!SessionState.GetBool(Backup + "active", false) || eggStorage != null) return;
+                eggStorage = EggFeatureStorage.UseTemporaryStorageForTests();
+                EggAnimalBuffService.MarkDirty();
+            };
+        }
+
+        [MenuItem("Tools/Dead Boat/First Run/Install Lesson Events")]
+        public static string InstallLesson()
+        {
+            if (EditorApplication.isPlaying) throw new InvalidOperationException("Edit Mode required");
+            Create();
+            const string dragonPath = "Assets/FirstRun/MiniDragon.prefab";
+            const string firePath = "Assets/FirstRun/MiniDragonFireball.prefab";
+            var previous = SceneManager.GetActiveScene();
+            var staging = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Additive);
+            SceneManager.SetActiveScene(staging);
+            try
+            {
+                if (AssetDatabase.LoadAssetAtPath<GameObject>(dragonPath) == null)
+                {
+                    var source = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Enemy/BossDragon.prefab");
+                    var dragon = (GameObject)PrefabUtility.InstantiatePrefab(source, staging);
+                    var controller = dragon.GetComponent<DragonBossController>();
+                    var fire = (GameObject)PrefabUtility.InstantiatePrefab(controller.fireProjectile.gameObject, staging);
+                    var fireSo = new SerializedObject(fire.GetComponent<FireballBoss>());
+                    fireSo.FindProperty("_damage").floatValue = 4;
+                    fireSo.FindProperty("_flyTime").floatValue = 1.5f;
+                    fireSo.FindProperty("_hitRadius").floatValue = 2;
+                    fireSo.ApplyModifiedPropertiesWithoutUndo();
+                    var fireAsset = PrefabUtility.SaveAsPrefabAsset(fire, firePath);
+                    dragon.transform.localScale = Vector3.one * 2.5f;
+                    PrefabUtility.RecordPrefabInstancePropertyModifications(dragon.transform);
+                    var so = new SerializedObject(controller);
+                    so.FindProperty("_starsHP").intValue = 120;
+                    so.FindProperty("orbitRadius").floatValue = 16;
+                    so.FindProperty("orbitHeight").floatValue = 5;
+                    so.FindProperty("orbitAngularSpeed").floatValue = 28;
+                    so.FindProperty("orbitDuration").floatValue = 6;
+                    so.FindProperty("timeBetweenShots").floatValue = 1.5f;
+                    so.FindProperty("shootDuration").floatValue = 2;
+                    so.FindProperty("diveDamage").floatValue = 6;
+                    so.FindProperty("diveSpeed").floatValue = 10;
+                    so.FindProperty("MaxSpeedMultiplier").floatValue = 1.2f;
+                    so.FindProperty("fireProjectile").objectReferenceValue = fireAsset.GetComponent<FireballBoss>();
+                    so.ApplyModifiedPropertiesWithoutUndo();
+                    var agent = dragon.GetComponent<UnityEngine.AI.NavMeshAgent>();
+                    agent.enabled = false;
+                    PrefabUtility.RecordPrefabInstancePropertyModifications(agent);
+                    PrefabUtility.SaveAsPrefabAsset(dragon, dragonPath);
+                }
+            }
+            finally { SceneManager.SetActiveScene(previous); EditorSceneManager.CloseScene(staging, true); }
+            var dragonSettings = new SerializedObject(AssetDatabase.LoadAssetAtPath<GameObject>(dragonPath).GetComponent<DragonBossController>());
+            dragonSettings.FindProperty("_scenarioSeed").intValue = FirstRunAuthoredRoute.Seed;
+            dragonSettings.ApplyModifiedPropertiesWithoutUndo();
+            AssetDatabase.SaveAssetIfDirty(dragonSettings.targetObject);
+            var scene = EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Additive);
+            try
+            {
+                var route = scene.GetRootGameObjects().SelectMany(g => g.GetComponentsInChildren<FirstRunAuthoredRoute>(true)).Single();
+                foreach (var c in scene.GetRootGameObjects().SelectMany(g => g.GetComponentsInChildren<MonoBehaviour>(true)))
+                    if (c is QuestManager || c is QuestTrigger)
+                    {
+                        c.enabled = false;
+                        PrefabUtility.RecordPrefabInstancePropertyModifications(c);
+                    }
+                route.miniDragonPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(dragonPath).GetComponent<DragonBossController>();
+                route.supplyPrefabs = new[] { "goldBar", "coal", "EggChicken", "Pistol", "AmmoMusket", "barrel" }
+                    .Select(n => AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Items/" + n + ".prefab").GetComponent<PickableItem>()).ToArray();
+                var steps = new SerializedObject(route.tutorial).FindProperty("_tutorialSteps");
+                route.guideArrow = (ArrowLine)new SerializedObject(steps.GetArrayElementAtIndex(0).objectReferenceValue).FindProperty("_line").objectReferenceValue;
+                var egg = new SerializedObject(route.supplies[2].GetComponent<EggCollectibleItem>());
+                egg.FindProperty("_collectOnce").boolValue = true;
+                egg.FindProperty("_uniqueCollectibleId").stringValue = FirstRunAuthoredRoute.EggReceipt;
+                egg.ApplyModifiedPropertiesWithoutUndo();
+                EditorUtility.SetDirty(route);
+                EditorSceneManager.SaveScene(scene);
+            }
+            finally { SceneManager.SetActiveScene(previous); EditorSceneManager.CloseScene(scene, true); }
+            return "lesson references, one-shot egg and mini dragon variants installed";
         }
 
         // Creation is intentionally one-shot: manual scene edits survive subsequent runs.
@@ -152,9 +234,11 @@ namespace DeadBoat.FirstRun.Editor
         }
         public static string Prepare()
         {
+            if (EditorUtility.scriptCompilationFailed) throw new InvalidOperationException("Fix compilation errors before preparing a lesson test");
             Create();
             if (SessionState.GetBool(Backup + "active", false)) throw new InvalidOperationException("Already prepared");
             var scenes = EditorBuildSettings.scenes;
+            SessionState.SetString(Backup + "buildRaw", Convert.ToBase64String(System.IO.File.ReadAllBytes("ProjectSettings/EditorBuildSettings.asset")));
             SessionState.SetString(Backup + "build", JsonUtility.ToJson(new BuildBackup {
                 paths = scenes.Select(s => s.path).ToArray(), enabled = scenes.Select(s => s.enabled).ToArray()
             }));
@@ -184,7 +268,14 @@ namespace DeadBoat.FirstRun.Editor
             if (!SessionState.GetBool(Backup + "active", false)) return;
             var b = JsonUtility.FromJson<BuildBackup>(SessionState.GetString(Backup + "build", ""));
             EditorBuildSettings.scenes = b.paths.Select((p, i) => new EditorBuildSettingsScene(p, b.enabled[i])).ToArray();
+            // Unity may add serialization defaults when this list is assigned.
+            // Restore the original file as well as the in-memory scene list.
+            string raw = SessionState.GetString(Backup + "buildRaw", "");
+            if (raw.Length > 0) System.IO.File.WriteAllBytes("ProjectSettings/EditorBuildSettings.asset", Convert.FromBase64String(raw));
             Time.timeScale = SessionState.GetFloat(Backup + "scale", 1);
+            eggStorage?.Dispose();
+            eggStorage = null;
+            EggAnimalBuffService.MarkDirty();
             SessionState.SetBool(Backup + "active", false);
         }
         public static string Validate()
@@ -195,6 +286,13 @@ namespace DeadBoat.FirstRun.Editor
                 var all = scene.GetRootGameObjects().SelectMany(g => g.GetComponentsInChildren<MonoBehaviour>(true)).Where(c => c).ToArray();
                 var route = all.OfType<FirstRunAuthoredRoute>().Single();
                 Require(route.tutorial.AuthoredFirstRun, "authored tutorial override");
+                Require(route.miniDragonPrefab && route.guideArrow, "scenario bindings");
+                Require(route.supplyPrefabs != null && route.supplyPrefabs.Length == 6 && route.supplyPrefabs.All(p => p != null), "required item recovery prefabs");
+                Require(all.OfType<QuestManager>().All(c => !c.enabled) && all.OfType<QuestTrigger>().All(c => !c.enabled), "ordinary quests disabled in lesson");
+                Require(route.miniDragonPrefab.GetStartHP() == 120 && route.miniDragonPrefab.transform.localScale.x == 2.5f, "mini dragon variant");
+                Require(new SerializedObject(route.miniDragonPrefab).FindProperty("_scenarioSeed").intValue == FirstRunAuthoredRoute.Seed, "boss seed");
+                foreach (string name in new[] { "BattleRhythm", "BloodPact", "InventorySlots", "SteadyAim", "PatientReload", "LastRound" })
+                    Require(Resources.Load<BoostItem>("BoostItem_" + name) != null, "scripted card asset " + name);
                 Require(route.stops.Length == 2 && route.stops.All(t => t != null), "two route buildings");
                 Require(route.supplies.Length == 6 && route.supplies.All(p => p != null), "real fixed pickups");
                 Require(route.guards.Length == 2 && route.guards.All(g => g.minHP == 12 && g.maxHP == 12), "fixed guards");
@@ -282,7 +380,10 @@ namespace DeadBoat.FirstRun.Editor
         public static string VerifyRestored()
         {
             if (EditorApplication.isPlaying || SessionState.GetBool(Backup + "active", false)) throw new Exception("Still active");
+            Require(eggStorage == null, "temporary egg storage released");
             var b = JsonUtility.FromJson<BuildBackup>(SessionState.GetString(Backup + "build", ""));
+            string raw = SessionState.GetString(Backup + "buildRaw", "");
+            Require(raw.Length == 0 || System.IO.File.ReadAllBytes("ProjectSettings/EditorBuildSettings.asset").SequenceEqual(Convert.FromBase64String(raw)), "build settings file restored exactly");
             if (!EditorBuildSettings.scenes.Select(s => s.path).SequenceEqual(b.paths) ||
                 !EditorBuildSettings.scenes.Select(s => s.enabled).SequenceEqual(b.enabled) ||
                 Time.timeScale != SessionState.GetFloat(Backup + "scale", 1)) throw new Exception("Settings not restored");

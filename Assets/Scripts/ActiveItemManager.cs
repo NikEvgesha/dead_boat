@@ -19,6 +19,7 @@ public class ActiveItemManager : MonoBehaviour
 
     public void SwitchActiveItem(PickableItem newItem)
     {
+        if (newItem != null) newItem.CancelStowAnimation();
         if (newItem == _activeItem) return;
         if (_activeItem != null)
         {

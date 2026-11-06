@@ -224,9 +224,16 @@ public class PickableItem : MonoBehaviour
         _status = ItemStatus.InInventory;
         PutItemToInventory?.Invoke();
     }
+    private Coroutine _stowAnimation;
+    public void CancelStowAnimation()
+    {
+        if (_stowAnimation != null) StopCoroutine(_stowAnimation);
+        _stowAnimation = null;
+    }
     public void Put() 
     {
-        StartCoroutine(PutAnimation());
+        CancelStowAnimation();
+        _stowAnimation = StartCoroutine(PutAnimation());
     }
     private IEnumerator PutAnimation(bool isDestroy = false)
     {
@@ -244,6 +251,7 @@ public class PickableItem : MonoBehaviour
         }
         else
         {
+            _stowAnimation = null;
             gameObject.SetActive(false);
         }
     }
@@ -251,6 +259,7 @@ public class PickableItem : MonoBehaviour
     public void DropOutFromInventory(Transform dropOutPoint)
     {
         if (_status != ItemStatus.InInventory) return;
+        CancelStowAnimation();
 
         if (_collider)
             _collider.enabled = true;

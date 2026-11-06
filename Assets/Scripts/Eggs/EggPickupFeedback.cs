@@ -88,7 +88,7 @@ public sealed class EggPickupFeedback : MonoBehaviour
     private void Update()
     {
         if (remaining <= 0) return;
-        if (DeadBoat.Online.SharedAdProtection.IsShowing) { group.alpha = 0; return; }
+        if (DeadBoat.Online.SharedAdProtection.IsShowing || (LevelUpUi.Instance != null && LevelUpUi.Instance.IsChoiceOpen)) { group.alpha = 0; return; }
         float delta = Time.unscaledDeltaTime; remaining -= delta; age += delta;
         group.alpha = Mathf.Min(Mathf.Clamp01(age / .15f), Mathf.Clamp01(remaining / .4f));
         panel.localScale = Vector3.one * (1 + .08f * Mathf.Clamp01(1 - age / .3f));

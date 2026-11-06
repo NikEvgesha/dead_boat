@@ -41,7 +41,7 @@ public class LevelUpButtomUI : MonoBehaviour
         if (GetComponent<UISound>() == null) SoundManager.Instance?.PlayUIClick();
         if (_isAds)
             AdsManager.Instance.ShowRewardedAd("ChoiseCard", success => CompleteChoice(version, chosen, rarity, success));
-        else if (!LevelStatManager.Instance.HaveLevelUp())
+        else if (!LevelUpUi.Instance.IsScriptedChoice && !LevelStatManager.Instance.HaveLevelUp())
             AdsManager.Instance.ShowInterstitialAd(success => CompleteChoice(version, chosen, rarity, true));
         else
             CompleteChoice(version, chosen, rarity, true);
@@ -58,6 +58,11 @@ public class LevelUpButtomUI : MonoBehaviour
             return;
         }
         _rewardGranted = true;
+        if (LevelUpUi.Instance.IsScriptedChoice)
+        {
+            LevelUpUi.Instance.FinishScriptedChoice(chosen, rarity);
+            return;
+        }
         chosen.AddBoost(rarity);
         LevelUpUi.Instance.ShowCardChoice(chosen.BoostIcon, rarity);
         LevelUpUi.Instance.Close();

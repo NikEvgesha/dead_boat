@@ -106,6 +106,8 @@ public class BoardController : MonoBehaviour
 
     // Общая пройденная дистанция (в метрах)
     public float TotalDistanceTraveled = 0f;
+    // Runtime-only authored scenario gate; ordinary and online runs remain unrestricted.
+    public float ScenarioDistanceLimit { get; set; } = float.PositiveInfinity;
     //private float _preTotalDistanceTraveled = 0f;
     public float SaveDistanceTraveled = 10000f;
     public bool StartSpawn;
@@ -307,6 +309,12 @@ public class BoardController : MonoBehaviour
         if (DeadBoat.Online.SharedRunContext.Active) return;
         if (_endGame || !StartGame)
             return;
+        if (TotalDistanceTraveled >= ScenarioDistanceLimit)
+        {
+            if (currentSpeed != 0) { currentSpeed = 0; SwitchSpeed?.Invoke(0); }
+            if (_audioSource) _audioSource.volume = 0;
+            return;
+        }
         float speed = currentSpeed;
         // Если таймер игнорирования ввода активен, обнуляем ввод
        /* if (ignoreInputTime > 0)
@@ -342,9 +350,10 @@ public class BoardController : MonoBehaviour
             currentSpeed = Mathf.MoveTowards(currentSpeed, 0, coastDeceleration * Time.fixedDeltaTime);
         }
         // Перемещаем поезд по локальной оси X (transform.right)
-        transform.position += transform.forward * currentSpeed * Time.fixedDeltaTime;
+        float travel = Mathf.Min(currentSpeed * Time.fixedDeltaTime, Mathf.Max(0, ScenarioDistanceLimit - TotalDistanceTraveled));
+        transform.position += transform.forward * travel;
         // Обновляем пройденное расстояние
-        TotalDistanceTraveled += currentSpeed * Time.fixedDeltaTime;
+        TotalDistanceTraveled += travel;
 
         if (!_endGame && TotalDistanceTraveled >= _endPoint)
         {

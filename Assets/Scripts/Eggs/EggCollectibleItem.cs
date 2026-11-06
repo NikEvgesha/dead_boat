@@ -10,6 +10,12 @@ public class EggCollectibleItem : MonoBehaviour
     [SerializeField] private bool _collectOnce;
     [SerializeField] private string _uniqueCollectibleId;
 
+    public event System.Action Collected;
+    public void ConfigureOneShot(string collectibleId)
+    {
+        _collectOnce = true;
+        _uniqueCollectibleId = collectibleId;
+    }
     public string EggId => _eggId;
     public int Amount => _amount;
 
@@ -47,6 +53,7 @@ public class EggCollectibleItem : MonoBehaviour
             collected = true;
         }
 
+        if (collected) Collected?.Invoke();
         return collected;
     }
 

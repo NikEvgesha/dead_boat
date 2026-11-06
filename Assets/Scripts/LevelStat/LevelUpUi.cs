@@ -24,6 +24,64 @@ public class LevelUpUi : MonoBehaviour
     [SerializeField] private int _price = 1;
     [SerializeField] Text _textPrice;
 
+    private readonly Dictionary<GameObject, bool> _scriptedHidden = new();
+    private void ScriptedControls(bool hide)
+    {
+        if (!hide)
+        {
+            foreach (var pair in _scriptedHidden) if (pair.Key) pair.Key.SetActive(pair.Value);
+            _scriptedHidden.Clear();
+            return;
+        }
+        foreach (var button in GetComponentsInChildren<Button>(true))
+            for (int i = 0; i < button.onClick.GetPersistentEventCount(); i++)
+            {
+                string method = button.onClick.GetPersistentMethodName(i);
+                if (method != "_RefreshClickAds" && method != "_RefreshClickGems" && method != "_NewLevel") continue;
+                if (!_scriptedHidden.ContainsKey(button.gameObject)) _scriptedHidden.Add(button.gameObject, button.gameObject.activeSelf);
+                button.gameObject.SetActive(false);
+            }
+    }
+    private bool _scriptedChoice;
+    private Action<BoostType> _scriptedChosen;
+    private readonly HashSet<BoostItem> _scriptedCards = new();
+    public bool IsScriptedChoice => _scriptedChoice;
+    public bool IsChoiceOpen => _panel.activeSelf;
+    public bool OpenScriptedChoice(List<ItemWithRare> items, Action<BoostType> chosen)
+    {
+        if (_panel.activeSelf || items == null || items.Count != _buttons.Count || items.Exists(x => x.Item == null)) return false;
+        _scriptedCards.Clear();
+        foreach (var item in items) _scriptedCards.Add(item.Item);
+        _scriptedChosen = chosen;
+        NewLevel(items, true);
+        return true;
+    }
+    public void CancelScriptedChoice()
+    {
+        if (!_scriptedChoice) return;
+        _scriptedChoice = false;
+        _scriptedChosen = null;
+        _scriptedCards.Clear();
+        _panel.SetActive(false);
+        _panelAdsChoise.SetActive(false);
+        ScriptedControls(false);
+    }
+    public void FinishScriptedChoice(BoostItem chosen, RareType rarity)
+    {
+        if (!_scriptedChoice || !_cardClaimed || !_scriptedCards.Contains(chosen)) return;
+        var callback = _scriptedChosen;
+        _scriptedChosen = null;
+        _scriptedCards.Clear();
+        chosen.AddBoost(rarity);
+        ShowCardChoice(chosen.BoostIcon, rarity);
+        _scriptedChoice = false;
+        _panel.SetActive(false);
+        ScriptedControls(false);
+        _panelAdsChoise.SetActive(false);
+        PauseManager.Instance.SetPause(false, false);
+        ControlManager.Instance.CursorActive = false;
+        callback?.Invoke(chosen.BoostType);
+    }
     private BoostItem _item;
     private RareType _rare;
     private int _countLevelUp;
@@ -64,10 +122,12 @@ public class LevelUpUi : MonoBehaviour
         _countLevelUp = count;
         _countLevelUpUi.text = _countLevelUp.ToString();
     }
-    public void NewLevel(List<ItemWithRare> items)
+    public void NewLevel(List<ItemWithRare> items, bool scripted = false)
     {
+        if (_scriptedChoice) return;
         _cardClaimed = false;
-        if (TryUpgradeHighestRarity(items, out var upgraded))
+        _scriptedChoice = scripted;
+        if (!scripted && TryUpgradeHighestRarity(items, out var upgraded))
         {
             Debug.Log($"Повысили: теперь {upgraded.Rare}");
         }
@@ -75,6 +135,7 @@ public class LevelUpUi : MonoBehaviour
         PauseManager.Instance.SetPause(true, false);
         ControlManager.Instance.CursorActive = true;
         _panel.SetActive(true);
+        if (scripted) ScriptedControls(true);
         _anim.SetTrigger("Start");
         int i = 0;
         foreach (var item in items)
@@ -85,6 +146,7 @@ public class LevelUpUi : MonoBehaviour
     }
     public void RefreshLevel(List<ItemWithRare> items)
     {
+        if (_scriptedChoice) return;
         _cardClaimed = false;
         int i = 0;
         foreach (var item in items)
@@ -96,6 +158,7 @@ public class LevelUpUi : MonoBehaviour
 
     public void Close()
     {
+        if (_scriptedChoice) return;
         PauseManager.Instance.SetPause(false, false);
         ControlManager.Instance.CursorActive = false;
         _panel.SetActive(false);
@@ -117,11 +180,12 @@ public class LevelUpUi : MonoBehaviour
     }
     public void _NewLevel()
     {
+        if (_scriptedChoice) return;
         LevelStatManager.Instance.CheckNewLevel();
     }
     public void _RefreshClickAds()
     {
-        if (_cardClaimed || DeadBoat.Online.SharedAdProtection.IsShowing) return;
+        if (_scriptedChoice || _cardClaimed || DeadBoat.Online.SharedAdProtection.IsShowing) return;
         AdsManager.Instance.ShowRewardedAd(
             "Refresh",
             (success) =>
@@ -134,7 +198,7 @@ public class LevelUpUi : MonoBehaviour
 
     public void _RefreshClickGems()
     {
-        if (_cardClaimed || DeadBoat.Online.SharedAdProtection.IsShowing) return;
+        if (_scriptedChoice || _cardClaimed || DeadBoat.Online.SharedAdProtection.IsShowing) return;
         if (CurrencyManager.Instance.CheckEnoughCurrency(CurrencyType.Gems, _price))
         {
             CurrencyManager.Instance.RemoveCurrency(CurrencyType.Gems, _price);
@@ -147,6 +211,7 @@ public class LevelUpUi : MonoBehaviour
     }
     public void Refresh()
     {
+        if (_scriptedChoice) return;
         if (_cardClaimed) return;
         LevelStatManager.Instance.Refresh();
     }
@@ -159,7 +224,7 @@ public class LevelUpUi : MonoBehaviour
     }
     public void _UpClickAds()
     {
-        if (_item == null || CombatCardRules.IsSpecial(_item.BoostType)) return;
+        if (_scriptedChoice || _item == null || CombatCardRules.IsSpecial(_item.BoostType)) return;
         AdsManager.Instance.ShowRewardedAd(
             "Refresh",
             (success) =>
@@ -173,6 +238,7 @@ public class LevelUpUi : MonoBehaviour
     }
     public void _NoUpClick()
     {
+        if (_scriptedChoice) return;
         _item.AddBoost(_rare);
         Close();
     }

@@ -9,6 +9,10 @@ using UnityEngine;
 public class DragonBossController : BossControllerBase
 {
     public enum State { Orbiting, Shooting, Diving }
+    [SerializeField] private int _scenarioSeed;
+    private DeadBoat.Online.RunRandom _scenarioRandom;
+    private float NextRandom => _scenarioRandom != null ? _scenarioRandom.Value : Random.value;
+
 
     [Header("Параметры Дракона")]
     [SerializeField] private int _starsHP = 2000;
@@ -91,6 +95,7 @@ public class DragonBossController : BossControllerBase
     }
     private void Start()
     {
+        if (_scenarioSeed != 0) _scenarioRandom = new DeadBoat.Online.RunRandom(_scenarioSeed, "first-run-dragon-v2", 0);
         SetHP(_starsHP);
         InitializeBoss();
         if (orbitCenter == null)
@@ -143,7 +148,7 @@ public class DragonBossController : BossControllerBase
         // Выбираем доступную атаку
         if (canShoot && canDive)
         {
-            if (Random.value < 0.5f)
+            if (NextRandom < 0.5f)
                 EnterState(State.Shooting);
             else
                 EnterState(State.Diving);
@@ -166,7 +171,7 @@ public class DragonBossController : BossControllerBase
 
         if (newState == State.Orbiting)
         {
-            orbitDirection = (Random.value < 0.5f) ? 1 : -1;
+            orbitDirection = (NextRandom < 0.5f) ? 1 : -1;
             Vector3 offset = transform.position - center;
             currentAngle = Mathf.Atan2(offset.z, offset.x);
         }
