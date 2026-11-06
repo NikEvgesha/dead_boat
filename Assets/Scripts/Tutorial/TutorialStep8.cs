@@ -31,7 +31,15 @@ public class TutorialStep8 : TutorialStep
             return;
         }
         _line.StartArrowLine(_player, _goal);
-        _item = _goal.GetComponentInChildren<PickableItem>();
+        // World purchases are dropped at the buy point, not parented under it.
+        var store = _goal.GetComponentInParent<StorePoint>();
+        _item = store != null ? store.LastPurchasedItem : null;
+        if (_item == null) _item = _goal.GetComponentInChildren<PickableItem>();
+        if (_item == null)
+        {
+            Debug.LogError("Tutorial purchase target has no issued item", this);
+            return;
+        }
         _item.PickUpItem += DeactivateStep;
         _item.PutItemToInventory += DeactivateStep;
     }

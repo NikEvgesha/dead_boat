@@ -45,6 +45,7 @@ public class StorePoint : MonoBehaviour
     private ItemStore _store;
 
     public Action BuyItem;
+    public PickableItem LastPurchasedItem { get; private set; }
 
     private void Start()
     {
@@ -265,6 +266,7 @@ public class StorePoint : MonoBehaviour
             item.HaveTag(ItemTag.Weapon) ? ItemTag.Weapon :
             item.HaveTag(ItemTag.Fuel) ? ItemTag.Fuel : ItemTag.Trash;
         GameEvents.OnItemCollected?.Invoke(tag);
+        LastPurchasedItem = item;
         BuyItem?.Invoke();
     }
 }

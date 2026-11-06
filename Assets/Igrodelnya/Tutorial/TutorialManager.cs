@@ -5,6 +5,8 @@ public class TutorialManager : MonoBehaviour
 {
     public static TutorialManager Instance;
     [SerializeField] private List<TutorialStep> _tutorialSteps = new List<TutorialStep>();
+    [SerializeField] private bool _authoredFirstRun;
+    public bool AuthoredFirstRun => _authoredFirstRun;
     private int _currentIndex;
     private void Awake()
     {
@@ -30,7 +32,7 @@ public class TutorialManager : MonoBehaviour
 
     public void StartTutorial()
     {
-        if (SaveManager.Instance.GetTutorialProgress())
+        if (!_authoredFirstRun && SaveManager.Instance.GetTutorialProgress())
             return;
 
         if (_tutorialSteps.Count <= 0)
@@ -56,13 +58,13 @@ public class TutorialManager : MonoBehaviour
         } 
         else
         {
-            SaveManager.Instance.SaveTutorialProgress(true);
+            if (!_authoredFirstRun) SaveManager.Instance.SaveTutorialProgress(true);
             Debug.Log("Тутор завершон");
         }
     }
     public void QuickStopTutorial()
     {
-        if (SaveManager.Instance.GetTutorialProgress())
+        if (!_authoredFirstRun && SaveManager.Instance.GetTutorialProgress())
             return;
         if (_currentIndex >= _tutorialSteps.Count)
             return;
