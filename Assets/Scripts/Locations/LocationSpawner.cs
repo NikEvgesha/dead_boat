@@ -29,6 +29,9 @@ public class LocationSpawner : MonoBehaviour
 
     public DeadBoat.Online.LocationLayoutManifest LayoutManifest { get; private set; }
 
+    public bool streamProceduralRegions = true;
+    public DeadBoat.Online.WorldRegionStreaming Streaming { get; private set; }
+
     public static Action Change;
 
     void Start()
@@ -53,6 +56,7 @@ public class LocationSpawner : MonoBehaviour
         {
             locationCollection = Instantiate(locationCollection);
             ownsRuntimeCollection = true;
+            if (DeadBoat.Online.SharedRunContext.Active) Streaming = new DeadBoat.Online.WorldRegionStreaming(this);
             LayoutManifest = new DeadBoat.Online.LocationLayoutManifest(
                 DeadBoat.Online.SharedRunContext.Active ? DeadBoat.Online.SharedRunContext.Seed : DeadBoat.Online.SoloRunBranch.Seed);
         }
@@ -82,16 +86,20 @@ public class LocationSpawner : MonoBehaviour
         for (int i = spawnedLocations.Count - 1; i >= 0; i--)
         {
             // Если этот объект позади лодки больше, чем removalDistance, уничтожаем
+            if (spawnedLocations[i] == null) { spawnedLocations.RemoveAt(i); continue; }
             if (spawnedLocations[i].ZPosition < rear)
             {
+                Streaming?.Forget(spawnedLocations[i]);
                 Destroy(spawnedLocations[i].gameObject);
                 spawnedLocations.RemoveAt(i);
             }
         }
     }
 
+    private void LateUpdate() => Streaming?.Tick(spawnedLocations, streamProceduralRegions);
+
     internal bool OwnsReplica(LocationContentSpawner root) => spawnedLocations.Contains(root);
-    internal void ForgetReplica(LocationContentSpawner root) => spawnedLocations.Remove(root);
+    internal void ForgetReplica(LocationContentSpawner root) { spawnedLocations.Remove(root); Streaming?.Forget(root); }
     internal void TrackReplica(LocationContentSpawner root) => spawnedLocations.Add(root);
 
     void SpawnLocation(float rear)

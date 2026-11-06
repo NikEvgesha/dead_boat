@@ -27,6 +27,11 @@ namespace DeadBoat.Online
         public int GeneratorVersion { get; } = RunRandom.Version;
         public int RegionCount => regions.Count;
         public int RecordCount => membership.Count;
+        public int NextRevision(string key)
+        {
+            if (key == null || !key.StartsWith("procedural:", StringComparison.Ordinal) || !int.TryParse(key.Substring(11), out int index)) return 1;
+            return regions.TryGetValue(index, out var region) && region.Revision < int.MaxValue ? region.Revision + 1 : 1;
+        }
         public float RetiredBefore { get; private set; } = float.NegativeInfinity;
 
         public WorldRegionArchive(int seed, int levelId, int regionLimit = 128, int recordLimit = 4096)

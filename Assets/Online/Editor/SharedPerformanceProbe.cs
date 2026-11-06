@@ -204,11 +204,14 @@ namespace DeadBoat.Online.Editor
                 float retained = state.WorldFront - state.WorldRear;
                 int before = state.Items.Count;
                 Debug.Log($"[Stress probe] separated route span={retained:F0} items={before}");
+                StreamingBudget("split", true);
+                await CheckAutomaticReturn();
                 lagging.transform.position = PlayerMovement.Instance.transform.position;
                 monitor.BeginStage("route-caught-up");
                 await StressDelay(22000);
                 if (state.WorldRear < 3900 || state.Items.ContainsKey(farId))
                     throw new Exception("Rear cleanup did not advance after crew caught up");
+                StreamingBudget("caught-up", false);
                 Debug.Log($"[Stress probe] PASS: 100 physical items, 20 ragdoll corpses, split/caught-up 5000-unit route; rear={state.WorldRear:F0} items={state.Items.Count}; far-body policy logged separately.");
             }
             finally
@@ -221,6 +224,58 @@ namespace DeadBoat.Online.Editor
         }
 
         private static long stressMemoryLimit;
+        private static async Task CheckAutomaticReturn()
+        {
+            var owner = UnityEngine.Object.FindObjectsByType<LocationSpawner>(FindObjectsSortMode.None)
+                .First(s => s.Streaming != null && s.Streaming.SleepingCount > 0);
+            const System.Reflection.BindingFlags fields = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
+            var map = (System.Collections.IDictionary)typeof(WorldRegionStreaming).GetField("sleeping", fields).GetValue(owner.Streaming);
+            object asleep = map[map.Keys.Cast<object>().First()];
+            var ticket = (WorldRegionResidency.Ticket)asleep.GetType().GetField("Ticket").GetValue(asleep);
+            var step = (LocationLayoutStep)typeof(WorldRegionResidency.Ticket).GetField("Step", fields).GetValue(ticket);
+            var position = (Vector3)typeof(WorldRegionResidency.Ticket).GetField("Position", fields).GetValue(ticket);
+            var items = (List<ulong>)typeof(WorldRegionResidency.Ticket).GetField("Items", fields).GetValue(ticket);
+            var enemies = (List<ulong>)typeof(WorldRegionResidency.Ticket).GetField("Enemies", fields).GetValue(ticket);
+            var state = SharedRunContext.State;
+            var ammo = items.Where(id => state.Items.ContainsKey(id)).ToDictionary(id => id, id => state.Items[id]);
+            var hp = enemies.Where(id => state.TryEnemy(id, out _)).ToDictionary(id => id, id => { state.TryEnemy(id, out var e); return e; });
+            int before = owner.Streaming.Restored;
+            Vector3 original = PlayerMovement.Instance.transform.position;
+            try
+            {
+                // Interest is deliberately longitudinal. Stay off the loot/AI colliders;
+                // this is an automatic interest test, not a physical sailing test.
+                PlayerMovement.Instance.transform.position = position + new Vector3(300, 10, 0) - LobbyNetworkAvatar.Origin;
+                await Until(() => owner.Streaming.Restored > before && owner.GetComponentsInChildren<LocationContentSpawner>()
+                    .Any(r => r.SharedGenerationKey == "procedural:" + step.Index), "automatic region return");
+                await Task.Delay(250); // Start/rehydration must finish before checking canonical health.
+                foreach (var entry in ammo)
+                    if (!state.Items.TryGet(entry.Key, out var live) || live.Mode != entry.Value.Mode || live.WeaponAmmo != entry.Value.WeaponAmmo)
+                        throw new Exception("Automatic return changed item/ammo " + entry.Key);
+                foreach (var entry in hp)
+                    if (!state.TryEnemy(entry.Key, out var live) || live.HP != entry.Value.HP)
+                        throw new Exception("Automatic return changed enemy health " + entry.Key);
+                if (owner.GetComponentsInChildren<LocationContentSpawner>().Count(r => r.SharedGenerationKey == "procedural:" + step.Index) != 1)
+                    throw new Exception("Automatic return duplicated location");
+                Debug.Log($"[Streaming return] PASS: actual LateUpdate + moving crew avatar restored region={step.Index} items={ammo.Count} enemies={hp.Count}; canonical modes/ammo/HP unchanged; one root; four Cloud connections.");
+            }
+            finally { PlayerMovement.Instance.transform.position = original; }
+        }
+        private static void StreamingBudget(string stage, bool requireSuspension)
+        {
+            var spawners = UnityEngine.Object.FindObjectsByType<LocationSpawner>(FindObjectsSortMode.None);
+            int suspended = spawners.Sum(s => s.Streaming?.Suspended ?? 0);
+            int restored = spawners.Sum(s => s.Streaming?.Restored ?? 0);
+            int sleeping = spawners.Sum(s => s.Streaming?.SleepingCount ?? 0);
+            int regions = spawners.Sum(s => s.GetComponentsInChildren<LocationContentSpawner>(true).Length);
+            int meshes = spawners.Sum(s => s.GetComponentsInChildren<MeshFilter>(true).Length);
+            int refused = spawners.Sum(s => s.Streaming?.Refused ?? 0);
+            if (requireSuspension && (suspended == 0 || sleeping == 0))
+                throw new Exception("Automatic procedural streaming did not suspend any separated region");
+            Debug.Log($"[Streaming budget] stage={stage} owners={spawners.Length} roots={regions} meshes={meshes} sleeping={sleeping} suspended={suspended} restored={restored} refused={refused} archiveRegions={SharedRunContext.Regions.RegionCount} archiveRecords={SharedRunContext.Regions.RecordCount} allocatedMB={UnityEngine.Profiling.Profiler.GetTotalAllocatedMemoryLong()/1048576.0:F1}");
+            foreach (var spawner in spawners) if (spawner.Streaming?.LastRefusal != null)
+                Debug.Log("[Streaming refusal] " + spawner.Streaming.LastRefusal);
+        }
         private static async Task StressDelay(int milliseconds)
         {
             double end = Time.realtimeSinceStartupAsDouble + milliseconds / 1000d;

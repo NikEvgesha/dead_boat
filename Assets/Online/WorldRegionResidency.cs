@@ -5,7 +5,7 @@ using Object = UnityEngine.Object;
 
 namespace DeadBoat.Online
 {
-    // Explicit prototype transaction. Nothing schedules this from distance/Update.
+    // Atomic local transaction, also scheduled by WorldRegionStreaming for procedural roots.
     // Network records stay canonical and resident; this only removes scene replicas.
     public static class WorldRegionResidency
     {

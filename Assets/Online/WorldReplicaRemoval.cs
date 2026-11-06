@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace DeadBoat.Online
 {
-    // Caller MUST archive mutations before using this. No automatic streaming caller yet.
+    // Caller MUST archive mutations before using this (including the procedural streaming scheduler).
     // Destruction of a scene replica is not consumption/death in the canonical world.
     public static class WorldReplicaRemoval
     {

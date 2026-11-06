@@ -968,3 +968,13 @@ Math/RunLocal/RunRangedTiming/RunRangedExpansion PASS. Настоящий Fire/P
 Реальный HUD Probe PASS: ready тексты/pulse/consumption без повторов, pause/ad/death/recovery/RU/EN/return. Отдельный свежий ColdRestart PASS: persisted ticket/new recovery/live peer, новые ранги на peer/возврате/solo, деньги237/HP80/items17-capacity20/magazine3-reserve31. Chained HUD→Cold без fresh boot не засчитан (PlayerManager отсутствовал); runtime не правился ради стенда. RU/EN выбор и settled5-row HUD1920×1080 осмотрены; Logs/RangedCards-*. Не WebGL/mobile/FPS/баланс-приёмка.
 
 Play остановлен, VerifyRestored PASS, MMF/Runner0, Shared/SoloFalse, clockfalse, PeerModeSingle. DB-ON-131 in_review. Следующее: ИИ — DB-ON-125 (удалённые локации/бюджеты); владелец — позже общий тест карточек/UI. Остальные пять карт пока дизайн. Сборки/черновика нет.
+
+## 06.11.2026 — DB-ON-125: автоматическая выгрузка процедурной геометрии
+
+WorldRegionStreaming подключён к LocationSpawner в Shared:4Гц/одна транзакция, restore-first, round-robin отказов; Z-окна crew+boat600/800м и static bounds+100м. Missing avatar/NaN откладывают audit. Движущиеся actors рядом с crew и burning enemies удерживают root, старые cargo/inventory/pending/untracked guards сохранены. Поддержано выключение с возвратом sleeping roots, повторные ревизии/отказ-restore retry, постоянный WorldRear. Canonical records и схема сети не менялись; архив128/4096 при лимите отказывает без потери. Города/ночные отдельные спавны/solo/offline/базовая земля не подключены.
+
+Два полных ReadyBarrier прогона PASS; последний на финальном коде: controlled ruins152–153MeshFilter→0→restore, два audit-цикла/гистерезис/NaN/moved enemy/burn/disable-drain, HP13/ammo1/consumed/dead/detached/rollback, handoff/coldjoin и общий бой/предметы/ready/leave/timeout. LayoutProbe4пула/11264сравнения PASS.
+
+Два Forest/4Cloud stress PASS:100physical items/20corpses/route5000. Финальный split13roots/1584meshes+11sleeping, archive11/95; caught-up rear4000:11roots/1380meshes+2sleeping, archive2/20,0отказов. Дополнительный настоящий LateUpdate/crew-interest return вернул region2,8items/5enemies, canonical modes/ammo/HP не изменились; root один. Не4независимых браузера, не FPS-гарантия; Editor17.5–19.8FPS при разрыве, память с плагинами около2305MB. Docs/COOP_STREAMING_20261106.md и локальный Logs/WorldStreaming-20261106.log.
+
+VerifyRestored PASS; Play/compilefalse, Runner0, Shared/SoloFalse, Regions/Membership/FixCoordinate=null, clockfalse, PeerSingle. Сборки/черновика/SDK-правок нет. DB-ON-125 in_progress: ИИ далее — города/независимые динамические спавны и общий бюджет мира; владелец позже общая WebGL-приёмка.

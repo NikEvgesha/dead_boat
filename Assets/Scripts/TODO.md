@@ -332,3 +332,10 @@ Implementation backlog for eggs:
 - [x] Timing/real Fire+Reload+CharacterController, two-peer regression, real HUD and fresh cold return/solo checks PASS; owner settings restored.
 - [ ] Owner batch WebGL/mobile/balance acceptance after future build (in_review).
 - Next AI task: DB-ON-125, safe region eviction/rehydration and world budget; five remaining proposed cards deferred.
+
+### DB-ON-125 — automatic procedural streaming (2026-11-06)
+- [x] Shared procedural-only scheduler, 4 Hz / one transaction, crew+boat Z windows, hysteresis, actor/burn/ownership guards and disable-drain.
+- [x] Repeated audit capture/restore, origin/handoff/cold join, latest HP/ammo/tombstones/detached objects and layout regression PASS.
+- [x] Four-Cloud Forest stress: split 13 active / 11 sleeping; actual LateUpdate return preserves 8 items / 5 enemies; rear retirement shrinks archive.
+- [ ] Cities, independent/night spawns and complete long-world budget; owner independent WebGL acceptance after future build.
+- Next responsible: AI implements remaining adapters/budgets; owner tests the later batch build. No build/upload this step.

@@ -174,6 +174,7 @@ namespace DeadBoat.Online.Editor
                 await Until(() => remote.Items.TryGet(weaponId, out var w) && w.WeaponAmmo == 1 &&
                     remote.Items.TryGet(usedId, out var c) && c.Mode == 4 &&
                     remote.TryEnemy(deadId, out var d) && d.HP == 0 && remote.TryEnemy(woundedId, out var e) && e.HP == 13);
+                root = await CheckStreaming(owner, root, manifest, weaponId, usedId, deadId, woundedId, detachedId, detached);
                 string result = "[Region residency] PASS handoff=" + handoff + "; origin500; real ruins geometry + controlled seeded content; two suspend/restore cycles; consumed/dead absent; wounded HP13/ammo1 latest; detached dropped actor retained; layout cursor unchanged; nearby guard; partial failure rollback/retry; two-peer records unchanged";
                 Debug.Log(result); System.IO.File.WriteAllText("Logs/WorldRegionResidency-20261102.log", result);
             }
@@ -190,6 +191,57 @@ namespace DeadBoat.Online.Editor
                 Object.Destroy(ownerObject); Object.Destroy(staging); Object.Destroy(balance);
                 FixCoordinate.Instance = null; Object.Destroy(coordinates);
             }
+        }
+        private static async Task<LocationContentSpawner> CheckStreaming(LocationSpawner owner, LocationContentSpawner root,
+            LocationLayoutManifest manifest, ulong weapon, ulong used, ulong dead, ulong wounded, ulong detachedId, WorldSpawnIdentity detached)
+        {
+            await Task.Delay(150); // skipped children must complete deferred Destroy before another transaction
+            var active = (List<LocationContentSpawner>)typeof(LocationSpawner).GetField("spawnedLocations", Private).GetValue(owner);
+            var streaming = new WorldRegionStreaming(owner);
+            float[] far = { -10000, 10000 }, near = { 1000 };
+            Require(!streaming.Audit(active, near, 0) && active.Count == 1, "streaming removed nearby geometry");
+            Require(WorldRegionStreaming.Near(new Vector2(100, 200), Array.Empty<float>(), 10) &&
+                WorldRegionStreaming.Near(new Vector2(100, 200), new[] { float.NaN }, 10) &&
+                WorldRegionStreaming.Near(new Vector2(100, 200), new[] { 210f }, 10) &&
+                !WorldRegionStreaming.Near(new Vector2(100, 200), new[] { 211f }, 10), "interest boundaries/fail-open");
+            SharedItemsRuntime.TryFind(wounded, out var moving);
+            Vector3 original = moving.transform.position;
+            moving.transform.position = new Vector3(original.x, original.y, 10000 - LobbyNetworkAvatar.Origin.z);
+            Require(!streaming.Audit(active, far, 0) && active.Count == 1, "moving enemy near crew hidden with distant home");
+            moving.transform.position = original;
+            foreach (var page in SharedWorldPage.All(SharedRunContext.State.Runner))
+                if (page.Object.HasStateAuthority && page.Enemies.TryGet(wounded, out var burning))
+                { burning.BurnRemaining = 1; page.Enemies.Set(wounded, burning); }
+            Require(!streaming.Audit(active, far, 0) && active.Count == 1, "burn stopped by streaming");
+            foreach (var page in SharedWorldPage.All(SharedRunContext.State.Runner))
+                if (page.Object.HasStateAuthority && page.Enemies.TryGet(wounded, out var burning))
+                { burning.BurnRemaining = 0; page.Enemies.Set(wounded, burning); }
+            int meshCount = owner.GetComponentsInChildren<MeshFilter>(true).Length;
+            int itemCount = SharedRunContext.State.Items.Count;
+            Require(meshCount > 0 && streaming.Audit(active, far, 0), "far region not suspended");
+            await Until(() => root == null);
+            Require(streaming.SleepingCount == 1 && active.Count == 0 && owner.GetComponentsInChildren<MeshFilter>(true).Length == 0,
+                "streaming retained procedural geometry");
+            int records = SharedRunContext.Regions.RecordCount;
+            var map = (System.Collections.IDictionary)typeof(WorldRegionStreaming).GetField("sleeping", Private).GetValue(streaming);
+            object asleep = map[0];
+            var range = (Vector2)asleep.GetType().GetField("Range").GetValue(asleep);
+            Require(!streaming.Audit(active, new[] { range.y + 700 }, 0) && streaming.SleepingCount == 1,
+                "hysteresis restored too soon");
+            Require(!streaming.Audit(active, new[] { float.NaN }, 0) && streaming.SleepingCount == 1, "invalid focus changed residency");
+            Require(streaming.Audit(active, near, 0), "near region not restored");
+            root = active.Single(); Quiet(root); Check(root, manifest, weapon, used, dead, wounded, detachedId, detached);
+            await Task.Delay(150);
+            Require(streaming.Audit(active, far, 0), "repeat automatic suspension");
+            await Until(() => root == null);
+            Require(streaming.Audit(active, far, 0, false), "disabling streaming did not drain sleeping geometry");
+            root = active.Single(); Quiet(root); Check(root, manifest, weapon, used, dead, wounded, detachedId, detached);
+            Require(streaming.Suspended == 2 && streaming.Restored == 2 && streaming.SleepingCount == 0 &&
+                SharedRunContext.Regions.RegionCount == 1 && SharedRunContext.Regions.RecordCount == records &&
+                SharedRunContext.State.Items.Count == itemCount, "repeated streaming grew archive or canonical records");
+            Debug.Log("[Region streaming] PASS: two-peer real ruins geometry " + meshCount +
+                " -> 0 -> restored; near/far/hysteresis/invalid focus, moved actor/burn guards, two cycles, disable drains, latest ammo1/HP13, consumed/dead, detached unique; archive records=" + records);
+            return root;
         }
         private static void Quiet(LocationContentSpawner root)
         {
