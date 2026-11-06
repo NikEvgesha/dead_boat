@@ -50,3 +50,18 @@ SharedStoreSeedProbe PASS:48реальных магазинов/140слотов/
 
 
 Окончательная очистка PASS: VerifyRestored owner return/identity/solo/mode keys и playModeStartScene; Play/compile=false, Runner0, Shared/Solo=false, Regions/Membership/Independent=null, clock=false, PeerSingle. Редактор оставлен вне теста, сборки нет.
+
+
+## 06.11 — city reconnect/handoff: три сценария завершены
+
+WorldCityRecoveryProbe PASS: (1) surviving client со спящим городом принимает master/pages; (2) клиент выходит, теряет archive/membership/registry/старый city ticket и новым Photon Runner подключается к живому забегу; (3) бывший master возвращается новым Runner после takeover второго игрока. В cold-сценариях проверены оба порядка: город раньше dropped discovery и dropped discovery раньше города. Использованы настоящие Cloud connections и штатный городской prefab:1170MeshFilter/9магазинов, controlled3authored pickups/2защитника. Один неактивный локальный мир, ручная child-generation/corpse-cache lifecycle и штатный SelectAssortment без UI; не два независимых браузера.
+
+Во всех3случаях: origin500, seeded item+price прежние, gun ammo1 и enemy HP13 читаются из актуальных записей, consumed/dead не воскресают, отдельно выброшенная вещь вне city root и одна, canonical purchase snapshot с ammo1 один. Повторный sleep/death/restore не возвращает погибшего защитника. Старый ticket при новом контексте отклонён. Проверяется не только GO, но и неизменность canonical tombstones/ammo/HP.
+
+Runtime-поправка ReleaseDroppedItems оставляет Dropped/Mode0/OwnerNone предмет самостоятельным после полной city generation/успешного restore. Она не выполняется внутри individual factory, чтобы частичный отказ не оставлял объект вне rollback root. SDK, wire records и RNG не менялись. Реальная реклама/IAP/списание coins этим стендом не вызываются; используется уже опубликованный purchase snapshot. Авторизация/привязка вернувшегося игрока и перезапуск браузера — отдельная будущая ручная приёмка.
+
+Первые повторы показали тестовую гонку сразу после HasStateAuthority: прямые fixture writes ammo1/HP13 читались локально, но затем сменялись последним входящим snapshot ammo2/HP17. Стенд ждёт350мс после takeover и дополнительно требует сохранности изменений через200мс ДО restore. После этой правки все3сценария PASS; игровой runtime передачи authority не менялся. Это не подтверждение устранения прежнего DisconnectedByPluginLogic из общего ReadyBarrier: текущий стенд использует отдельные UUID пользователей/комнат, а причина прежнего отказа отдельно не установлена.
+
+Дополнительная проверка SharedStoreSeedProbe PASS:48магазинов/140слотов/420сравнений, включая regenerated city/fixed stock. Cleanup PASS: VerifyRestored owner return/identity/solo/mode keys и playModeStartScene, Play/compile=false, Runner0, Shared/Solo=false, Regions/Membership/Independent/FixCoordinate=null, PeerSingle. Локальная выдержка: Logs/CityRecovery-20261106.log. Без сборки/черновика. Изменения Photon SDK не исключаются из Git и в этом этапе не редактировались.
+
+DB-ON-125 остаётся in_progress: ИИ далее — общий бюджет длинного мира/кадра и справедливое планирование отказов городов; владелец позже — общая WebGL-приёмка после отдельно запрошенной сборки. Текущий черновик этих правок не содержит.

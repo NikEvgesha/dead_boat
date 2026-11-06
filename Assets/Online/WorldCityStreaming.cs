@@ -93,6 +93,7 @@ namespace DeadBoat.Online
                 var region = city.AddComponent<WorldCityRegion>();
                 region.Initialize(owner, ticket.Prefab, ticket.Z, true);
                 city.SetActive(false); city.transform.SetParent(owner.transform, true); active.Add(city); city.SetActive(true);
+                region.ReleaseDroppedItems();
                 LastRefusal = null; return true;
             }
             catch (Exception e)

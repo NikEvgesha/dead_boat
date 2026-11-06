@@ -53,9 +53,22 @@ namespace DeadBoat.Online
         }
         private IEnumerator Start()
         {
-            if (Ready || !tracked) yield break;
+            if (Ready) yield break;
             yield return null; // all child Start methods finish their deterministic generation first
-            SharedRunContext.Membership?.Seal(Index); Ready = true;
+            ReleaseDroppedItems();
+            if (tracked) SharedRunContext.Membership?.Seal(Index);
+            Ready = tracked;
+        }
+        // An item already dropped in the live world no longer belongs to this
+        // geometry tree. Commit this only after ALL city content has initialized:
+        // a failed restore must retain its partial actors under the rollback root.
+        public void ReleaseDroppedItems()
+        {
+            if (!SharedRunContext.Playing) return;
+            foreach (var identity in GetComponentsInChildren<WorldSpawnIdentity>(true))
+                if (identity.Item != null && SharedRunContext.State.Items.TryGet(identity.Id, out var record) &&
+                    record.Dropped && record.Mode == 0 && record.Owner == Fusion.PlayerRef.None)
+                    identity.transform.SetParent(null, true);
         }
     }
 }
