@@ -263,7 +263,9 @@ public enum BoostType
     BattleRhythm,
     OnTheEdge,
     LastRound,
-    HeavyCoat
+    HeavyCoat,
+    SteadyAim,
+    PatientReload
 }
 public enum RareType
 {

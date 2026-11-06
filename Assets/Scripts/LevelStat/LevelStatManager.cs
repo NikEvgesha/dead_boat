@@ -23,7 +23,8 @@ public struct Stats
     public bool Save;
     public int InventorySlots;
     public int BloodPactRank, BattleRhythmRank, OnTheEdgeRank;
-        public int LastRoundRank, HeavyCoatRank;
+    public int LastRoundRank, HeavyCoatRank;
+    public int SteadyAimRank, PatientReloadRank;
     [Header("Игрок")]
     public float HP;
     public float MultExp;
@@ -158,7 +159,7 @@ public class LevelStatManager : MonoBehaviour
     {
         var slots = Resources.Load<BoostItem>("BoostItem_InventorySlots");
         if (slots != null && !_boostItems.Contains(slots)) _boostItems.Add(slots);
-        foreach (string name in new[] { "BloodPact", "BattleRhythm", "OnTheEdge", "LastRound", "HeavyCoat" })
+        foreach (string name in new[] { "BloodPact", "BattleRhythm", "OnTheEdge", "LastRound", "HeavyCoat", "SteadyAim", "PatientReload" })
         {
             var card = Resources.Load<BoostItem>("BoostItem_" + name);
             if (card != null && !_boostItems.Contains(card)) _boostItems.Add(card);
@@ -193,6 +194,12 @@ public class LevelStatManager : MonoBehaviour
                 break;
             case BoostType.OnTheEdge:
                 Stats.OnTheEdgeRank = Mathf.Clamp(Stats.OnTheEdgeRank + 1, 0, 3);
+                break;
+            case BoostType.SteadyAim:
+                Stats.SteadyAimRank = Mathf.Clamp(Stats.SteadyAimRank + 1, 0, 3);
+                break;
+            case BoostType.PatientReload:
+                Stats.PatientReloadRank = Mathf.Clamp(Stats.PatientReloadRank + 1, 0, 3);
                 break;
             case BoostType.LastRound:
                 Stats.LastRoundRank = Mathf.Clamp(Stats.LastRoundRank + 1, 0, 3);

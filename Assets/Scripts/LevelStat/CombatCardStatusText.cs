@@ -4,6 +4,11 @@ public static class CombatCardStatusText
 {
     public static string Status(BoostType type, int rank, int state, double value)
     {
+        if (type == BoostType.SteadyAim || type == BoostType.PatientReload)
+            return state == 1 ? EggFeatureLocalization.Text("Cards/Combat/RangedReady", "Выстрел готов: +{bonus}%", "Shot ready: +{bonus}%")
+                .Replace("{bonus}", ((type == BoostType.SteadyAim ? CombatCardRules.AimBonus(rank) : CombatCardRules.PatientBonus(rank)) * 100).ToString("0", CultureInfo.InvariantCulture)) :
+                type == BoostType.SteadyAim ? EggFeatureLocalization.Text("Cards/Combat/AimWaiting", "Стойте 0.75 с", "Stand still for 0.75 s") :
+                EggFeatureLocalization.Text("Cards/Combat/ReloadWaiting", "Перезарядка с нуля", "Reload from empty");
         if (type == BoostType.BattleRhythm)
             return state == 1 ? EggFeatureLocalization.Text("Cards/Combat/Third", "Усиленный удар!", "Empowered hit!") :
                 EggFeatureLocalization.Text("Cards/Combat/Combo", "Серия: {count}/3", "Combo: {count}/3")

@@ -8,7 +8,7 @@ public static class CombatCards
     public sealed class Attack
     {
         internal bool Sword, Hit, Third, ThirdNotified;
-        internal float Edge, LastRound;
+        internal float Edge, LastRound, Prepared;
         internal int Blood, Rhythm;
         internal float MaximumHealth;
         internal readonly HashSet<EnemyCore> Targets = new();
@@ -18,6 +18,7 @@ public static class CombatCards
     private static readonly Dictionary<int, (Attack attack, double sent)> pending = new();
     private static readonly List<int> expired = new();
     private static int sequence;
+    public static readonly RangedCardState Ranged = new();
     // Local presentation snapshots. Never serialized or sent over the network.
     public static int PresentationEpoch { get; private set; }
     public static int ThirdHitRevision { get; private set; }
@@ -29,6 +30,7 @@ public static class CombatCards
         healing = new CombatCardRules.HealingBudget();
         healing.Lock(Time.timeAsDouble); // Recovery/master handoff must not refill a spent second.
         pending.Clear(); sequence = 0;
+        Ranged.Reset(Time.timeAsDouble);
         PresentationEpoch++; ThirdHitRevision = 0; HealingTotal = 0;
     }
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -47,6 +49,13 @@ public static class CombatCards
                 ? CombatCardRules.EdgeBonus(CombatCardRules.Rank(stats, BoostType.OnTheEdge)) : 0
         };
     }
+    public static Attack BeginRanged(int weapon, int magazine)
+    {
+        var stats = LevelStatManager.Instance != null ? LevelStatManager.Instance.Stats : default;
+        var attack = Begin(false, magazine);
+        attack.Prepared = Ranged.TakeShot(weapon, Time.timeAsDouble, CombatCardRules.Rank(stats, BoostType.SteadyAim), CombatCardRules.Rank(stats, BoostType.PatientReload));
+        return attack;
+    }
     public static void End(Attack attack)
     {
         if (attack != null && attack.Sword && !attack.Hit) combo.Miss();
@@ -60,7 +69,7 @@ public static class CombatCards
             attack.Hit = true;
             if (attack.Sword && attack.Rhythm > 0) attack.Third = combo.Hit(Time.timeAsDouble);
         }
-        int damage = CombatCardRules.Damage(basicDamage, attack.Edge + attack.LastRound + (attack.Third ? CombatCardRules.RhythmBonus(attack.Rhythm) : 0));
+        int damage = CombatCardRules.Damage(basicDamage, attack.Edge + attack.LastRound + attack.Prepared + (attack.Third ? CombatCardRules.RhythmBonus(attack.Rhythm) : 0));
         if (SharedRunContext.Active)
         {
             var state = SharedRunContext.State;

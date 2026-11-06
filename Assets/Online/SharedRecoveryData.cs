@@ -19,6 +19,7 @@ namespace DeadBoat.Online
         public int InventorySlots;
         public int BloodPactRank, BattleRhythmRank, OnTheEdgeRank;
         public int LastRoundRank, HeavyCoatRank;
+        public int SteadyAimRank, PatientReloadRank;
         public int Pistol, Rifle, Shotgun, MeleeDamage;
         public float Health, CardHP, ExpMultiplier, MoveMultiplier, SaleMultiplier;
         public float Fuel, Consumption, Fill, Speed, MeleeSpeed, RangeDamage, RangeSpeed, ReloadSpeed;
@@ -30,7 +31,8 @@ namespace DeadBoat.Online
             MeleAttackSpeed = MeleeSpeed, RangeDamage = RangeDamage, RangeAttackSpeed = RangeSpeed,
             RangeReloadSpeed = ReloadSpeed, InventorySlots = InventorySlots,
             BloodPactRank = BloodPactRank, BattleRhythmRank = BattleRhythmRank, OnTheEdgeRank = OnTheEdgeRank,
-            LastRoundRank = LastRoundRank, HeavyCoatRank = HeavyCoatRank
+            LastRoundRank = LastRoundRank, HeavyCoatRank = HeavyCoatRank,
+            SteadyAimRank = SteadyAimRank, PatientReloadRank = PatientReloadRank
         };
 
         public static SharedPersonalData Capture()
@@ -51,7 +53,8 @@ namespace DeadBoat.Online
                 MeleeSpeed = cards.MeleAttackSpeed, RangeDamage = cards.RangeDamage,
                 RangeSpeed = cards.RangeAttackSpeed, ReloadSpeed = cards.RangeReloadSpeed, InventorySlots = cards.InventorySlots,
                 BloodPactRank = cards.BloodPactRank, BattleRhythmRank = cards.BattleRhythmRank, OnTheEdgeRank = cards.OnTheEdgeRank,
-                LastRoundRank = cards.LastRoundRank, HeavyCoatRank = cards.HeavyCoatRank
+                LastRoundRank = cards.LastRoundRank, HeavyCoatRank = cards.HeavyCoatRank,
+                SteadyAimRank = cards.SteadyAimRank, PatientReloadRank = cards.PatientReloadRank
             };
         }
 

@@ -24,12 +24,12 @@ public sealed class CombatCardHud : MonoBehaviour
         public void Play() { Pulse.StopFeedbacks(); Rect.localScale = Vector3.one; CardFeelFeedback.Play(Pulse); }
         public void Stop() { Pulse.StopFeedbacks(); Rect.localScale = Vector3.one; }
     }
-    private static readonly BoostType[] Types = { BoostType.BloodPact, BoostType.BattleRhythm, BoostType.OnTheEdge };
+    private static readonly BoostType[] Types = { BoostType.BloodPact, BoostType.BattleRhythm, BoostType.OnTheEdge, BoostType.SteadyAim, BoostType.PatientReload };
     private RectTransform root;
     private Row[] rows;
     private double nextPoll, lastHealTotal, pendingHeal, shownHeal, nextHealCue, healUntil, thirdUntil;
     private int epoch, thirdRevision;
-    private bool edgeWasActive;
+    private bool edgeWasActive, aimWasReady, reloadWasReady;
     public static void Attach(LevelUpUi ui)
     {
         if (ui == null || ui.GetComponent<CombatCardHud>() != null) return;
@@ -40,11 +40,11 @@ public sealed class CombatCardHud : MonoBehaviour
         var go = new GameObject("Combat card status", typeof(RectTransform), typeof(CanvasGroup));
         root = (RectTransform)go.transform; root.SetParent(host, false);
         root.anchorMin = root.anchorMax = root.pivot = Vector2.one;
-        root.anchoredPosition = new Vector2(-24, -232); root.sizeDelta = new Vector2(280, 186);
+        root.anchoredPosition = new Vector2(-24, -232); root.sizeDelta = new Vector2(280, 310);
         var group = go.GetComponent<CanvasGroup>(); group.blocksRaycasts = false; group.interactable = false;
         var sample = host.GetComponentInChildren<Text>(true);
         var font = sample != null ? sample.font : Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        rows = new Row[3];
+        rows = new Row[Types.Length];
         for (int i = 0; i < rows.Length; i++)
         {
             var panel = new GameObject(Types[i].ToString(), typeof(RectTransform), typeof(Image));
@@ -73,7 +73,7 @@ public sealed class CombatCardHud : MonoBehaviour
     {
         epoch = CombatCards.PresentationEpoch; thirdRevision = CombatCards.ThirdHitRevision;
         lastHealTotal = CombatCards.HealingTotal; pendingHeal = shownHeal = 0;
-        healUntil = thirdUntil = nextHealCue = 0; edgeWasActive = false;
+        healUntil = thirdUntil = nextHealCue = 0; edgeWasActive = aimWasReady = reloadWasReady = false;
     }
     private void Update()
     {
@@ -94,6 +94,10 @@ public sealed class CombatCardHud : MonoBehaviour
         double healed = System.Math.Max(0, CombatCards.HealingTotal - lastHealTotal); lastHealTotal = CombatCards.HealingTotal;
         bool third = CombatCards.ThirdHitRevision != thirdRevision; thirdRevision = CombatCards.ThirdHitRevision;
         bool edge = stats.OnTheEdgeRank > 0 && player != null && CombatCardRules.EdgeActive(player.Health, player.MaxHealth);
+        bool aim = stats.SteadyAimRank > 0 && CombatCards.Ranged.AimReady(now);
+        bool reload = stats.PatientReloadRank > 0 && CombatCards.Ranged.ReloadReady(now);
+        bool aimCue = aim && !aimWasReady, reloadCue = reload && !reloadWasReady;
+        aimWasReady = aim; reloadWasReady = reload;
         bool healCue = false, thirdCue = false, edgeCue = false;
         if (!visible) { pendingHeal = shownHeal = 0; healUntil = thirdUntil = 0; }
         else
@@ -118,7 +122,7 @@ public sealed class CombatCardHud : MonoBehaviour
             if (!owned) continue;
             var pos = new Vector2(0, -count++ * 62);
             if (row.Rect.anchoredPosition != pos) row.Rect.anchoredPosition = pos;
-            int state = i == 0 ? (now < healUntil ? 1 : 0) : i == 1 ? (now < thirdUntil ? 1 : 0) : edge ? 1 : 0;
+            int state = i == 0 ? (now < healUntil ? 1 : 0) : i == 1 ? (now < thirdUntil ? 1 : 0) : i == 2 ? (edge ? 1 : 0) : i == 3 ? (aim ? 1 : 0) : reload ? 1 : 0;
             double value = i == 0 ? shownHeal : i == 1 && state == 0 ? CombatCards.ComboHits : 0;
             row.Render(Types[i], rank, state, value, language);
         }
@@ -133,6 +137,8 @@ public sealed class CombatCardHud : MonoBehaviour
             if (healCue && stats.BloodPactRank > 0) rows[0].Play();
             if (thirdCue && stats.BattleRhythmRank > 0) rows[1].Play();
             if (edgeCue && stats.OnTheEdgeRank > 0) rows[2].Play();
+            if (aimCue) rows[3].Play();
+            if (reloadCue) rows[4].Play();
         }
     }
     private void OnDisable()

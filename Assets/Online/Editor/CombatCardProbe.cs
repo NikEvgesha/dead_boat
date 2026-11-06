@@ -92,10 +92,77 @@ namespace DeadBoat.Online.Editor
                 Object.Destroy(Root);
             }
         }
+        public static string RunRangedTiming()
+        {
+            var state = new RangedCardState();
+            state.Observe(1, 0, true, true, true);
+            Require(!state.AimReady(.749) && state.AimReady(.75), "aim preparation threshold");
+            Near(state.TakeShot(1, .75, 1, 0), .3f, "aim shot");
+            state.Observe(1, 1, true, true, true);
+            Require(!state.AimReady(3.749) && state.AimReady(3.75), "aim cooldown");
+            state.Observe(1, 4, false, true, true); Require(!state.AimReady(5), "movement reset");
+            state.Observe(1, 5, true, true, true); state.Observe(2, 5.5, true, true, true);
+            Require(!state.AimReady(6) && state.AimReady(6.25), "switch restarts preparation");
+            Near(state.TakeShot(2, 6.25, 3, 0), .5f, "rank III aim");
+            state.Interrupt(2); state.Observe(1, 6.3, true, true, true);
+            Require(!state.AimReady(7.1), "switch bypasses cooldown");
+            int attempt = state.BeginReload(1, false, true); state.CompleteReload(1, attempt, 8, true);
+            Require(!state.ReloadReady(8), "partial reload grants boost");
+            attempt = state.BeginReload(1, true, true); state.CompleteReload(1, attempt, 9, false);
+            Require(!state.ReloadReady(9), "zero ammo reload grants boost");
+            attempt = state.BeginReload(1, true, true); state.Interrupt(1); state.CompleteReload(1, attempt, 10, true);
+            Require(!state.ReloadReady(10), "cancelled reload grants boost");
+            attempt = state.BeginReload(1, true, true); state.CompleteReload(1, attempt, 11, true);
+            Require(state.ReloadReady(13.999) && !state.ReloadReady(14), "reload window");
+            state.CompleteReload(1, attempt, 14, true); Require(!state.ReloadReady(14), "duplicate completion refreshes boost");
+            attempt = state.BeginReload(1, true, true); state.CompleteReload(1, attempt, 15, true);
+            Near(state.TakeShot(1, 15, 0, 2), .35f, "reload rank II");
+            Near(state.TakeShot(1, 15, 0, 2), 0, "miss/repeated shot retains charge");
+            attempt = state.BeginReload(1, true, true); state.CompleteReload(1, attempt, 16, true);
+            state.Observe(2, 16, true, true, true); Require(!state.ReloadReady(16), "charge follows weapon swap");
+            attempt = state.BeginReload(2, true, true); state.CompleteReload(2, attempt, 17, true);
+            state.Observe(2, 17, true, false, true); Require(!state.ReloadReady(17) && !state.AimReady(18), "ad/death/blocked clears readiness");
+            state.Reset(20); state.Observe(2, 20, true, true, true);
+            Require(!state.AimReady(22.999) && state.AimReady(23) && !state.ReloadReady(20), "recovery conservative reset");
+            state.Observe(2, 24, true, true, false); Require(!state.AimReady(25), "unowned aim prepared");
+            Debug.Log("[Ranged cards] PASS: deterministic preparation/cooldown, movement/switch, reload empty/partial/cancel/expiry/duplicate, miss consumption, ad/death/recovery reset.");
+            return "PASS";
+        }
+        public static string RunRangedExpansion()
+        {
+            using var fixture = new Fixture(); fixture.Health(10);
+            fixture.Cards.Stats.SteadyAimRank = 3; fixture.Cards.Stats.PatientReloadRank = 3; fixture.Cards.Stats.LastRoundRank = 3;
+            double now = Time.timeAsDouble;
+            CombatCards.Ranged.Reset(now - 4); CombatCards.Ranged.Observe(7, now - 1, true, true, true);
+            int attempt = CombatCards.Ranged.BeginReload(7, true, true); CombatCards.Ranged.CompleteReload(7, attempt, now - 1, true);
+            CombatCards.Ranged.Observe(7, now - .9, true, true, true);
+            int before = fixture.Enemy.SharedHP; CombatCards.Hit(CombatCards.BeginRanged(7, 1), fixture.Enemy, 100);
+            Require(before - fixture.Enemy.SharedHP == 200, "prepared direct damage cap");
+            before = fixture.Enemy.SharedHP; CombatCards.Hit(CombatCards.BeginRanged(7, 2), fixture.Enemy, 100);
+            Require(before - fixture.Enemy.SharedHP == 100, "prepared boost repeated");
+            typeof(LevelStatManager).GetMethod("Subscriptions", Private).Invoke(fixture.Cards, null);
+            fixture.Cards._boostItems.Add(AssetDatabase.LoadAssetAtPath<BoostItem>("Assets/Scripts/LevelStat/Boosters/BoostItem_HP.asset"));
+            foreach (var type in new[] { BoostType.SteadyAim, BoostType.PatientReload })
+            {
+                var asset = Resources.Load<BoostItem>("BoostItem_" + type); Require(asset != null && asset.BoostType == type, "ranged asset");
+                for (int i = 0; i < 4; i++) fixture.Choose(type);
+                Require(CombatCardRules.Rank(fixture.Cards.Stats, type) == 3, "ranged rank cap");
+                Require(!CombatCardText.Description(type, 3, 100, 100).Contains("{"), "ranged translation params");
+                var offer = new List<ItemWithRare> { new ItemWithRare { Item = asset, Rare = RareType.Rare } };
+                Require(!LevelUpUi.TryUpgradeHighestRarity(offer, out _), "ranged ad bypass");
+            }
+            for (int i = 0; i < 40; i++) Require(fixture.Cards.GetRandomBoostsWithRarity().TrueForAll(o => o.Item.BoostType != BoostType.SteadyAim && o.Item.BoostType != BoostType.PatientReload), "capped ranged offered");
+            var saved = JsonUtility.FromJson<Stats>(JsonUtility.ToJson(fixture.Cards.Stats));
+            fixture.Cards.RestoreRecovery(saved, 0);
+            Require(saved.SteadyAimRank == 3 && saved.PatientReloadRank == 3 && !CombatCards.Ranged.AimReady(now + 2.9) && !CombatCards.Ranged.ReloadReady(now), "ranged JSON/recovery");
+            Require((int)BoostType.HeavyCoat == 19 && (int)BoostType.SteadyAim == 20 && (int)BoostType.PatientReload == 21, "ranged enum order");
+            Debug.Log("[Ranged cards local] PASS: live damage cap/consumption, ranks/offers/ad/assets/text, JSON and reset.");
+            return "PASS";
+        }
         public static string RunWeaponExpansion()
         {
-            using var fixture = new Fixture();
-            GameObject target = null;
+            using var fixture = new Fixture(); fixture.Health(10);
+            GameObject target = null, body = null, ground = null;
             try
             {
                 fixture.Cards.Stats.LastRoundRank = 3;
@@ -128,12 +195,55 @@ namespace DeadBoat.Online.Editor
                     Require(gun.CurrentAmmo == 0 && ammo.GetAmmo(type) == 50, "cancelled reload created ammo");
                     Require(!reload.MoveNext() && gun.CurrentAmmo == 10 && ammo.GetAmmo(type) == 40, "completed reload ammo balance");
                 }
+                fixture.Cards.Stats.PatientReloadRank = 3;
+                gun.ApplySharedAmmo(0);
+                var emptyReload = (System.Collections.IEnumerator)typeof(RangedWeaponController).GetMethod("Reload", Private).Invoke(gun, null);
+                Require(emptyReload.MoveNext() && !CombatCards.Ranged.ReloadReady(Time.timeAsDouble), "bonus before completed reload");
+                Require(!emptyReload.MoveNext() && CombatCards.Ranged.ReloadReady(Time.timeAsDouble), "completed empty reload not ready");
+                int previousHP = victim.SharedHP; fire.Invoke(gun, null);
+                Require(previousHP - victim.SharedHP == 145, "real reloaded shotgun volley");
+                previousHP = victim.SharedHP; fire.Invoke(gun, null);
+                Require(previousHP - victim.SharedHP == 100, "real reload bonus repeated");
+                gun.ApplySharedAmmo(5);
+                var partial = (System.Collections.IEnumerator)typeof(RangedWeaponController).GetMethod("Reload", Private).Invoke(gun, null);
+                partial.MoveNext(); partial.MoveNext(); Require(!CombatCards.Ranged.ReloadReady(Time.timeAsDouble), "real partial reload grants charge");
+                Require(PlayerMovement.Instance == null && PlayerInput.Instance == null, "empty movement fixture required");
+                ground = new GameObject("Temporary aim ground"); ground.transform.position = new Vector3(20, -.5f, 0);
+                ground.AddComponent<BoxCollider>().size = new Vector3(5, 1, 5);
+                body = new GameObject("Temporary aim body"); body.transform.position = new Vector3(20, 1.2f, 0);
+                var controller = body.AddComponent<CharacterController>(); controller.height = 2;
+                var movement = body.AddComponent<PlayerMovement>(); movement.enabled = false;
+                typeof(PlayerMovement).GetField("_controller", Private).SetValue(movement, controller);
+                var input = fixture.Root.AddComponent<PlayerInput>();
+                typeof(PlayerInput).GetField("_instance", BindingFlags.Static | BindingFlags.NonPublic).SetValue(null, input);
+                Physics.SyncTransforms(); controller.Move(Vector3.down * .5f); controller.Move(Vector3.down * .01f);
+                Require(movement.StationaryForCards, "real grounded controller not stationary");
+                fixture.Cards.Stats.PatientReloadRank = 0; fixture.Cards.Stats.SteadyAimRank = 3;
+                double now = Time.timeAsDouble;
+                CombatCards.Ranged.Reset(now - 4); CombatCards.Ranged.Observe(gun.GetInstanceID(), now - 1, true, true, true);
+                previousHP = victim.SharedHP; fire.Invoke(gun, null);
+                Require(previousHP - victim.SharedHP == 150, "real stationary aim volley");
+                previousHP = victim.SharedHP; fire.Invoke(gun, null);
+                Require(previousHP - victim.SharedHP == 100, "real aim cooldown");
+                typeof(PlayerInput).GetField("<Movement>k__BackingField", Private).SetValue(input, Vector3.forward);
+                Require(!movement.StationaryForCards, "movement intent not detected");
+                CombatCards.Ranged.Reset(now - 4); CombatCards.Ranged.Observe(gun.GetInstanceID(), now - 1, true, true, true);
+                previousHP = victim.SharedHP; fire.Invoke(gun, null);
+                Require(previousHP - victim.SharedHP == 100, "moving player got aimed shot");
+                typeof(PlayerInput).GetField("<Movement>k__BackingField", Private).SetValue(input, Vector3.zero);
+                controller.Move(Vector3.right * .5f); Require(!movement.StationaryForCards, "physical movement not detected");
                 camera.transform.rotation = Quaternion.Euler(0, 180, 0); gun.ApplySharedAmmo(1);
                 int unchanged = victim.SharedHP; fire.Invoke(gun, null); Require(victim.SharedHP == unchanged, "miss damages enemy");
                 Debug.Log("[Card weapons] PASS: real Fire raycasts, pistol/shotgun whole volley, real reload yield +15%, cancel before completion has no ammo, exact transfer after completion, miss. Editor fixture, no timed browser animation test.");
                 return "PASS";
             }
-            finally { PlayerAmmoManager.Instance = null; if (target != null) Object.Destroy(target); }
+            finally
+            {
+                PlayerAmmoManager.Instance = null;
+                typeof(PlayerInput).GetField("_instance", BindingFlags.Static | BindingFlags.NonPublic).SetValue(null, null);
+                typeof(PlayerMovement).GetField("_instance", BindingFlags.Static | BindingFlags.NonPublic).SetValue(null, null);
+                if (target != null) Object.Destroy(target); if (body != null) Object.Destroy(body); if (ground != null) Object.Destroy(ground);
+            }
         }
         public static string RunExpansion()
         {
@@ -272,10 +382,10 @@ namespace DeadBoat.Online.Editor
                 CombatCards.Confirm(thirdSequence, 170);
                 await Task.Delay(200);
                 Require(CombatCards.ThirdHitRevision == 1 && fixture.Enemy.SharedHP == 630, "third hit replay repeats cue/damage");
-                authority.RPC_RecoveryProgress(new SharedPersonalData { BloodPactRank = 1, BattleRhythmRank = 2, OnTheEdgeRank = 3, LastRoundRank = 2, HeavyCoatRank = 1 });
-                remote.RPC_RecoveryProgress(new SharedPersonalData { BloodPactRank = 3, BattleRhythmRank = 1, OnTheEdgeRank = 2, LastRoundRank = 1, HeavyCoatRank = 3 });
+                authority.RPC_RecoveryProgress(new SharedPersonalData { BloodPactRank = 1, BattleRhythmRank = 2, OnTheEdgeRank = 3, LastRoundRank = 2, HeavyCoatRank = 1, SteadyAimRank = 2, PatientReloadRank = 1 });
+                remote.RPC_RecoveryProgress(new SharedPersonalData { BloodPactRank = 3, BattleRhythmRank = 1, OnTheEdgeRank = 2, LastRoundRank = 1, HeavyCoatRank = 3, SteadyAimRank = 1, PatientReloadRank = 3 });
                 await Until(() => remote.Personal.TryGet(authority.Runner.LocalPlayer, out var a) && a.Cards.BloodPactRank == 1 &&
-                    remote.Personal.TryGet(remote.Runner.LocalPlayer, out var b) && b.Cards.BloodPactRank == 3 && b.Cards.OnTheEdgeRank == 2 && a.Cards.LastRoundRank == 2 && a.Cards.HeavyCoatRank == 1 && b.Cards.LastRoundRank == 1 && b.Cards.HeavyCoatRank == 3);
+                    remote.Personal.TryGet(remote.Runner.LocalPlayer, out var b) && b.Cards.BloodPactRank == 3 && b.Cards.OnTheEdgeRank == 2 && a.Cards.LastRoundRank == 2 && a.Cards.HeavyCoatRank == 1 && b.Cards.LastRoundRank == 1 && b.Cards.HeavyCoatRank == 3 && a.Cards.SteadyAimRank == 2 && a.Cards.PatientReloadRank == 1 && b.Cards.SteadyAimRank == 1 && b.Cards.PatientReloadRank == 3);
                 Debug.Log("[Combat cards] PASS: two Cloud peers; actual HP confirmation to attacker, overkill, replay rejection, other attacker isolation and separate rank snapshots");
             }
             finally { SharedRunContext.End(); }

@@ -116,6 +116,7 @@ public class RangedWeaponController : MonoBehaviour
 
     private void OnDisable()
     {
+        CombatCards.Ranged.Interrupt(GetInstanceID());
         bool wasActive = _active;
         StopAllCoroutines();
         if (PlayerAmmoManager.Instance != null) PlayerAmmoManager.Instance.NewAmmo -= NewAmmo;
@@ -129,10 +130,21 @@ public class RangedWeaponController : MonoBehaviour
         //ControlUI.Instance.ShowReloadButton(_active);
     }
 
+    private bool CardActionsAllowed => Time.timeScale > 0 && !DeadBoat.Online.SharedAdProtection.IsShowing &&
+        !DeadBoat.Online.SharedLocalGameplay.Blocked && PlayerStatsManager.Instance != null && PlayerStatsManager.Instance.Health > 0 &&
+        (PauseManager.Instance == null || !PauseManager.Instance.IsPaused) &&
+        (ControlManager.Instance == null || !ControlManager.Instance.CursorActive);
+    private void ObserveCards()
+    {
+        CombatCards.Ranged.Observe(GetInstanceID(), Time.timeAsDouble,
+            PlayerMovement.Instance != null && PlayerMovement.Instance.StationaryForCards,
+            CardActionsAllowed, LevelStatManager.Instance != null && LevelStatManager.Instance.Stats.SteadyAimRank > 0);
+    }
     private void Update()
     {
+        if (_active) ObserveCards();
         // Дополнительная проверка для перезарядки (клавиша R)
-        if (_active && _usableItem.IsActive && PlayerInput.Instance != null && PlayerInput.Instance.Reload && !_isReloading && _currentAmmo < maxAmmo && ReserveAmmo > 0)
+        if (_active && CardActionsAllowed && _usableItem.IsActive && PlayerInput.Instance != null && PlayerInput.Instance.Reload && !_isReloading && _currentAmmo < maxAmmo && ReserveAmmo > 0)
         {
             StartCoroutine(Reload());
         }
@@ -144,6 +156,8 @@ public class RangedWeaponController : MonoBehaviour
         if (_active == active)
             return;
 
+        CombatCards.Ranged.Interrupt(GetInstanceID());
+        if (!active) { StopAllCoroutines(); _isShooting = false; _isReloading = false; }
         _active = active;
 
         ControlUI.Instance.ShowAttackButton(_active);
@@ -169,7 +183,7 @@ public class RangedWeaponController : MonoBehaviour
     // Метод, вызываемый по событию Use
     private void UseUpdate()
     {
-        if (_isReloading)
+        if (_isReloading || !CardActionsAllowed)
             return;
 
         if (_currentAmmo <= 0)
@@ -208,6 +222,7 @@ public class RangedWeaponController : MonoBehaviour
         if (ReserveAmmo!=0)
         {
             _isReloading = true;
+            int cardAttempt = CombatCards.Ranged.BeginReload(GetInstanceID(), _currentAmmo == 0, LevelStatManager.Instance != null && LevelStatManager.Instance.Stats.PatientReloadRank > 0);
             float cardReload = CombatCardRules.ReloadDurationMultiplier(LevelStatManager.Instance != null ? LevelStatManager.Instance.Stats.LastRoundRank : 0);
 
             if (_animator != null)
@@ -225,6 +240,7 @@ public class RangedWeaponController : MonoBehaviour
             int ammoToReload = (ReserveAmmo >= neededAmmo) ? neededAmmo : ReserveAmmo;
             CurrentAmmo += ammoToReload;
             ReserveAmmo -= ammoToReload;
+            CombatCards.Ranged.CompleteReload(GetInstanceID(), cardAttempt, Time.timeAsDouble, ammoToReload > 0);
             _isReloading = false;
             Debug.Log("Перезарядка завершена. Текущие патроны: " + _currentAmmo);
         } 
@@ -244,7 +260,8 @@ public class RangedWeaponController : MonoBehaviour
     private void Fire()
     {
         _cardHits.Clear();
-        _cardAttack = CombatCards.Begin(false, CurrentAmmo);
+        ObserveCards();
+        _cardAttack = CombatCards.BeginRanged(GetInstanceID(), CurrentAmmo);
         DeadBoat.Online.LobbyNetworkAvatar.ReportAttack(2);
         if (muzzleFlash != null)
             muzzleFlash.Play();

@@ -958,3 +958,13 @@ Math/RunLocal/RunExpansion PASS: реальный урон/maxHP/скорост�
 Следующий шаг: ИИ — следующая ограниченная пара (Верная рука / Новый заход) с правилами подготовки/перезарядки и восстановления; владелец — позднее общий тест баланса/UI на WebGL. Остальные семь карт пока дизайн.
 
 DB-ON-130 cleanup: VerifyRestored PASS, Play=false, MMF/Runner=0, Shared/Solo=false, cold clock=false, PeerModeSingle.
+
+## 06.11.2026 — DB-ON-131: Верная рука / Новый заход, без сборки
+
+Добавлены Steady Aim0.75с неподвижности,30/40/50%, cooldown3с и Fresh Start25/35/45% на первый выстрел за3с после completed empty reload. Промах тратит усиление; смена оружия/пауза/ad/death/blocked очищают подготовку/заряд, смена не сокращает cooldown. Recovery reset блокирует aim3с. Весь залп расходует заряд до raycast один раз. RangedCardState локальный; новые поля только ранги, протокол cards3, enum20/21. Ранги/cap/offers/ad guard/RU/EN,5строк HUD/FEEL pulse. SetActiveUse(false) отменяет корутины убранного оружия. SDK/FEEL не менялись.
+
+Math/RunLocal/RunRangedTiming/RunRangedExpansion PASS. Настоящий Fire/Physics.Raycast/Reload + CharacterController/PlayerInput PASS: подготовленный залп150вместо100, cooldown/движение без бонуса; Fresh Start только на первый залп, partial reload без заряда. Paused fixture правильно отменяла усиление; итоговый тест timeScale1. Tiny CC-contact1e-5 не выставлял Below, тест уточнён до0.01 после диагностики коллизии; runtime не ослаблялся. Полный двух-peer ReadyBarrier PASS с новыми отдельными рангами, handoff/cold join/leave/timeout.
+
+Реальный HUD Probe PASS: ready тексты/pulse/consumption без повторов, pause/ad/death/recovery/RU/EN/return. Отдельный свежий ColdRestart PASS: persisted ticket/new recovery/live peer, новые ранги на peer/возврате/solo, деньги237/HP80/items17-capacity20/magazine3-reserve31. Chained HUD→Cold без fresh boot не засчитан (PlayerManager отсутствовал); runtime не правился ради стенда. RU/EN выбор и settled5-row HUD1920×1080 осмотрены; Logs/RangedCards-*. Не WebGL/mobile/FPS/баланс-приёмка.
+
+Play остановлен, VerifyRestored PASS, MMF/Runner0, Shared/SoloFalse, clockfalse, PeerModeSingle. DB-ON-131 in_review. Следующее: ИИ — DB-ON-125 (удалённые локации/бюджеты); владелец — позже общий тест карточек/UI. Остальные пять карт пока дизайн. Сборки/черновика нет.

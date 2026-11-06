@@ -6,9 +6,11 @@ using UnityEngine;
 public static class CombatCardRules
 {
     public const int MaximumRank = 3;
-    public static bool IsSpecial(BoostType type) => type == BoostType.BloodPact || type == BoostType.BattleRhythm || type == BoostType.OnTheEdge || type == BoostType.LastRound || type == BoostType.HeavyCoat;
+    public static bool IsSpecial(BoostType type) => type == BoostType.BloodPact || type == BoostType.BattleRhythm || type == BoostType.OnTheEdge || type == BoostType.LastRound || type == BoostType.HeavyCoat || type == BoostType.SteadyAim || type == BoostType.PatientReload;
     public static int Rank(Stats stats, BoostType type) => Mathf.Clamp(type == BoostType.BloodPact ? stats.BloodPactRank :
-        type == BoostType.BattleRhythm ? stats.BattleRhythmRank : type == BoostType.OnTheEdge ? stats.OnTheEdgeRank : type == BoostType.LastRound ? stats.LastRoundRank : type == BoostType.HeavyCoat ? stats.HeavyCoatRank : 0, 0, MaximumRank);
+        type == BoostType.BattleRhythm ? stats.BattleRhythmRank : type == BoostType.OnTheEdge ? stats.OnTheEdgeRank : type == BoostType.LastRound ? stats.LastRoundRank : type == BoostType.HeavyCoat ? stats.HeavyCoatRank : type == BoostType.SteadyAim ? stats.SteadyAimRank : type == BoostType.PatientReload ? stats.PatientReloadRank : 0, 0, MaximumRank);
+    public static float AimBonus(int rank) => rank > 0 ? .2f + .1f * Mathf.Clamp(rank, 1, 3) : 0;
+    public static float PatientBonus(int rank) => rank > 0 ? .15f + .1f * Mathf.Clamp(rank, 1, 3) : 0;
     public static float CoatHealth(int rank) => rank > 0 ? .1f + .05f * Mathf.Clamp(rank, 1, 3) : 0;
     public static float CoatSpeed(int rank) => rank > 0 ? .92f : 1;
     public static float LastRoundBonus(int rank) => rank > 0 ? .3f + .15f * Mathf.Clamp(rank, 1, 3) : 0;

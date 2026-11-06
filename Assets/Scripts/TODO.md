@@ -325,3 +325,10 @@ Implementation backlog for eggs:
 - [x] Actual Fire pistol/shotgun + real Reload IEnumerator; maxHP/movement/getters, additive damage cap and no acquisition heal.
 - [x] Two-peer full regression and real cold reconnect/solo fork preserve both ranks; RU/EN desktop preview inspected.
 - [ ] Owner batch WebGL/mobile/balance acceptance after future build (in_review).
+
+### DB-ON-131 — Steady Aim / Fresh Start (2026-11-06)
+- [x] Local preparation/cooldown and completed-empty-reload one-shot, miss/switch/cancel/ads/death reset; +100% damage cap.
+- [x] Personal ranks I–III, assets/offers/ad guard/RU/EN, protocol cards3, conservative recovery reset and readiness HUD.
+- [x] Timing/real Fire+Reload+CharacterController, two-peer regression, real HUD and fresh cold return/solo checks PASS; owner settings restored.
+- [ ] Owner batch WebGL/mobile/balance acceptance after future build (in_review).
+- Next AI task: DB-ON-125, safe region eviction/rehydration and world budget; five remaining proposed cards deferred.

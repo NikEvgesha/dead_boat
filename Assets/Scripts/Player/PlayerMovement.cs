@@ -38,6 +38,10 @@ public class PlayerMovement : MonoBehaviour
         set { _moveSpeed = value; }
     }
 
+    public bool StationaryForCards => _controller != null && _controller.isGrounded &&
+        _controller.velocity.sqrMagnitude <= .01f && PlayerInput.Instance != null &&
+        PlayerInput.Instance.Movement.sqrMagnitude <= .0025f && !PlayerInput.Instance.JumpTriggered;
+
     public float zPositionFix
     {
         get
