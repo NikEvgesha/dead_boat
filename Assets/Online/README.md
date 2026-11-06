@@ -16,9 +16,9 @@
 
 ## Сборка
 
-1. Установить Photon Fusion 2.1.3 в Unity. Папка `Assets/Photon/` исключена из Git.
-2. В `Assets/Photon/Fusion/Resources/PhotonAppSettings.asset` указать **Fusion 2.1 App ID**; обычный Photon App ID `3e9e676b-8a22-47e0-9ed0-110f9032bf32` даёт ошибку `FusionPlugin21/Default` и не подходит. Для теста выставить `FixedRegion = eu`, `Protocol = WebSocketSecure`, `Port = 443`. Этот файл не хранится в Git.
-3. Выполнить в Unity `Tools > Fusion > Rebuild Prefab Table`, чтобы `LobbyNetworkAvatar` попал в таблицу сетевых префабов. После повторной установки SDK это обязательный шаг.
+1. Photon Fusion 2.1.3 уже находится в `Assets/Photon/` и передаётся через Git вместе с `.meta`. После pull/клонирования ручной импорт SDK не требуется.
+2. `Assets/Photon/Fusion/Resources/PhotonAppSettings.asset` и `NetworkProjectConfig.fusion` также хранятся в Git: используются текущий Fusion App ID и настройки WebSocketSecure/eu/443. Подробности: `Docs/PHOTON_FUSION_LOCAL_SETUP.md`.
+3. Дождаться импорта Unity. Штатный сборщик автоматически проверяет таблицу сетевых префабов; при ручном добавлении новых сетевых префабов доступен `Tools > Fusion > Rebuild Prefab Table`.
 4. Собрать обычный WebGL-плеер со сценами из Build Settings. Для быстрой проверки только лобби можно временно собрать `Assets/Scenes/Lobby.unity` как единственную сцену; сам список Build Settings менять не требуется.
 
 `LobbySceneManager` обслуживает только готовую сцену лобби без сетевых объектов сцены. При добавлении совместного забега потребуется отдельный менеджер загрузки сетевых сцен.

@@ -78,10 +78,8 @@ credentials.json
 Assets/Resources/credentials.json
 Assets/Resources/credentials.json.meta
 
-# Photon Fusion SDK is downloaded under an individual Photon account.
-# Keep the vendor SDK and local App ID out of this public repository.
-/Assets/Photon/
-/Assets/Photon.meta
+# Photon Fusion SDK and its Unity metadata are versioned with the game.
+# Do not ignore Assets/Photon: a fresh checkout needs the SDK to compile.
 
 # Mirra Cloud project configuration contains a project API token.
 /Assets/MirraCloud/

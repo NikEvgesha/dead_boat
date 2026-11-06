@@ -993,3 +993,13 @@ VerifyRestored PASS; Play/compilefalse, Runner0, Shared/SoloFalse, Regions/Membe
 
 
 Окончательная очистка PASS: VerifyRestored owner return/identity/solo/mode keys и playModeStartScene; Play/compile=false, Runner0, Shared/Solo=false, Regions/Membership/Independent=null, clock=false, PeerSingle. Редактор оставлен вне теста, сборки нет.
+
+
+## 2026-11-06 — DB-ON-132: Photon SDK передаётся через Git
+
+По запросу владельца исправлена прежняя политика, исключавшая всю Assets/Photon вместе с metadata/config. Это делало checkout неполным: другим требовалась ручная установка Fusion. Добавляется штатная установленная Fusion2.1.3 Stable2390 целиком, исходные GUID, платформенные библиотеки, NetworkProjectConfig и клиентский PhotonAppSettings. Сервисных ключей в конфигурации нет; AppId — клиентский идентификатор приложения. Код SDK не редактируется. Документация запуска обновлена. Mirra Cloud/MCP/UPM и несвязанный ProjectSettings не включаются.
+
+Проверка ИИ: полнота Git-export относительно установленной папки, SHA256 с учётом Git-нормализации строк; ручное открытие другого компьютера остаётся in_review. Далее владелец/другой разработчик — pull и открыть Unity без импорта Photon. Сборки нет.
+
+
+Проверка поставки PASS: Git archive из подготовленного tree содержит все544файла SDK (16024753байт), SHA256 каждого совпадает с рабочей копией побайтово. Все6обязательных runtime/WebGL/config зависимостей присутствуют. .gitattributes отключает изменение переводов строк только для vendor Photon. Kanban check:132карточки PASS. Чистый запуск Unity у другого разработчика ещё ожидает ручного подтверждения.
