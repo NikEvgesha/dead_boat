@@ -11,6 +11,7 @@ namespace DeadBoat.FirstRun
         public int schema = 1, content = FirstRunAuthoredRoute.ContentVersion;
         public FirstRunStatus status;
         public FirstRunCheckpoint checkpoint;
+        public FirstRunTelemetry telemetry;
     }
     [Serializable] public sealed class FirstRunItemData
     {

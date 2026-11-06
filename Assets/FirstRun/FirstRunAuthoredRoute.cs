@@ -111,6 +111,7 @@ namespace DeadBoat.FirstRun
                 }
                 FirstRunSession.Restoring = false;
                 profileReady = true;
+                FirstRunAnalytics.Ready(Lesson, tutorial.CurrentStepIndex);
                 CaptureCheckpoint();
             }
             nextTick = Time.unscaledTime + .2f;
@@ -153,6 +154,7 @@ namespace DeadBoat.FirstRun
         private void Enter(FirstRunLesson lesson)
         {
             Lesson = lesson;
+            if (profileReady) FirstRunAnalytics.Observe(lesson, tutorial.CurrentStepIndex);
             enteredAt = Time.unscaledTime;
             Transform goal = null;
             if (lesson == FirstRunLesson.SailFirst) goal = stops[0];

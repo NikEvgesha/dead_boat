@@ -56,6 +56,7 @@ public class TutorialManager : MonoBehaviour
     {
         step.StepEnd -= StepEnd;
         _currentIndex = _tutorialSteps.IndexOf(step) + 1;
+        if (_authoredFirstRun && _currentIndex < _tutorialSteps.Count) DeadBoat.FirstRun.FirstRunAnalytics.Observe(DeadBoat.FirstRun.FirstRunLesson.Intro, _currentIndex);
         ActivateNewStep();
     }
     private void ActivateNewStep()

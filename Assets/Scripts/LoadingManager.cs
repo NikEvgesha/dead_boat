@@ -102,6 +102,7 @@ public class LoadingManager : MonoBehaviour
     {
         CurrentLocation = _location;
         LocationChanged?.Invoke(CurrentLocation);
+        if (CurrentLocation == Location.Lobby) DeadBoat.FirstRun.FirstRunAnalytics.LobbyEntered();
         TryGameplayStart();
     }
 

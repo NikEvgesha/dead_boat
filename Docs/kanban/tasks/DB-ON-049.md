@@ -1,7 +1,7 @@
 ---
 id: DB-ON-049
 title: Измерять этапы обучения и места ухода новичков
-status: backlog
+status: in_review
 when: now
 ai: true
 ---
@@ -26,3 +26,8 @@ ai: true
 
 - `Docs/kanban/tasks/DB-ON-047.md`
 - `Docs/kanban/tasks/DB-ON-048.md`
+
+
+07.11.2026: в игровом коде добавлена профильная воронка FirstRunAnalytics: loading/17этапов, enter/resume, start/complete/resumed, death/revived/retry, skipped/completed/lobby. GUID попытки и sequence переживают refresh; битовые маски исключают повторные завершения. Очередь128/пакет8/повтор30с, UTC/foreground dwell/version/platform без ника/ID игрока. В установленной MirraSDK MirraWeb EventsReporter — заглушка; транспорт подключён через штатный Mirra Cloud AnalyticsService.SendBatchAsync и существующую социальную сессию. HTTP200 с errors не считается полным успехом, удаляются только подтверждённые элементы. SDK не менялся. Editor не отправляет в рабочую аналитику.
+
+Проверки: полный ускоренный реальный урок дал все17start/complete и enter/completed/lobby; холодный старт после карточек сохранил попытку/состояние и доставил тестовую сохранённую очередь death/revive без повторных completion; skip/lobby однократны; ambiguous/partial/accepted batch ack PASS. Все сетевые отправки в этих тестах заменены изолированным sink. Живой приём и отчёт по реальной когорте НЕ проверены. Нужны определения event keys/параметров на сервере: полный контракт и правило ухода24ч в Docs/FIRST_RUN_ANALYTICS.md. Без сборки/загрузки/изменений Cloud. Далее ИИ или владелец — зарегистрировать метрики по контракту; владелец позже общий WebGL-тест, ИИ — проверить живые события и первый отчёт. in_review не означает завершённую серверную приёмку.

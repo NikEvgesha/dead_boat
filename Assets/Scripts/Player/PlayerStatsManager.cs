@@ -343,11 +343,13 @@ public class PlayerStatsManager : MonoBehaviour
     }
     public void Dead()
     {
+        if (DeadBoat.FirstRun.FirstRunSession.Active) DeadBoat.FirstRun.FirstRunAnalytics.Death();
         EndGameUIManager.EndGame(EndGameState.Faint);
         _isDead = true;
     }
     public void Revive()
     {
+        if (DeadBoat.FirstRun.FirstRunSession.Active) DeadBoat.FirstRun.FirstRunAnalytics.Revived();
         Health = MaxHealth;
         _isDead = false;
     }

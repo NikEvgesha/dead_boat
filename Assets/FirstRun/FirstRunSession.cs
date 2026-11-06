@@ -25,6 +25,7 @@ namespace DeadBoat.FirstRun
             var previous = FirstRunProfile.Read();
             var profile = FirstRunProfile.Resolve(previous, existing);
             if (previous == null) FirstRunProfile.Write(profile);
+            FirstRunAnalytics.Boot(profile, manager.gameObject);
             if (profile.status != FirstRunStatus.Running)
             {
                 if (profile.status != FirstRunStatus.Legacy && !persistent.CheckProgress())
@@ -49,6 +50,7 @@ namespace DeadBoat.FirstRun
         public static void Close(bool completed)
         {
             if (!Active || Profile.status != FirstRunStatus.Running) return;
+            FirstRunAnalytics.Close(completed);
             Profile.status = completed ? FirstRunStatus.Completed : FirstRunStatus.Skipped;
             Profile.checkpoint = null;
             FirstRunProfile.Write(Profile);
@@ -64,6 +66,7 @@ namespace DeadBoat.FirstRun
             UnityEngine.Object.Destroy(Save);
             Save = owner.AddComponent<FirstRunSave>(); Save.Persistent = persistent;
             Profile = new FirstRunProfileData { status = FirstRunStatus.Running };
+            FirstRunAnalytics.Retry(Profile);
             Restoring = true;
             FirstRunProfile.Write(Profile);
         }
