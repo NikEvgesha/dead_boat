@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Collections;
 using UnityEngine;
 
@@ -237,8 +238,12 @@ public class RangedWeaponController : MonoBehaviour
     }
 
     // Основной метод выстрела
+    private CombatCards.Attack _cardAttack;
+    private readonly Dictionary<EnemyCore, int> _cardHits = new Dictionary<EnemyCore, int>();
     private void Fire()
     {
+        _cardHits.Clear();
+        _cardAttack = CombatCards.Begin(false);
         DeadBoat.Online.LobbyNetworkAvatar.ReportAttack(2);
         if (muzzleFlash != null)
             muzzleFlash.Play();
@@ -264,6 +269,14 @@ public class RangedWeaponController : MonoBehaviour
         {
             ShootRay(fpsCam.transform.forward);
         }
+        foreach (var hit in _cardHits)
+        {
+            CombatCards.Hit(_cardAttack, hit.Key, hit.Value);
+            ProfessionService.TryApplyOnHitEffect(hit.Key);
+        }
+        CombatCards.End(_cardAttack);
+        _cardAttack = null;
+        _cardHits.Clear();
     }
 
     // Метод проверки попадания с помощью raycast и создания трейла пули
@@ -279,8 +292,8 @@ public class RangedWeaponController : MonoBehaviour
             EnemyCore targetHealth = hit.transform.GetComponentInParent<EnemyCore>();
             if (targetHealth != null)
             {
-                targetHealth.TakeDamage((int)Damage);
-                ProfessionService.TryApplyOnHitEffect(targetHealth);
+                _cardHits.TryGetValue(targetHealth, out int previous);
+                _cardHits[targetHealth] = previous + (int)Damage;
             }
             endPoint = hit.point;
 

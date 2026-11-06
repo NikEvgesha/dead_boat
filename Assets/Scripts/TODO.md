@@ -292,3 +292,11 @@ Implementation backlog for eggs:
 - [x] Drain queued ordinary online after canceled friend join, finish teardown before releasing connecting.
 - [x] Real Lobby/Forest probe: three cancels, latest mode wins/one Runner, transport shutdown, solo distance/ammo/coins/cards preserved and resume without Photon.
 - [ ] Independent WebGL/physical outage/mobile background/cold startup acceptance per Docs/COOP_BATCH_ACCEPTANCE.md; no build/upload.
+
+
+### DB-ON-127 — three combat cards (2026-11-06, no WebGL build)
+- [x] Accepted prototype: Blood Pact / Battle Rhythm / On the Edge, ranks I–III, fixed special rarity, weighted offers with a numeric alternative.
+- [x] RU/EN named text parameters, rank/maxHP preview, ads cannot bypass the rank ceiling; existing icons reused.
+- [x] One-time maxHP cost; actual-damage lifesteal with shared sliding budget; direct attack entry points and authority-confirmed healing in co-op.
+- [x] Personal rank fields in Stats/recovery/solo branch; old JSON zero defaults, enum values preserved, protocol cards1.
+- [ ] Owner gameplay/balance and RU/EN WebGL UI acceptance after the eventual shared build. Automated verification details: DB-ON-127 and Docs/design/CARD_COMBAT_PROTOTYPE.md.

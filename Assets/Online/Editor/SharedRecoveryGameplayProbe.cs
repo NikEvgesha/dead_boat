@@ -94,7 +94,7 @@ namespace DeadBoat.Online.Editor
                 LevelStatManager.Instance.RestoreRecovery(new Stats { Save = true, HP = 30, MultExp = 1.4f,
                     MoveSpeedMult = 1.3f, MoneyMultSale = 1.2f, ConsumptionFuel = .8f, AddMultFuel = 1.1f,
                     MaxFuel = 80, MaxSpeedBoard = 5, MeleDamage = 9, MeleAttackSpeed = 1.2f,
-                    RangeDamage = 7, RangeAttackSpeed = 1.1f, RangeReloadSpeed = .9f, InventorySlots = 10 }, 1);
+                    RangeDamage = 7, RangeAttackSpeed = 1.1f, RangeReloadSpeed = .9f, InventorySlots = 10, BloodPactRank = 2, BattleRhythmRank = 3, OnTheEdgeRank = 1 }, 1);
                 Inventory.Instance.RefreshCapacity();
                 var extraPrefab = SharedItemCatalog.Load().entries.Select(e => e.prefab).First(p => p != null && !p.Usable &&
                     p.GetComponent<AmmoItem>() == null && p.GetComponent<EggCollectibleItem>() == null);
@@ -132,7 +132,7 @@ namespace DeadBoat.Online.Editor
                     "currency and cards do not resend bag");
                 await Until(() => Replica(peer).Personal.TryGet(state.Runner.LocalPlayer, out var confirmed) &&
                     confirmed.Coins == 237 && confirmed.InventorySlots == 10 && confirmed.CardHP == 35 &&
-                    confirmed.Upgrades == 2 && confirmed.ItemCount == expectedCount, "companion confirmed latest progress");
+                    confirmed.Upgrades == 2 && confirmed.ItemCount == expectedCount && confirmed.BloodPactRank == 2 && confirmed.BattleRhythmRank == 3 && confirmed.OnTheEdgeRank == 1, "companion confirmed latest progress");
                 Debug.Log("[Recovery game probe] personal snapshot confirmed; disconnecting.");
                 var oldRef = state.Runner.LocalPlayer;
                 await state.Runner.Shutdown();
@@ -163,7 +163,8 @@ namespace DeadBoat.Online.Editor
                 await Task.Delay(600);
                 Require(Inventory.Instance.GetInventoryList().Count == expectedCount && expectedCount > 15 && Inventory.Instance.BagCapacity >= 20, "restored expanded bag count");
                 Require(CurrencyManager.Instance.Coins == 237 && SharedRunContext.Save.LoadGameCoin() == 237, "coins restored");
-                Require(LevelStatManager.Instance.Stats.InventorySlots == 10 && LevelStatManager.Instance.Stats.HP == 35 && LevelStatManager.Instance.Stats.MeleDamage == 9 &&
+                Require(LevelStatManager.Instance.Stats.BloodPactRank == 2 && LevelStatManager.Instance.Stats.BattleRhythmRank == 3 && LevelStatManager.Instance.Stats.OnTheEdgeRank == 1 &&
+                    LevelStatManager.Instance.Stats.InventorySlots == 10 && LevelStatManager.Instance.Stats.HP == 35 && LevelStatManager.Instance.Stats.MeleDamage == 9 &&
                     Mathf.Abs(LevelStatManager.Instance.Stats.MoveSpeedMult - 1.3f) < .001f &&
                     SaveManager.Instance.LoadLevelUp() == 2 && LevelStatManager.Instance.HaveLevelUp(), "cards and pending choices restored");
                 Require(PlayerAmmoManager.Instance.GetAmmo(WeaponType.Pistol) == 31, "personal reserve restored");
@@ -183,6 +184,8 @@ namespace DeadBoat.Online.Editor
                     BoardController.Instance != null && BoardController.Instance.StartGame && Inventory.Instance.GetInventoryList().Count == expectedCount, "solo reload");
                 Require(!SharedRunRecovery.HasPending && !SharedRunRecovery.Instance.CanRetry, "solo closes return");
                 Require(PlayerAmmoManager.Instance.GetAmmo(WeaponType.Pistol) == 31, "solo reserve");
+                var soloCards = SaveManager.Instance.LoadLevelUpdate();
+                Require(soloCards.BloodPactRank == 2 && soloCards.BattleRhythmRank == 3 && soloCards.OnTheEdgeRank == 1, "solo branch card ranks");
                 Require(PlayerStatsManager.Instance.Experience().Exp == 17 && PlayerStatsManager.Instance.Experience().CurrentLevel == 1, "solo experience");
                 Require(Inventory.Instance.GetInventoryList().Any(p => p.GetComponentInChildren<RangedWeaponController>(true)?.CurrentAmmo == 3), "solo magazine");
                 Require(Replica(peer).Phase == 3 && peer.IsConnectedToServer, "original session remains with peer");

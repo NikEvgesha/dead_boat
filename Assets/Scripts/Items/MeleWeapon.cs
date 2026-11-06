@@ -36,6 +36,7 @@ public class MeleWeapon : MonoBehaviour
     [SerializeField] private AudioSource _audioSource;
 
     private List<EnemyCore> _zombies = new List<EnemyCore>();
+    private CombatCards.Attack _cardAttack;
     private bool _use;
     private bool _active;
 
@@ -50,7 +51,7 @@ public class MeleWeapon : MonoBehaviour
                 return;
 
             _zombies.Add(zombie);
-            zombie.TakeDamage(Damage);
+            CombatCards.Hit(_cardAttack, zombie, Damage);
             ProfessionService.TryApplyOnHitEffect(zombie);
 
             if (_audioSource)
@@ -65,6 +66,8 @@ public class MeleWeapon : MonoBehaviour
     }
     private void OnDisable()
     {
+        CombatCards.End(_cardAttack);
+        _cardAttack = null;
         StopAllCoroutines();
         _use = false;
         _active = false;
@@ -88,6 +91,8 @@ public class MeleWeapon : MonoBehaviour
     }
     public void PlayRandomAttack()
     {
+        CombatCards.End(_cardAttack);
+        _cardAttack = CombatCards.Begin(true);
         DeadBoat.Online.LobbyNetworkAvatar.ReportAttack(1);
         // Генерируем случайное число 1, 2 или 3
         _damageArea.enabled = true;
@@ -106,6 +111,8 @@ public class MeleWeapon : MonoBehaviour
 
         yield return new WaitForSeconds(_attackSpeed/AttackSpeed);
 
+        CombatCards.End(_cardAttack);
+        _cardAttack = null;
         _damageArea.enabled = false;
         _use = false;
         _zombies.Clear();

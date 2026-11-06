@@ -40,6 +40,15 @@ namespace DeadBoat.Online
         [Networked] public NetworkString<_64> MirraProfileId { get; private set; }
         [Networked] public NetworkString<_32> DisplayName { get; private set; }
         [Networked] public float Health { get; private set; }
+        [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+        public void RPC_ConfirmWeaponDamage(int sequence, int removedHP, RpcInfo info = default)
+        {
+            var state = SharedRunContext.State;
+            if (!SharedRunContext.Playing || state == null || state.Runner != Runner ||
+                info.Source != state.Object.StateAuthority || !state.Includes(Runner.LocalPlayer) || removedHP <= 0) return;
+            CombatCards.Confirm(sequence, removedHP);
+            if (PlayerStatsManager.Instance != null) Health = PlayerStatsManager.Instance.Health;
+        }
         public Transform WorldTransform => visualRoot != null ? visualRoot : transform;
         private BoardController seatBoard;
         private Transform driverSeat;

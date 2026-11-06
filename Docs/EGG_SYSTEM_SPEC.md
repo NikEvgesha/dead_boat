@@ -272,3 +272,8 @@ See `Docs/SAVE_SCOPE_AND_STAT_MODIFIERS.md` for the save-scope rules and the pla
 ## Pickup feedback — 2026-10-14
 
 DB-ON-033 adds a local, non-blocking notification for a successful pickup: gained amount, total stored eggs and the existing first-discovery hint. Both ordinary and one-shot registration return a receipt from their existing save operation; no new save fields/keys or network messages. Replayed one-shots do not show a reward. Runtime UI uses unscaled time and suspends its own lifetime during an ad. Online personal-menu access remains DB-ON-041, not yet implemented. Source/test/acceptance limits: `Docs/EGG_PICKUP_FEEDBACK_20261014.md`. Editor receipt/UI checks passed; real solo/co-op pickup acceptance remains pending. Builds are deferred by the owner.
+
+
+## Personal run card format — 2026-11-06
+
+DB-ON-127 adds BloodPactRank, BattleRhythmRank and OnTheEdgeRank to Stats and SharedPersonalData; these are personal run progression, not animal/egg collection fields. Existing enum IDs are unchanged. Missing fields in old JSON default to zero. The Blood Pact maxHP multiplier is applied after existing profession/animal calculations and is not saved as a repeated subtraction. Network peers use the cards1 protocol suffix. Existing permanent animal/egg saves and SDK files are unchanged. Prototype and verification scope: Docs/design/CARD_COMBAT_PROTOTYPE.md.

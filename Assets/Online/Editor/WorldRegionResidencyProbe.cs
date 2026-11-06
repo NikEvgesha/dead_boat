@@ -88,7 +88,14 @@ namespace DeadBoat.Online.Editor
                 var ammo = authority.Items[weaponId]; ammo.WeaponAmmo = 2; authority.Items.Set(weaponId, ammo);
                 typeof(EnemyCore).GetField("currentHP", Private).SetValue(wounded.Enemy, 17);
                 authority.SampleEnemy(wounded, wounded.Enemy);
-                await Task.Delay(150);
+                await Until(() => consumed == null && killed == null); // Unity completes deferred deletion.
+                // In the handoff case the capture reads the other peer's snapshot.
+                // Wait for canonical data, not an assumed 150ms network delivery.
+                await Until(() => itemIds.All(id => SharedRunContext.State.Items.ContainsKey(id)) &&
+                    enemyIds.All(id => SharedRunContext.State.TryEnemy(id, out _)) &&
+                    SharedRunContext.State.Items[usedId].Mode == 4 &&
+                    SharedRunContext.State.Items[weaponId].WeaponAmmo == 2 &&
+                    SharedRunContext.State.TryEnemy(woundedId, out var sampled) && sampled.HP == 17);
                 Require(WorldRegionResidency.TrySuspend(root, 1, out var ticket, out reason), reason);
                 await Task.Delay(150);
                 Require(root == null && SharedItemsRuntime.TryFind(detachedId, out var kept) && kept == detached,

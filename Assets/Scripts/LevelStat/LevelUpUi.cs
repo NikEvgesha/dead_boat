@@ -27,6 +27,9 @@ public class LevelUpUi : MonoBehaviour
     private BoostItem _item;
     private RareType _rare;
     private int _countLevelUp;
+    private bool _cardClaimed;
+    public bool TryClaimCard() { if (_cardClaimed) return false; _cardClaimed = true; return true; }
+    public void ReleaseCardClaim() { _cardClaimed = false; }
     public RareBack GetRareBackUI(RareType rare) 
     {
         return _rareBack.Find(r => r.Type == rare);
@@ -54,6 +57,7 @@ public class LevelUpUi : MonoBehaviour
     }
     public void NewLevel(List<ItemWithRare> items)
     {
+        _cardClaimed = false;
         if (TryUpgradeHighestRarity(items, out var upgraded))
         {
             Debug.Log($"Повысили: теперь {upgraded.Rare}");
@@ -72,6 +76,7 @@ public class LevelUpUi : MonoBehaviour
     }
     public void RefreshLevel(List<ItemWithRare> items)
     {
+        _cardClaimed = false;
         int i = 0;
         foreach (var item in items)
         {
@@ -137,10 +142,12 @@ public class LevelUpUi : MonoBehaviour
     {
         _item = item;
         _rare = rare;
+        if (CombatCardRules.IsSpecial(item.BoostType)) { _NoUpClick(); return; }
         _panelAdsChoise.SetActive(true);
     }
     public void _UpClickAds()
     {
+        if (_item == null || CombatCardRules.IsSpecial(_item.BoostType)) return;
         AdsManager.Instance.ShowRewardedAd(
             "Refresh",
             (success) =>
@@ -164,12 +171,15 @@ public class LevelUpUi : MonoBehaviour
         if (list == null || list.Count == 0)
             return false;
 
-        int bestIndex = 0;
-        RareType bestRare = list[0].Rare;
+        int numericCount = 0;
+        int bestIndex = -1;
+        RareType bestRare = RareType.RareType;
 
         // находим индекс элемента с наибольшей редкостью (первый при равенстве)
-        for (int i = 1; i < list.Count; i++)
+        for (int i = 0; i < list.Count; i++)
         {
+            if (list[i].Item == null || CombatCardRules.IsSpecial(list[i].Item.BoostType)) continue;
+            numericCount++;
             if (list[i].Rare > bestRare)
             {
                 bestRare = list[i].Rare;
@@ -177,6 +187,7 @@ public class LevelUpUi : MonoBehaviour
             }
         }
 
+        if (bestIndex < 0 || numericCount < 2) return false; // Keep a free numeric alternative.
         var entry = list[bestIndex]; // struct — копия
         result = entry;
 

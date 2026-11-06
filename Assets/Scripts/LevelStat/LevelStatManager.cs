@@ -22,6 +22,7 @@ public struct Stats
 {
     public bool Save;
     public int InventorySlots;
+    public int BloodPactRank, BattleRhythmRank, OnTheEdgeRank;
     [Header("»грок")]
     public float HP;
     public float MultExp;
@@ -100,6 +101,7 @@ public class LevelStatManager : MonoBehaviour
             Destroy(gameObject);
             return;
         }
+        CombatCards.Reset();
         LoadStats();
         Subscriptions();
     }
@@ -154,6 +156,11 @@ public class LevelStatManager : MonoBehaviour
     {
         var slots = Resources.Load<BoostItem>("BoostItem_InventorySlots");
         if (slots != null && !_boostItems.Contains(slots)) _boostItems.Add(slots);
+        foreach (string name in new[] { "BloodPact", "BattleRhythm", "OnTheEdge" })
+        {
+            var card = Resources.Load<BoostItem>("BoostItem_" + name);
+            if (card != null && !_boostItems.Contains(card)) _boostItems.Add(card);
+        }
         foreach (var item in _boostItems)
         {
             item.Change += Change;
@@ -175,6 +182,16 @@ public class LevelStatManager : MonoBehaviour
     {
         switch (boost)
         {
+            case BoostType.BloodPact:
+                Stats.BloodPactRank = Mathf.Clamp(Stats.BloodPactRank + 1, 0, 3);
+                PlayerStatsManager.Instance?.ClampCardHealth();
+                break;
+            case BoostType.BattleRhythm:
+                Stats.BattleRhythmRank = Mathf.Clamp(Stats.BattleRhythmRank + 1, 0, 3);
+                break;
+            case BoostType.OnTheEdge:
+                Stats.OnTheEdgeRank = Mathf.Clamp(Stats.OnTheEdgeRank + 1, 0, 3);
+                break;
             case BoostType.InventorySlots:
                 Stats.InventorySlots = Mathf.Clamp(Stats.InventorySlots + Mathf.Max(0, Mathf.RoundToInt(count)), 0, 27);
                 Inventory.Instance?.RefreshCapacity();
@@ -230,46 +247,31 @@ public class LevelStatManager : MonoBehaviour
     public List<ItemWithRare> GetRandomBoostsWithRarity(int count = 3)
     {
 
-        List<ItemWithRare> result = new List<ItemWithRare>();
-
-        // ”бедись, что у нас достаточно разных бустов
-        if (_boostItems.Count < count)
+        var available = _boostItems.Where(x => x != null && x.Chance > 0 &&
+            (!CombatCardRules.IsSpecial(x.BoostType) || CombatCardRules.Rank(Stats, x.BoostType) < 3) &&
+            (x.BoostType != BoostType.InventorySlots || Inventory.Instance == null || Inventory.Instance.BagCapacity < Inventory.MaximumBagCapacity))
+            .GroupBy(x => x.BoostType).Select(x => x.First()).ToList();
+        var selected = new List<BoostItem>();
+        // Reserve a safe numeric alternative before drawing the remaining weighted choices.
+        var safe = available.Where(x => !CombatCardRules.IsSpecial(x.BoostType)).ToList();
+        if (count > 0 && safe.Count > 0) selected.Add(WeightedCard(safe));
+        available.RemoveAll(x => selected.Contains(x));
+        while (selected.Count < count && available.Count > 0)
         {
-            Debug.LogWarning("Ќедостаточно BoostItem дл€ выбора.");
-            return result;
+            var item = WeightedCard(available); selected.Add(item); available.Remove(item);
         }
-
-        // ѕолучаем 3 случайных и уникальных бустера
-        List<BoostItem> selectedItems = _boostItems
-            .Where(x => x.BoostType != BoostType.InventorySlots || Inventory.Instance == null || Inventory.Instance.BagCapacity < Inventory.MaximumBagCapacity)
-            .OrderBy(x => UnityEngine.Random.value)
-            .Distinct()
-            .Take(count)
-            .ToList();
-
-        foreach (BoostItem item in selectedItems)
+        return selected.OrderBy(x => UnityEngine.Random.value).Select(item => new ItemWithRare
         {
-            RareType selectedRarity = GetRandomRarityByChance();
-
-            // ѕроверим, есть ли така€ рарность у этого бустера
-            if (item.RareRewards != null && item.RareRewards.Count > 0 && item.RareRewards.Any(r => r.Rare == selectedRarity))
-            {
-                ItemWithRare itemR = new ItemWithRare() { Rare = selectedRarity, Item = item };
-                result.Add(itemR);
-            }
-            else
-            {
-                // ≈сли нет нужной редкости, выбираем первую доступную у буста
-                RareType fallbackRarity = selectedRarity;
-                if (item.RareRewards != null && item.RareRewards.Count > 0)
-                    fallbackRarity = item.RareRewards[0].Rare;
-
-                ItemWithRare itemR = new ItemWithRare() { Rare = fallbackRarity, Item = item };
-                result.Add(itemR);
-            }
-        }
-
-        return result;
+            Item = item, Rare = CombatCardRules.IsSpecial(item.BoostType)
+                ? (item.BoostType == BoostType.BattleRhythm ? RareType.Uncommon : RareType.Rare)
+                : GetRandomRarityByChance()
+        }).ToList();
+    }
+    private static BoostItem WeightedCard(List<BoostItem> cards)
+    {
+        float roll = UnityEngine.Random.value * cards.Sum(x => x.Chance);
+        foreach (var card in cards) { roll -= card.Chance; if (roll <= 0) return card; }
+        return cards[cards.Count - 1];
     }
     private RareType GetRandomRarityByChance()
     {
@@ -290,6 +292,7 @@ public class LevelStatManager : MonoBehaviour
     public void RestoreRecovery(Stats cards, int upgrades)
     {
         Stats = cards;
+        CombatCards.Reset();
         _countLevelUp = Mathf.Max(0, upgrades);
         SaveManager.Instance.SaveLevelUpdate(Stats);
         SaveManager.Instance.SaveLevelUp(_countLevelUp);
@@ -302,6 +305,7 @@ public class LevelStatManager : MonoBehaviour
 
     public void DeleteProgress()
     {
+        CombatCards.Reset();
         Stats = StatsDefault;
         SaveManager.Instance.SaveLevelUpdate(Stats);
         SaveManager.Instance.SaveLevelUp(0);

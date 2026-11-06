@@ -17,6 +17,7 @@ namespace DeadBoat.Online
     {
         public int Revision, ItemCount, Coins, Experience, Level, Upgrades;
         public int InventorySlots;
+        public int BloodPactRank, BattleRhythmRank, OnTheEdgeRank;
         public int Pistol, Rifle, Shotgun, MeleeDamage;
         public float Health, CardHP, ExpMultiplier, MoveMultiplier, SaleMultiplier;
         public float Fuel, Consumption, Fill, Speed, MeleeSpeed, RangeDamage, RangeSpeed, ReloadSpeed;
@@ -26,7 +27,8 @@ namespace DeadBoat.Online
             MoneyMultSale = SaleMultiplier, MaxFuel = Fuel, ConsumptionFuel = Consumption,
             AddMultFuel = Fill, MaxSpeedBoard = Speed, MeleDamage = MeleeDamage,
             MeleAttackSpeed = MeleeSpeed, RangeDamage = RangeDamage, RangeAttackSpeed = RangeSpeed,
-            RangeReloadSpeed = ReloadSpeed, InventorySlots = InventorySlots
+            RangeReloadSpeed = ReloadSpeed, InventorySlots = InventorySlots,
+            BloodPactRank = BloodPactRank, BattleRhythmRank = BattleRhythmRank, OnTheEdgeRank = OnTheEdgeRank
         };
 
         public static SharedPersonalData Capture()
@@ -45,7 +47,8 @@ namespace DeadBoat.Online
                 SaleMultiplier = cards.MoneyMultSale, Fuel = cards.MaxFuel, Consumption = cards.ConsumptionFuel,
                 Fill = cards.AddMultFuel, Speed = cards.MaxSpeedBoard, MeleeDamage = cards.MeleDamage,
                 MeleeSpeed = cards.MeleAttackSpeed, RangeDamage = cards.RangeDamage,
-                RangeSpeed = cards.RangeAttackSpeed, ReloadSpeed = cards.RangeReloadSpeed, InventorySlots = cards.InventorySlots
+                RangeSpeed = cards.RangeAttackSpeed, ReloadSpeed = cards.RangeReloadSpeed, InventorySlots = cards.InventorySlots,
+                BloodPactRank = cards.BloodPactRank, BattleRhythmRank = cards.BattleRhythmRank, OnTheEdgeRank = cards.OnTheEdgeRank
             };
         }
 

@@ -16,6 +16,7 @@ public class LevelUpButtomUI : MonoBehaviour
     [SerializeField] Text _boostText;
     [SerializeField] Text _description;
     bool _isAds;
+    bool _claimPending;
 
 
     private void Awake()
@@ -25,6 +26,8 @@ public class LevelUpButtomUI : MonoBehaviour
     }
     private void UseButton()
     {
+        if (_claimPending || !LevelUpUi.Instance.TryClaimCard()) return;
+        _claimPending = true;
         //var values = Enum.GetValues(typeof(RareType)) as RareType[];
        // var lastValue = values[values.Length - 1];
        if (_isAds)
@@ -37,6 +40,7 @@ public class LevelUpButtomUI : MonoBehaviour
                 {
                     StartCoroutine(AddRevard());
                 }
+                else { _claimPending = false; LevelUpUi.Instance.ReleaseCardClaim(); }
             });
         }
         else if (!LevelStatManager.Instance.HaveLevelUp())
@@ -69,9 +73,10 @@ public class LevelUpButtomUI : MonoBehaviour
     }
     public void AddItemInButton(BoostItem item,RareType rare,bool isAds)
     {
+        _claimPending = false;
         _item = item;
         _rare = rare;
-        _isAds = isAds;
+        _isAds = isAds && !CombatCardRules.IsSpecial(item.BoostType);
         _adsIcon.SetActive(_isAds);
         _title.text = GetText(item.BoostType.ToString(), BoostUI.Title) ;
         _icon.sprite = item.BoostIcon;
@@ -80,9 +85,22 @@ public class LevelUpButtomUI : MonoBehaviour
         _rareBack.sprite = rareBack.sprite;
         _boostText.text = item.GetReward(rare) +" "+ GetText(item.BoostType.ToString(), BoostUI.Useble);
         _description.text = GetText(item.BoostType.ToString(), BoostUI.Discription);
+        _description.resizeTextForBestFit = CombatCardRules.IsSpecial(item.BoostType);
+        if (CombatCardRules.IsSpecial(item.BoostType))
+        {
+            int rank = CombatCardRules.Rank(LevelStatManager.Instance.Stats, item.BoostType);
+            float maximum = PlayerStatsManager.Instance != null ? PlayerStatsManager.Instance.MaxHealth : 100;
+            float after = item.BoostType == BoostType.BloodPact && rank == 0 ? CombatCardRules.MaximumHealth(maximum, 1) : maximum;
+            _title.text = CombatCardText.Title(item.BoostType);
+            _boostText.text = CombatCardText.RankPreview(rank);
+            _description.resizeTextMinSize = 12;
+            _description.resizeTextMaxSize = _description.fontSize;
+            _description.text = CombatCardText.Description(item.BoostType, rank + 1, maximum, after);
+        }
     }
     private string GetText(string key, BoostUI boostUI)
     {
+        if (System.Enum.TryParse<BoostType>(key, out var special) && CombatCardRules.IsSpecial(special)) return CombatCardText.Title(special);
         if (key == nameof(BoostType.InventorySlots)) return InventoryExpansionText.Get(boostUI);
         LocalizationData lData = LocalizationManager.Instance.LocalizationData;
 

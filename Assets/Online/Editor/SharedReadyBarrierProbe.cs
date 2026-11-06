@@ -75,6 +75,7 @@ namespace DeadBoat.Online.Editor
                     {
                     await CompanionProbe.RunShared(authority, remote);
                     await InventoryExpansionProbe.RunShared(authority, remote);
+                    await CombatCardProbe.RunShared(authority, remote);
                     await WorldEnemyRehydrationProbe.RunShared(authority, remote);
                     await WorldRegionResidencyProbe.RunShared(authority, remote);
                     await WorldRegionMembershipProbe.RunShared(authority, remote);
@@ -165,6 +166,7 @@ namespace DeadBoat.Online.Editor
                 Require(remote.Items.ContainsKey(9000000000) &&
                     remote.TryEnemy(SharedEnemyTestId(), out var defeated) && defeated.HP == 0,
                     "item and enemy snapshots survive master transfer");
+                Require(remote.WeaponSequences[remote.CrewSlot(second.LocalPlayer)] > 0, "weapon dedup watermark survives master transfer");
                 Require(remote.Driver == second.LocalPlayer && remote.BoatDistance >= distance,
                     "boat state survives master transfer");
                 Debug.Log("[Boat probe] PASS: exclusive driver, rejected input, distance/fuel replication, stale input, refuel, master transfer.");

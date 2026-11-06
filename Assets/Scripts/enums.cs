@@ -258,7 +258,10 @@ public enum BoostType
     RangeDamage,
     RangeAttackSpeed,
     RangeReloadSpeed,
-    InventorySlots
+    InventorySlots,
+    BloodPact,
+    BattleRhythm,
+    OnTheEdge
 }
 public enum RareType
 {

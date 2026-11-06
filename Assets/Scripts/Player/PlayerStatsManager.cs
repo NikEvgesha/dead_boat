@@ -97,7 +97,8 @@ public class PlayerStatsManager : MonoBehaviour
             if (LevelStatManager.Instance)
                 health += LevelStatManager.Instance.Stats.HP;
             health = ProfessionService.ApplyMaxHealth(health);
-            return EggAnimalBuffService.ApplyMaxHealth(health);
+            return CombatCardRules.MaximumHealth(EggAnimalBuffService.ApplyMaxHealth(health),
+                LevelStatManager.Instance != null ? LevelStatManager.Instance.Stats.BloodPactRank : 0);
         }
     }
 
@@ -320,6 +321,18 @@ public class PlayerStatsManager : MonoBehaviour
             _animator.SetTrigger(_animatorTrigger);
         if (_health <= 0)
             Dead();
+    }
+    public void ClampCardHealth()
+    {
+        // Changing the maximum is a stat change, never a damage/death event or a heal.
+        _health = Mathf.Min(_health, MaxHealth);
+        UpdateStatCaches();
+        StatChanged?.Invoke(PlayerStat.Health, _health, MaxHealth);
+        SaveManager.Instance.SavePlayerHealth(_health);
+    }
+    public void AddCardHealing(float amount)
+    {
+        if (!_isDead && _health > 0 && amount > 0 && !float.IsNaN(amount) && !float.IsInfinity(amount)) Health = _health + amount;
     }
     public void AddHealth(int heal)
     {
