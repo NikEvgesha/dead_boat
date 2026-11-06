@@ -12,13 +12,15 @@ namespace DeadBoat.FirstRun.Editor
     {
         public static string Result { get; private set; } = "not run";
         private static bool running;
-        private static bool abortAtChoice;
+        private static bool abortAtChoice, checkpointOnly;
+        public static void RunToCheckpoint() { checkpointOnly = true; Run(); }
         public static void RunAbort() { abortAtChoice = true; Run(); }
         public static async void Run()
         {
             if (running) return;
             running = true; Result = "running";
             bool abort = abortAtChoice; abortAtChoice = false;
+            bool saveCheckpoint = checkpointOnly; checkpointOnly = false;
             try
             {
                 Require(SaveManager.Instance?.PersistentProvider is DeadBoat.Online.SharedRunPreviewSave, "isolated save");
@@ -37,9 +39,12 @@ namespace DeadBoat.FirstRun.Editor
                 var lostPosition = droppedGun.transform.position; lostPosition.y = -30; droppedGun.transform.position = lostPosition;
                 await Until(() => route.supplies[2] != null && route.supplies[2] != burnedEgg && droppedGun.transform.position.y > -15, "required egg replacement and pistol recovery");
                 Require(!route.EggCollected && !EggFeatureStorage.IsOneShotEggCollected(FirstRunAuthoredRoute.EggReceipt), "burning does not collect egg");
-                FirstRunAuthoredTools.SmokeTutorial();
-                await Until(() => FirstRunAuthoredTools.Result.StartsWith("PASS") || FirstRunAuthoredTools.Result.StartsWith("FAIL"), "dock smoke");
-                Require(FirstRunAuthoredTools.Result.StartsWith("PASS"), FirstRunAuthoredTools.Result);
+                if (!route.tutorial.IntroComplete)
+                {
+                    FirstRunAuthoredTools.SmokeTutorial();
+                    await Until(() => FirstRunAuthoredTools.Result.StartsWith("PASS") || FirstRunAuthoredTools.Result.StartsWith("FAIL"), "dock smoke");
+                    Require(FirstRunAuthoredTools.Result.StartsWith("PASS"), FirstRunAuthoredTools.Result);
+                }
                 await Until(() => route.Lesson == FirstRunLesson.SailFirst, "first sail");
                 var boat = BoardController.Instance;
                 float originZ = boat.transform.position.z - boat.TotalDistanceTraveled;
@@ -101,6 +106,19 @@ namespace DeadBoat.FirstRun.Editor
                 await Until(() => route.Lesson == FirstRunLesson.SailBoss, "boss approach");
                 Require(route.ChoicesMade == 2 && LevelStatManager.Instance.Stats.SteadyAimRank == 1 &&
                     float.IsPositiveInfinity(boat.ScenarioDistanceLimit), "second card and final gate");
+                if (saveCheckpoint)
+                {
+                    Place(boat, originZ, 710);
+                    PlayerMovement.Instance.Teleport(boat.transform.position + Vector3.up * 3);
+                    CurrencyManager.Instance.AddCurrency(CurrencyType.Coins, 137 - CurrencyManager.Instance.Coins);
+                    PlayerStatsManager.Instance.RestoreRecoveryHealth(57);
+                    weapon.ApplySharedAmmo(2);
+                    PlayerAmmoManager.Instance.RestoreRecovery(17, 9, 4);
+                    route.CaptureCheckpoint();
+                    Require(FirstRunSession.Checkpoint?.coins == 137, "profile checkpoint committed");
+                    Result = "PASS: real lesson through both cards; checkpoint at710m/137coins/57HP/pistol2+17";
+                    return;
+                }
                 Place(boat, originZ, 900);
                 PlayerMovement.Instance.Teleport(boat.transform.position + Vector3.up * 3);
                 await Until(() => route.Dragon != null && route.Dragon.SharedHP > 0, "real mini dragon start");

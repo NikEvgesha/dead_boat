@@ -6,6 +6,7 @@ namespace DeadBoat.FirstRun
 {
     public enum FirstRunLesson { Intro, SailFirst, FirstFight, Egg, FirstCard, SailSecond, Supplies, SecondFight, SecondCard, SailBoss, Boss, Completed }
 
+    [DefaultExecutionOrder(-2)]
     public sealed class FirstRunAuthoredRoute : MonoBehaviour
     {
         public const int Seed = 14052026;
@@ -40,6 +41,18 @@ namespace DeadBoat.FirstRun
         public PickableItem EmergencyAmmunition => reserveAmmo;
         private GameObject questPanel;
         private bool questPanelWasActive;
+        private FirstRunCheckpointWorld checkpointWorld;
+        private FirstRunCheckpoint pendingCheckpoint;
+        private bool profileReady;
+        private float nextCheckpoint;
+        private int restoreBossHealth = -1;
+        private void Awake()
+        {
+            if (!FirstRunSession.Active) return;
+            checkpointWorld = gameObject.AddComponent<FirstRunCheckpointWorld>();
+            checkpointWorld.Initialize(this);
+            pendingCheckpoint = FirstRunSession.Checkpoint;
+        }
 
         private void Start()
         {
@@ -73,6 +86,33 @@ namespace DeadBoat.FirstRun
         private void Update()
         {
             if (!initialized || !boat.StartGame || Time.unscaledTime < nextTick) return;
+            if (GameManager.Instance.isEndGame) return;
+            if (FirstRunSession.Active && !profileReady)
+            {
+                if (pendingCheckpoint != null)
+                {
+                    try { checkpointWorld.Restore(pendingCheckpoint); }
+                    catch (System.Exception e)
+                    {
+                        Debug.LogWarning("Lesson checkpoint could not be restored; retrying the lesson: " + e.Message);
+                        FirstRunSession.Restart();
+                        LoadingManager.Instance.LoadLocation(Location.Game, FirstRunSession.SceneName, false);
+                        return;
+                    }
+                    pendingCheckpoint = null;
+                }
+                else
+                {
+                    stats.RestoreRecovery(stats.StatsDefault, 0);
+                    PlayerStatsManager.Instance.RestoreRecoveryHealth(PlayerStatsManager.Instance.MaxHealth);
+                    PlayerStatsManager.Instance.ResetExp();
+                    int delta = FirstRunSession.Save.LoadGameCoin() - CurrencyManager.Instance.Coins;
+                    if (delta != 0) CurrencyManager.Instance.AddCurrency(CurrencyType.Coins, delta);
+                }
+                FirstRunSession.Restoring = false;
+                profileReady = true;
+                CaptureCheckpoint();
+            }
             nextTick = Time.unscaledTime + .2f;
             guide.Show(Lesson, Dragon != null ? Dragon.SharedHP : 0, LevelUpUi.Instance.IsChoiceOpen, tutorial.CurrentStepIndex);
             if (Time.timeScale <= 0 || LevelUpUi.Instance.IsChoiceOpen) return;
@@ -197,6 +237,12 @@ namespace DeadBoat.FirstRun
         }
         private void LateUpdate()
         {
+            if (profileReady && Time.unscaledTime >= nextCheckpoint) CaptureCheckpoint();
+            if (restoreBossHealth > 0 && Dragon != null && Dragon.SharedHP > 0)
+            {
+                Dragon.RestoreCheckpointHealth(restoreBossHealth, (int)Dragon.GetStartHP());
+                restoreBossHealth = -1;
+            }
             if (Companion == null || PlayerMovement.Instance == null) return;
             var player = PlayerMovement.Instance.transform;
             var target = player.position - player.forward * 1.5f + player.right * 1.25f + Vector3.up * (.55f + Mathf.Sin(Time.time * 2) * .1f);
@@ -214,6 +260,7 @@ namespace DeadBoat.FirstRun
         {
             if (Lesson != FirstRunLesson.Boss) return;
             Enter(FirstRunLesson.Completed);
+            FirstRunSession.Close(true);
             PauseManager.Instance.SetPause(true, false);
             ControlManager.Instance.CursorActive = true;
         }
@@ -222,6 +269,47 @@ namespace DeadBoat.FirstRun
             if (Lesson != FirstRunLesson.Completed || GameManager.Instance.isEndGame) return;
             // The lesson has its own result, not a normal boss achievement / victory payout.
             GameManager.Instance.EndGame(true, false);
+        }
+        public void CaptureCheckpoint()
+        {
+            if (!profileReady || !FirstRunSession.CanCapture || checkpointWorld == null || !boat.StartGame || GameManager.Instance.isEndGame) return;
+            if (restoreBossHealth > 0) return;
+            if (Lesson == FirstRunLesson.Boss && Dragon != null && Dragon.IsDead) { FirstRunSession.Close(true); return; }
+            if (Lesson == FirstRunLesson.Boss && (Dragon == null || Dragon.SharedHP <= 0)) return;
+            nextCheckpoint = Time.unscaledTime + 2;
+            FirstRunSession.Persist(checkpointWorld.Capture());
+        }
+        private void OnApplicationPause(bool pause) { if (pause) CaptureCheckpoint(); }
+        private void OnApplicationFocus(bool focus) { if (!focus) CaptureCheckpoint(); }
+        private void OnApplicationQuit() => CaptureCheckpoint();
+        public void RestoreCheckpointState(FirstRunCheckpoint c)
+        {
+            if (c.egg && !EggFeatureStorage.IsOneShotEggCollected(EggReceipt))
+                EggHatchingManager.RegisterOneShotEggPickup(EggReceipt, "egg_chicken", 1, false);
+            ChoicesMade = c.choices; EggCollected = c.egg || EggFeatureStorage.IsOneShotEggCollected(EggReceipt);
+            AmmunitionCollected = c.ammo; Fired = c.shot;
+            boat.TotalDistanceTraveled = c.distance;
+            var position = boat.transform.position; position.z = c.distance; boat.transform.position = position;
+            boat.currentFuel = c.fuel; boat.SwitchFuel?.Invoke(boat.currentFuel, boat.MaxFuel);
+            if (EggCollected) { supplies[2].gameObject.SetActive(false); SpawnCompanion(); }
+            boat.ScenarioDistanceLimit = c.lesson <= FirstRunLesson.FirstCard ? 300 : c.lesson <= FirstRunLesson.SecondCard ? 600 : float.PositiveInfinity;
+            Enter(c.lesson == FirstRunLesson.Boss ? FirstRunLesson.SailBoss : c.lesson);
+            if (c.lesson == FirstRunLesson.Boss)
+            {
+                BeginBoss(); restoreBossHealth = Mathf.Max(1, c.bossHP);
+            }
+        }
+        public void BindCheckpointSupply(int index, PickableItem item)
+        {
+            if (index == 6) { reserveAmmo = item; return; }
+            if (index < 0 || index >= supplies.Length || supplies[index] == item) return;
+            if (index == 2 && egg) egg.Collected -= OnEgg;
+            if (index == 3 && gun) gun.ShotFired -= OnShot;
+            if (index == 4 && ammunition) ammunition.Collected -= OnAmmo;
+            supplies[index] = item;
+            if (index == 2) { egg = item.GetComponent<EggCollectibleItem>(); egg.Collected += OnEgg; }
+            if (index == 3) { gun = item.GetComponentInChildren<RangedWeaponController>(true); gun.ShotFired += OnShot; }
+            if (index == 4) { ammunition = item.GetComponent<AmmoItem>(); ammunition.Collected += OnAmmo; }
         }
         private void OnDestroy()
         {

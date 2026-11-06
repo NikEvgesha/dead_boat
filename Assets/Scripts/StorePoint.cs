@@ -46,6 +46,7 @@ public class StorePoint : MonoBehaviour
 
     public Action BuyItem;
     public PickableItem LastPurchasedItem { get; private set; }
+    public void RestoreCheckpointPurchase(PickableItem item) => LastPurchasedItem = item;
 
     private void Start()
     {

@@ -34,6 +34,7 @@ public class TutorialManager : MonoBehaviour
 
     public void StartTutorial()
     {
+        if (_authoredFirstRun && DeadBoat.FirstRun.FirstRunSession.Checkpoint != null) return;
         if (!_authoredFirstRun && SaveManager.Instance.GetTutorialProgress())
             return;
 
@@ -44,6 +45,12 @@ public class TutorialManager : MonoBehaviour
         }
         _currentIndex = 0;
         ActivateNewStep();
+    }
+    public void ResumeAuthoredAt(int index)
+    {
+        if (!_authoredFirstRun) return;
+        _currentIndex = Mathf.Clamp(index, 0, _tutorialSteps.Count);
+        if (_currentIndex < _tutorialSteps.Count) ActivateNewStep();
     }
     private void StepEnd(TutorialStep step)
     {

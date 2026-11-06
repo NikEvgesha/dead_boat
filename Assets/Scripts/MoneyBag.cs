@@ -20,6 +20,7 @@ public class MoneyBag : MonoBehaviour
     private bool _collectInProgress;
 
     public Action TakeBag;
+    public bool Collected { get; private set; }
     public int Money
     {
         get
@@ -74,6 +75,7 @@ public class MoneyBag : MonoBehaviour
 
         if (_progress >= 1f)
         {
+            Collected = true;
             CurrencyManager.Instance.AddCurrency(CurrencyType.Coins, _money);
             TakeBag?.Invoke();
             Destroy(gameObject);

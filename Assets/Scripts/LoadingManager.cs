@@ -50,6 +50,12 @@ public class LoadingManager : MonoBehaviour
             GameLoader.Instance.LoadNextScene(_lobbyScene, true, false);
             return;
         }
+        if (DeadBoat.FirstRun.FirstRunSession.TryBoot(SaveManager.Instance, DeadBoat.Online.SharedRunRecovery.HasPending))
+        {
+            _location = Location.Game;
+            GameLoader.Instance.LoadNextScene(DeadBoat.FirstRun.FirstRunSession.SceneName, true, false);
+            return;
+        }
         bool haveSave = SaveManager.Instance.LoadGameProgress().Item1 >= 0;
         if (DeadBoat.Online.SharedRunRecovery.HasPending)
         {
@@ -101,6 +107,30 @@ public class LoadingManager : MonoBehaviour
 
     public void LoadLocation(Location location, string sceneName = null, bool withAds = true)
     {
+        if (DeadBoat.FirstRun.FirstRunSession.Active && location == Location.Game && sceneName != DeadBoat.FirstRun.FirstRunSession.SceneName)
+        {
+            LoadLocation(Location.Lobby, null, false);
+            return;
+        }
+        if (location == Location.Lobby && DeadBoat.FirstRun.FirstRunSession.Active && GameManager.Instance != null && !GameManager.Instance.isEndGame)
+        {
+            GameManager.Instance.EndGame(true, false);
+            return;
+        }
+        if (location == Location.Lobby && DeadBoat.FirstRun.FirstRunSession.Active)
+        {
+            DeadBoat.FirstRun.FirstRunSession.Close(false);
+            DeadBoat.FirstRun.FirstRunSession.End();
+        }
+        if (location == Location.Game && sceneName == DeadBoat.FirstRun.FirstRunSession.SceneName && !DeadBoat.FirstRun.FirstRunSession.Active)
+        {
+#if UNITY_EDITOR
+            bool isolatedPreview = SaveManager.Instance.PersistentProvider is DeadBoat.Online.SharedRunPreviewSave && !DeadBoat.FirstRun.FirstRunProfile.IsTemporary;
+#else
+            bool isolatedPreview = false;
+#endif
+            if (!isolatedPreview) { LoadLocation(Location.Lobby, null, false); return; }
+        }
         TryGameplayStop();
 
         if (location == Location.Game)

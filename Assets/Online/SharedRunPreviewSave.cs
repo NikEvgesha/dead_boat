@@ -6,7 +6,7 @@ namespace DeadBoat.Online
 {
     // The transport/generation preview must not overwrite solo progress or grant
     // permanent rewards while authoritative interactions are still being implemented.
-    public sealed class SharedRunPreviewSave : SaveProvider
+    public class SharedRunPreviewSave : SaveProvider
     {
         public SaveProvider Persistent;
         private int distance = -1, levelId, fuel, coins, exp, playerLevel, upgrades;

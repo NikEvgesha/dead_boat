@@ -9,7 +9,8 @@ public class SaveManager : MonoBehaviour
     private static SaveManager _instance;
     public static SaveManager Instance => _instance;
     public SaveProvider PersistentProvider => saveProvider;
-    private SaveProvider ActiveProvider => DeadBoat.Online.SharedRunContext.Save != null
+    private SaveProvider ActiveProvider => DeadBoat.FirstRun.FirstRunSession.Save != null
+        ? DeadBoat.FirstRun.FirstRunSession.Save : DeadBoat.Online.SharedRunContext.Save != null
         ? DeadBoat.Online.SharedRunContext.Save : saveProvider;
 
     [SerializeField] private SaveProvider saveProvider; // Ќазначаем в инспекторе нужный провайдер (YG2SaveProvider, DebugSaveProvider и т.д.)

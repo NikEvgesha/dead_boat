@@ -11,6 +11,13 @@ public class SellPoint : MonoBehaviour
 
     private MoneyBag _moneyBag;
     private PickableItem _lastItem;
+    public MoneyBag CheckpointBag => _moneyBag;
+    public void RestoreCheckpointBag(int coins)
+    {
+        if (coins <= 0) return;
+        if (_moneyBag == null) _moneyBag = Instantiate(_moneyBagPrefab, _moneyBagPoint);
+        _moneyBag.Money = coins;
+    }
 
     public Action<StoreType> SellItem;
     // TODO: spawn money bag
@@ -57,6 +64,7 @@ public class SellPoint : MonoBehaviour
             {
                 _moneyBag.Money += cost;
             }
+            DeadBoat.FirstRun.FirstRunCheckpointWorld.MarkConsumed(item);
             SellItem?.Invoke(_type);
             Destroy(other.gameObject);
             if (_audioSource)

@@ -105,6 +105,9 @@ public class GameManager : MonoBehaviour
     public async void EndGame(bool lobby,bool withAds = true)
     {
         if (isEndGame) return;
+        bool lesson = DeadBoat.FirstRun.FirstRunSession.Active;
+        if (lesson && DeadBoat.FirstRun.FirstRunSession.Profile.status != DeadBoat.FirstRun.FirstRunStatus.Running) lobby = true;
+        if (lesson && lobby) DeadBoat.FirstRun.FirstRunSession.Close(false);
         if (!DeadBoat.Online.SharedRunContext.Active) DeadBoat.Online.SoloRunBranch.Clear();
         PlayerManager.Instance.gameObject.transform.SetParent(null);
         DontDestroyOnLoad(PlayerManager.Instance.gameObject);
@@ -130,7 +133,8 @@ public class GameManager : MonoBehaviour
         // Persist the explicit exit before the scene transition or page close.
         SaveManager.Instance.FlushProgress();
         await DeadBoat.Online.SharedRunLifetime.LeaveAsync();
-        LoadingManager.Instance.LoadLocation(location, default, lobby ? false : withAds);
+        if (lesson && !lobby) DeadBoat.FirstRun.FirstRunSession.Restart();
+        LoadingManager.Instance.LoadLocation(location, lesson && !lobby ? DeadBoat.FirstRun.FirstRunSession.SceneName : null, lobby ? false : withAds);
     }
 
 

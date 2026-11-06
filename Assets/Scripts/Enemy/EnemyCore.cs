@@ -28,6 +28,15 @@ public abstract class EnemyCore : MonoBehaviour
     private Coroutine _burnRoutine;
 
     public bool IsDead => isDead;
+    // Reconstruct a freshly loaded lesson actor without replaying damage, XP or death events.
+    public void RestoreCheckpointHealth(int hp, int maximum)
+    {
+        _maxHP = Mathf.Max(1, maximum);
+        currentHP = Mathf.Clamp(hp, 0, _maxHP);
+        isDead = currentHP == 0;
+        if (hpBar != null) { hpBar.size = currentHP / (float)_maxHP; hpBar.gameObject.SetActive(currentHP > 0 && currentHP < _maxHP); }
+        if (isDead) gameObject.SetActive(false);
+    }
     public int SharedHP => currentHP;
     public int SharedMaxHP => _maxHP;
     public void ApplySharedHealth(int hp, int maxHP)
