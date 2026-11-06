@@ -938,3 +938,13 @@ CardFeelFeedback: вход scale/alpha, короткий press, рамки ре�
 Настоящий UI + изолированный SaveProvider + mock AdsProvider: pause/entry/press,30rerolls/10reopens без роста7players/graphics, RNG, отказ/duplicate/stale callbacks, двойной клик в новое предложение, закрытие во время рекламы, RU/EN PASS. Первая ошибка CanvasGroup исправлена явной Unity null-проверкой; промежуточный press-тест уточнён explicitLeft, готовностью Button, запуском/завершением и паройDown/Up. GameViewRU/EN и финальный toast справа осмотрены; локальные Logs/CardFeel-*. После теста VerifyRestored PASS, Playfalse, MMF/Runner0, Shared/SoloFalse. Это не измерение FPS/GC в слабом браузере и не ручная WebGL-приёмка.
 
 Зависимость FEEL5.9.1 сохранена неизменённым vendor-коммитом15536cf3, чтобы новый код открывался после клонирования репозитория. SDK/MCP обновление владельца этим этапом не переписывалось. DB-ON-128 in_review для пакетного тестирования владельцем позже. Следующий ИИ-шаг — DB-ON-125 (активные области/бюджеты); владелец пока не нужен. Сборка и черновик не обновлялись.
+
+## 06.11.2026 — DB-ON-129: боевой отклик карточек, без сборки
+
+По просьбе продолжить карточки добавлены личные HUD-строки трёх прототипов: серия 0–2/3 и подтверждённый третий удар, фактическое лечение Blood Pact, активность On the Edge. Только локальные снимки; нет новых RPC/save-полей. Три MMF_Player, 10 Гц, объединение лечения 0.3 с, UI без raycast; RU/EN, скрытие лобби/пауза/реклама/смерть/blocked recovery. Исправлен float-порог ровно40% общим правилом для урона и визуала. Баланс рангов не менялся.
+
+Math/local combat и два Cloud-peer + полный ReadyBarrier PASS. Итоговый реальный Lobby/Forest/return HUD probe PASS: actual healing, coalescing, miss/timeout, confirmed/replay-safe third hit, threshold, pause/ad/death/recovery, RU/EN, stable players/cameras и отсутствие дубликатов. Первый тест выявил порог; второй уточнил ошибочное ожидание уничтожения сохраняющегося UI. Подробности в DB-ON-129. WebGL стоимость/мобильная читаемость не измерены; статус in_review. Сборки/черновика нет.
+
+Следующее: владелец — пакетная приёмка после будущей отдельно запрошенной сборки; остальные карточки из дизайн-документа ещё не реализованы.
+
+DB-ON-129 cleanup: VerifyRestored PASS, Play=false, MMF/Runner=0, Shared/Solo=false. Screenshot preview остался на загрузочном экране; визуальная приёмка HUD не засчитана, остаётся владельцу.

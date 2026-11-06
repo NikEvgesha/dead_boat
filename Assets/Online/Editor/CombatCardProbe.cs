@@ -31,6 +31,7 @@ namespace DeadBoat.Online.Editor
                 Require(budget.Take(3, rank, 10000, 80, 80) > 0, "recovery lock ends");
                 Near(new CombatCardRules.HealingBudget().Take(0, rank, 100, 80, .1f), .1f, "no overheal");
             }
+            Require(CombatCardRules.EdgeActive(88f * .4f, 88f) && !CombatCardRules.EdgeActive(88f * .401f, 88f) && !CombatCardRules.EdgeActive(0, 88), "inclusive float HP threshold");
             var combo = new CombatCardRules.Combo();
             Require(!combo.Hit(0) && !combo.Hit(1) && combo.Hit(2) && !combo.Hit(2.1), "third hit and reset");
             combo.Miss(); Require(!combo.Hit(3) && !combo.Hit(6) && !combo.Hit(7) && combo.Hit(8), "miss/gap reset");
@@ -105,6 +106,7 @@ namespace DeadBoat.Online.Editor
             fixture.UnlockedBudget(); fixture.EnemyHP(5);
             var overkill = CombatCards.Begin(false); CombatCards.Hit(overkill, enemy, 100); CombatCards.Hit(overkill, enemy, 100);
             Near(player.Health, 10.4f, "overkill/duplicate corpse heal");
+            Near((float)CombatCards.HealingTotal, .4f, "actual healing presentation once");
             fixture.Health(0); fixture.EnemyHP(100); CombatCards.Hit(CombatCards.Begin(false), enemy, 100);
             Near(player.Health, 0, "cannot resurrect");
             stats.Stats.BloodPactRank = 0;
@@ -112,7 +114,13 @@ namespace DeadBoat.Online.Editor
             for (int i = 0; i < 2; i++) { var attack = CombatCards.Begin(true); CombatCards.Hit(attack, enemy, 100); CombatCards.End(attack); }
             stats.Stats.BattleRhythmRank = 3; stats.Stats.OnTheEdgeRank = 3;
             fixture.Health(player.MaxHealth * .4f); fixture.EnemyHP(10000);
-            for (int i = 0; i < 3; i++) { var attack = CombatCards.Begin(true); CombatCards.Hit(attack, enemy, 100); CombatCards.Hit(attack, enemy, 100); CombatCards.End(attack); }
+            CombatCards.Attack finalSwing = null;
+            for (int i = 0; i < 3; i++) { var attack = CombatCards.Begin(true); CombatCards.Hit(attack, enemy, 100); CombatCards.Hit(attack, enemy, 100); CombatCards.End(attack); finalSwing = attack; }
+            Require(CombatCards.ThirdHitRevision == 1 && CombatCards.ComboHits == 0, "one confirmed third hit cue");
+            var secondTarget = new GameObject("Temporary second sword victim"); secondTarget.SetActive(false); secondTarget.transform.SetParent(fixture.Root.transform);
+            var other = secondTarget.AddComponent<SharedProbeEnemy>(); other.SetHP(1000);
+            CombatCards.Hit(finalSwing, other, 100);
+            Require(CombatCards.ThirdHitRevision == 1, "multi-target swing repeats cue");
             Require(enemy.SharedHP == 9510, "one hit per swing and third hit bonus ceiling"); //145 +145 +200
             typeof(LevelStatManager).GetMethod("Subscriptions", Private).Invoke(stats, null);
             stats._boostItems.Add(AssetDatabase.LoadAssetAtPath<BoostItem>("Assets/Scripts/LevelStat/Boosters/BoostItem_HP.asset"));
@@ -153,9 +161,21 @@ namespace DeadBoat.Online.Editor
                 await Task.Delay(300);
                 Require(fixture.Enemy.SharedHP == 100, "duplicate damage rejected");
                 Near(fixture.Player.Health, 10.4f, "duplicate heal rejected");
+                Near((float)CombatCards.HealingTotal, .4f, "confirmed heal cue once");
                 authority.RPC_EnemyDamage(identity.Id, 10); // Environmental/legacy route has no lifesteal.
                 await Until(() => fixture.Enemy.SharedHP == 90);
                 Near(fixture.Player.Health, 10.4f, "another player's damage cannot heal local owner");
+                fixture.Cards.Stats.BloodPactRank = 0; fixture.Cards.Stats.BattleRhythmRank = 3;
+                fixture.EnemyHP(1000); authority.SampleEnemy(identity, fixture.Enemy);
+                await Until(() => remote.TryEnemy(identity.Id, out var resetEnemy) && resetEnemy.HP == 1000);
+                for (int i = 0; i < 3; i++) { var attack = CombatCards.Begin(true); CombatCards.Hit(attack, fixture.Enemy, 100); CombatCards.End(attack); }
+                Require(CombatCards.ThirdHitRevision == 0, "unconfirmed third hit flashes");
+                await Until(() => CombatCards.ThirdHitRevision == 1 && fixture.Enemy.SharedHP == 630);
+                int thirdSequence = authority.WeaponSequences[slot];
+                remote.RPC_WeaponDamage(identity.Id, 170, thirdSequence);
+                CombatCards.Confirm(thirdSequence, 170);
+                await Task.Delay(200);
+                Require(CombatCards.ThirdHitRevision == 1 && fixture.Enemy.SharedHP == 630, "third hit replay repeats cue/damage");
                 authority.RPC_RecoveryProgress(new SharedPersonalData { BloodPactRank = 1, BattleRhythmRank = 2, OnTheEdgeRank = 3 });
                 remote.RPC_RecoveryProgress(new SharedPersonalData { BloodPactRank = 3, BattleRhythmRank = 1, OnTheEdgeRank = 2 });
                 await Until(() => remote.Personal.TryGet(authority.Runner.LocalPlayer, out var a) && a.Cards.BloodPactRank == 1 &&

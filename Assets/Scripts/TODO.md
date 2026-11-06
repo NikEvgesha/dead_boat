@@ -313,3 +313,9 @@ Implementation backlog for eggs:
 - [x] Preserve Animator paths/layout/game RNG; exactly-once/versioned ad callbacks and next-offer click debounce; no gameplay from FEEL events.
 - [x] Real Lobby prefab: pause, 30 rerolls/10 reopens stable7 players, failed/duplicate/stale ads, no extra camera/audio source, RU/EN and cleanup PASS.
 - [ ] Independent browser/mobile performance/readability and owner acceptance after future batch build (in_review); no build/upload here.
+
+### DB-ON-129 — combat card status HUD (2026-11-06)
+- [x] Personal owned-card rows: combo count, confirmed third hit, actual HP gain, low-health edge state; RU/EN.
+- [x] Local snapshot presentation, 10 Hz, three reused FEEL players; no new network/save fields, cameras, particles or AudioSources.
+- [x] Cloud duplicate/multi-target/confirmation regressions and real Lobby/Forest/return HUD checks PASS; shared 40% float boundary fixed.
+- [ ] Owner batch WebGL/mobile readability, feel and cost acceptance after separately requested build (in_review).

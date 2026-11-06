@@ -14,12 +14,15 @@ public static class CombatCardRules
     public static float HealLimit(int rank) => rank > 0 ? .01f + .01f * Mathf.Clamp(rank, 1, 3) : 0;
     public static float RhythmBonus(int rank) => rank > 0 ? .25f + .15f * Mathf.Clamp(rank, 1, 3) : 0;
     public static float EdgeBonus(int rank) => rank > 0 ? .15f + .1f * Mathf.Clamp(rank, 1, 3) : 0;
+    public static bool EdgeActive(float health, float maximum) => health > 0 && maximum > 0 &&
+        (health <= maximum * .4f || Mathf.Approximately(health, maximum * .4f));
     public static int Damage(int basic, float bonus) => Mathf.Max(0, Mathf.RoundToInt(basic * (1 + Mathf.Clamp(bonus, 0, 1))));
 
     public sealed class Combo
     {
         private int hits;
         private double lastHit = double.NegativeInfinity;
+        public int Count(double now) => now - lastHit > 2 ? 0 : hits;
         public bool Hit(double now)
         {
             if (now - lastHit > 2) hits = 0;

@@ -115,6 +115,7 @@ public class LevelStatManager : MonoBehaviour
     {
         PlayerStatsManager.Instance.Experience().NewLevel.AddListener(AddNewLevelNum);
         PlayerInput.Instance.ALevelUp += ButtonLevelUse;
+        CombatCardHud.Attach(LevelUpUi.Instance);
 
         if (_countLevelUp > 0)
         {

@@ -7,7 +7,7 @@ public static class CombatCards
 {
     public sealed class Attack
     {
-        internal bool Sword, Hit, Third;
+        internal bool Sword, Hit, Third, ThirdNotified;
         internal float Edge;
         internal int Blood, Rhythm;
         internal float MaximumHealth;
@@ -18,12 +18,18 @@ public static class CombatCards
     private static readonly Dictionary<int, (Attack attack, double sent)> pending = new();
     private static readonly List<int> expired = new();
     private static int sequence;
+    // Local presentation snapshots. Never serialized or sent over the network.
+    public static int PresentationEpoch { get; private set; }
+    public static int ThirdHitRevision { get; private set; }
+    public static double HealingTotal { get; private set; }
+    public static int ComboHits => combo.Count(Time.timeAsDouble);
     public static void Reset()
     {
         combo = new CombatCardRules.Combo();
         healing = new CombatCardRules.HealingBudget();
         healing.Lock(Time.timeAsDouble); // Recovery/master handoff must not refill a spent second.
         pending.Clear(); sequence = 0;
+        PresentationEpoch++; ThirdHitRevision = 0; HealingTotal = 0;
     }
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void Initialize() => Reset();
@@ -36,7 +42,7 @@ public static class CombatCards
         {
             Sword = sword, Blood = CombatCardRules.Rank(stats, BoostType.BloodPact),
             Rhythm = CombatCardRules.Rank(stats, BoostType.BattleRhythm), MaximumHealth = maximum,
-            Edge = player != null && player.Health > 0 && player.Health <= maximum * .4f
+            Edge = player != null && CombatCardRules.EdgeActive(player.Health, maximum)
                 ? CombatCardRules.EdgeBonus(CombatCardRules.Rank(stats, BoostType.OnTheEdge)) : 0
         };
     }
@@ -89,9 +95,19 @@ public static class CombatCards
     private static void Heal(Attack attack, int removedHP)
     {
         var player = PlayerStatsManager.Instance;
-        if (player == null || player.Health <= 0) return;
+        if (player == null || player.Health <= 0 || removedHP <= 0) return;
+        if (attack.Third && !attack.ThirdNotified)
+        {
+            attack.ThirdNotified = true;
+            ThirdHitRevision++;
+        }
         float maximum = Mathf.Min(attack.MaximumHealth, player.MaxHealth);
         float amount = healing.Take(Time.timeAsDouble, attack.Blood, removedHP, maximum, player.MaxHealth - player.Health);
-        if (amount > 0) player.AddCardHealing(amount);
+        if (amount > 0)
+        {
+            float before = player.Health;
+            player.AddCardHealing(amount);
+            HealingTotal += Mathf.Max(0, player.Health - before);
+        }
     }
 }
