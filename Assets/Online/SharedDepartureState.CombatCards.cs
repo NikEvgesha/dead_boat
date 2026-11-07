@@ -14,8 +14,9 @@ namespace DeadBoat.Online
             int slot = CrewSlot(info.Source);
             if (Phase != 3 || slot < 0 || !CanAct(info.Source) || damage <= 0 || damage > 10000 ||
                 sequence <= WeaponSequences[slot]) return;
+            if (!SharedEnemiesRuntime.EnsureAuthority(this)) return;
             WeaponSequences.Set(slot, sequence);
-            if (!TryEnemy(id, out var record) || record.HP <= 0 || !record.Active ||
+            if (!TryEnemy(id, out var record) || !HasEnemyAuthority(id) || record.HP <= 0 || !record.Active ||
                 !SharedItemsRuntime.TryFind(id, out var identity)) return;
             var source = LivingCombatAvatar(info.Source);
             var enemy = identity.GetComponent<EnemyCore>();

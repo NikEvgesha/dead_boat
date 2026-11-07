@@ -39,6 +39,12 @@ namespace DeadBoat.Online
             }
             return null;
         }
+        private bool HasEnemyAuthority(ulong id)
+        {
+            var page = EnemyPage(id);
+            return page != null && page.Object.HasStateAuthority;
+        }
+
         public bool TryEnemy(ulong id, out SharedEnemyRecord enemy)
         {
             var page = EnemyPage(id);
@@ -49,6 +55,7 @@ namespace DeadBoat.Online
 
         public void SampleEnemy(WorldSpawnIdentity identity, EnemyCore enemy)
         {
+            if (!SharedEnemiesRuntime.EnsureAuthority(this)) return;
             var page = EnemyPage(identity.Id) ?? (Object.HasStateAuthority ? AvailablePage(true) : null);
             if (page == null || !page.Object.HasStateAuthority || enemy.SharedMaxHP <= 0) return;
             if (enemy is DragonBossController dragon) DragonBrain = dragon.CaptureSharedBrain(identity.Id);
@@ -93,9 +100,9 @@ namespace DeadBoat.Online
         [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
         public void RPC_EnemyBurn(ulong id, float duration, float damage, RpcInfo info = default)
         {
-            if (Phase != 3 || !CanAct(info.Source) || duration <= 0 || duration > 120 ||
+            if (Phase != 3 || !CanAct(info.Source) || !SharedEnemiesRuntime.EnsureAuthority(this) || duration <= 0 || duration > 120 ||
                 damage <= 0 || damage > 5000 || float.IsNaN(duration) || float.IsNaN(damage) ||
-                !TryEnemy(id, out var record) || record.HP <= 0 || !record.Active) return;
+                !TryEnemy(id, out var record) || !HasEnemyAuthority(id) || record.HP <= 0 || !record.Active) return;
             var source = LivingCombatAvatar(info.Source);
             if (source == null || Vector3.Distance(source.LogicalPosition, record.Position) > 200) return;
             record.BurnRemaining = duration; record.BurnDamage = damage; record.BurnAccumulator = 0;
@@ -104,6 +111,7 @@ namespace DeadBoat.Online
 
         private void TickEnemyEffects()
         {
+            if (!SharedEnemiesRuntime.EnsureAuthority(this)) return;
             foreach (var page in SharedWorldPage.All(Runner))
             {
                 if (!page.Object.HasStateAuthority) continue;
@@ -133,8 +141,8 @@ namespace DeadBoat.Online
         [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
         public void RPC_EnemyDamage(ulong id, int damage, RpcInfo info = default)
         {
-            if (Phase != 3 || !CanAct(info.Source) || damage <= 0 || damage > 5000 ||
-                !TryEnemy(id, out var record) || record.HP <= 0 || !record.Active ||
+            if (Phase != 3 || !CanAct(info.Source) || !SharedEnemiesRuntime.EnsureAuthority(this) || damage <= 0 || damage > 5000 ||
+                !TryEnemy(id, out var record) || !HasEnemyAuthority(id) || record.HP <= 0 || !record.Active ||
                 !SharedItemsRuntime.TryFind(id, out var identity)) return;
             var enemy = identity.GetComponent<EnemyCore>();
             var source = LivingCombatAvatar(info.Source);
@@ -146,7 +154,8 @@ namespace DeadBoat.Online
         // Health belongs to this player's avatar owner, never to the boat/master.
         public void DamagePlayer(PlayerRef player, int damage)
         {
-            if (!Object.HasStateAuthority || Phase != 3 || !Includes(player) || AdProtected(player) || damage <= 0) return;
+            if (!Object.HasStateAuthority || Phase != 3 || !Includes(player) || AdProtected(player) || damage <= 0 ||
+                !SharedEnemiesRuntime.EnsureAuthority(this)) return;
             var avatar = LivingCombatAvatar(player);
             if (avatar != null) avatar.RPC_ReceiveDamage(damage);
         }

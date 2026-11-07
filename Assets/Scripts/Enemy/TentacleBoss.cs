@@ -31,6 +31,7 @@ public class TentacleBoss : TriggerBossFight
     }
     public void ChangeTentacle(TentaclePart old)
     {
+        if (DeadBoat.Online.SharedRunContext.Active && !DeadBoat.Online.SharedEnemiesRuntime.Authority) return;
         int r = Random.Range(0,_tentacle.Count);
 
         if (_tentacle[r] == old)

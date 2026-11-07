@@ -5,6 +5,8 @@ namespace DeadBoat.Online
 {
     public sealed class SharedEnemiesRuntime : MonoBehaviour
     {
+        private static readonly EnemyAuthorityEpoch authorityEpoch = new();
+        private static readonly System.Collections.Generic.List<WorldSpawnIdentity> authoritySnapshot = new();
         private static bool applyingDamage;
         public static bool ApplyingDamage => applyingDamage;
         private readonly System.Collections.Generic.List<WorldSpawnIdentity> snapshot = new();
@@ -17,7 +19,7 @@ namespace DeadBoat.Online
         private static readonly System.Collections.Generic.Dictionary<ulong, ZombieController> templates = new();
         private static readonly System.Collections.Generic.Dictionary<DragonBossController,
             System.Collections.Generic.HashSet<Fusion.PlayerRef>> diveVictims = new();
-        public static void Clear() { templates.Clear(); diveVictims.Clear(); }
+        public static void Clear() { templates.Clear(); diveVictims.Clear(); authorityEpoch.Invalidate(); authoritySnapshot.Clear(); }
         public static bool TryTemplate(ulong id, out ZombieController prefab) => templates.TryGetValue(id, out prefab);
         public static int DiveMask(DragonBossController dragon)
         {
@@ -54,8 +56,74 @@ namespace DeadBoat.Online
             templates[id] = prefab;
             return id;
         }
-        public static bool Authority => !SharedRunContext.Active || (SharedRunContext.Playing &&
-            SharedRunContext.State.Object.HasStateAuthority);
+        public static bool Authority => !SharedRunContext.Active || EnsureAuthority(SharedRunContext.State);
+
+        // Entry used by AI, RPCs, burn and publishing. Root authority alone is not readiness.
+        internal static bool EnsureAuthority(SharedDepartureState state)
+        {
+            if (!SharedRunContext.Playing)
+            {
+                authorityEpoch.Invalidate();
+                return false;
+            }
+            // A late RPC from another run must not invalidate this run's prepared state.
+            if (state == null || state != SharedRunContext.State) return false;
+            if (!state.Object.HasStateAuthority) { authorityEpoch.Invalidate(); return false; }
+            int owner = state.Object.StateAuthority.RawEncoded;
+            if (authorityEpoch.IsReady(state, owner)) return true;
+            return PrepareAuthoritySlow(state, owner);
+        }
+        // Keep captured delegates off the steady-state per-actor Update path.
+        private static bool PrepareAuthoritySlow(SharedDepartureState state, int owner) =>
+            authorityEpoch.TryPrepare(state, owner, () => RestoreAuthorityWorld(state), () => ResumeAuthorityWorld(state));
+
+        private static bool RestoreAuthorityWorld(SharedDepartureState state)
+        {
+            // Shared world pages transfer independently of the departure root.
+            if (SharedWorldPage.Get(state.Runner, 0) == null) return false;
+            foreach (var page in SharedWorldPage.All(state.Runner))
+                if (page.Enemies.Count > 0 && !page.Object.HasStateAuthority) return false;
+            SharedItemsRuntime.CopyEnemiesTo(authoritySnapshot);
+            for (int i = 0; i < authoritySnapshot.Count; i++)
+            {
+                var identity = authoritySnapshot[i];
+                if (identity == null || identity.Enemy == null || !state.TryEnemy(identity.Id, out var record)) continue;
+                identity.ResetEnemyProxy();
+                identity.SuspendEnemyProxyAI(true);
+                identity.transform.SetPositionAndRotation(record.Position - LobbyNetworkAvatar.Origin, record.Rotation);
+                identity.ApplyEnemyProxy(record, false);
+                if (identity.Enemy is DragonBossController dragon && state.DragonBrain.Id == identity.Id)
+                    dragon.ApplySharedBrain(state.DragonBrain);
+            }
+            return true;
+        }
+
+        private static void ResumeAuthorityWorld(SharedDepartureState state)
+        {
+            foreach (var boss in Object.FindObjectsByType<TentacleBoss>(FindObjectsSortMode.None))
+            {
+                var parts = boss.GetComponentsInChildren<TentaclePart>(true);
+                bool known = parts.Length > 0, active = false;
+                int alive = 0;
+                foreach (var part in parts)
+                {
+                    var identity = part.GetComponent<WorldSpawnIdentity>();
+                    if (identity == null || !state.TryEnemy(identity.Id, out var record)) { known = false; break; }
+                    if (record.HP <= 0) continue;
+                    alive++;
+                    if (part.IsDead) { known = false; break; }
+                    if (part.Active) active = true;
+                }
+                // Fresh spawns without canonical records keep their ordinary StartBossFight path.
+                if (!known) continue;
+                if (alive == 0) { state.MarkWon(); continue; }
+                if (active)
+                {
+                    foreach (var part in parts) if (!part.IsDead && part.Active) part.SetActive();
+                }
+                else boss.ChangeTentacle(null);
+            }
+        }
 
         public static bool RequestBurn(EnemyCore enemy, float duration, float damage)
         {
@@ -213,7 +281,9 @@ namespace DeadBoat.Online
         {
             using var measured = UpdateMarker.Auto();
             var state = SharedRunContext.State;
-            if (!SharedRunContext.Playing || state == null) return;
+            if (!SharedRunContext.Playing || state == null) { authorityEpoch.Invalidate(); return; }
+            bool authority = EnsureAuthority(state);
+            if (state.Object.HasStateAuthority && !authority) return;
             if (state.RunWon && !victoryShown)
             {
                 victoryShown = true;
@@ -221,21 +291,8 @@ namespace DeadBoat.Online
             }
             bool sample = Time.realtimeSinceStartupAsDouble >= nextSample;
             if (sample) nextSample = Time.realtimeSinceStartupAsDouble + 0.1;
-            bool authority = state.Object.HasStateAuthority;
             bool roleChanged = authority != wasAuthority || observedState != state;
             bool audit = sample || roleChanged || observedRevision != SharedItemsRuntime.EnemyRevision;
-            if (authority && roleChanged)
-            {
-                bool active = false;
-                int alive = 0;
-                foreach (var tentacle in Object.FindObjectsByType<TentaclePart>(FindObjectsSortMode.None))
-                    if (!tentacle.IsDead)
-                    {
-                        alive++;
-                        if (tentacle.Active) { tentacle.SetActive(); active = true; }
-                    }
-                if (!active && alive > 0) Object.FindAnyObjectByType<TentacleBoss>()?.ChangeTentacle(null);
-            }
             wasAuthority = authority;
             observedState = state;
             if (!authority && audit)
