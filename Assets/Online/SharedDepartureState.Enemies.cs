@@ -82,15 +82,21 @@ namespace DeadBoat.Online
             page.Enemies.Set(id, enemy);
         }
 
+        private LobbyNetworkAvatar LivingCombatAvatar(PlayerRef player)
+        {
+            foreach (var avatar in LobbyNetworkAvatar.All)
+                if (avatar != null && avatar.Object != null && avatar.Object.IsValid && avatar.Runner == Runner &&
+                    avatar.Object.StateAuthority == player && avatar.Health > 0) return avatar;
+            return null;
+        }
+
         [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
         public void RPC_EnemyBurn(ulong id, float duration, float damage, RpcInfo info = default)
         {
             if (Phase != 3 || !CanAct(info.Source) || duration <= 0 || duration > 120 ||
                 damage <= 0 || damage > 5000 || float.IsNaN(duration) || float.IsNaN(damage) ||
                 !TryEnemy(id, out var record) || record.HP <= 0 || !record.Active) return;
-            LobbyNetworkAvatar source = null;
-            foreach (var avatar in LobbyNetworkAvatar.All)
-                if (avatar.Runner == Runner && avatar.Object.StateAuthority == info.Source) source = avatar;
+            var source = LivingCombatAvatar(info.Source);
             if (source == null || Vector3.Distance(source.LogicalPosition, record.Position) > 200) return;
             record.BurnRemaining = duration; record.BurnDamage = damage; record.BurnAccumulator = 0;
             EnemyPage(id).Enemies.Set(id, record);
@@ -131,10 +137,8 @@ namespace DeadBoat.Online
                 !TryEnemy(id, out var record) || record.HP <= 0 || !record.Active ||
                 !SharedItemsRuntime.TryFind(id, out var identity)) return;
             var enemy = identity.GetComponent<EnemyCore>();
-            LobbyNetworkAvatar source = null;
-            foreach (var avatar in LobbyNetworkAvatar.All)
-                if (avatar.Runner == Runner && avatar.Object.StateAuthority == info.Source) source = avatar;
-            if (enemy == null || source == null || Vector3.Distance(source.LogicalPosition, record.Position) > 200) return;
+            var source = LivingCombatAvatar(info.Source);
+            if (enemy == null || enemy.IsDead || source == null || Vector3.Distance(source.LogicalPosition, record.Position) > 200) return;
             SharedEnemiesRuntime.ApplyDamage(enemy, damage);
             SampleEnemy(identity, enemy);
         }
@@ -143,12 +147,8 @@ namespace DeadBoat.Online
         public void DamagePlayer(PlayerRef player, int damage)
         {
             if (!Object.HasStateAuthority || Phase != 3 || !Includes(player) || AdProtected(player) || damage <= 0) return;
-            foreach (var avatar in LobbyNetworkAvatar.All)
-                if (avatar.Runner == Runner && avatar.Object.StateAuthority == player)
-                {
-                    avatar.RPC_ReceiveDamage(damage);
-                    return;
-                }
+            var avatar = LivingCombatAvatar(player);
+            if (avatar != null) avatar.RPC_ReceiveDamage(damage);
         }
 
         [Rpc(RpcSources.StateAuthority, RpcTargets.All)]

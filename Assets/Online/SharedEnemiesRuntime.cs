@@ -42,7 +42,7 @@ namespace DeadBoat.Online
             if (!diveVictims.TryGetValue(dragon, out var hit)) diveVictims[dragon] = hit = new();
             var state = SharedRunContext.State;
             foreach (var avatar in LobbyNetworkAvatar.All)
-                if (avatar.Runner == state.Runner && avatar.Health > 0 &&
+                if (AvailableTarget(state, avatar) &&
                     Vector3.Distance(avatar.LogicalPosition - LobbyNetworkAvatar.Origin + Vector3.up,
                         dragon.transform.position) <= 3 && hit.Add(avatar.Object.StateAuthority))
                     state.DamagePlayer(avatar.Object.StateAuthority, (int)dragon.diveDamage);
@@ -84,16 +84,26 @@ namespace DeadBoat.Online
             finally { applyingDamage = false; }
         }
 
+        // Ignore abandoned, invalid, dead and ad-protected representations.
+        // This is also used before spending a dragon dive's per-victim hit mask.
+        private static bool AvailableTarget(SharedDepartureState state, LobbyNetworkAvatar avatar) =>
+            state != null && avatar != null && avatar.Object != null && avatar.Object.IsValid &&
+            avatar.Runner == state.Runner && state.Includes(avatar.Object.StateAuthority) &&
+            avatar.Health > 0 && !state.AdProtected(avatar.Object.StateAuthority);
+
         public static Transform Target(Transform from, Transform fallback)
         {
             if (!SharedRunContext.Active) return fallback;
+            if (!SharedRunContext.Playing) return null;
+            var state = SharedRunContext.State;
             Transform nearest = null;
             float distance = float.MaxValue;
             foreach (var avatar in LobbyNetworkAvatar.All)
             {
-                if (avatar.Runner != SharedRunContext.State.Runner || avatar.Health <= 0 || SharedRunContext.State.AdProtected(avatar.Object.StateAuthority)) continue;
+                if (!AvailableTarget(state, avatar)) continue;
                 var target = avatar.Object.HasStateAuthority && PlayerMovement.Instance != null
                     ? PlayerMovement.Instance.transform : avatar.WorldTransform;
+                if (target == null) continue;
                 float candidate = (target.position - from.position).sqrMagnitude;
                 if (candidate < distance) { distance = candidate; nearest = target; }
             }
@@ -120,7 +130,7 @@ namespace DeadBoat.Online
             var state = SharedRunContext.State;
             foreach (var avatar in LobbyNetworkAvatar.All)
             {
-                if (avatar.Runner != state.Runner || avatar.Health <= 0 || SharedRunContext.State.AdProtected(avatar.Object.StateAuthority)) continue;
+                if (!AvailableTarget(state, avatar)) continue;
                 var candidate = avatar.Object.HasStateAuthority && PlayerMovement.Instance != null
                     ? PlayerMovement.Instance.transform : avatar.WorldTransform;
                 if (candidate != target) continue;
@@ -136,7 +146,7 @@ namespace DeadBoat.Online
             if (!Authority) return true;
             var state = SharedRunContext.State;
             foreach (var avatar in LobbyNetworkAvatar.All)
-                if (avatar.Runner == state.Runner && avatar.Health > 0 &&
+                if (AvailableTarget(state, avatar) &&
                     (avatar.LogicalPosition - LobbyNetworkAvatar.Origin - center).sqrMagnitude <= radius * radius)
                     state.DamagePlayer(avatar.Object.StateAuthority, damage);
             return true;
@@ -149,7 +159,7 @@ namespace DeadBoat.Online
             var state = SharedRunContext.State;
             foreach (var avatar in LobbyNetworkAvatar.All)
             {
-                if (avatar.Runner != state.Runner || avatar.Health <= 0 || SharedRunContext.State.AdProtected(avatar.Object.StateAuthority)) continue;
+                if (!AvailableTarget(state, avatar)) continue;
                 Vector3 point = Quaternion.Inverse(rotation) *
                     (avatar.LogicalPosition - LobbyNetworkAvatar.Origin + Vector3.up - center);
                 if (Mathf.Abs(point.x) <= size.x / 2 + 0.3f && Mathf.Abs(point.y) <= size.y / 2 + 1 &&

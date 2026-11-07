@@ -17,10 +17,7 @@ namespace DeadBoat.Online
             WeaponSequences.Set(slot, sequence);
             if (!TryEnemy(id, out var record) || record.HP <= 0 || !record.Active ||
                 !SharedItemsRuntime.TryFind(id, out var identity)) return;
-            LobbyNetworkAvatar source = null;
-            foreach (var avatar in LobbyNetworkAvatar.All)
-                if (avatar.Runner == Runner && avatar.Object != null && avatar.Object.IsValid &&
-                    avatar.Object.StateAuthority == info.Source) source = avatar;
+            var source = LivingCombatAvatar(info.Source);
             var enemy = identity.GetComponent<EnemyCore>();
             if (enemy == null || enemy.IsDead || source == null || source.Health <= 0 ||
                 Vector3.Distance(source.LogicalPosition, record.Position) > 200) return;
