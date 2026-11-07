@@ -143,7 +143,7 @@ public class LevelStatManager : MonoBehaviour
     }
     public bool CheckNewLevel()
     {
-        if (ScriptedOffersOnly || _countLevelUp <= 0) return false;
+        if (ScriptedOffersOnly || _countLevelUp <= 0 || LevelUpUi.Instance == null || LevelUpUi.Instance.IsChoiceOpen) return false;
         _countLevelUp--;
         SaveManager.Instance.SaveLevelUp(_countLevelUp);
         NewLevel();

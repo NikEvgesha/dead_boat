@@ -59,6 +59,7 @@ public class LevelUpUi : MonoBehaviour
     public void CancelScriptedChoice()
     {
         if (!_scriptedChoice) return;
+        InvalidateRefresh();
         _scriptedChoice = false;
         _scriptedChosen = null;
         _scriptedCards.Clear();
@@ -86,6 +87,29 @@ public class LevelUpUi : MonoBehaviour
     private RareType _rare;
     private int _countLevelUp;
     private bool _cardClaimed;
+    private int _offerRevision;
+    private bool _refreshPending;
+    private void InvalidateRefresh()
+    {
+        _offerRevision++;
+        _refreshPending = false;
+    }
+    private void OnDisable() => InvalidateRefresh();
+    private bool CanRefresh => isActiveAndEnabled && IsChoiceOpen && !_scriptedChoice && !_cardClaimed && !_refreshPending;
+    private bool BeginRefresh(out int revision)
+    {
+        revision = 0;
+        if (!CanRefresh) return false;
+        revision = ++_offerRevision;
+        _refreshPending = true;
+        return true;
+    }
+    private void CompleteRefresh(int revision, bool success)
+    {
+        if (this == null || revision != _offerRevision || !_refreshPending) return;
+        _refreshPending = false;
+        if (success && CanRefresh) Refresh();
+    }
     private CardChoiceFeedback _choiceFeedback;
     private double _nextChoiceAt;
     public void ShowCardChoice(Sprite icon, RareType rarity)
@@ -93,7 +117,7 @@ public class LevelUpUi : MonoBehaviour
         _nextChoiceAt = Time.unscaledTimeAsDouble + .25; // Prevent click-through to the next offer, independent of FX.
         _choiceFeedback?.Show(icon, rarity);
     }
-    public bool TryClaimCard() { if (_cardClaimed || Time.unscaledTimeAsDouble < _nextChoiceAt) return false; _cardClaimed = true; return true; }
+    public bool TryClaimCard() { if (_refreshPending || _cardClaimed || Time.unscaledTimeAsDouble < _nextChoiceAt) return false; _cardClaimed = true; return true; }
     public void ReleaseCardClaim() { _cardClaimed = false; }
     public RareBack GetRareBackUI(RareType rare) 
     {
@@ -124,7 +148,8 @@ public class LevelUpUi : MonoBehaviour
     }
     public void NewLevel(List<ItemWithRare> items, bool scripted = false)
     {
-        if (_scriptedChoice) return;
+        if (_scriptedChoice || IsChoiceOpen) return;
+        InvalidateRefresh();
         _cardClaimed = false;
         _scriptedChoice = scripted;
         if (!scripted && TryUpgradeHighestRarity(items, out var upgraded))
@@ -146,7 +171,8 @@ public class LevelUpUi : MonoBehaviour
     }
     public void RefreshLevel(List<ItemWithRare> items)
     {
-        if (_scriptedChoice) return;
+        if (_scriptedChoice || !IsChoiceOpen) return;
+        InvalidateRefresh();
         _cardClaimed = false;
         int i = 0;
         foreach (var item in items)
@@ -159,6 +185,7 @@ public class LevelUpUi : MonoBehaviour
     public void Close()
     {
         if (_scriptedChoice) return;
+        InvalidateRefresh();
         PauseManager.Instance.SetPause(false, false);
         ControlManager.Instance.CursorActive = false;
         _panel.SetActive(false);
@@ -175,6 +202,7 @@ public class LevelUpUi : MonoBehaviour
     }
     public void RestartAll()
     {
+        InvalidateRefresh();
         _buttonLevelUp.SetActive(false);
         _countLevelUp = 0;
     }
@@ -185,20 +213,16 @@ public class LevelUpUi : MonoBehaviour
     }
     public void _RefreshClickAds()
     {
-        if (_scriptedChoice || _cardClaimed || DeadBoat.Online.SharedAdProtection.IsShowing) return;
+        if (DeadBoat.Online.SharedAdProtection.IsShowing || !BeginRefresh(out int revision)) return;
         AdsManager.Instance.ShowRewardedAd(
             "Refresh",
-            (success) =>
-            {
-                if (success)
-                    Refresh();
-            });
+            success => CompleteRefresh(revision, success));
         
     }
 
     public void _RefreshClickGems()
     {
-        if (_scriptedChoice || _cardClaimed || DeadBoat.Online.SharedAdProtection.IsShowing) return;
+        if (!CanRefresh || DeadBoat.Online.SharedAdProtection.IsShowing) return;
         if (CurrencyManager.Instance.CheckEnoughCurrency(CurrencyType.Gems, _price))
         {
             CurrencyManager.Instance.RemoveCurrency(CurrencyType.Gems, _price);
@@ -211,8 +235,7 @@ public class LevelUpUi : MonoBehaviour
     }
     public void Refresh()
     {
-        if (_scriptedChoice) return;
-        if (_cardClaimed) return;
+        if (!CanRefresh) return;
         LevelStatManager.Instance.Refresh();
     }
     public void ChoiceBoost(BoostItem item, RareType rare) 
