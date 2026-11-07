@@ -119,6 +119,7 @@ public class ProfessionSelectionPanel : MonoBehaviour
     private void OnDisable()
     {
         ClearRandomUnlockAnimation();
+        if (_unlockPresentation != null) _unlockPresentation.Hide();
 
         if (PlayerInput.Instance != null)
             PlayerInput.Instance.AOpenWindow -= CloseByOtherWindow;
@@ -299,6 +300,7 @@ public class ProfessionSelectionPanel : MonoBehaviour
 
                     PauseManager.Instance.SetPause(false, true);
                     RefreshView();
+                    if (success) ShowUnlockedCharacter(definition);
                 });
             return;
         }
@@ -322,6 +324,7 @@ public class ProfessionSelectionPanel : MonoBehaviour
 
         SetMessage(ProfessionLocalization.FormatUnlockedProfession(ProfessionLocalization.DefinitionTitle(definition)));
         RefreshView();
+        ShowUnlockedCharacter(definition);
     }
 
     private void RefreshView()
@@ -367,6 +370,8 @@ public class ProfessionSelectionPanel : MonoBehaviour
         {
             _professionIcon.enabled = hasIcon;
             _professionIcon.sprite = definition.icon;
+            _professionIcon.color = Color.white;
+            _professionIcon.preserveAspect = true;
         }
 
         if (_lockObject != null)
@@ -444,6 +449,7 @@ public class ProfessionSelectionPanel : MonoBehaviour
     private void SetOpen(bool open, bool updateCursor)
     {
         _opened = open;
+        if (!open && _unlockPresentation != null) _unlockPresentation.Hide();
 
         if (_panel != null)
             _panel.SetActive(open);
@@ -1094,6 +1100,17 @@ public class ProfessionSelectionPanel : MonoBehaviour
         return result < 0 ? result + length : result;
     }
 
+    private ProfessionUnlockPresentation _unlockPresentation;
+
+    private void ShowUnlockedCharacter(ProfessionDefinition definition)
+    {
+        // A delayed purchase must not reopen a closed window or steal focus.
+        if (!_opened || _panel == null || definition == null) return;
+        if (_unlockPresentation == null)
+            _unlockPresentation = ProfessionUnlockPresentation.Create(_panel.transform);
+        _unlockPresentation.Show(definition);
+    }
+
     private void CompleteRandomUnlock(ProfessionDefinition unlockedDefinition)
     {
         ClearRandomUnlockAnimation();
@@ -1105,6 +1122,7 @@ public class ProfessionSelectionPanel : MonoBehaviour
         }
 
         RefreshView();
+        ShowUnlockedCharacter(unlockedDefinition);
     }
 
     private void ClearRandomUnlockAnimation()

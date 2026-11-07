@@ -19,6 +19,7 @@ public static class ProfessionLocalization
     public static string DefaultProfessionTitle => Translate("UI/Profession/DefaultTitle", "Юнга", "Deckhand");
     public static string DefaultProfessionDescription => Translate("UI/Profession/DefaultDescription", "Базовая профессия без дополнительных бонусов.", "Base profession without extra bonuses.");
     public static string LockLabel => Translate("UI/Profession/LockLabel", "ЗАКРЫТО", "LOCKED");
+    public static string ContinueButton => Translate("UI/Profession/Button/Continue", "\u041f\u0440\u043e\u0434\u043e\u043b\u0436\u0438\u0442\u044c", "Continue");
     public static string ApplyButton => Translate("UI/Profession/Button/Apply", "Выбрать", "Apply");
     public static string RandomButton => Translate("UI/Profession/Button/Random", "\u0421\u043b\u0443\u0447\u0430\u0439\u043d\u0430\u044f", "Random");
     public static string BuyButton => Translate("UI/Profession/Button/Buy", "Купить", "Buy");
