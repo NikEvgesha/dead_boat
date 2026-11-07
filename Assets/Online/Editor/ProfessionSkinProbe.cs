@@ -62,21 +62,25 @@ namespace DeadBoat.Online.Editor
                 var prefab = AssetDatabase.LoadAssetAtPath<NetworkObject>("Assets/Online/Avatars/LobbyNetworkAvatar.prefab");
                 var local = first.Spawn(prefab).GetComponent<LobbyNetworkAvatar>();
                 first.SetPlayerObject(first.LocalPlayer, local.Object);
-                typeof(LobbyNetworkAvatar).GetProperty("ProfessionSkin").SetValue(local, (byte)1);
+                typeof(LobbyNetworkAvatar).GetProperty("ProfessionSkin").SetValue(local, AvatarProfessionVisual.LastSkinId);
                 second = await Connect(room, 5102, false);
-                await Until(() => Remote(second)?.ProfessionSkin == 1, "late join mechanic ID");
+                await Until(() => Remote(second)?.ProfessionSkin == AvatarProfessionVisual.LastSkinId, "late join highest skin ID");
                 var remote = Remote(second);
-                await Until(() => remote.GetComponent<AvatarProfessionVisual>().Displayed == 1, "mechanic material applied");
+                await Until(() => remote.GetComponent<AvatarProfessionVisual>().Displayed == AvatarProfessionVisual.LastSkinId, "late join material applied");
                 var model = remote.GetComponentInChildren<Animator>(true);
                 Require(model != null && model.runtimeAnimatorController != null, "animator retained");
                 typeof(LobbyNetworkAvatar).GetProperty("HeldItemId", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(local, (byte)1);
                 await Until(() => remote.GetComponentsInChildren<Transform>(true).Any(t => t.name.Contains("Visual(Clone)")), "held item visual retained");
-                typeof(LobbyNetworkAvatar).GetProperty("ProfessionSkin").SetValue(local, (byte)2);
-                await Until(() => remote.GetComponent<AvatarProfessionVisual>().Displayed == 2, "hunter change replicated");
+                for (byte id = 1; id <= AvatarProfessionVisual.LastSkinId; id++)
+                {
+                    typeof(LobbyNetworkAvatar).GetProperty("ProfessionSkin").SetValue(local, id);
+                    await Until(() => remote.GetComponent<AvatarProfessionVisual>().Displayed == id, "skin change " + id);
+                    Require(model.GetComponentInChildren<Renderer>().sharedMaterial.name == AvatarProfessionVisual.ProfessionFor(id), "material for ID " + id);
+                }
                 typeof(LobbyNetworkAvatar).GetProperty("ProfessionSkin").SetValue(local, (byte)255);
                 await Until(() => remote.GetComponent<AvatarProfessionVisual>().Displayed == 255, "unknown ID fallback");
                 Require(model.GetComponentInChildren<Renderer>().sharedMaterial.name == "character-a", "original material restored");
-                Result = "PASS: two Photon peers, late join mechanic, hunter change, unknown fallback, animation and held item retained";
+                Result = "PASS: two Photon peers, highest-ID late join, all13 skin/material changes, unknown fallback, animation and held item retained";
             }
             catch (Exception e) { Result = "FAIL: " + e; Debug.LogError(Result); }
             finally

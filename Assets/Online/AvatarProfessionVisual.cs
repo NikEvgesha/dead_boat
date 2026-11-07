@@ -5,11 +5,20 @@ namespace DeadBoat.Online
     // Stable wire IDs, independent of catalog ordering. Materials are shared, never cloned per player.
     public sealed class AvatarProfessionVisual : MonoBehaviour
     {
-        public static byte SkinFor(string profession) => profession == "mechanic" ? (byte)1 : profession == "hunter" ? (byte)2 : (byte)0;
+        // Append IDs only: catalog reordering and future professions must not renumber existing peers.
+        public const byte LastSkinId = 13;
+        public static byte SkinFor(string profession) => profession switch {
+            "mechanic" => 1, "hunter" => 2, "yunga" => 3, "trader" => 4,
+            "scout" => 5, "berserk" => 6, "vampire" => 7, "gambler" => 8,
+            "pyro" => 9, "tank" => 10, "glass_cannon" => 11, "ninja" => 12, "cursed" => 13,
+            _ => 0
+        };
+        private static readonly string[] Professions = { null, "mechanic", "hunter", "yunga", "trader", "scout", "berserk", "vampire", "gambler", "pyro", "tank", "glass_cannon", "ninja", "cursed" };
+        public static string ProfessionFor(byte id) => id > 0 && id < Professions.Length ? Professions[id] : null;
         private Renderer[] targets;
         private Material[][] original;
         private byte displayed = byte.MaxValue;
-        private static Material mechanic, hunter;
+        private static readonly Material[] materials = new Material[LastSkinId + 1];
         public byte Displayed => displayed;
         public void Initialize(Transform model)
         {
@@ -21,8 +30,8 @@ namespace DeadBoat.Online
         {
             if (targets == null || displayed == id) return;
             displayed = id;
-            Material material = id == 1 ? mechanic ??= Resources.Load<Material>("OnlineUI/AvatarSkins/mechanic")
-                : id == 2 ? hunter ??= Resources.Load<Material>("OnlineUI/AvatarSkins/hunter") : null;
+            string profession = ProfessionFor(id);
+            Material material = profession != null ? materials[id] ??= Resources.Load<Material>("OnlineUI/AvatarSkins/" + profession) : null;
             for (int i = 0; i < targets.Length; i++)
             {
                 if (!targets[i]) continue;
