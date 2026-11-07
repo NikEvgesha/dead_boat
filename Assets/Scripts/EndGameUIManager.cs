@@ -49,8 +49,10 @@ public class EndGameUIManager : MonoBehaviour
     {
         EndGame += ShowEndGameUIAction;
     }
+    private void OnDisable() => InvalidateRevive();
     private void OnDestroy()
     {
+        InvalidateRevive();
         EndGame -= ShowEndGameUIAction;
     }
     private void Start()
@@ -60,6 +62,43 @@ public class EndGameUIManager : MonoBehaviour
     // Текущее состояние конца игры
     private EndGameState currentState = EndGameState.None;
     private int _presentationRevision;
+    private int _reviveRequest;
+    private bool _revivePending;
+    private void InvalidateRevive()
+    {
+        _reviveRequest++;
+        if (_revivePending && reviveButton != null) reviveButton.interactable = true;
+        _revivePending = false;
+    }
+    private bool TryBeginRevive(out int request)
+    {
+        request = 0;
+        var game = GameManager.Instance;
+        if (!isActiveAndEnabled || _revivePending || currentState != EndGameState.Faint ||
+            game == null || game.isEndGame || DeadBoat.Online.SharedAdProtection.IsShowing) return false;
+        if (DeadBoat.Online.SharedRunContext.Active)
+        {
+            var run = DeadBoat.Online.SharedRunContext.State;
+            if (!DeadBoat.Online.SharedRunContext.Playing || run == null || run.RunWon || !run.Includes(run.Runner.LocalPlayer)) return false;
+        }
+        _revivePending = true;
+        request = ++_reviveRequest;
+        if (reviveButton != null) reviveButton.interactable = false;
+        return true;
+    }
+    private bool TryAcceptRevive(int request, int revision, bool success, bool shared,
+        DeadBoat.Online.SharedDepartureState run, GameManager game)
+    {
+        if (this == null || !_revivePending || request != _reviveRequest) return false;
+        _revivePending = false;
+        bool samePhase = isActiveAndEnabled && revision == _presentationRevision && currentState == EndGameState.Faint;
+        if (samePhase && reviveButton != null) reviveButton.interactable = true;
+        if (!success || !samePhase || game == null || game != GameManager.Instance || game.isEndGame ||
+            shared != DeadBoat.Online.SharedRunContext.Active) return false;
+        if (shared && (!DeadBoat.Online.SharedRunContext.Playing || DeadBoat.Online.SharedRunContext.State != run ||
+            run == null || run.RunWon || !run.Includes(run.Runner.LocalPlayer))) return false;
+        return true;
+    }
     private bool CanAcceptState(EndGameState state)
     {
         if (currentState == EndGameState.Win && (state == EndGameState.Faint || state == EndGameState.Lose)) return false;
@@ -81,6 +120,7 @@ public class EndGameUIManager : MonoBehaviour
         public void ShowEndGameUI(EndGameState state, int distance = 0, float duration = 10f)
     {
         if (!CanAcceptState(state)) return;
+        if (state == EndGameState.Faint && currentState == EndGameState.Faint) return;
         if (state == EndGameState.Win && currentState == EndGameState.Win)
         {
             if (DeadBoat.Online.SharedRunContext.GenerationActive)
@@ -93,6 +133,7 @@ public class EndGameUIManager : MonoBehaviour
         timerRemaining = duration;
 
         _presentationRevision++;
+        InvalidateRevive();
         StopAllCoroutines();
         _enableButtonsRoutine = null;
 
@@ -316,7 +357,7 @@ public class EndGameUIManager : MonoBehaviour
             playAgainButton.interactable = interactable;
 
         if (reviveButton != null)
-            reviveButton.interactable = interactable;
+            reviveButton.interactable = interactable && !_revivePending;
     }
     // Пример метода списания монет для возрождения
     private bool DeductCoinsForRevive()
@@ -342,8 +383,11 @@ public class EndGameUIManager : MonoBehaviour
     // Метод для показа рекламы и последующего возрождения
     private void ShowAdAndRevive()
     {
-        if (DeadBoat.Online.SharedAdProtection.IsShowing || currentState != EndGameState.Faint) return;
+        if (!TryBeginRevive(out int request)) return;
+        int revision = _presentationRevision;
+        bool shared = DeadBoat.Online.SharedRunContext.Active;
         var run = DeadBoat.Online.SharedRunContext.State;
+        var game = GameManager.Instance;
         Debug.Log("Показ рекламы для возрождения");
         // Реализуйте здесь вызов показа рекламы.
         // После завершения рекламы вызовите RevivePlayer()
@@ -351,9 +395,7 @@ public class EndGameUIManager : MonoBehaviour
             "revive",
             (success) =>
             {
-                if (success && currentState == EndGameState.Faint &&
-                    (!DeadBoat.Online.SharedRunContext.Active || DeadBoat.Online.SharedRunContext.State == run))
-                    RevivePlayer();
+                if (TryAcceptRevive(request, revision, success, shared, run, game)) RevivePlayer();
             });
         
     }
