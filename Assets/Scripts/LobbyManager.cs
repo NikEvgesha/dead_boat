@@ -33,7 +33,10 @@ public class LobbyManager : MonoBehaviour
 
     private void Start()
     {
-        PlayerMovement.Instance.Teleport(_playerSpawnPoint);
+        // New scene entry uses its explicit arrival; old scenes retain their serialized spawn.
+        var bindings = LobbyIslandBindings.FindForScene(gameObject.scene);
+        Transform spawn = bindings != null && bindings.TryGetArrival(0, out var arrival) ? arrival : _playerSpawnPoint;
+        PlayerMovement.Instance.Teleport(spawn);
         Inventory.Instance.SetLoadedInventory(null, false);
         // Entering the lobby (including an online connection failure) must not
         // discard an unfinished solo run. GameManager.EndGame clears it explicitly.

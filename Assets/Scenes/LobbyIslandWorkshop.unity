@@ -1375134,6 +1375134,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1922773393}
+  - component: {fileID: 9200000000000139}
   m_Layer: 0
   m_Name: Lobby_Island_Visual_Prototype
   m_TagString: Untagged
@@ -1560080,3 +1560081,95 @@ SceneRoots:
   - {fileID: 777872375}
   - {fileID: 140768438}
   - {fileID: 1922773393}
+--- !u!114 &9200000000000139
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1922773392}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 78e38bacb0964acfa08fe569e3b205b4, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  visualRoot: {fileID: 1922773393}
+  centralArrivals:
+  - {fileID: 952947045}
+  - {fileID: 1735537343}
+  - {fileID: 789589340}
+  - {fileID: 1526316410}
+  - {fileID: 1857320807}
+  - {fileID: 1993103484}
+  - {fileID: 890102337}
+  - {fileID: 895784510}
+  plots:
+  - id: 1
+    root: {fileID: 1409304889}
+    arrival: {fileID: 1464660791}
+    animalSpawn: {fileID: 1416213639}
+    boatSpawn: {fileID: 992398349}
+    departure: {fileID: 816637513}
+    income: {fileID: 750336224}
+  - id: 2
+    root: {fileID: 1881685327}
+    arrival: {fileID: 1708402710}
+    animalSpawn: {fileID: 2075671142}
+    boatSpawn: {fileID: 1152810056}
+    departure: {fileID: 783364584}
+    income: {fileID: 158813508}
+  - id: 3
+    root: {fileID: 1207461823}
+    arrival: {fileID: 907066356}
+    animalSpawn: {fileID: 90914412}
+    boatSpawn: {fileID: 1954399706}
+    departure: {fileID: 316713319}
+    income: {fileID: 143604436}
+  - id: 4
+    root: {fileID: 911021817}
+    arrival: {fileID: 1454769212}
+    animalSpawn: {fileID: 925289462}
+    boatSpawn: {fileID: 1481576804}
+    departure: {fileID: 1416846241}
+    income: {fileID: 1365537154}
+  - id: 5
+    root: {fileID: 479755287}
+    arrival: {fileID: 1112787128}
+    animalSpawn: {fileID: 2087704826}
+    boatSpawn: {fileID: 1702026991}
+    departure: {fileID: 1941896656}
+    income: {fileID: 840776695}
+  - id: 6
+    root: {fileID: 784623241}
+    arrival: {fileID: 1770457880}
+    animalSpawn: {fileID: 1029383498}
+    boatSpawn: {fileID: 1486535384}
+    departure: {fileID: 1940241195}
+    income: {fileID: 1748073540}
+  - id: 7
+    root: {fileID: 1034182402}
+    arrival: {fileID: 824185444}
+    animalSpawn: {fileID: 497096804}
+    boatSpawn: {fileID: 2066645729}
+    departure: {fileID: 393937565}
+    income: {fileID: 270153053}
+  - id: 8
+    root: {fileID: 1593837040}
+    arrival: {fileID: 1681726644}
+    animalSpawn: {fileID: 1947665948}
+    boatSpawn: {fileID: 467924085}
+    departure: {fileID: 193171456}
+    income: {fileID: 1320882911}
+  services:
+  - service: 0
+    interaction: {fileID: 1494475515}
+  - service: 1
+    interaction: {fileID: 321516048}
+  - service: 2
+    interaction: {fileID: 1851100665}
+  - service: 3
+    interaction: {fileID: 1444259992}
+  - service: 4
+    interaction: {fileID: 417693015}
+  - service: 5
+    interaction: {fileID: 1831515093}
