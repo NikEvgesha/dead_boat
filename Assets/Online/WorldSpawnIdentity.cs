@@ -17,7 +17,21 @@ namespace DeadBoat.Online
         private bool proxyInitialized, proxyAIStopped, animationApplied;
         private int proxyHP, proxyMaxHP, proxyAnimation;
         private float proxyAnimationTime;
-        private void OnEnable() => ResetEnemyProxy();
+        private bool freeAuthorityPoseReady;
+        private void OnEnable() { ResetEnemyProxy(); ResetFreeAuthorityPose(); }
+        internal void ResetFreeAuthorityPose() => freeAuthorityPoseReady = false;
+        internal bool SyncFreeAuthorityPose(Vector3 logicalPosition, Quaternion rotation, Vector3 origin)
+        {
+            if (freeAuthorityPoseReady || Item == null) return false;
+            // An interpolated remote/hidden proxy is not the starting pose for new authority physics.
+            Item.ApplySharedPhysics(false);
+            Vector3 position = logicalPosition - origin;
+            Item.transform.SetPositionAndRotation(position, rotation);
+            var body = Item.GetComponent<Rigidbody>();
+            if (body != null) { body.position = position; body.rotation = rotation; }
+            freeAuthorityPoseReady = true;
+            return true;
+        }
         internal void ResetEnemyProxy() { proxyInitialized = false; proxyAIStopped = false; animationApplied = false; }
         internal void SuspendEnemyProxyAI(bool audit)
         {

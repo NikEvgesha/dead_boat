@@ -92,7 +92,7 @@ namespace DeadBoat.Online
         [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
         public void RPC_ItemState(ulong id, int mode, Vector3 position, Quaternion rotation, int ammo = -1, RpcInfo info = default)
         {
-            if (Phase != 3 || AdShowing(info.Source) || !Items.TryGet(id, out var item) || item.Owner != info.Source ||
+            if (Phase != 3 || !CanAct(info.Source) || !Items.TryGet(id, out var item) || item.Owner != info.Source ||
                 info.Source == PlayerRef.None || mode < 0 || mode > 4 || !Finite(position) ||
                 !Finite(new Vector3(rotation.x, rotation.y, rotation.z)) ||
                 float.IsNaN(rotation.w) || float.IsInfinity(rotation.w)) return;

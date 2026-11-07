@@ -145,6 +145,7 @@ public class InventorySlot : MonoBehaviour, IDragHandler, IBeginDragHandler, IEn
 
     public void OnBeginDrag(PointerEventData eventData)
     {
+        if (DeadBoat.Online.SharedItemInteraction.Blocked) return;
         _icon.raycastTarget = false;
         ActivateElements(false);
 
@@ -156,6 +157,7 @@ public class InventorySlot : MonoBehaviour, IDragHandler, IBeginDragHandler, IEn
 
     public void OnDrag(PointerEventData eventData)
     {
+        if (DeadBoat.Online.SharedItemInteraction.Blocked) return;
         _container.transform.position = Input.mousePosition;
 
 
@@ -195,7 +197,7 @@ public class InventorySlot : MonoBehaviour, IDragHandler, IBeginDragHandler, IEn
         _isDragging = false;
         _icon.raycastTarget = true;
         ActivateElements(true);
-        if (_newParent == null)
+        if (_newParent == null && !DeadBoat.Online.SharedItemInteraction.Blocked)
         {
             UpdateParent();
             DropOut();
@@ -226,6 +228,7 @@ public class InventorySlot : MonoBehaviour, IDragHandler, IBeginDragHandler, IEn
 
     public void OnPointerClick(PointerEventData eventData)
     {
+        if (DeadBoat.Online.SharedItemInteraction.Blocked) return;
         if (_isDragging) return;
         if (!QuickSlot)
             DropOut();
@@ -239,6 +242,7 @@ public class InventorySlot : MonoBehaviour, IDragHandler, IBeginDragHandler, IEn
 
     public void OnDrop(PointerEventData eventData)
     {
+        if (DeadBoat.Online.SharedItemInteraction.Blocked) return;
         InventorySlot slot = eventData.pointerDrag.GetComponent<InventorySlot>();
 
         if (slot == null || (!slot.Empty && !slot.CurrentItem.Usable) || slot._item == this._item) return;

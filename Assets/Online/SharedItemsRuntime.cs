@@ -12,6 +12,7 @@ namespace DeadBoat.Online
         internal static int EnemyRevision { get; private set; }
         private static readonly Dictionary<ulong, Action<PickableItem>> pending = new();
         private static readonly Dictionary<ulong, double> deadlines = new();
+        private static readonly HashSet<ulong> cancelledPending = new();
         private readonly List<WorldSpawnIdentity> snapshot = new();
         private readonly List<WorldSpawnIdentity> interpolated = new();
         private readonly List<Vector3> crewPositions = new(4);
@@ -51,7 +52,7 @@ namespace DeadBoat.Online
             registryRevision++;
         }
 
-        public static void Clear() { identities.Clear(); enemyIdentities.Clear(); pending.Clear(); deadlines.Clear(); registryRevision++; EnemyRevision++; }
+        public static void Clear() { identities.Clear(); enemyIdentities.Clear(); pending.Clear(); deadlines.Clear(); cancelledPending.Clear(); registryRevision++; EnemyRevision++; }
         public static bool TryFind(ulong id, out WorldSpawnIdentity identity) => identities.TryGetValue(id, out identity);
         public static void CopyTo(List<WorldSpawnIdentity> destination) { destination.Clear(); destination.AddRange(identities.Values); }
         internal static void CopyEnemiesTo(List<WorldSpawnIdentity> destination) { destination.Clear(); destination.AddRange(enemyIdentities.Values); }
@@ -152,13 +153,16 @@ namespace DeadBoat.Online
             registryRevision++;
             pending.Remove(identity.Id);
             deadlines.Remove(identity.Id);
+            cancelledPending.Remove(identity.Id);
         }
 
         // True means this is a shared request; callers must defer their local mutation.
         public static bool Request(PickableItem item, Action<PickableItem> action)
         {
             if (SharedRecoveryInventory.Applying) return false;
-            if (!SharedRunContext.Active || item == null) return false;
+            if (item == null) return false;
+            if (SharedItemInteraction.Blocked) return true;
+            if (!SharedRunContext.Active) return false;
             var identity = item.GetComponent<WorldSpawnIdentity>();
             if (identity == null) return false; // Personal starting/shop items keep their local owner.
             var state = SharedRunContext.State;
@@ -182,6 +186,7 @@ namespace DeadBoat.Online
             var state = SharedRunContext.State;
             if (!SharedRunContext.Playing || state == null) return false;
             if (!state.Items.TryGet(identity.Id, out var record)) return state.Object.HasStateAuthority;
+            if (record.Owner == state.Runner.LocalPlayer && item.Status == ItemStatus.Free && SharedItemInteraction.Blocked) return false;
             return record.Mode != 4 && record.Mode != 3 && (record.Owner == state.Runner.LocalPlayer ||
                 (record.Owner == PlayerRef.None && state.Object.HasStateAuthority));
         }
@@ -212,9 +217,23 @@ namespace DeadBoat.Online
             return false;
         }
 
+        private static void CancelBlockedRequests()
+        {
+            if (!SharedItemInteraction.Blocked || pending.Count == 0) return;
+            // Cancel intent immediately, even before the authority's claim acknowledgement arrives.
+            // Keep the request's retention guard until its normal acknowledgement/timeout.
+            foreach (ulong id in pending.Keys) cancelledPending.Add(id);
+        }
+        private static Vector3 ReleasePosition(PickableItem item)
+        {
+            var candidate = item.transform.position + LobbyNetworkAvatar.Origin;
+            var player = PlayerMovement.Instance;
+            return player == null ? candidate : SharedItemInteraction.ReleasePosition(candidate, player.transform.position + LobbyNetworkAvatar.Origin);
+        }
         private void LateUpdate()
         {
             using var measured = UpdateMarker.Auto();
+            CancelBlockedRequests();
             var state = SharedRunContext.State;
             if (!SharedRunContext.Playing || state == null) return;
             double now = Time.realtimeSinceStartupAsDouble;
@@ -247,6 +266,7 @@ namespace DeadBoat.Online
                 spawned.GetComponentInChildren<RangedWeaponController>(true)?.ApplySharedAmmo(entry.Value.WeaponAmmo);
                 identity.InitializeRemote(entry.Key, 0);
             }
+            bool resetFreePose = observedState != state || observedAuthority != authority;
             CopyTo(snapshot);
             observedRevision = registryRevision;
             observedState = state;
@@ -271,6 +291,7 @@ namespace DeadBoat.Online
                 }
                 if (!hasRecord)
                 {
+                    identity.ResetFreeAuthorityPose();
                     ApplyPhysics(identity, item, false);
                     continue;
                 }
@@ -280,10 +301,12 @@ namespace DeadBoat.Online
                     Destroy(item.gameObject); continue;
                 }
                 bool owner = record.Owner == state.Runner.LocalPlayer;
+                if (resetFreePose || owner || record.Mode != 0 || !authority) identity.ResetFreeAuthorityPose();
                 if (pending.TryGetValue(identity.Id, out var action))
                 {
                     if (owner)
                     {
+                        bool cancelled = cancelledPending.Remove(identity.Id);
                         pending.Remove(identity.Id);
                         deadlines.Remove(identity.Id);
                         item.gameObject.SetActive(true);
@@ -291,20 +314,23 @@ namespace DeadBoat.Online
                         if (item.GetComponentInParent<BoardController>() == null) item.transform.SetParent(null, true);
                         item.ApplySharedWorldState(0);
                         ApplyPhysics(identity, item, true);
-                        if (SharedLocalGameplay.Blocked)
+                        if (cancelled || SharedItemInteraction.Blocked)
                         {
-                            state.RPC_ItemState(identity.Id, 0, record.Position, record.Rotation);
+                            ApplyPhysics(identity, item, false);
+                            if (!SharedItemInteraction.Blocked)
+                                state.RPC_ItemState(identity.Id, 0, ReleasePosition(item), record.Rotation);
                             continue;
                         }
                         action(item);
                         // Failed inventory insertion must release the claim.
                         if (item.Status == ItemStatus.Free)
-                            state.RPC_ItemState(identity.Id, 0, record.Position, record.Rotation);
+                            state.RPC_ItemState(identity.Id, 0, ReleasePosition(item), record.Rotation);
                     }
                     else if (record.Owner != PlayerRef.None || deadlines[identity.Id] < now)
                     {
                         pending.Remove(identity.Id);
                         deadlines.Remove(identity.Id);
+                        cancelledPending.Remove(identity.Id);
                     }
                 }
                 if (record.Mode == 4)
@@ -314,6 +340,13 @@ namespace DeadBoat.Online
                 }
                 if (owner)
                 {
+                    // A late claim or just-dropped item must not simulate locally while its
+                    // release RPC is forbidden by advertising. Resume the ordinary audit later.
+                    if (SharedItemInteraction.Blocked && item.Status == ItemStatus.Free)
+                    {
+                        ApplyPhysics(identity, item, false);
+                        continue;
+                    }
                     if (sample)
                     {
                         int mode = item.Status == ItemStatus.InInventory ? 2 : item.Attached ? 3 : item.Grabbed ? 1 : 0;
@@ -321,8 +354,10 @@ namespace DeadBoat.Online
                         if (mode != 2 || record.Mode != 2 || record.WeaponAmmo != ammo)
                         {
                             Vector3 position = mode == 2 && PlayerMovement.Instance != null
-                                ? PlayerMovement.Instance.transform.position : item.transform.position;
-                            state.RPC_ItemState(identity.Id, mode, position + LobbyNetworkAvatar.Origin,
+                                ? PlayerMovement.Instance.transform.position + LobbyNetworkAvatar.Origin
+                                : mode == 0 ? ReleasePosition(item) : item.transform.position + LobbyNetworkAvatar.Origin;
+                            if (mode == 0) item.transform.position = position - LobbyNetworkAvatar.Origin;
+                            state.RPC_ItemState(identity.Id, mode, position,
                                 item.transform.rotation, ammo);
                         }
                     }
@@ -347,6 +382,7 @@ namespace DeadBoat.Online
                 bool visible = record.Mode != 2 && (record.Mode != 1 || ownerPresent);
                 if (item.gameObject.activeSelf != visible) item.gameObject.SetActive(visible);
                 bool simulates = record.Owner == PlayerRef.None && state.Object.HasStateAuthority;
+                if (simulates) identity.SyncFreeAuthorityPose(record.Position, record.Rotation, LobbyNetworkAvatar.Origin);
                 if (simulates && sample) identity.PhysicsNearby = NearCrew(item, identity.PhysicsNearby);
                 ApplyPhysics(identity, item, simulates && identity.PhysicsNearby);
                 if (simulates)

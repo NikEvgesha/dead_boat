@@ -22,6 +22,7 @@ public class PlayerItemPickUp : MonoBehaviour
 
     private void Update()
     {
+        if (DeadBoat.Online.SharedItemInteraction.Blocked) return;
         //if (ControlManager.Instance.CursorActive) return;
         if (_grabbedItem && !_grabbedItem.Grabbed)
         {
@@ -137,6 +138,7 @@ public class PlayerItemPickUp : MonoBehaviour
 
     private void DropItem()
     {
+        if (DeadBoat.Online.SharedItemInteraction.Blocked) return;
         _grabbedItem.Drop();
         _grabbedItem = null;
         _controlUI.OnItemPickUp(false);
@@ -145,6 +147,7 @@ public class PlayerItemPickUp : MonoBehaviour
 
     private void TryAttach()
     {
+        if (DeadBoat.Online.SharedItemInteraction.Blocked) return;
         if (_grabbedItem != null)
         {
             if (_grabbedItem.TrySetAttach(true))

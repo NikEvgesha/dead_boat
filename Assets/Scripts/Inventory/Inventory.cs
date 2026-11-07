@@ -91,6 +91,7 @@ public class Inventory : MonoBehaviour
     private void Update()
     {
         RefreshCapacity();
+        if (DeadBoat.Online.SharedItemInteraction.Blocked) return;
         for (int i = 0; i < _quickSlotsCapacity; i++)
         {
             if (Input.GetKeyDown(KeyCode.Alpha1 + i))
@@ -136,19 +137,21 @@ public class Inventory : MonoBehaviour
         foreach (PickableItem item in items) {
 
             PickableItem itemObj = Instantiate(item, null);
-            AddItem(itemObj);
+            AddItemInternal(itemObj, true);
         }
 
     }
 
 
-    public bool AddItem(PickableItem item)
+    public bool AddItem(PickableItem item) => AddItemInternal(item, false);
+    private bool AddItemInternal(PickableItem item, bool initializing)
     {
+        if (!initializing && DeadBoat.Online.SharedItemInteraction.Blocked) return false;
         RefreshCapacity();
         if (item == null) return false;
         if (_bagItems.Contains(item) || _quickPanelItems.Contains(item)) return true;
         if (item.GetComponent<AmmoItem>() != null && item.Status == ItemStatus.InInventory) return false;
-        if (DeadBoat.Online.SharedItemsRuntime.Request(item, claimed => AddItem(claimed))) return false;
+        if (!initializing && DeadBoat.Online.SharedItemsRuntime.Request(item, claimed => AddItem(claimed))) return false;
         bool added = false;
         if (item.Attached) return false;
 
@@ -216,6 +219,7 @@ public class Inventory : MonoBehaviour
 
     public void DropOutItem(PickableItem item, InventorySlot slot, Transform dropoutPoint = null)
     {
+        if (DeadBoat.Online.SharedItemInteraction.Blocked) return;
         if (item == null || LoadingManager.Instance.CurrentLocation == Location.Lobby) return;
         if (_quickPanelItems.Contains(item)) {
             _quickPanelItems.Remove(item);
@@ -271,6 +275,7 @@ public class Inventory : MonoBehaviour
     }
     public void TrySwitch(InventorySlot dropped, InventorySlot origin)
     {
+        if (DeadBoat.Online.SharedItemInteraction.Blocked) return;
         bool activeUpdated = false;
         if (_activeItemManager.Active == origin.CurrentItem || _activeItemManager == dropped.CurrentItem)
         {
@@ -372,6 +377,7 @@ public class Inventory : MonoBehaviour
    
     public void SetActiveItem(PickableItem item)
     {
+        if (DeadBoat.Online.SharedItemInteraction.Blocked) return;
         _activeItemManager.SwitchActiveItem(item);
     }
     public List<PickableItem> GetItems()
