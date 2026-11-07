@@ -67,6 +67,7 @@ namespace DeadBoat.Online
             current.ReleaseWaitingPause();
             try
             {
+                if (!preserveReturn) await current.MarkAbandonedBeforeShutdownAsync();
                 if (current.runner != null) await current.runner.Shutdown();
             }
             catch (System.Exception exception)
@@ -78,6 +79,33 @@ namespace DeadBoat.Online
                 SharedRunContext.End();
                 if (current != null) Destroy(current.gameObject);
                 instance = null;
+            }
+        }
+
+        private async Task MarkAbandonedBeforeShutdownAsync()
+        {
+            var state = SharedRunContext.State;
+            if (runner == null || !runner.IsConnectedToServer || state == null || state.Object == null ||
+                !state.Object.IsValid || state.Phase != 3 || state.RunWon || !state.Includes(runner.LocalPlayer)) return;
+            try
+            {
+                state.RPC_AbandonRun();
+                // A remote authority confirms through the replicated roster. A leaving master
+                // also gives its changed snapshot time to be published before transfer/shutdown.
+                // This is bounded best-effort delivery; a broken connection can still leave.
+                double deadline = Time.realtimeSinceStartupAsDouble + 1.5;
+                if (state.Object.HasStateAuthority) await SharedRunFrameWait.Delay(.2);
+                while (runner != null && runner.IsConnectedToServer && state != null && state.Object != null &&
+                    state.Object.IsValid && state.Phase == 3 && state.Includes(runner.LocalPlayer) &&
+                    Time.realtimeSinceStartupAsDouble < deadline)
+                    await SharedRunFrameWait.Delay(.05);
+                if (runner != null && runner.IsConnectedToServer && state != null && state.Object != null &&
+                    state.Object.IsValid && state.Phase == 3 && state.Includes(runner.LocalPlayer))
+                    Debug.LogWarning("[Shared run] Abandon acknowledgement timed out; continuing shutdown.");
+            }
+            catch (System.Exception exception)
+            {
+                Debug.LogWarning("[Shared run] Abandon notification failed: " + exception.Message);
             }
         }
 

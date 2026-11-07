@@ -45,7 +45,7 @@ namespace DeadBoat.Online
             if (board == null || !board.StartGame) return;
             if (!BoatInitialized)
             {
-                if (BoatProfiles.Count != CrewCount) return;
+                if (!HaveRequiredBoatProfiles()) return;
                 BoatDistance = board.TotalDistanceTraveled;
                 BoatFuel = board.currentFuel;
                 BoatMaxFuel = board.MaxFuel;
@@ -57,7 +57,7 @@ namespace DeadBoat.Online
                 BoatEndDistance = board.SharedEndDistance;
                 BoatInitialized = true;
             }
-            if (BoatProfiles.Count == CrewCount) RefreshBoatBonuses(board);
+            if (HaveRequiredBoatProfiles()) RefreshBoatBonuses(board);
             if (BoatFinished) return;
             bool present = false;
             foreach (var player in Runner.ActivePlayers) if (player == Driver) present = true;

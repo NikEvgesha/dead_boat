@@ -53,36 +53,29 @@ namespace DeadBoat.Online
             else if (BoatProfiles.Count < 4) BoatProfiles.Add(info.Source, profile);
         }
 
+        private readonly SharedBoatProfile[] eligibleBoatProfiles = new SharedBoatProfile[4];
+
+        private bool HaveRequiredBoatProfiles()
+        {
+            for (int slot = 0; slot < CrewCount; slot++)
+                if (Includes(Crew[slot]) && !BoatProfiles.ContainsKey(Crew[slot])) return false;
+            return true;
+        }
+
         private void RefreshBoatBonuses(BoardController board)
         {
-            float cardFuel = 0, cardSpeed = 0, cardConsumption = 1, cardFill = 1;
-            foreach (var entry in BoatProfiles)
-            {
-                cardFuel += entry.Value.CardFuel;
-                cardSpeed += entry.Value.CardSpeed;
-                cardConsumption += entry.Value.CardConsumption - 1;
-                cardFill += entry.Value.CardFill - 1;
-            }
-            float maxFuel = float.NegativeInfinity, maxSpeed = float.NegativeInfinity;
-            float animalFuel = float.NegativeInfinity, animalSpeed = float.NegativeInfinity;
-            float professionConsumption = float.PositiveInfinity, animalConsumption = float.PositiveInfinity;
-            float professionFill = float.NegativeInfinity, animalFill = float.NegativeInfinity;
-            foreach (var entry in BoatProfiles)
-            {
-                var p = entry.Value;
-                maxFuel = Mathf.Max(maxFuel, (board.SharedBaseFuel + cardFuel + p.ProfessionFuel) * p.ProfessionFuelMult);
-                maxSpeed = Mathf.Max(maxSpeed, (board.SharedBaseSpeed + cardSpeed + p.ProfessionSpeed) * p.ProfessionSpeedMult);
-                animalFuel = Mathf.Max(animalFuel, p.AnimalFuel);
-                animalSpeed = Mathf.Max(animalSpeed, p.AnimalSpeed);
-                professionConsumption = Mathf.Min(professionConsumption, p.ProfessionConsumption);
-                animalConsumption = Mathf.Min(animalConsumption, p.AnimalConsumption);
-                professionFill = Mathf.Max(professionFill, p.ProfessionFill);
-                animalFill = Mathf.Max(animalFill, p.AnimalFill);
-            }
-            BoatMaxFuel = Mathf.Max(0, maxFuel + animalFuel);
-            BoatMaxSpeed = Mathf.Max(0, maxSpeed + animalSpeed);
-            BoatConsumption = board.SharedBaseConsumption * Mathf.Max(0, cardConsumption) * professionConsumption * animalConsumption;
-            BoatFillMultiplier = Mathf.Max(0, cardFill) * professionFill * animalFill;
+            int count = 0;
+            // A temporary disconnect keeps its sealed slot/profile for recovery.
+            // An irreversible abandon removes its contribution without deleting recovery history.
+            for (int slot = 0; slot < CrewCount; slot++)
+                if (Includes(Crew[slot]) && BoatProfiles.TryGet(Crew[slot], out var profile))
+                    eligibleBoatProfiles[count++] = profile;
+            var bonuses = SharedBoatBonusMath.Calculate(board.SharedBaseFuel, board.SharedBaseSpeed,
+                board.SharedBaseConsumption, eligibleBoatProfiles, count);
+            BoatMaxFuel = bonuses.MaxFuel;
+            BoatMaxSpeed = bonuses.MaxSpeed;
+            BoatConsumption = bonuses.Consumption;
+            BoatFillMultiplier = bonuses.Fill;
             BoatFuel = Mathf.Min(BoatFuel, BoatMaxFuel);
         }
     }
