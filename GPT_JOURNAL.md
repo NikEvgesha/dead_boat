@@ -1237,3 +1237,12 @@ Docs/COMBAT_HANDOFF_AUDIT_20261107.md содержит текущую реали
 ## DB-ON-139: статическая инвентаризация нового лобби — 07.11.2026
 
 Начат этап интеграции, без изменения сцен. Новый read-only audit_lobby_migration.py пишет только Logs. Найдены 8 личных зон при default10; 131 anchor-кандидат и один полный путь с тремя объектами; 37 явных коллайдеров прототипа только в boat studies. Prefab inheritance/runtime не разрешались, проходимость не проверялась. Старые корни функционала выключены, маршруты Managers/GameCollection/UI завязаны на Lobby. Документ Docs/LOBBY_MIGRATION_AUDIT_20261107.md разделяет факты и ограничения. DB-ON-139 in_progress, DB-ON-140 backlog с ограничением вместимости. Далее ИИ — роль сцены/типизированные привязки, затем коллизии и две дополнительные зоны. Владелец позже общая приёмка; без сборки.
+
+
+## DB-ON-139: общая роль сцены для UI — 07.11.2026
+
+Добавлен LobbySceneRole: точное Ordinal-сравнение старого Lobby и нового LobbyIslandWorkshop. EggNestTemporaryUIBootstrap, ProfessionTemporaryUIBootstrap и ProfessionHudButton используют его вместо отдельной константы старой сцены. Существующие проверки логической Location.Lobby сохранены. AnimalMergeTemporaryUIBootstrap остаётся намеренно неактивным, его устаревший временный UI не включали. Helper не меняет маршрут загрузки, build settings или lifecycle менеджеров; это только подготовка UI к новой сцене. Привязки пастбищ/магазинов/камер и коллизии ещё не реализованы.
+
+Далее ИИ — типизированные ссылки на сервисы/участки, проверка коллизий и двух недостающих зон, затем контролируемое переключение загрузки. Владелец — позднее общая приёмка. Статус in_progress, без сборки.
+
+Проверка этого среза: полный runtime Assembly-CSharp с новым helper скомпилирован Unity Roslyn по текущим rsp/refs/defines/analyzers, exit0 (Logs/LobbySceneRoleCompile). Канбан OK:145, diff --check PASS. Это проверка C#, не import/Play/Photon/проходимость/UI-приёмка; Player build не запускался.

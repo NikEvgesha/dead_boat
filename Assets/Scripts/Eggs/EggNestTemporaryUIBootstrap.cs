@@ -4,7 +4,6 @@ using UnityEngine.UI;
 
 public static class EggNestTemporaryUIBootstrap
 {
-    private const string LobbySceneName = "Lobby";
     private const string RootName = "TemporaryEggNestSelectionUI";
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -23,7 +22,7 @@ public static class EggNestTemporaryUIBootstrap
     private static void TryCreateForActiveScene()
     {
         Scene scene = SceneManager.GetActiveScene();
-        if (!string.Equals(scene.name, LobbySceneName, System.StringComparison.Ordinal))
+        if (!LobbySceneRole.IsLobby(scene.name))
             return;
 
         EnsureNestUseButtonShowSetup();

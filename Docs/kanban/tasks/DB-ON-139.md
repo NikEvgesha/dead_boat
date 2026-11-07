@@ -38,3 +38,12 @@ ai: true
 Начат read-only этап. Docs/LOBBY_MIGRATION_AUDIT_20261107.md и tools/assets/audit_lobby_migration.py фиксируют 8 зон при default10, выключенный Lobby Online, старые маршруты и неоднозначную anchor-привязку. Ни вход, ни сцена пока не переключены. Статический YAML-аудит не заменяет проход игроком и проверку коллизий.
 
 Далее ИИ — единая роль сцены и типизированные привязки, затем физика/две дополнительные зоны/миграция сервисов. Владелец позже принимает общий пакет; сейчас действий нет, без сборки.
+
+
+## DB-ON-139: общая роль сцены для UI — 07.11.2026
+
+Добавлен LobbySceneRole: точное Ordinal-сравнение старого Lobby и нового LobbyIslandWorkshop. EggNestTemporaryUIBootstrap, ProfessionTemporaryUIBootstrap и ProfessionHudButton используют его вместо отдельной константы старой сцены. Существующие проверки логической Location.Lobby сохранены. AnimalMergeTemporaryUIBootstrap остаётся намеренно неактивным, его устаревший временный UI не включали. Helper не меняет маршрут загрузки, build settings или lifecycle менеджеров; это только подготовка UI к новой сцене. Привязки пастбищ/магазинов/камер и коллизии ещё не реализованы.
+
+Далее ИИ — типизированные ссылки на сервисы/участки, проверка коллизий и двух недостающих зон, затем контролируемое переключение загрузки. Владелец — позднее общая приёмка. Статус in_progress, без сборки.
+
+Проверка этого среза: полный runtime Assembly-CSharp с новым helper скомпилирован Unity Roslyn по текущим rsp/refs/defines/analyzers, exit0 (Logs/LobbySceneRoleCompile). Канбан OK:145, diff --check PASS. Это проверка C#, не import/Play/Photon/проходимость/UI-приёмка; Player build не запускался.

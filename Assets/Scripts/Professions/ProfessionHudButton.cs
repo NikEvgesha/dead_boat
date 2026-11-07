@@ -4,7 +4,6 @@ using UnityEngine.UI;
 
 public sealed class ProfessionHudButton : MonoBehaviour
 {
-    private const string LobbySceneName = "Lobby";
 
     [SerializeField] private GameObject _visualRoot;
     [SerializeField] private Button _button;
@@ -74,7 +73,7 @@ public sealed class ProfessionHudButton : MonoBehaviour
             return LoadingManager.Instance.CurrentLocation == Location.Lobby;
 
         Scene scene = SceneManager.GetActiveScene();
-        return string.Equals(scene.name, LobbySceneName, System.StringComparison.Ordinal);
+        return LobbySceneRole.IsLobby(scene.name);
     }
 
     private static ProfessionSelectionPanel ResolvePanel()

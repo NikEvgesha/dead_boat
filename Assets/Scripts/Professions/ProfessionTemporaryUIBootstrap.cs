@@ -4,7 +4,6 @@ using UnityEngine.UI;
 
 public static class ProfessionTemporaryUIBootstrap
 {
-    private const string LobbySceneName = "Lobby";
     private const string RootName = "TemporaryProfessionUI";
     private const string ShortcutListenerName = "ProfessionShortcutListener";
 
@@ -64,7 +63,7 @@ public static class ProfessionTemporaryUIBootstrap
             return LoadingManager.Instance.CurrentLocation == Location.Lobby;
 
         Scene scene = SceneManager.GetActiveScene();
-        return string.Equals(scene.name, LobbySceneName, System.StringComparison.Ordinal);
+        return LobbySceneRole.IsLobby(scene.name);
     }
 
     public static ProfessionSelectionPanel EnsurePanel()
