@@ -44,7 +44,7 @@ namespace DeadBoat.Online
             return new SharedPersonalData
             {
                 Health = PlayerStatsManager.Instance.Health, Coins = CurrencyManager.Instance != null ? CurrencyManager.Instance.Coins : save.LoadGameCoin(),
-                Experience = exp.Item1, Level = exp.Item2, Upgrades = save.LoadLevelUp(),
+                Experience = exp.Item1, Level = exp.Item2, Upgrades = LevelStatManager.Instance != null ? LevelStatManager.Instance.PendingUpgrades : save.LoadLevelUp(),
                 Pistol = ammo.GetAmmo(WeaponType.Pistol), Rifle = ammo.GetAmmo(WeaponType.Rifle),
                 Shotgun = ammo.GetAmmo(WeaponType.Shotgun),
                 CardHP = cards.HP, ExpMultiplier = cards.MultExp, MoveMultiplier = cards.MoveSpeedMult,
@@ -67,8 +67,11 @@ namespace DeadBoat.Online
             save.SaveFuel(Mathf.RoundToInt(boatFuel));
             save.SavePlayerStats(Coins, Health);
             save.SavePlayerExperience(Experience, Level);
-            save.SaveLevelUpdate(Cards);
-            save.SaveLevelUp(Upgrades);
+            var cards = Cards;
+            cards.HasUpgradeCount = true;
+            cards.UnspentUpgrades = Mathf.Max(0, Upgrades);
+            save.SaveLevelUpdate(cards);
+            save.SaveLevelUp(cards.UnspentUpgrades);
             save.SaveAmmo(WeaponType.Pistol, Pistol);
             save.SaveAmmo(WeaponType.Rifle, Rifle);
             save.SaveAmmo(WeaponType.Shotgun, Shotgun);

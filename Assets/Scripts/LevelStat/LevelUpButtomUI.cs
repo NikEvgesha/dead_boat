@@ -63,7 +63,13 @@ public class LevelUpButtomUI : MonoBehaviour
             LevelUpUi.Instance.FinishScriptedChoice(chosen, rarity);
             return;
         }
-        chosen.AddBoost(rarity);
+        if (!LevelUpUi.Instance.ApplyNormalChoice(chosen, rarity))
+        {
+            _rewardGranted = false;
+            _claimPending = false;
+            LevelUpUi.Instance.ReleaseCardClaim();
+            return;
+        }
         LevelUpUi.Instance.ShowCardChoice(chosen.BoostIcon, rarity);
         LevelUpUi.Instance.Close();
     }

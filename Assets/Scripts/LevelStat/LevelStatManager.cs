@@ -21,6 +21,9 @@ public struct RareChance
 public struct Stats
 {
     public bool Save;
+    // One persisted record owns both bonuses and all unspent choices (including an open offer).
+    public bool HasUpgradeCount;
+    public int UnspentUpgrades;
     public int InventorySlots;
     public int BloodPactRank, BattleRhythmRank, OnTheEdgeRank;
     public int LastRoundRank, HeavyCoatRank;
@@ -134,7 +137,7 @@ public class LevelStatManager : MonoBehaviour
     {
         if (ScriptedOffersOnly) return;
         _countLevelUp++;
-        SaveManager.Instance.SaveLevelUp(_countLevelUp);
+        SaveManager.Instance.SaveCardProgress(Stats, _countLevelUp);
         LevelUpUi.Instance.AddNewLevelCount(_countLevelUp);
     }
     private void ButtonLevelUse()
@@ -144,14 +147,22 @@ public class LevelStatManager : MonoBehaviour
     public bool CheckNewLevel()
     {
         if (ScriptedOffersOnly || _countLevelUp <= 0 || LevelUpUi.Instance == null || LevelUpUi.Instance.IsChoiceOpen) return false;
-        _countLevelUp--;
-        SaveManager.Instance.SaveLevelUp(_countLevelUp);
         NewLevel();
         return true;
     }
+    public int PendingUpgrades => _countLevelUp;
     public bool HaveLevelUp()
     {
-        return _countLevelUp > 0;
+        // Preserve the previous interstitial rule: only the final normal choice shows it.
+        return _countLevelUp > (LevelUpUi.Instance != null && LevelUpUi.Instance.IsChoiceOpen ? 1 : 0);
+    }
+    public bool ApplyEarnedChoice(BoostItem item, RareType rarity)
+    {
+        if (ScriptedOffersOnly || _countLevelUp <= 0 || item == null ||
+            !item.RareRewards.Exists(x => x.Rare == rarity)) return false;
+        _countLevelUp--;
+        Change(item.BoostType, item.RareRewards.Find(x => x.Rare == rarity).Reward);
+        return true;
     }
     public void Refresh()
     {
@@ -177,11 +188,9 @@ public class LevelStatManager : MonoBehaviour
     }
     private void LoadStats() 
     {
-       Stats save = SaveManager.Instance.LoadLevelUpdate();
-        if (!save.Save) { return; }
-        Stats = save;
-        int countLevelUp = SaveManager.Instance.LoadLevelUp();
-        _countLevelUp = countLevelUp;
+        Stats save = SaveManager.Instance.LoadLevelUpdate();
+        _countLevelUp = SaveManager.Instance.LoadLevelUp();
+        if (save.Save) Stats = save;
     }
     private void Change(BoostType boost, float count)
     {
@@ -258,7 +267,7 @@ public class LevelStatManager : MonoBehaviour
                 Debug.LogWarning($"Неизвестный тип BoostType: {boost}");
                 break;
         }
-        SaveManager.Instance.SaveLevelUpdate(Stats);
+        SaveManager.Instance.SaveCardProgress(Stats, _countLevelUp);
 
     }
 
@@ -312,8 +321,7 @@ public class LevelStatManager : MonoBehaviour
         Stats = cards;
         CombatCards.Reset();
         _countLevelUp = Mathf.Max(0, upgrades);
-        SaveManager.Instance.SaveLevelUpdate(Stats);
-        SaveManager.Instance.SaveLevelUp(_countLevelUp);
+        SaveManager.Instance.SaveCardProgress(Stats, _countLevelUp);
         if (LevelUpUi.Instance != null)
         {
             LevelUpUi.Instance.RestartAll();
@@ -325,9 +333,8 @@ public class LevelStatManager : MonoBehaviour
     {
         CombatCards.Reset();
         Stats = StatsDefault;
-        SaveManager.Instance.SaveLevelUpdate(Stats);
-        SaveManager.Instance.SaveLevelUp(0);
         _countLevelUp = 0;
+        SaveManager.Instance.SaveCardProgress(Stats, 0);
         LevelUpUi.Instance.RestartAll();
     }
 }

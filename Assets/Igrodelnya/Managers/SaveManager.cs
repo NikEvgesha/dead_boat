@@ -292,8 +292,7 @@ public class SaveManager : MonoBehaviour
     }
     public void SaveLevelUpdate(Stats stats)
     {
-        ActiveProvider.SaveLevelUpdate(stats);
-        DeadBoat.Online.SharedRunRecovery.PersonalChanged();
+        SaveCardProgress(stats, LoadLevelUp());
     }
     public Stats LoadLevelUpdate()
     {
@@ -301,12 +300,21 @@ public class SaveManager : MonoBehaviour
     }
     public void SaveLevelUp(int count)
     {
-        ActiveProvider.SaveLevelUp(count);
+        SaveCardProgress(ActiveProvider.LoadLevelUpdate(), count);
+    }
+    public void SaveCardProgress(Stats stats, int count)
+    {
+        stats.HasUpgradeCount = true;
+        stats.UnspentUpgrades = Mathf.Max(0, count);
+        // Canonical bonuses+count are one provider value. The old counter is only a compatibility mirror.
+        ActiveProvider.SaveLevelUpdate(stats);
+        ActiveProvider.SaveLevelUp(stats.UnspentUpgrades);
         DeadBoat.Online.SharedRunRecovery.PersonalChanged();
     }
     public int LoadLevelUp()
     {
-        return ActiveProvider.LoadLevelUp();
+        Stats stats = ActiveProvider.LoadLevelUpdate();
+        return Mathf.Max(0, stats.HasUpgradeCount ? stats.UnspentUpgrades : ActiveProvider.LoadLevelUp());
     }
 
     /*    public void SaveAttachedItem(string id)

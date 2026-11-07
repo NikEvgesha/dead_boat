@@ -87,12 +87,15 @@ public class LevelUpUi : MonoBehaviour
     private RareType _rare;
     private int _countLevelUp;
     private bool _cardClaimed;
+    private bool _cardApplied;
     private int _offerRevision;
     private bool _refreshPending;
+    private bool _upgradePending;
     private void InvalidateRefresh()
     {
         _offerRevision++;
         _refreshPending = false;
+        _upgradePending = false;
     }
     private void OnDisable() => InvalidateRefresh();
     private bool CanRefresh => isActiveAndEnabled && IsChoiceOpen && !_scriptedChoice && !_cardClaimed && !_refreshPending;
@@ -119,6 +122,14 @@ public class LevelUpUi : MonoBehaviour
     }
     public bool TryClaimCard() { if (_refreshPending || _cardClaimed || Time.unscaledTimeAsDouble < _nextChoiceAt) return false; _cardClaimed = true; return true; }
     public void ReleaseCardClaim() { _cardClaimed = false; }
+    public bool ApplyNormalChoice(BoostItem item, RareType rarity)
+    {
+        if (_scriptedChoice || !IsChoiceOpen || !_cardClaimed || _cardApplied) return false;
+        _cardApplied = true;
+        if (LevelStatManager.Instance.ApplyEarnedChoice(item, rarity)) return true;
+        _cardApplied = false;
+        return false;
+    }
     public RareBack GetRareBackUI(RareType rare) 
     {
         return _rareBack.Find(r => r.Type == rare);
@@ -151,6 +162,7 @@ public class LevelUpUi : MonoBehaviour
         if (_scriptedChoice || IsChoiceOpen) return;
         InvalidateRefresh();
         _cardClaimed = false;
+        _cardApplied = false;
         _scriptedChoice = scripted;
         if (!scripted && TryUpgradeHighestRarity(items, out var upgraded))
         {
@@ -174,6 +186,7 @@ public class LevelUpUi : MonoBehaviour
         if (_scriptedChoice || !IsChoiceOpen) return;
         InvalidateRefresh();
         _cardClaimed = false;
+        _cardApplied = false;
         int i = 0;
         foreach (var item in items)
         {
@@ -192,17 +205,28 @@ public class LevelUpUi : MonoBehaviour
         _panelAdsChoise.SetActive(false);
         _price = 1;
         _textPrice.text = _price.ToString();
-        _countLevelUp--;
-
-        if (!LevelStatManager.Instance.CheckNewLevel())
-        {
-            RestartAll();
-        }
-        _countLevelUpUi.text = _countLevelUp.ToString();
+        bool applied = _cardApplied;
+        _cardApplied = false;
+        int remaining = LevelStatManager.Instance.PendingUpgrades;
+        if (remaining > 0) AddNewLevelCount(remaining);
+        else RestartAll();
+        if (applied) LevelStatManager.Instance.CheckNewLevel();
     }
     public void RestartAll()
     {
         InvalidateRefresh();
+        if (!_scriptedChoice)
+        {
+            // Recovery/reset must invalidate the old buttons and their ad callbacks too.
+            if (IsChoiceOpen)
+            {
+                PauseManager.Instance?.SetPause(false, false);
+                if (ControlManager.Instance != null) ControlManager.Instance.CursorActive = false;
+            }
+            _panel.SetActive(false);
+            _panelAdsChoise.SetActive(false);
+            _cardClaimed = _cardApplied = false;
+        }
         _buttonLevelUp.SetActive(false);
         _countLevelUp = 0;
     }
@@ -240,6 +264,7 @@ public class LevelUpUi : MonoBehaviour
     }
     public void ChoiceBoost(BoostItem item, RareType rare) 
     {
+        if (!IsChoiceOpen || _scriptedChoice || !_cardClaimed && !TryClaimCard()) return;
         _item = item;
         _rare = rare;
         if (CombatCardRules.IsSpecial(item.BoostType)) { _NoUpClick(); return; }
@@ -247,22 +272,31 @@ public class LevelUpUi : MonoBehaviour
     }
     public void _UpClickAds()
     {
-        if (_scriptedChoice || _item == null || CombatCardRules.IsSpecial(_item.BoostType)) return;
+        if (_scriptedChoice || !IsChoiceOpen || _upgradePending || _item == null ||
+            _rare >= RareType.Mythic || CombatCardRules.IsSpecial(_item.BoostType)) return;
+        _upgradePending = true;
+        int revision = _offerRevision;
+        var chosen = _item;
+        var rarity = _rare;
+        bool completed = false;
         AdsManager.Instance.ShowRewardedAd(
             "Refresh",
             (success) =>
             {
+                if (this == null || completed || revision != _offerRevision || !IsChoiceOpen || _item != chosen) return;
+                completed = true;
+                _upgradePending = false;
                 if (success)
                 {
-                    _rare = (RareType)((int)_rare + 1);
+                    _rare = (RareType)((int)rarity + 1);
                     _NoUpClick();
                 }
             });
     }
     public void _NoUpClick()
     {
-        if (_scriptedChoice) return;
-        _item.AddBoost(_rare);
+        if (_scriptedChoice || _upgradePending) return;
+        if (!ApplyNormalChoice(_item, _rare)) return;
         Close();
     }
     public static bool TryUpgradeHighestRarity(List<ItemWithRare> list, out ItemWithRare result)
