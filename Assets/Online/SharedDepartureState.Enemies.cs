@@ -42,7 +42,7 @@ namespace DeadBoat.Online
         private bool HasEnemyAuthority(ulong id)
         {
             var page = EnemyPage(id);
-            return page != null && page.Object.HasStateAuthority;
+            return page != null && page.Object.HasStateAuthority && !SharedEnemiesRuntime.IsEnemyRecoveryPending(id);
         }
 
         public bool TryEnemy(ulong id, out SharedEnemyRecord enemy)
@@ -56,6 +56,9 @@ namespace DeadBoat.Online
         public void SampleEnemy(WorldSpawnIdentity identity, EnemyCore enemy)
         {
             if (!SharedEnemiesRuntime.EnsureAuthority(this)) return;
+            // Do not publish stale local HP over a deferred boss's known canonical record.
+            // A truly absent record may still use the ordinary initial registration path.
+            if (SharedEnemiesRuntime.IsEnemyRecoveryPending(identity.Id) && TryEnemy(identity.Id, out _)) return;
             var page = EnemyPage(identity.Id) ?? (Object.HasStateAuthority ? AvailablePage(true) : null);
             if (page == null || !page.Object.HasStateAuthority || enemy.SharedMaxHP <= 0) return;
             if (enemy is DragonBossController dragon) DragonBrain = dragon.CaptureSharedBrain(identity.Id);
@@ -85,6 +88,7 @@ namespace DeadBoat.Online
         {
             var page = EnemyPage(id);
             if (page == null || !page.Object.HasStateAuthority || !page.Enemies.TryGet(id, out var enemy)) return;
+            if (SharedEnemiesRuntime.IsEnemyRecoveryPending(id) && enemy.HP > 0) return;
             enemy.HP = 0;
             page.Enemies.Set(id, enemy);
         }
@@ -118,6 +122,7 @@ namespace DeadBoat.Online
                 foreach (var entry in page.Enemies)
                 {
                     var record = entry.Value;
+                    if (SharedEnemiesRuntime.IsEnemyRecoveryPending(entry.Key)) continue;
                     if (record.HP <= 0 || record.BurnRemaining <= 0) continue;
                     float delta = Mathf.Min(Runner.DeltaTime, record.BurnRemaining);
                     record.BurnRemaining -= delta;

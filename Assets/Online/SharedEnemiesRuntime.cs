@@ -7,6 +7,11 @@ namespace DeadBoat.Online
     {
         private static readonly EnemyAuthorityEpoch authorityEpoch = new();
         private static readonly System.Collections.Generic.List<WorldSpawnIdentity> authoritySnapshot = new();
+        private static readonly System.Collections.Generic.List<WorldSpawnIdentity> victorySnapshot = new();
+        private static readonly System.Collections.Generic.List<TentacleBoss> pendingBosses = new();
+        private static readonly System.Collections.Generic.HashSet<ulong> pendingBossEnemies = new();
+        internal static bool IsEnemyRecoveryPending(ulong id) => pendingBossEnemies.Contains(id);
+        internal static bool IsTentacleRecoveryPending(TentacleBoss boss) => pendingBosses.Contains(boss);
         private static bool applyingDamage;
         public static bool ApplyingDamage => applyingDamage;
         private readonly System.Collections.Generic.List<WorldSpawnIdentity> snapshot = new();
@@ -19,7 +24,7 @@ namespace DeadBoat.Online
         private static readonly System.Collections.Generic.Dictionary<ulong, ZombieController> templates = new();
         private static readonly System.Collections.Generic.Dictionary<DragonBossController,
             System.Collections.Generic.HashSet<Fusion.PlayerRef>> diveVictims = new();
-        public static void Clear() { templates.Clear(); diveVictims.Clear(); authorityEpoch.Invalidate(); authoritySnapshot.Clear(); }
+        public static void Clear() { templates.Clear(); diveVictims.Clear(); authorityEpoch.Invalidate(); authoritySnapshot.Clear(); victorySnapshot.Clear(); pendingBosses.Clear(); pendingBossEnemies.Clear(); }
         public static bool TryTemplate(ulong id, out ZombieController prefab) => templates.TryGetValue(id, out prefab);
         public static int DiveMask(DragonBossController dragon)
         {
@@ -40,7 +45,7 @@ namespace DeadBoat.Online
         public static void StartDive(DragonBossController dragon) => diveVictims[dragon] = new();
         public static void DiveAttack(DragonBossController dragon)
         {
-            if (!SharedRunContext.Playing || !Authority) return;
+            if (!SharedRunContext.Playing || !StableAuthorityAction) return;
             if (!diveVictims.TryGetValue(dragon, out var hit)) diveVictims[dragon] = hit = new();
             var state = SharedRunContext.State;
             foreach (var avatar in LobbyNetworkAvatar.All)
@@ -57,6 +62,17 @@ namespace DeadBoat.Online
             return id;
         }
         public static bool Authority => !SharedRunContext.Active || EnsureAuthority(SharedRunContext.State);
+
+        // A local attack/transition entered before preparation must not continue after its world changed.
+        internal static bool StableAuthorityAction
+        {
+            get
+            {
+                if (!SharedRunContext.Active) return true;
+                long generation = authorityEpoch.Generation;
+                return EnsureAuthority(SharedRunContext.State) && authorityEpoch.IsCurrent(generation);
+            }
+        }
 
         // Entry used by AI, RPCs, burn and publishing. Root authority alone is not readiness.
         internal static bool EnsureAuthority(SharedDepartureState state)
@@ -100,28 +116,68 @@ namespace DeadBoat.Online
 
         private static void ResumeAuthorityWorld(SharedDepartureState state)
         {
+            pendingBosses.Clear(); pendingBossEnemies.Clear();
+            for (int i = 0; i < authoritySnapshot.Count; i++)
+            {
+                var identity = authoritySnapshot[i];
+                if (identity == null || !(identity.Enemy is DragonBossController dragon) ||
+                    !state.TryEnemy(identity.Id, out var record)) continue;
+                bool finalBoss = identity.Key != null && identity.Key.StartsWith("boss:", System.StringComparison.Ordinal);
+                // Its GameObject may already be off, so Update/Dead cannot finish the old timer.
+                if (BossRecoveryRules.RecoverInactiveDragon(finalBoss, record.HP, record.MaxHP, dragon.gameObject.activeInHierarchy))
+                    state.MarkWon();
+            }
             foreach (var boss in Object.FindObjectsByType<TentacleBoss>(FindObjectsSortMode.None))
             {
-                var parts = boss.GetComponentsInChildren<TentaclePart>(true);
-                bool known = parts.Length > 0, active = false;
-                int alive = 0;
-                foreach (var part in parts)
+                var action = ReadTentacleRecovery(state, boss, out var parts);
+                if (action == TentacleRecoveryAction.Wait)
                 {
-                    var identity = part.GetComponent<WorldSpawnIdentity>();
-                    if (identity == null || !state.TryEnemy(identity.Id, out var record)) { known = false; break; }
-                    if (record.HP <= 0) continue;
-                    alive++;
-                    if (part.IsDead) { known = false; break; }
-                    if (part.Active) active = true;
+                    pendingBosses.Add(boss);
+                    foreach (var part in parts)
+                    {
+                        part.StopAllCoroutines();
+                        var identity = part.GetComponent<WorldSpawnIdentity>();
+                        if (identity != null) { identity.SuspendEnemyProxyAI(true); pendingBossEnemies.Add(identity.Id); }
+                    }
+                    continue;
                 }
-                // Fresh spawns without canonical records keep their ordinary StartBossFight path.
-                if (!known) continue;
-                if (alive == 0) { state.MarkWon(); continue; }
-                if (active)
+                // Incomplete or invalid records cannot finish a boss or start another attack.
+                switch (action)
                 {
-                    foreach (var part in parts) if (!part.IsDead && part.Active) part.SetActive();
+                    case TentacleRecoveryAction.Victory: state.MarkWon(); break;
+                    case TentacleRecoveryAction.ResumeActive:
+                        foreach (var part in parts) if (!part.IsDead && part.Active) part.SetActive();
+                        break;
+                    case TentacleRecoveryAction.SelectNext: boss.ChangeTentacle(null); break;
                 }
-                else boss.ChangeTentacle(null);
+            }
+        }
+
+        private static TentacleRecoveryAction ReadTentacleRecovery(SharedDepartureState state, TentacleBoss boss, out TentaclePart[] parts)
+        {
+            parts = boss.GetComponentsInChildren<TentaclePart>(true);
+            var evidence = new TentacleRecoveryEvidence();
+            foreach (var part in parts)
+            {
+                var identity = part.GetComponent<WorldSpawnIdentity>();
+                SharedEnemyRecord record = default;
+                bool known = identity != null && state.TryEnemy(identity.Id, out record);
+                evidence.Observe(known, record.HP, record.MaxHP, part.IsDead, part.Active);
+            }
+            return evidence.Action;
+        }
+
+        private static void RetryPendingBosses(SharedDepartureState state)
+        {
+            for (int i = 0; i < pendingBosses.Count; i++)
+            {
+                var boss = pendingBosses[i];
+                if (boss != null && ReadTentacleRecovery(state, boss, out _) == TentacleRecoveryAction.Wait) continue;
+                // All other actors were sampled on this pass; preserve their current state.
+                // Rehydrate the deferred group before enabling its attacks, once its data arrives.
+                authorityEpoch.Invalidate();
+                EnsureAuthority(state);
+                return;
             }
         }
 
@@ -194,7 +250,7 @@ namespace DeadBoat.Online
         public static bool MeleeAttack(Transform from, Transform target, float range, int damage)
         {
             if (!SharedRunContext.Active) return false;
-            if (!Authority || !CanMeleeHit(from, target, range)) return true;
+            if (!StableAuthorityAction || !CanMeleeHit(from, target, range)) return true;
             var state = SharedRunContext.State;
             foreach (var avatar in LobbyNetworkAvatar.All)
             {
@@ -211,7 +267,7 @@ namespace DeadBoat.Online
         public static bool AreaAttack(Vector3 center, float radius, int damage)
         {
             if (!SharedRunContext.Active) return false;
-            if (!Authority) return true;
+            if (!StableAuthorityAction) return true;
             var state = SharedRunContext.State;
             foreach (var avatar in LobbyNetworkAvatar.All)
                 if (AvailableTarget(state, avatar) &&
@@ -223,7 +279,7 @@ namespace DeadBoat.Online
         public static bool BoxAttack(Vector3 center, Vector3 size, Quaternion rotation, int damage)
         {
             if (!SharedRunContext.Active) return false;
-            if (!Authority) return true;
+            if (!StableAuthorityAction) return true;
             var state = SharedRunContext.State;
             foreach (var avatar in LobbyNetworkAvatar.All)
             {
@@ -274,7 +330,25 @@ namespace DeadBoat.Online
             // If this event precedes the shared verdict, LateUpdate must dispatch it
             // again after MarkWon, regardless of subscriber ordering (including master).
             victoryShown = SharedVictoryRewards.CanPresentVictory;
-            if (SharedRunContext.Playing && Authority) SharedRunContext.State.MarkWon();
+            if (SharedRunContext.Playing && Authority && pendingBosses.Count == 0 && HasCanonicalBossVictory(SharedRunContext.State))
+                SharedRunContext.State.MarkWon();
+        }
+
+        private static bool HasCanonicalBossVictory(SharedDepartureState state)
+        {
+            ulong dragon = state.DragonBrain.Id;
+            if (dragon != 0 && state.TryEnemy(dragon, out var record) &&
+                BossRecoveryRules.CanonicalDefeat(true, record.HP, record.MaxHP)) return true;
+            // The root's brain and page data may arrive separately. A registered final
+            // dragon plus its canonical HP is sufficient proof even before Brain.Id arrives.
+            SharedItemsRuntime.CopyEnemiesTo(victorySnapshot);
+            foreach (var identity in victorySnapshot)
+                if (identity != null && identity.Enemy is DragonBossController && identity.Key != null &&
+                    identity.Key.StartsWith("boss:", System.StringComparison.Ordinal) && state.TryEnemy(identity.Id, out record) &&
+                    BossRecoveryRules.CanonicalDefeat(true, record.HP, record.MaxHP)) return true;
+            foreach (var boss in Object.FindObjectsByType<TentacleBoss>(FindObjectsSortMode.None))
+                if (ReadTentacleRecovery(state, boss, out _) == TentacleRecoveryAction.Victory) return true;
+            return false;
         }
 
         private void LateUpdate()
@@ -339,6 +413,7 @@ namespace DeadBoat.Online
                 if (enemy is DragonBossController dragon && state.DragonBrain.Id == identity.Id)
                     dragon.ApplySharedBrain(state.DragonBrain);
             }
+            if (authority && sample && pendingBosses.Count > 0) RetryPendingBosses(state);
         }
     }
 }

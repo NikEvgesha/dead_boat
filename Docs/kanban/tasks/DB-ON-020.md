@@ -77,3 +77,19 @@ Unity BuildReport: Succeeded, errors=0. Архив `Builds/DeadBoatClockDamage-2
 Проверка production-gate в отдельном .NET процессе PASS: модель145→35 для stale HP150/canonical40/burn5, ожидание страниц, restore-before-resume, одна подготовка, текущие HP/маска не перезаписываются повторным query, новый owner/run, reentry, invalidation/исключения/retry. Полный runtime Assembly-CSharp с текущими исходниками Unity Roslyn exit0, хеши входов совпали; выводы только в Logs. Это не реальные Unity-враги/корутины/награды/два Photon мира. Новый import/Fusion weaving/Play/Player Build не выполнялись. Подробности и повторяемый запуск — Docs/COMBAT_HANDOFF_AUDIT_20261107.md. SDK/протокол/сцены не менялись.
 
 Остаётся in_review. Далее ИИ — интеграционная проверка дракона/щупалец/горения и повторного takeover с реальными игровыми объектами при работоспособном Editor. DB-ON-019 probe также пока ожидает исполнения. Владелец позже принимает общий WebGL-пакет; сейчас действий нет, без сборки.
+
+
+## DB-ON-020: завершение восстановления боссов — 07.11.2026
+
+Добавлены production BossRecoveryRules/TentacleRecoveryEvidence. Победа при потерянном callback неактивного финального дракона восстанавливается только по canonical HP<=0 и валидному MaxHP. Активная death-анимация сохраняет штатный путь. Локальный Win сам по себе больше не доказывает поражение босса: требуется canonical defeat дракона или всех частей щупальца.
+
+Неполная группа щупалец ждёт записи: корутины остановлены, известные canonical HP не затираются sampling и локальной смертью, damage/burn к ожидающим частям запрещены. Проверка очереди выполняется с частотой sampling, после поступления записей — повторная подготовка мира и возобновление. Пустая/неполная группа, невалидные HP и локальный труп при canonicalAlive не дают ложную победу. Последний конфликт остаётся ожиданием: полноценное пересоздание такого actor этой правкой не реализовано.
+
+Проверка поколения EnemyAuthorityEpoch отвергает действие, начатое до синхронного восстановления мира внутри Authority: восстановленное внутреннее действие разрешено, устаревший внешний callback не продолжает удар/выбор части. Покрыты melee/area/box/dive и входы щупалец. Сетевые поля и RPC не менялись; SDK/сцены/пользовательские настройки не трогали.
+
+Повторяемый .NET probe production gate/rules PASS: stale-generation, late canonical HP25 вместо local150, одно возобновление, дальнейшие HP20 не откатываются, неполные/живые/активные/мёртвые группы и финальный дракон. Callback и позднее поступление записей моделируются: runtime queue/sampling, реальные Unity actors/Animator/корутины/Photon/награды этим тестом не исполнены. Логи Logs/EnemyAuthorityEpochProbe. Команда: python tools/tests/test_enemy_authority_epoch.py --unity-editor E:/Unity/Editors/6000.3.9f1/Editor/Unity.exe.
+
+Статус DB-ON-020 — in_review. Далее ИИ — интеграционные сценарии смены ведущего во время атаки/смерти, поздних страниц и повторной передачи при доступном Editor; владелец — позднее общая WebGL-приёмка. Сейчас без сборки и загрузки. Неатомарность root/pages и перезапуск cooldown остаются прежними ограничениями.
+
+
+Финальная проверка C#: полный runtime Assembly-CSharp по текущим Unity-generated rsp/refs/defines/analyzers с новыми production источниками — Roslyn exit0 (Logs/CombatBossRecoveryStable); SHA256 всех шести изменённых runtime-файлов совпали. Вывод только в Logs, runtime DLL Unity не заменялась. Это не import/Fusion weaving/Play/Player build.

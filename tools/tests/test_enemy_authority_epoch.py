@@ -22,7 +22,7 @@ def main():
     output.mkdir(parents=True, exist_ok=True)
     assembly = output / "Probe.dll"
     refs = [version / (name + ".dll") for name in ("System.Private.CoreLib", "System.Runtime", "System.Console", "System.Collections")]
-    sources = [root / "Assets/Online/EnemyAuthorityEpoch.cs", root / "tools/tests/EnemyAuthorityEpochProbe.cs"]
+    sources = [root / "Assets/Online/EnemyAuthorityEpoch.cs", root / "Assets/Online/BossRecoveryRules.cs", root / "tools/tests/EnemyAuthorityEpochProbe.cs"]
     rsp = output / "probe.rsp"
     lines = ["-target:exe", '-out:"' + str(assembly) + '"', "-langversion:latest"]
     lines += ['-r:"' + str(p) + '"' for p in refs]

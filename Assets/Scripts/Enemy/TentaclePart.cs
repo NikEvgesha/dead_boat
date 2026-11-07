@@ -36,6 +36,8 @@ public class TentaclePart : EnemyCore
         } 
     }
     private bool _active;
+    private bool SharedAttackBlocked => DeadBoat.Online.SharedRunContext.Active &&
+        (!DeadBoat.Online.SharedEnemiesRuntime.StableAuthorityAction || DeadBoat.Online.SharedEnemiesRuntime.IsTentacleRecoveryPending(_mainBody));
     private void Start()
     {
         SetHP(_tentacleHP);
@@ -64,12 +66,14 @@ public class TentaclePart : EnemyCore
     }
     public void SetActive()
     {
+        if (SharedAttackBlocked) return;
         Active = true;
         StartAnimation(TentacleAnimation.Active);
         if (DeadBoat.Online.SharedEnemiesRuntime.Authority) StartCoroutine(AttackBoard());
     }
     private void DisableTentacle()
     {
+        if (SharedAttackBlocked) return;
         StartAnimation(TentacleAnimation.Passive);
         _mainBody.ChangeTentacle(this);
     }
@@ -100,6 +104,7 @@ public class TentaclePart : EnemyCore
 
     private void ActivateDamageBox()
     {
+        if (SharedAttackBlocked) return;
         if (DeadBoat.Online.SharedEnemiesRuntime.BoxAttack(_pointHit.position, _hitBoxSize, _pointHit.rotation, _damage)) return;
         // Центр куба — позиция объекта
         Collider[] hits = Physics.OverlapBox(_pointHit.position, _hitBoxSize * 0.5f, _pointHit.rotation, _hitLayers);

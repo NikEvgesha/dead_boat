@@ -10,6 +10,7 @@ namespace DeadBoat.Online
         private bool ready, preparing;
         public long Generation { get; private set; }
         public bool IsReady(object value, int authority) => ready && ReferenceEquals(context, value) && owner == authority;
+        public bool IsCurrent(long generation) => ready && Generation == generation;
         public void Invalidate()
         {
             if (context == null && !ready && !preparing) return;
