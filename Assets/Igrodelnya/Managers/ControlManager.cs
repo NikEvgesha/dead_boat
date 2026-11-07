@@ -11,6 +11,7 @@ public class ControlManager : MonoBehaviour
     [SerializeField] private bool _useTouchControls;
     [SerializeField] private DeviceProvider _provider;
     private bool _cursorActive;
+    private bool _adCursorActive;
     private bool _moveActive = true;
     private bool _blockPrimaryActionUntilMouseUp;
     private readonly List<RaycastResult> _cursorRaycasts = new List<RaycastResult>(16);
@@ -23,7 +24,7 @@ public class ControlManager : MonoBehaviour
     {
         get
         {
-            return _cursorActive;
+            return _cursorActive || _adCursorActive;
         }
 
         set
@@ -52,7 +53,7 @@ public class ControlManager : MonoBehaviour
                 return false;
 
             return _blockPrimaryActionUntilMouseUp ||
-                   _cursorActive ||
+                   CursorActive ||
                    GetCurrentCursorLockState() != GetGameplayCursorLockMode();
         }
     }
@@ -115,10 +116,18 @@ public class ControlManager : MonoBehaviour
         }
 
         _cursorActive = value;
-        ApplyCursorState(value);
+        ApplyCursorState(CursorActive);
 
         /*if (_moveActive)
             InventoryUI.Instance.ToggleOpen(false);*/
+    }
+
+    // Advertising owns an overlay, not an extra counted menu or a stale cursor snapshot.
+    public void SetAdCursor(bool active)
+    {
+        _adCursorActive = active && !_useTouchControls;
+        if (_useTouchControls) return;
+        ApplyCursorState(CursorActive);
     }
 
     private void ApplyCursorState(bool active, bool requestLock = true)
@@ -173,7 +182,7 @@ public class ControlManager : MonoBehaviour
         {
             _activeWindows = 0;
             _cursorActive = false;
-            ApplyCursorState(false, !IsWebGLPlayer());
+            ApplyCursorState(CursorActive, !IsWebGLPlayer());
         }
     }
 
@@ -182,7 +191,7 @@ public class ControlManager : MonoBehaviour
         if (_blockPrimaryActionUntilMouseUp && !Input.GetMouseButton(0))
             _blockPrimaryActionUntilMouseUp = false;
 
-        if (_useTouchControls || _cursorActive)
+        if (_useTouchControls || CursorActive)
             return;
 
         if (GetCurrentCursorLockState() == GetGameplayCursorLockMode())
