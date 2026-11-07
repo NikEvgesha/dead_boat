@@ -59,8 +59,15 @@ public class EndGameUIManager : MonoBehaviour
     }
     // Текущее состояние конца игры
     private EndGameState currentState = EndGameState.None;
+    private int _presentationRevision;
+    private bool CanAcceptState(EndGameState state)
+    {
+        if (currentState == EndGameState.Win && (state == EndGameState.Faint || state == EndGameState.Lose)) return false;
+        return state != EndGameState.Win || DeadBoat.Online.SharedVictoryRewards.CanPresentVictory;
+    }
     private void ShowEndGameUIAction(EndGameState state)
     {
+        if (!CanAcceptState(state)) return;
         TryGameplayStop();
         //Debug.Log("GameplayStop");
         ShowEndGameUI(state);
@@ -73,6 +80,7 @@ public class EndGameUIManager : MonoBehaviour
         /// <param name="duration">Длительность таймера (в секундах)</param>
         public void ShowEndGameUI(EndGameState state, int distance = 0, float duration = 10f)
     {
+        if (!CanAcceptState(state)) return;
         if (state == EndGameState.Win && currentState == EndGameState.Win)
         {
             if (DeadBoat.Online.SharedRunContext.GenerationActive)
@@ -84,11 +92,9 @@ public class EndGameUIManager : MonoBehaviour
         timerDuration = duration;
         timerRemaining = duration;
 
-        if (_enableButtonsRoutine != null)
-        {
-            StopCoroutine(_enableButtonsRoutine);
-            _enableButtonsRoutine = null;
-        }
+        _presentationRevision++;
+        StopAllCoroutines();
+        _enableButtonsRoutine = null;
 
         SetButtonsInteractable(state == EndGameState.None);
 
@@ -189,35 +195,42 @@ public class EndGameUIManager : MonoBehaviour
     // Обратный отсчёт для состояния обморока (Faint)
     private IEnumerator FaintStateTimer()
     {
-        while (timerRemaining > 0)
+        int revision = _presentationRevision;
+        while (revision == _presentationRevision && currentState == EndGameState.Faint && timerRemaining > 0)
         {
             // Обновление слайдера и текстового сообщения
             timerSlider.value = timerRemaining;
             string tagText = LocalizationManager.Instance.LocalizationData.GetTranslation("Game/SecLeft", LocalizationManager.Instance.CurrentLanguage);
             timerMessageTextFaint.text = string.Format(tagText, Mathf.Ceil(timerRemaining));
             yield return new WaitForSeconds(1f);
+            if (revision != _presentationRevision || currentState != EndGameState.Faint) yield break;
             if (DeadBoat.Online.SharedAdProtection.IsShowing) continue;
             timerRemaining--;
         }
         // По окончании отсчёта переключаем состояние на "Поражение"
-        ShowEndGameUI(EndGameState.Lose, distance: 0, duration: timerDuration);
+        if (revision == _presentationRevision && currentState == EndGameState.Faint)
+            ShowEndGameUI(EndGameState.Lose, distance: 0, duration: timerDuration);
     }
 
     // Обратный отсчёт для состояний Победы и Поражения
     private IEnumerator WinLoseStateTimer()
     {
-        while (timerRemaining > 0)
+        int revision = _presentationRevision;
+        var outcome = currentState;
+        if (outcome != EndGameState.Win && outcome != EndGameState.Lose) yield break;
+        while (revision == _presentationRevision && currentState == outcome && timerRemaining > 0)
         {
             // Обновление слайдера и текстового сообщения
             timerSlider.value = timerRemaining;
             string tagText = LocalizationManager.Instance.LocalizationData.GetTranslation("Game/AutoLeft", LocalizationManager.Instance.CurrentLanguage);
             timerMessageText.text = string.Format(tagText, Mathf.Ceil(timerRemaining));
             yield return new WaitForSeconds(1f);
+            if (revision != _presentationRevision || currentState != outcome) yield break;
             if (DeadBoat.Online.SharedAdProtection.IsShowing) continue;
             timerRemaining--;
         }
         // Автоматически переходим в сцену лобби по окончании отсчёта
-        LoadLobby();
+        if (revision == _presentationRevision && currentState == outcome) LoadLobby();
     }
 
     #region Методы для кнопок

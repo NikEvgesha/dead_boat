@@ -193,8 +193,9 @@ namespace DeadBoat.Online
             if (outcome != EndGameState.Win) return;
             // A local pre-result callback on a replica must not suppress the
             // eventual shared verdict (and its persistent reward).
-            victoryShown = !SharedRunContext.Active || Authority ||
-                (SharedRunContext.State != null && SharedRunContext.State.RunWon);
+            // If this event precedes the shared verdict, LateUpdate must dispatch it
+            // again after MarkWon, regardless of subscriber ordering (including master).
+            victoryShown = SharedVictoryRewards.CanPresentVictory;
             if (SharedRunContext.Playing && Authority) SharedRunContext.State.MarkWon();
         }
 

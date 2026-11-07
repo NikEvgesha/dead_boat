@@ -4,6 +4,16 @@ namespace DeadBoat.Online
 {
     public static class SharedVictoryRewards
     {
+        public static bool CanPresentVictory
+        {
+            get
+            {
+                if (!SharedRunContext.Active) return true;
+                var state = SharedRunContext.State;
+                return SharedRunContext.Playing && state != null && state.RunWon && state.Includes(state.Runner.LocalPlayer);
+            }
+        }
+
         // Returns true for ALL shared-origin runs, including a rejected grant:
         // callers must never fall through to the legacy solo reward path.
         public static bool Apply(int reward)
@@ -15,8 +25,8 @@ namespace DeadBoat.Online
                 if (!SharedRunContext.Playing) return true;
                 var state = SharedRunContext.State;
                 if (state == null || state.Object == null || !state.Object.IsValid) return true;
-                if (state.Object.HasStateAuthority) state.MarkWon();
-                if (!state.RunWon || state.CrewSlot(state.Runner.LocalPlayer) < 0) return true;
+                // Granting a reward must never manufacture the authoritative result.
+                if (!state.RunWon || !state.Includes(state.Runner.LocalPlayer)) return true;
                 run = state.Runner.SessionInfo.Name;
                 player = SharedRunRecovery.LocalId;
             }

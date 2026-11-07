@@ -105,6 +105,12 @@ namespace DeadBoat.Online.Editor
                 await Until(() => state.BoatInitialized, "boat initialized");
                 var fork = SharedSoloSnapshot.Capture(state);
                 int reward = ProfessionService.ApplyWinGemsReward((int)typeof(GameManager).GetField("_reward", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(GameManager.Instance));
+                GameManager.Instance.GrantVictoryReward();
+                var pendingUi = UnityEngine.Object.FindAnyObjectByType<EndGameUIManager>();
+                pendingUi.ShowEndGameUI(EndGameState.Win);
+                Require(!state.RunWon && pendingUi.GetState() != EndGameState.Win && PlayerStatsManager.Instance.InGame &&
+                    save.LoadGems() == gems && save.LoadWins() == wins,
+                    "direct claim/UI before boss cannot declare shared victory, freeze player or award");
                 typeof(SharedAdProtection).GetField("until", BindingFlags.NonPublic | BindingFlags.Static)
                     .SetValue(null, Time.realtimeSinceStartupAsDouble + 300);
                 float destination = BoardController.Instance.SharedEndDistance;
