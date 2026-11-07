@@ -1,0 +1,251 @@
+using System;
+using System.IO;
+using System.Linq;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEditor;
+using UnityEditor.SceneManagement;
+using UnityEngine.SceneManagement;
+
+public static class WinterTrailers136
+{
+    const string ScenePath="Assets/Scenes/LobbyIslandWorkshop.unity";
+    const string Dir="Assets/Prefabs/Workshop/LobbyIsland/Winter128";
+    static Material snow, ice, blue, red, ruby, gold, fur, leather, pine;
+    static Mesh drift;
+    static Transform Node(string name,Transform p,Vector3 pos) {
+        var t=new GameObject(name).transform; t.SetParent(p,false); t.localPosition=pos; return t;
+    }
+    static Transform MeshNode(string name,Transform p,Mesh mesh,Material[] mats) {
+        var t=Node(name,p,Vector3.zero);t.gameObject.AddComponent<MeshFilter>().sharedMesh=mesh;
+        t.gameObject.AddComponent<MeshRenderer>().sharedMaterials=mats;return t;
+    }
+    static Material Mat(string name,float r,float g,float b) {
+        var m=new Material(Shader.Find("Standard"));m.color=new Color(r,g,b);m.SetFloat("_Glossiness",.16f);
+        AssetDatabase.CreateAsset(m,Dir+"/"+name+".mat");return m;
+    }
+    static Transform Block(string name,Transform p,Vector3 pos,Vector3 size,Material m) {
+        var g=GameObject.CreatePrimitive(PrimitiveType.Cube);g.name=name;var t=g.transform;t.SetParent(p,false);
+        t.localPosition=pos;t.localScale=size;g.GetComponent<MeshRenderer>().sharedMaterial=m;
+        UnityEngine.Object.DestroyImmediate(g.GetComponent<Collider>());return t;
+    }
+    static Transform Clone(Transform s,Transform p) {
+        var t=Node(s.name,p,s.localPosition);t.localRotation=s.localRotation;t.localScale=s.localScale;
+        var mr=s.GetComponent<MeshRenderer>();var mf=s.GetComponent<MeshFilter>();
+        if(mr!=null&&mr.enabled&&mf!=null&&mf.sharedMesh!=null){
+            t.gameObject.AddComponent<MeshFilter>().sharedMesh=mf.sharedMesh;
+            t.gameObject.AddComponent<MeshRenderer>().sharedMaterials=mr.sharedMaterials;
+        }
+        foreach(Transform c in s)if(c.gameObject.activeSelf&&!c.name.StartsWith("Trailer")&&!c.name.StartsWith("Future_"))Clone(c,t);
+        return t;
+    }
+    static Mesh Drift() {
+        var v=new List<Vector3>();var tr=new List<int>();var angles=Enumerable.Range(0,9).Select(i=>i*2*Mathf.PI/9).ToArray();
+        foreach(var a in angles)v.Add(new Vector3(Mathf.Cos(a)*.5f,0,Mathf.Sin(a)*.5f));
+        foreach(var a in angles)v.Add(new Vector3(Mathf.Cos(a)*.31f,.30f+Mathf.Sin(a*3)*.05f,Mathf.Sin(a)*.33f));
+        v.Add(new Vector3(.03f,.55f,-.05f));
+        for(int i=0;i<9;i++){int j=(i+1)%9;tr.AddRange(new[]{i,i+9,j,j,i+9,j+9,i+9,18,j+9});}
+        var m=new Mesh();m.name="Faceted_Snowbank";m.SetVertices(v);m.SetTriangles(tr,0);
+        m.RecalculateNormals();m.RecalculateBounds();AssetDatabase.CreateAsset(m,Dir+"/Faceted_Snowbank.asset");return m;
+    }
+    static void Mound(string name,Transform p,Vector3 pos,Vector3 size,Material mat,float yaw=0) {
+        var t=MeshNode(name,p,drift,new[]{mat});t.localPosition=pos;t.localScale=size;t.localRotation=Quaternion.Euler(0,yaw,0);
+    }
+    static void Gift(Transform p,Vector3 pos,float size,Material mat) {
+        var t=Node("Wrapped_Present",p,pos);t.localScale=Vector3.one*size;
+        Block("Box",t,new Vector3(0,.31f,0),new Vector3(.70f,.62f,.62f),mat);
+        Block("Lid",t,new Vector3(0,.60f,0),new Vector3(.75f,.12f,.67f),mat);
+        Block("Ribbon",t,new Vector3(0,.338f,0),new Vector3(.105f,.678f,.68f),gold);
+        Block("Ribbon_Cross",t,new Vector3(0,.34f,0),new Vector3(.76f,.68f,.10f),gold);
+        foreach(float sign in new[]{-1f,1f})Block("Bow",t,new Vector3(sign*.12f,.72f,0),new Vector3(.25f,.08f,.15f),gold).localRotation=Quaternion.Euler(0,0,sign*26);
+    }
+    static Bounds BoundsOf(Transform t) {
+        var v=t.GetComponentsInChildren<MeshFilter>().SelectMany(m=>m.sharedMesh.vertices.Select(p=>t.InverseTransformPoint(m.transform.TransformPoint(p)))).ToArray();
+        var b=new Bounds(v[0],Vector3.zero);foreach(var p in v)b.Encapsulate(p);return b;
+    }
+    static void Emblem(Transform p,Vector3 pos,bool flake) {
+        var t=Node(flake?"Snowflake":"Gold_Star",p,pos);int n=flake?3:4;
+        for(int i=0;i<n;i++){var a=Block("Ray",t,Vector3.zero,new Vector3(.058f,flake?.73f:.46f,.045f),flake?fur:gold);
+            a.localRotation=Quaternion.Euler(0,0,i*180f/n);}
+    }
+    static Transform Boat(Transform src,Transform row,bool santa,float x) {
+        var t=Clone(src,row);t.name=santa?"Boat_Father_Frost128":"Boat_Snowbound128";
+        t.localPosition=new Vector3(x,src.localPosition.y,src.localPosition.z);
+        var art=t.Find("Reference_Design106");var hull=t.Find("BoardDefault");
+        foreach(var m in art.GetComponentsInChildren<MeshRenderer>().Concat(new[]{hull.GetComponent<MeshRenderer>()})) {
+            var name=m.name;Material paint=null;
+            if(name.Contains("Sail")&&!name.Contains("Rigging")&&!name.Contains("Mast")&&!name.Contains("Yard"))
+                paint=santa?red:ice;
+            else if(name.Contains("Gunwale")||name.Contains("Arch_Crown")||name.Contains("Faceted_Arch"))
+                paint=santa?fur:snow;
+            else if(m.transform==hull||name.Contains("Stem")||name.Contains("Transom")||name.Contains("Arch_Pillar"))
+                paint=santa?ruby:blue;
+            if(paint!=null)m.sharedMaterials=m.sharedMaterials.Select(q=>paint).ToArray();
+        }
+        var d=Node("Winter_Decor128",t,Vector3.zero);
+        var sail=d; // emblems sit against the curved sail, clear of the helm
+        Emblem(sail,new Vector3(-.87f,5.68f,-1.27f),!santa);
+        var back=Node("Reverse_Sail_Emblem",d,new Vector3(-.87f,5.68f,-1.47f));
+        Emblem(back,Vector3.zero,!santa);
+        if(santa){
+            // Gift cargo and a red velvet sack stay aft and off the central passage.
+            Gift(d,new Vector3(-.83f,.67f,-5.12f),.90f,pine);
+            Gift(d,new Vector3(.13f,.67f,-5.12f),.70f,red);
+            Gift(d,new Vector3(.91f,.67f,-5.12f),.82f,blue);
+            Mound("Red_Gift_Sack",d,new Vector3(1.53f,.22f,-3.65f),new Vector3(1.12f,1.86f,1.08f),ruby);
+            Mound("Gathered_Sack_Top",d,new Vector3(1.53f,1.18f,-3.65f),new Vector3(.45f,.45f,.45f),red);
+            Block("Gold_Sack_Tie",d,new Vector3(1.53f,1.17f,-3.65f),new Vector3(.36f,.08f,.35f),gold);
+            // Belt detail on both sides of the stern bench.
+            Block("Black_Coat_Belt",d,new Vector3(0,1.04f,-5.55f),new Vector3(3.18f,.19f,.085f),leather);
+            Block("Brass_Buckle",d,new Vector3(0,1.04f,-5.604f),new Vector3(.47f,.30f,.035f),gold);
+            Block("Buckle_Inset",d,new Vector3(0,1.04f,-5.628f),new Vector3(.28f,.135f,.028f),leather);
+        }else{
+            foreach(float side in new[]{-1f,1f}){
+                Mound("Snow_On_Gunwale",d,new Vector3(side*2.77f,1.15f,-3.75f),new Vector3(.33f,.36f,3.3f),snow);
+                Mound("Snow_On_Gunwale",d,new Vector3(side*2.78f,1.14f,.05f),new Vector3(.32f,.27f,2.75f),snow);
+                Mound("Snow_On_Bench",d,new Vector3(side*1.02f,.665f,-5.15f),new Vector3(1.03f,.25f,.60f),snow);
+            }
+            Mound("Snow_On_Arch",d,new Vector3(0,3.43f,-4.4f),new Vector3(1.58f,.40f,.32f),snow);
+            Mound("Snow_On_Bow",d,new Vector3(0,1.07f,6.51f),new Vector3(.85f,.28f,.77f),snow);
+            Mound("Snow_On_Chest",d,new Vector3(0,.695f,4.70f),new Vector3(1.03f,.29f,.72f),snow);
+        }
+        return t;
+    }
+    static void Shot(Vector3 pos,Vector3 at,float size,string file) {
+        var g=new GameObject("Winter temporary camera");var rt=new RenderTexture(1500,1000,24);
+        var tex=new Texture2D(1500,1000,TextureFormat.RGB24,false);var old=RenderTexture.active;
+        try{var c=g.AddComponent<Camera>();c.transform.position=pos;c.transform.LookAt(at);c.orthographic=true;
+            c.orthographicSize=size;c.farClipPlane=700;c.targetTexture=rt;c.Render();RenderTexture.active=rt;
+            tex.ReadPixels(new Rect(0,0,1500,1000),0,0);tex.Apply();File.WriteAllBytes("Docs/assets/lobby-island/"+file,tex.EncodeToPNG());
+        }finally{RenderTexture.active=old;UnityEngine.Object.DestroyImmediate(g);UnityEngine.Object.DestroyImmediate(rt);UnityEngine.Object.DestroyImmediate(tex);}
+    }
+    static Transform Globe(string n,Transform p,Vector3 pos,Vector3 size,Material mat){
+        var g=GameObject.CreatePrimitive(PrimitiveType.Sphere);g.name=n;var t=g.transform;t.SetParent(p,false);
+        t.localPosition=pos;t.localScale=size;g.GetComponent<MeshRenderer>().sharedMaterial=mat;
+        UnityEngine.Object.DestroyImmediate(g.GetComponent<Collider>());return t;
+    }
+    static void Beam(string n,Transform p,Vector3 a,Vector3 b,float d,Material m){
+        var t=Block(n,p,(a+b)*.5f,new Vector3(d,(b-a).magnitude,d),m);t.localRotation=Quaternion.FromToRotation(Vector3.up,b-a);
+    }
+    static Transform Tree(Transform p,Vector3 pos,float k){
+        var t=Node("Decorated_Christmas_Tree",p,pos);t.localScale=Vector3.one*k;
+        Block("Trunk",t,new Vector3(0,.46f,0),new Vector3(.37f,.92f,.37f),leather);
+        for(int i=0;i<4;i++) {
+            float y=.67f+i*.79f,w=3.70f-i*.73f;
+            Mound("Evergreen_Bough_Tier",t,new Vector3(0,y,0),new Vector3(w,3.13f,w),pine,i*15);
+            for(int j=0;j<9;j++){
+                float a=(j+i*.45f)*2*Mathf.PI/9;
+                Globe("Bauble",t,new Vector3(Mathf.Cos(a)*w*.43f,y+.24f,Mathf.Sin(a)*w*.43f),Vector3.one*.20f,j%3==0?gold:j%3==1?red:fur);
+            }
+        }
+        var star=Node("Tree_Top_Star",t,new Vector3(0,4.75f,0));
+        for(int j=0;j<5;j++){float a=j*2*Mathf.PI/5;var d=new Vector3(Mathf.Sin(a),Mathf.Cos(a),0);Beam("Star_Point",star,d*.06f,d*.37f,.12f,gold);}
+        Gift(t,new Vector3(1.28f,0,.82f),.83f,red);Gift(t,new Vector3(-1.22f,0,.91f),.67f,ice);
+        return t;
+    }
+    static bool Hit(MeshFilter mf,Vector3 p,out float y){
+        var v=mf.sharedMesh.vertices.Select(mf.transform.TransformPoint).ToArray();var tr=mf.sharedMesh.triangles;y=float.NegativeInfinity;
+        for(int i=0;i<tr.Length;i+=3){
+            var a=v[tr[i]];var b=v[tr[i+1]];var c=v[tr[i+2]];
+            float d=(b.z-c.z)*(a.x-c.x)+(c.x-b.x)*(a.z-c.z);if(Mathf.Abs(d)<.000001f)continue;
+            float u=((b.z-c.z)*(p.x-c.x)+(c.x-b.x)*(p.z-c.z))/d;
+            float w=((c.z-a.z)*(p.x-c.x)+(a.x-c.x)*(p.z-c.z))/d;
+            if(u>=-.0001f&&w>=-.0001f&&u+w<=1.0001f)y=Mathf.Max(y,u*a.y+w*b.y+(1-u-w)*c.y);
+        }return !float.IsNegativeInfinity(y);
+    }
+    static Bounds Bound(Transform t){
+        var rr=t.GetComponentsInChildren<MeshRenderer>().Where(r=>r.enabled).ToArray();
+        var b=rr[0].bounds;foreach(var r in rr.Skip(1))b.Encapsulate(r.bounds);return b;
+    }
+    static bool Overlap(Bounds a,Bounds b,float gap){
+        return a.min.x<b.max.x+gap&&a.max.x>b.min.x-gap&&a.min.z<b.max.z+gap&&a.max.z>b.min.z-gap;
+    }
+    static bool IsFir(Transform t){return t.name.StartsWith("Decorated_Fir_")||t.name.StartsWith("Evergreen_Fir_")||t.name=="Decorated_Christmas_Tree";}
+    static int Separate(Transform root,Transform winter){
+        var bushes=root.GetComponentsInChildren<Transform>().Where(t=>t.name=="Low_Bush"||t.name=="Shrub092"||t.name=="Decorative_Shrub101").Where(t=>t.GetComponentsInChildren<MeshRenderer>().Any(r=>r.enabled)).ToArray();
+        var trees=winter.GetComponentsInChildren<Transform>().Where(IsFir).ToArray();
+        var islands=new[]{root.Find("01_Central_Island")}.Concat(root.Find("02_Personal_Islands_8_Visual_Plots").Cast<Transform>()).ToArray();
+        int moved=0;
+        foreach(var tree in bushes){
+            var b=Bound(tree);
+            if(!trees.Any(q=>Overlap(b,Bound(q),.12f)))continue;
+            var island=islands.OrderBy(t=>Vector3.Distance(t.position,tree.position)).First();
+            var m=island.GetComponentsInChildren<MeshFilter>().Where(t=>t.sharedMesh&&t.GetComponent<Renderer>()&&t.GetComponent<Renderer>().enabled).ToArray();
+            var floors=m.Where(t=>t.name=="Grass_Terrace"||t.name=="Large_Pen_Sand_Floor").ToArray();
+            var paths=m.Where(t=>t.name.Contains("Path")||t.name=="Deck_Plank"||t.GetComponentsInParent<Transform>().Any(q=>q.name=="Park_Paths098"||q.name=="11_Connected_Market_Routes092")).ToArray();
+            var obstacles=bushes.Where(t=>t!=tree).Select(Bound).Concat(island.GetComponentsInChildren<Transform>().Where(t=>t.name=="Slatted_Harbour_Bench094"||t.name=="Harbour_Lantern"||t.name=="Angular_Rock093"||t.name=="Faceted_Shore_Rock").Where(t=>t.GetComponentsInChildren<MeshRenderer>().Any(r=>r.enabled)).Select(Bound)).ToArray();
+            var firBounds=trees.Select(Bound).ToArray();var start=tree.position;bool done=false;
+            for(float rad=.25f;rad<=6&&!done;rad+=.25f)for(int j=0;j<20&&!done;j++){
+                float a=(j+rad*.5f)*Mathf.PI/10;var d=new Vector3(Mathf.Cos(a)*rad,0,Mathf.Sin(a)*rad);
+                var test=b;test.center+=d;
+                if(firBounds.Any(q=>Overlap(test,q,.12f))||obstacles.Any(q=>Overlap(test,q,.10f)))continue;
+                var samples=new[]{test.center,test.center+Vector3.right*test.extents.x*.70f,test.center-Vector3.right*test.extents.x*.70f,test.center+Vector3.forward*test.extents.z*.70f,test.center-Vector3.forward*test.extents.z*.70f};
+                if(samples.Any(p=>!floors.Any(f=>Hit(f,p,out _))||paths.Any(f=>{var bb=f.GetComponent<Renderer>().bounds;return p.x>=bb.min.x&&p.x<=bb.max.x&&p.z>=bb.min.z&&p.z<=bb.max.z&&Hit(f,p,out _); })))continue;
+                var pos=start+d;pos.y=floors.Select(f=>{float h;return Hit(f,pos,out h)?h:float.NegativeInfinity;}).Max()-.013f;
+                tree.position=pos;done=true;moved++;
+            }
+            if(!done)throw new Exception("No clear position for "+tree.name+" "+start);
+        }
+        if(trees.Any(t=>bushes.Any(b=>Overlap(Bound(t),Bound(b),.11f))))throw new Exception("Tree and bush overlap");
+        return moved;
+    }
+    static void Trailer(Transform source,Transform boat,bool santa){
+        var t=Clone(source,boat);
+        t.name=santa?"Trailer_Father_Frost136":"Trailer_Snowbound136";
+        var load=new Func<string,Material>(n=>AssetDatabase.LoadAssetAtPath<Material>(Dir+"/"+n+".mat"));
+        var body=load(santa?"Velvet_Ruby":"Polar_Blue");
+        var trim=load(santa?"Fur_Trim":"Powder_Snow");
+        var rr=t.GetComponent<MeshRenderer>();var mats=rr.sharedMaterials;
+        if(mats.Length!=3)throw new Exception("Expected three trailer materials");
+        rr.sharedMaterials=new[]{body,mats[1],trim};
+        foreach(var r in t.GetComponentsInChildren<MeshRenderer>().Where(r=>r!=rr)){
+            var colors=r.sharedMaterials;
+            for(int i=0;i<colors.Length;i++){
+                if(colors[i]&&colors[i].name=="Forest_Green106")colors[i]=body;
+                else if(colors[i]&&colors[i].name.Contains("Ivory"))colors[i]=trim;
+            }
+            r.sharedMaterials=colors;
+        }
+        var deco=Node("Winter_Cargo_Trim",t,Vector3.zero);
+        deco.position=boat.position;deco.rotation=boat.rotation;
+        if(santa){
+            // Festive cargo stays to the aft side, on the existing 0.54m deck.
+            Gift(deco,new Vector3(-1.72f,.539f,-17.2f),.92f,load("Frost_Red"));
+            Gift(deco,new Vector3(-1.70f,.539f,-16.27f),.76f,trim);
+            Gift(deco,new Vector3(-1.65f,.539f,-15.55f),.70f,load("Frost_Red"));
+            foreach(var r in deco.GetComponentsInChildren<MeshRenderer>().Where(r=>r.name!="Box"&&r.name!="Lid"))r.sharedMaterial=r.transform.parent.GetComponentInChildren<MeshRenderer>().sharedMaterial==trim?load("Frost_Red"):trim;
+        }else{
+            foreach(float side in new[]{-1f,1f}){
+                Mound("Snow_Resting_On_Trailer_Planks",deco,new Vector3(side*2.11f,.531f,-16.9f),new Vector3(.82f,.32f,2.35f),snow);
+                Mound("Snow_Resting_On_Trailer_Planks",deco,new Vector3(side*2.05f,.531f,-11.7f),new Vector3(.90f,.28f,1.60f),snow,5);
+            }
+        }
+        if(!PrefabUtility.SaveAsPrefabAsset(t.gameObject,Dir+"/"+t.name+".prefab"))throw new Exception("Trailer prefab failed");
+        if(!PrefabUtility.SaveAsPrefabAsset(boat.gameObject,Dir+"/"+boat.name+".prefab"))throw new Exception("Boat prefab failed");
+    }
+    public static string Run(){
+        var scene=SceneManager.GetActiveScene();
+        if(Application.dataPath!="E:/Fork/dead_boat/Assets"||scene.path!=ScenePath||EditorApplication.isPlaying)throw new Exception("Wrong editor state");
+        if(!EditorSceneManager.SaveScene(scene))throw new Exception("Cannot save owner edits");
+        File.Copy(scene.path,"Library/WorkshopBackups/DB-ON-151/LobbyIslandWorkshop.before-trailers.unity",true);
+        var root=GameObject.Find("Lobby_Island_Visual_Prototype").transform;
+        var row=root.Find("06_Standalone_Boat_Skin_Studies103");
+        var blueBoat=row.Find("Boat_Snowbound128");var redBoat=row.Find("Boat_Father_Frost128");
+        var source=row.Find("Boat_ForestSail_Reference106/Trailer_ForestSail115");
+        if(!source||blueBoat.Find("Trailer_Snowbound136")||redBoat.Find("Trailer_Father_Frost136"))throw new Exception("Unexpected trailer setup");
+        int moved=Separate(root,root.Find("Winter_Event"));
+        snow=AssetDatabase.LoadAssetAtPath<Material>(Dir+"/Powder_Snow.mat");gold=AssetDatabase.LoadAssetAtPath<Material>(Dir+"/Ribbon_Gold.mat");
+        drift=AssetDatabase.LoadAssetAtPath<Mesh>(Dir+"/Faceted_Snowbank.asset");
+        Trailer(source,blueBoat,false);Trailer(source,redBoat,true);
+        EditorSceneManager.MarkSceneDirty(scene);AssetDatabase.SaveAssets();
+        if(!EditorSceneManager.SaveScene(scene))throw new Exception("Save failed");
+        var center=(blueBoat.position+redBoat.position)*.5f+new Vector3(0,1,-7);
+        Shot(center+new Vector3(7,22,-30),center,18,"154-winter-boats-with-trailers.png");
+        var main=root.Find("01_Central_Island");
+        Shot(main.position+new Vector3(30,43,-50),main.position+new Vector3(0,0,-5),35,"155-winter-firs-clear-of-shrubs.png");
+        var sv=SceneView.lastActiveSceneView??EditorWindow.GetWindow<SceneView>();sv.LookAt(center,Quaternion.LookRotation(new Vector3(-7,-22,30)),34,true);sv.Focus();sv.Repaint();
+        return "Moved "+moved+" shrubs; checked all against shrub bounds. Both matching trailer prefabs and scene saved.";
+    }
+}
+
+

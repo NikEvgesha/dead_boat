@@ -48,7 +48,10 @@ public sealed class EventSystemGuard : MonoBehaviour
 
     private static void EnsureSingleEventSystem()
     {
-        EventSystem[] eventSystems = FindObjectsByType<EventSystem>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        // Disabled systems are not registered with EventSystem.current.
+        EventSystem[] eventSystems = FindObjectsByType<EventSystem>(FindObjectsInactive.Exclude, FindObjectsSortMode.None)
+            .Where(eventSystem => eventSystem.isActiveAndEnabled)
+            .ToArray();
 
         if (eventSystems.Length == 0)
         {
@@ -56,12 +59,11 @@ public sealed class EventSystemGuard : MonoBehaviour
             return;
         }
 
-        EventSystem keep = eventSystems.FirstOrDefault(IsSceneEventSystem)
-            ?? eventSystems.FirstOrDefault(eventSystem => eventSystem.isActiveAndEnabled)
-            ?? eventSystems[0];
+        EventSystem keep = eventSystems.FirstOrDefault(IsSceneEventSystem) ?? eventSystems[0];
 
         EnsureInputModule(keep);
-        EventSystem.current = keep;
+        if (EventSystem.current != keep)
+            EventSystem.current = keep;
 
         if (eventSystems.Length == 1)
             return;
