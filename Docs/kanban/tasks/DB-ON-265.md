@@ -32,3 +32,7 @@ PickableItem.CheckTags; Inventory.AddItem; InventorySlot.OnDrop; SharedItemsRunt
 - Docs/BRANCH_ACCEPTANCE_AUDIT_20261113.md.
 - Docs/DEVELOPER_HANDOFF_20261113.md.
 - Указанные выше код и связанные карточки.
+
+## Готовая основа для матрицы — 14.11.2026
+
+264 передана в in_review: размер экземпляра добавлен во все указанные пути; настоящий Coffer0.72м, native collider, дваCloud peers/cold/independent/takeover PASS. Проверка одного сундука не закрывает все20 находок и полный UI/rejoin/Physics. Далее ИИ берёт эту матрицу на штатных механиках; владелец позднее общий WebGL-пакет. Статус ready сохранён. Сводки Docs/ITEM_INSTANCE_SCALE_20261114.md и Docs/ACTIVE_WORK_QUEUE_20261114.md. Без сборки.

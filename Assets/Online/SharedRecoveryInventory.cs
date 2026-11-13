@@ -20,6 +20,7 @@ namespace DeadBoat.Online
                     if (!state.Items.TryGet(item.WorldId, out var current) || current.Owner != state.Runner.LocalPlayer ||
                         (current.Mode != 1 && current.Mode != 2)) continue;
                     item.Ammo = current.WeaponAmmo;
+                    item.WorldScale = current.WorldScale;
                     if (!seen.Add(item.WorldId)) continue;
                 }
                 items.Add(item);
@@ -28,7 +29,7 @@ namespace DeadBoat.Online
             foreach (var entry in state.Items)
                 if (entry.Value.Owner == state.Runner.LocalPlayer && (entry.Value.Mode == 1 || entry.Value.Mode == 2) &&
                     seen.Add(entry.Key)) items.Add(new SharedRecoveryItem
-                    { WorldId = entry.Key, Template = entry.Value.Template, Ammo = entry.Value.WeaponAmmo });
+                    { WorldId = entry.Key, Template = entry.Value.Template, Ammo = entry.Value.WeaponAmmo, WorldScale = entry.Value.WorldScale });
             Restore(items.ToArray(), true);
         }
         public static void Restore(SharedRecoveryItem[] items, bool networked)
@@ -43,6 +44,10 @@ namespace DeadBoat.Online
                 foreach (var entry in items)
                 {
                     if (entry.WorldId != 0 && !seen.Add(entry.WorldId)) continue;
+                    Vector3 worldScale = entry.WorldScale;
+                    var state = SharedRunContext.State;
+                    if (networked && state != null && entry.WorldId != 0 && state.Items.TryGet(entry.WorldId, out var latest))
+                        worldScale = latest.WorldScale;
                     var prefab = SharedItemCatalog.Load()?.Find(entry.Template);
                     if (prefab == null) continue;
                     PickableItem item;
@@ -50,7 +55,7 @@ namespace DeadBoat.Online
                         item = existing.Item;
                     else
                     {
-                        item = Object.Instantiate(prefab);
+                        item = SharedItemScale.CreateReplica(prefab, worldScale);
                         if (networked && entry.WorldId != 0)
                         {
                             var identity = item.gameObject.AddComponent<WorldSpawnIdentity>();
@@ -60,10 +65,12 @@ namespace DeadBoat.Online
                     }
                     item.gameObject.SetActive(true);
                     item.ApplySharedWorldState(0);
+                    SharedItemScale.Apply(item.transform, worldScale);
                     item.ApplySharedPhysics(true);
                     item.GetComponentInChildren<RangedWeaponController>(true)?.ApplySharedAmmo(entry.Ammo);
                     if (Inventory.Instance.AddItem(item))
                     {
+                        SharedItemScale.Apply(item.transform, worldScale);
                         if (entry.Equipped != 0) active = item;
                     }
                     else

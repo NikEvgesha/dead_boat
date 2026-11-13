@@ -45,7 +45,7 @@ namespace DeadBoat.Online
                 if (SharedItemsRuntime.TryFind(id, out _)) { Restored++; return true; }
                 var prefab = SharedItemCatalog.Load()?.Find(record.Template);
                 if (prefab == null) { items.Add(id); return false; }
-                var item = Instantiate(prefab, record.Position - LobbyNetworkAvatar.Origin, record.Rotation);
+                var item = SharedItemScale.CreateReplica(prefab, record.Position - LobbyNetworkAvatar.Origin, record.Rotation, record.WorldScale);
                 var identity = item.gameObject.AddComponent<WorldSpawnIdentity>(); identity.ItemTemplate = record.Template;
                 item.GetComponentInChildren<RangedWeaponController>(true)?.ApplySharedAmmo(record.WeaponAmmo);
                 identity.InitializeRemote(id, 0); Restored++; return true;

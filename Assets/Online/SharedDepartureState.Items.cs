@@ -7,6 +7,7 @@ namespace DeadBoat.Online
     {
         public int Template, WeaponAmmo;
         public Vector3 Position;
+        public Vector3 WorldScale;
         public Quaternion Rotation;
         public PlayerRef Owner;
         public Vector3 BoatLocalPosition;
@@ -47,12 +48,14 @@ namespace DeadBoat.Online
                     SharedItemCatalog.Load()?.Identify(identity.GetComponent<PickableItem>()) ?? 0, WeaponAmmo = identity.GetComponentInChildren<RangedWeaponController>(true)?.CurrentAmmo ?? -1,
                 Position = identity.transform.position + LobbyNetworkAvatar.Origin,
                 Rotation = identity.transform.rotation, Owner = PlayerRef.None,
+                WorldScale = SharedItemScale.Capture(identity.transform),
                 HomeZ = identity.transform.position.z + LobbyNetworkAvatar.Origin.z, Prunable = identity.Prunable
             });
         }
 
         [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-        public void RPC_DropPersonalItem(ulong id, int template, Vector3 position, Quaternion rotation, int ammo, bool inInventory = false, RpcInfo info = default)
+        public void RPC_DropPersonalItem(ulong id, int template, Vector3 position, Quaternion rotation, int ammo, bool inInventory = false,
+            Vector3 worldScale = default, RpcInfo info = default)
         {
             if (Phase != 3 || !CanAct(info.Source) || Items.ContainsKey(id) || !Finite(position) ||
                 !Finite(new Vector3(rotation.x, rotation.y, rotation.z)) ||
@@ -65,6 +68,8 @@ namespace DeadBoat.Online
             Items.Add(id, new SharedItemRecord
             {
                 Template = template, WeaponAmmo = Mathf.Clamp(ammo, -1, 10000), Position = position, Rotation = rotation,
+                WorldScale = SharedItemScale.IsValid(worldScale) ? worldScale :
+                    SharedItemScale.Capture(SharedItemCatalog.Load().Find(template).transform),
                 Owner = inInventory ? info.Source : PlayerRef.None, Mode = inInventory ? 2 : 0,
                 HomeZ = position.z, Prunable = true, Dropped = true
             });

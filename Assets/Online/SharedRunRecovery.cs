@@ -18,7 +18,7 @@ namespace DeadBoat.Online
     // This ticket is a capability for a live room, never a persisted online world.
     public sealed class SharedRunRecovery : MonoBehaviour
     {
-        private const string ProtocolSuffix = "-dbseed4-inv1-pets1-cards3-regions1-skins1-choice1-shorepoi7";
+        private const string ProtocolSuffix = "-dbseed4-inv1-pets1-cards3-regions1-skins1-choice1-shorepoi7-itemscale1";
         public static string ClientVersion => Application.version + ProtocolSuffix;
         private const string TicketKey = "DeadBoat.SharedReturn.v1";
         private const string IdentityKey = "DeadBoat.FusionIdentity.v1";
@@ -216,7 +216,7 @@ namespace DeadBoat.Online
                 {
                     Template = template, WorldId = item.GetComponent<WorldSpawnIdentity>()?.Id ?? 0,
                     Ammo = item.GetComponentInChildren<RangedWeaponController>(true)?.CurrentAmmo ?? -1,
-                    Equipped = item == active ? 1 : 0
+                    Equipped = item == active ? 1 : 0, WorldScale = SharedItemScale.Capture(item)
                 });
             }
             if (!ownershipReady) return; // Register all personal items in one pass, commit only acknowledged ownership.

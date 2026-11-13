@@ -1,7 +1,7 @@
 ---
 id: DB-ON-264
 title: Сохранять масштаб подогнанной добычи при переносе и восстановлении
-status: ready
+status: in_review
 when: now
 ai: true
 ---
@@ -34,3 +34,17 @@ LocationContentSpawner.cs:166–168; SharedDepartureState.Items.cs; SharedRecove
 ## Нативная construction-проверка 13.11.2026
 
 Editor fixture без Play/Physics вызвал production PlaceItemAtSpawnPoint: сундук rawScale2/width1.01600003 м → fittedScale1.41732287/width0.72000003 м. Это подтверждает различие конструкции живыми Renderer.bounds, не исполняет сетевое восстановление и не исправляет контракт. NativeContentAudit хранит результат в knownGameplayFindings264, отдельно от assetIntegrityPASS. Далее ИИ — реализовать полный контракт масштаба и проверить реальные пути; владелец позже общийпакет.
+
+## Реализация и проверки — 14.11.2026
+
+Добавлен canonical WorldScale в world record, recovery bag и SoloWorldItem. Размер фиксируется после fitting и проходит через cold dropped discovery, independent restore, региональный candidate, восстановление сумки и ContinueSolo. Применяется абсолютно после окончательных parent/rotation, включая cargo, takeover и интерполяцию; неизменившееся значение не переписывается. Capture/restore сумки предпочитают актуальный canonical размер. У remote equipped visual отдельный относительный multiplier сохраняет авторскую позу/нормализацию каталога.
+
+Протокол получил суффикс itemscale1, включая avatar wire; старые/новые клиенты не смешиваются. RunRandom.Version=6 и SoloBranch.v1 сохранены. Отсутствующее поле legacy JSON означает unknown/no-op: остаётся generated fit или холодный каталоговый размер; неизвестный исторический fitting не выдумывается. Обычные старые offline provider saves не объявлены мигрированными.
+
+Native Unity 6000.3.9f1 PASS: 859 утверждений, 75 повторных Apply, настоящий сундук raw width1.016 → fitted/restored0.72000003 м с теми же BoxCollider bounds, обе production cold factories, разные родители/detach, JSON/legacy/invalid и presentation multiplier. Измерены Fusion records96/32B (+12B относительно расчётной прежней схемы); целые NetworkObject WorldPage20344B/Departure10600B/Avatar1004B ниже32KiB. Это не трафик/сек или Web heap.
+
+Два реальных Cloud peers в пустом Play-мире PASS: регистрация/claim/inventory/drop, ammo FIELD, atomic bag, фактическое cold dropped создание и independent suspend/restore, повторное применение и передача state/page authority. Physics на паузе, дальний focus задан fixture. Полный recovery UI, реальный gunfire, инвентарный UI, игровая сцена/reconnect и WebGL этим тестом не проверены. SharedRunValidation PASS: 5 пулов ×200 локаций/независимые RNG/реконструкция.
+
+Batch exit0, Runner0/контексты очищены. Сверка шести конфигурационных файлов и29 прежних локальных файлов побайтно PASS; автоматические ready defines MCP после теста возвращены к исходной локальной версии. SDK/пакеты/Player Build/черновик не изменялись. Подробности Docs/ITEM_INSTANCE_SCALE_20261114.md и JSON рядом; локальные сырые логи Logs/ItemScale264-20261114.
+
+Срез реализации завершён, in_review до общей приёмки. Далее ИИ —265: все20 находок на штатных механиках, затем266/125 и267. Владелец позднее принимает единый WebGL-пакет, включая настоящие rejoin, физику, покупки/продажи и cargo; сейчас действий не требуется.

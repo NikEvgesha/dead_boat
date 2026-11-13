@@ -23,7 +23,9 @@ public class ActiveItemManager : MonoBehaviour
         if (newItem == _activeItem) return;
         if (_activeItem != null)
         {
+            Vector3 worldScale = DeadBoat.Online.SharedItemScale.Capture(_activeItem);
             _activeItem.transform.SetParent(Inventory.Instance.transform);
+            DeadBoat.Online.SharedItemScale.Apply(_activeItem.transform, worldScale);
             _activeItem.gameObject.SetActive(false);
             _activeItem.SetKinematic(false);
             GetActiveUsable().SetActiveItem(false);
@@ -31,10 +33,12 @@ public class ActiveItemManager : MonoBehaviour
         _activeItem = newItem;
         if (newItem != null)
         {
+            Vector3 worldScale = DeadBoat.Online.SharedItemScale.Capture(newItem);
             _activeItem.gameObject.SetActive(true);
             _activeItem.transform.SetParent(_handPoint);
             _activeItem.transform.localPosition = Vector3.zero;
             _activeItem.transform.localRotation = new Quaternion();
+            DeadBoat.Online.SharedItemScale.Apply(_activeItem.transform, worldScale);
             _activeItem.SetKinematic(true);
         }
         InventoryUI.Instance.SetActiveItem(_activeItem);

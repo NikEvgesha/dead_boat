@@ -1,0 +1,314 @@
+{
+  "dateMoscow": "2026-11-14",
+  "baseCommit": "3e2cac2e403ed3441a4c68f9286516903791c775",
+  "native": {
+    "unityVersion": "6000.3.9f1",
+    "prefab": "Assets/Prefabs/Items/Loot203/Loot203_T10_Coffer.prefab",
+    "scope": "Native EditMode production fitting, scale helper, Renderer/BoxCollider bounds and JSON contracts. No Play, Player Build, physics simulation, live networking, recovery coordinator or user saves. Parent tests preserve world-axis scale lengths; a nonuniform rotated hierarchy can introduce shear, so its AABB is not compared to an unparented object at another orientation.",
+    "catalogId": 1210887624,
+    "checks": 859,
+    "repeatApplications": 75,
+    "passed": [
+      "production fitting changes native visual and collision size",
+      "raw catalog reconstruction applies absolute canonical scale",
+      "both production cold replica factories preserve native dimensions and pose",
+      "remote held presentation multiplier is relative to the raw catalog size",
+      "rotated nonuniform inventory/hand/boat and detach stay idempotent",
+      "world and bag scale fields survive solo JSON contract",
+      "legacy zero and malformed scale leave existing native size unchanged",
+      "Fusion struct and full prefab state budgets",
+      "nameplate protocol settings copy includes itemscale1 without mutating SDK globals"
+    ],
+    "errors": [],
+    "measurements": [
+      {
+        "label": "raw catalog clone",
+        "worldScale": {
+          "x": 2.0,
+          "y": 2.0,
+          "z": 2.0
+        },
+        "visualSize": {
+          "x": 1.0160000324249268,
+          "y": 0.7395420074462891,
+          "z": 0.780739963054657
+        },
+        "boxSize": {
+          "x": 1.0160000324249268,
+          "y": 0.7395420074462891,
+          "z": 0.780739963054657
+        }
+      },
+      {
+        "label": "production fitted coffer",
+        "worldScale": {
+          "x": 1.4173228740692139,
+          "y": 1.4173228740692139,
+          "z": 1.4173228740692139
+        },
+        "visualSize": {
+          "x": 0.7200000286102295,
+          "y": 0.5240849256515503,
+          "z": 0.5532802939414978
+        },
+        "boxSize": {
+          "x": 0.7200000286102295,
+          "y": 0.5240849256515503,
+          "z": 0.5532802939414978
+        }
+      },
+      {
+        "label": "raw clone after canonical apply",
+        "worldScale": {
+          "x": 1.4173228740692139,
+          "y": 1.4173228740692139,
+          "z": 1.4173228740692139
+        },
+        "visualSize": {
+          "x": 0.7200000286102295,
+          "y": 0.5240849256515503,
+          "z": 0.5532802939414978
+        },
+        "boxSize": {
+          "x": 0.7200000286102295,
+          "y": 0.5240849256515503,
+          "z": 0.5532802939414978
+        }
+      },
+      {
+        "label": "production positioned factory",
+        "worldScale": {
+          "x": 1.4173228740692139,
+          "y": 1.4173228740692139,
+          "z": 1.4173229932785034
+        },
+        "visualSize": {
+          "x": 0.9264612793922424,
+          "y": 0.7168043851852417,
+          "z": 0.9767472743988037
+        },
+        "boxSize": {
+          "x": 0.9264612197875977,
+          "y": 0.7168045043945312,
+          "z": 0.9767475128173828
+        }
+      },
+      {
+        "label": "production unpositioned factory",
+        "worldScale": {
+          "x": 1.4173228740692139,
+          "y": 1.4173228740692139,
+          "z": 1.4173228740692139
+        },
+        "visualSize": {
+          "x": 0.7200000286102295,
+          "y": 0.5240849256515503,
+          "z": 0.5532802939414978
+        },
+        "boxSize": {
+          "x": 0.7200000286102295,
+          "y": 0.5240849256515503,
+          "z": 0.5532802939414978
+        }
+      },
+      {
+        "label": "Scaled inventory after25",
+        "worldScale": {
+          "x": 1.4173228740692139,
+          "y": 1.417323112487793,
+          "z": 1.4173228740692139
+        },
+        "visualSize": {
+          "x": 0.7873270511627197,
+          "y": 0.9623647928237915,
+          "z": 1.623189926147461
+        },
+        "boxSize": {
+          "x": 0.9094119071960449,
+          "y": 0.9739443063735962,
+          "z": 0.9974031448364258
+        }
+      },
+      {
+        "label": "Scaled inventory detached",
+        "worldScale": {
+          "x": 1.4173228740692139,
+          "y": 1.417323112487793,
+          "z": 1.4173228740692139
+        },
+        "visualSize": {
+          "x": 0.7200000286102295,
+          "y": 0.5240849852561951,
+          "z": 0.5532802939414978
+        },
+        "boxSize": {
+          "x": 0.7200000286102295,
+          "y": 0.5240849852561951,
+          "z": 0.5532802939414978
+        }
+      },
+      {
+        "label": "Rotated hand after25",
+        "worldScale": {
+          "x": 1.4173227548599243,
+          "y": 1.4173228740692139,
+          "z": 1.4173226356506348
+        },
+        "visualSize": {
+          "x": 1.209376573562622,
+          "y": 0.523738443851471,
+          "z": 1.1567095518112183
+        },
+        "boxSize": {
+          "x": 0.882814884185791,
+          "y": 1.0456281900405884,
+          "z": 0.958101749420166
+        }
+      },
+      {
+        "label": "Rotated hand detached",
+        "worldScale": {
+          "x": 1.4173227548599243,
+          "y": 1.4173228740692139,
+          "z": 1.4173226356506348
+        },
+        "visualSize": {
+          "x": 0.7199999690055847,
+          "y": 0.5240849256515503,
+          "z": 0.553280234336853
+        },
+        "boxSize": {
+          "x": 0.7199999690055847,
+          "y": 0.5240849256515503,
+          "z": 0.553280234336853
+        }
+      },
+      {
+        "label": "Boat after25",
+        "worldScale": {
+          "x": 1.4173228740692139,
+          "y": 1.4173229932785034,
+          "z": 1.4173228740692139
+        },
+        "visualSize": {
+          "x": 1.270097017288208,
+          "y": 1.0031169652938843,
+          "z": 0.6775359511375427
+        },
+        "boxSize": {
+          "x": 1.0086174011230469,
+          "y": 0.9411969184875488,
+          "z": 0.9255409240722656
+        }
+      },
+      {
+        "label": "Boat detached",
+        "worldScale": {
+          "x": 1.4173228740692139,
+          "y": 1.4173229932785034,
+          "z": 1.4173228740692139
+        },
+        "visualSize": {
+          "x": 0.7200000286102295,
+          "y": 0.5240849256515503,
+          "z": 0.5532802939414978
+        },
+        "boxSize": {
+          "x": 0.7200000286102295,
+          "y": 0.5240849256515503,
+          "z": 0.5532802939414978
+        }
+      }
+    ],
+    "fusionBudgetScope": "SDK word counts are serialized state capacity, not useful traffic per second, snapshot-history memory or measured WebGL/native heap. Legacy struct counts are calculated from the previous field contracts, not a measurement of the old binary. Full prefab NetworkObject.GetWordCount is reported separately from individual behaviours, including the SDK's additional object words; external native allocator/history overhead is not measured.",
+    "structBudgets": [
+      {
+        "type": "SharedItemRecord",
+        "words": 24,
+        "bytes": 96,
+        "legacyCalculatedWords": 21,
+        "legacyCalculatedBytes": 84,
+        "additionalBytes": 12
+      },
+      {
+        "type": "SharedRecoveryItem",
+        "words": 8,
+        "bytes": 32,
+        "legacyCalculatedWords": 5,
+        "legacyCalculatedBytes": 20,
+        "additionalBytes": 12
+      }
+    ],
+    "behaviourBudgets": [
+      {
+        "type": "DeadBoat.Online.SharedWorldPage",
+        "words": 5051,
+        "bytes": 20204
+      },
+      {
+        "type": "DeadBoat.Online.SharedDepartureState",
+        "words": 2615,
+        "bytes": 10460
+      },
+      {
+        "type": "DeadBoat.Online.LobbyNetworkAvatar",
+        "words": 208,
+        "bytes": 832
+      }
+    ],
+    "objectBudgets": [
+      {
+        "prefab": "Assets/Resources/Online/SharedWorldPage.prefab",
+        "words": 5086,
+        "bytes": 20344,
+        "behaviourWords": 5051,
+        "additionalObjectWords": 35,
+        "additionalObjectBytes": 140,
+        "allocationHeadroomBytes": 12424
+      },
+      {
+        "prefab": "Assets/Resources/Online/SharedDepartureState.prefab",
+        "words": 2650,
+        "bytes": 10600,
+        "behaviourWords": 2615,
+        "additionalObjectWords": 35,
+        "additionalObjectBytes": 140,
+        "allocationHeadroomBytes": 22168
+      },
+      {
+        "prefab": "Assets/Online/Avatars/LobbyNetworkAvatar.prefab",
+        "words": 251,
+        "bytes": 1004,
+        "behaviourWords": 229,
+        "additionalObjectWords": 22,
+        "additionalObjectBytes": 88,
+        "allocationHeadroomBytes": 31764
+      }
+    ]
+  },
+  "network": {
+    "result": "[Item scale network264] PASS: two Cloud peers, native coffer fit, world/carry/inventory/drop scale and ammo fields, atomic bag scale, actual cold dropped factory, independent suspend/restore, repeated proxy apply, authority/page takeover. NOT TESTED: recovery UI/coordinator, real weapon firing, inventory UI, full scene/reconnect, Physics simulation or WebGL.",
+    "scope": "Two actual Cloud connections in one empty Editor Play scene with paused physics and controlled distant-focus flag. Tests canonical scale/RPCs and selected production reconstruction paths, not two independent rendered WebGL worlds or the full recovery UI."
+  },
+  "generationValidation": "PASS: independent streams, reconstruction, 5 actual map pools x 200 locations. RunRandom.Version remains 6.",
+  "cleanup": {
+    "settingsRestored": {
+      "ProjectSettings/ProjectSettings.asset": true,
+      "ProjectSettings/EditorBuildSettings.asset": true,
+      "ProjectSettings/TimeManager.asset": true,
+      "ProjectSettings/EditorSettings.asset": true,
+      "Packages/manifest.json": true,
+      "Packages/packages-lock.json": true
+    },
+    "preExistingLocalFilesCompared": 29,
+    "preExistingLocalFilesUnchanged": 29,
+    "batchExitCode": 0,
+    "runAndRunnerCleanup": "PASS in batch host after network fixture shutdown and deferred destruction"
+  },
+  "playerBuildCreated": false,
+  "evidenceSHA256": {
+    "Unity.log": "f1818c82567742107c34b4cba1cb65dd31cce94e54e6e72f1d5934e8d68e05e0",
+    "native-scale-probe.json": "967bba5ce30c9ab98a061020ca64c3e1ce7e88b77eafa1da9eebf1d8adc8c597",
+    "cleanup.json": "4dc353b0f18a0cef2c467a056180b1b25fb60a8ecc8a81d76a778f105737ebd1"
+  }
+}

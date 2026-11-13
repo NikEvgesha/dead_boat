@@ -24,6 +24,7 @@ namespace DeadBoat.Online
                 (record.Template == 0 && (originalNames == null || !originalNames.TryGetValue(id, out var original) || original != SourceName(candidate.name))))
                 throw new InvalidOperationException("Restored item template mismatch: " + key + " name=" + candidate.name + " live=" + record.Template + " generated=" + SharedItemCatalog.Load()?.Identify(item));
             candidate.transform.SetPositionAndRotation(record.Position - LobbyNetworkAvatar.Origin, record.Rotation);
+            SharedItemScale.Apply(candidate.transform, record.WorldScale);
             var identity = candidate.AddComponent<WorldSpawnIdentity>();
             identity.ItemTemplate = record.Template;
             candidate.GetComponentInChildren<RangedWeaponController>(true)?.ApplySharedAmmo(record.WeaponAmmo);

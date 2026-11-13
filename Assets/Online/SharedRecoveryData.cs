@@ -10,6 +10,7 @@ namespace DeadBoat.Online
         public ulong WorldId;
         public int Template, Ammo;
         public int Equipped;
+        public Vector3 WorldScale;
     }
 
     [Serializable]

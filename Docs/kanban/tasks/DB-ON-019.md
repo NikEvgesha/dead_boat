@@ -95,3 +95,9 @@ Unity6000.3.9f1, отдельный batch Editor, Logs/ItemActionGuard-final-202
 Новый контент требует повторить предметную матрицу:264 — потеря fitted rootScale в cold/recovery/independent/solo путях;265 — фактический перенос20 новых неэкипируемых находок. Пустой held catalog для Treasure/Fuel не является дефектом. Далее ИИ — сначала264, затем свежие2клиента/патроны/подбор/сумка/крепление/продажа/возврат. Владелец — позже общий пакет.
 
 Сводка: Docs/BRANCH_ACCEPTANCE_AUDIT_20261113.md. Сборка/публикация не выполнялись; прежний статус по новым чтению/структурным проверкам автоматически не повышается.
+
+## Размер экземпляра — 14.11.2026
+
+Реализована264: WorldScale сохраняется через canonical state, cold/independent restore, recovery bag, ContinueSolo, cargo и equipped presentation. Native Renderer/BoxCollider и два Cloud peers PASS; полный игровой UI/reconnect/Physics/WebGL ещё требуют общего прохода. Не путать с повторной реализацией самого подбора. Сводка Docs/ITEM_INSTANCE_SCALE_20261114.md.
+
+Далее ИИ —265, матрица20 новых находок и регрессия штатного оружия/патронов; владелец позже общий пакет. Статус019 этой проверкой автоматически не повышается; без Player Build.

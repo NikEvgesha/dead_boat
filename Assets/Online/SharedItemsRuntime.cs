@@ -79,7 +79,7 @@ namespace DeadBoat.Online
                 identity.NextPersonalRegistration = now + .5;
                 Vector3 position = PlayerMovement.Instance != null ? PlayerMovement.Instance.transform.position : item.transform.position;
                 state.RPC_DropPersonalItem(identity.Id, template, position + LobbyNetworkAvatar.Origin,
-                    item.transform.rotation, identity.Weapon?.CurrentAmmo ?? -1, true);
+                    item.transform.rotation, identity.Weapon?.CurrentAmmo ?? -1, true, SharedItemScale.Capture(item));
             }
             return false;
         }
@@ -110,7 +110,7 @@ namespace DeadBoat.Online
             if (SoloRunBranch.Active && !SharedRunContext.Active) return;
             SharedRunContext.State.RPC_DropPersonalItem(id, template,
                 item.transform.position + LobbyNetworkAvatar.Origin, item.transform.rotation,
-                item.GetComponentInChildren<RangedWeaponController>(true)?.CurrentAmmo ?? -1);
+                item.GetComponentInChildren<RangedWeaponController>(true)?.CurrentAmmo ?? -1, false, SharedItemScale.Capture(item));
         }
 
         public static bool Burn(FuelItem fuel)
@@ -260,7 +260,8 @@ namespace DeadBoat.Online
                     SharedRunContext.Independent?.AllowsItem(entry.Key, entry.Value) == false)) continue;
                 var prefab = SharedItemCatalog.Load()?.Find(entry.Value.Template);
                 if (prefab == null) continue;
-                var spawned = Instantiate(prefab, entry.Value.Position - LobbyNetworkAvatar.Origin, entry.Value.Rotation);
+                var spawned = SharedItemScale.CreateReplica(prefab, entry.Value.Position - LobbyNetworkAvatar.Origin,
+                    entry.Value.Rotation, entry.Value.WorldScale);
                 var identity = spawned.gameObject.AddComponent<WorldSpawnIdentity>();
                 identity.ItemTemplate = entry.Value.Template;
                 spawned.GetComponentInChildren<RangedWeaponController>(true)?.ApplySharedAmmo(entry.Value.WeaponAmmo);
@@ -313,6 +314,7 @@ namespace DeadBoat.Online
                         identity.Weapon?.ApplySharedAmmo(record.WeaponAmmo);
                         if (item.GetComponentInParent<BoardController>() == null) item.transform.SetParent(null, true);
                         item.ApplySharedWorldState(0);
+                        SharedItemScale.Apply(item.transform, record.WorldScale);
                         ApplyPhysics(identity, item, true);
                         if (cancelled || SharedItemInteraction.Blocked)
                         {
@@ -340,6 +342,7 @@ namespace DeadBoat.Online
                 }
                 if (owner)
                 {
+                    SharedItemScale.Apply(item.transform, record.WorldScale);
                     // A late claim or just-dropped item must not simulate locally while its
                     // release RPC is forbidden by advertising. Resume the ordinary audit later.
                     if (SharedItemInteraction.Blocked && item.Status == ItemStatus.Free)
@@ -371,6 +374,7 @@ namespace DeadBoat.Online
                     if (item.transform.parent != BoardController.Instance.transform)
                         item.transform.SetParent(BoardController.Instance.transform, false);
                     item.transform.SetLocalPositionAndRotation(record.BoatLocalPosition, record.BoatLocalRotation);
+                    SharedItemScale.Apply(item.transform, record.WorldScale);
                     continue;
                 }
                 identity.Weapon?.ApplySharedAmmo(record.WeaponAmmo);
@@ -382,7 +386,11 @@ namespace DeadBoat.Online
                 bool visible = record.Mode != 2 && (record.Mode != 1 || ownerPresent);
                 if (item.gameObject.activeSelf != visible) item.gameObject.SetActive(visible);
                 bool simulates = record.Owner == PlayerRef.None && state.Object.HasStateAuthority;
-                if (simulates) identity.SyncFreeAuthorityPose(record.Position, record.Rotation, LobbyNetworkAvatar.Origin);
+                if (simulates)
+                {
+                    identity.SyncFreeAuthorityPose(record.Position, record.Rotation, LobbyNetworkAvatar.Origin);
+                    SharedItemScale.Apply(item.transform, record.WorldScale);
+                }
                 if (simulates && sample) identity.PhysicsNearby = NearCrew(item, identity.PhysicsNearby);
                 ApplyPhysics(identity, item, simulates && identity.PhysicsNearby);
                 if (simulates)
@@ -395,6 +403,7 @@ namespace DeadBoat.Online
                     interpolated.Add(identity);
                     Interpolate(identity, record);
                 }
+                else SharedItemScale.Apply(item.transform, record.WorldScale);
             }
         }
         // Return false when a visible proxy changes ownership/mode so its full
@@ -416,10 +425,15 @@ namespace DeadBoat.Online
             var part = identity.Item.transform;
             Vector3 target = record.Position - LobbyNetworkAvatar.Origin;
             Vector3 position = part.position;
-            if (position == target && part.rotation == record.Rotation) return;
+            if (position == target && part.rotation == record.Rotation)
+            {
+                SharedItemScale.Apply(part, record.WorldScale);
+                return;
+            }
             Vector3 next = Vector3.Lerp(position, target, 1 - Mathf.Exp(-20 * Time.unscaledDeltaTime));
             if ((next - target).sqrMagnitude < .00000001f) next = target;
             part.SetPositionAndRotation(next, record.Rotation);
+            SharedItemScale.Apply(part, record.WorldScale);
         }
     }
 }

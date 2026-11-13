@@ -1295,3 +1295,15 @@ EventCastle11197Transform/5699Renderer (1041active)/404activeCollider, Instantia
 Brotli/cache/IL2CPP уже включены, strippingMinimal, heapGeometric32→2048 (2048cap, не немедленное выделение). Native cap skyCube4096Uncompressed, Panorama512, Tanegasima128; 285textures readablefalse,240/306models readable. Нельзя массово выключить mesh read/write: fitting и QuickOutline читают vertices. MusicDay DecompressOnLoad/samplepreloadfalse; устаревший globalpreloadtrue не принимается за текущую настройку. FEEL в графе21путь/0.785MiB исходников, папка411MiB не равна download; deletingSDK/demos не предложено вслепую.
 
 Созданы267 media/geometry,268boot-граф/первый ввод,269bounded waits,270EventSystem/snapshotGC; обновлены002/027/028/036/054/125 без ложного закрытия критериев. Runtime/SDK/импортеры не менялись; PlayerBuild/Play/черновик не выполнялись. Сверка29прежних локальных файлов побайтноPASS. Далее ИИ —125cold-city skip/cache,267/270, затем268/269; владелец позже принимает общийWebGL-пакет, сейчас действий не требуется.
+
+## 14.11.2026 — очередь канбана и размер экземпляров264
+
+Просмотрены270 карточек: до новой работы18done/217in_review/12ready/10in_progress/13backlog. Большая часть in_review ждёт приёмки, не повторной реализации. Выбрана264 как подтверждённый дефект нового контента перед265 и оптимизациями125/267. Очередь/зависимости зафиксированы в Docs/ACTIVE_WORK_QUEUE_20261114.md; туториал оставлен приостановленным, новое лобби пока не переключено.
+
+Добавлен canonical WorldScale в SharedItemRecord/SharedRecoveryItem/SoloWorldItem, единая factory/apply, все cold/independent/region/recovery/solo пути, размер после cargo/hand parenting и pose reconciliation, относительный remote held multiplier. Dormancy сравнивает размер. Суффикс itemscale1 разделяет wire-версии; генератор6 и SoloBranch.v1 сохранены. Старый missing scale не удаляет сохранение, но неизвестный исторический fitting не восстанавливается выдуманным значением.
+
+Native Unity6000.3.9f1:859 assertions/75 повторов PASS, Coffer1.016→0.72000003м/BoxCollider совпал, JSON/legacy/invalid/factories/presentation, полные Fusion NetworkObject20344/10600/1004B. Два настоящих Cloud peers в пустом Play-мире PASS регистрации, claim/inventory/drop, ammo field/bag, cold dropped factory, controlled independent suspend/restore и takeover страниц/состояния. Не две независимые WebGL-среды; physics на паузе, UI/coordinator/rejoin и gunfire не тестировались. Пять пулов×200/RNG PASS.
+
+Первый сетевой запуск прервала отложенная перекомпиляция MCP; host теперь ждёт стабилизации Editor. В fixture добавлена read-only локализация. Финальный batch exit0 и cleanup PASS без Runner/shared/solo; шесть конфигураций и29 прежних локальных файлов совпали с исходными после возврата автоизменений Editor. Подробности Docs/ITEM_INSTANCE_SCALE_20261114.md, измеренный JSON рядом, сырые логи локально Logs/ItemScale264-20261114.
+
+264 in_review до общей приёмки,019/125/265 дополнены фактами без ложного закрытия. Далее ИИ —265, затем266/125 и267/270. Владелец позже принимает общий WebGL-пакет, сейчас действий не требуется. SDK не редактировался, Player Build/черновик/публикация не выполнялись.

@@ -10,7 +10,7 @@ namespace DeadBoat.Online
     {
         public ulong Id;
         public int Template, Ammo, Mode;
-        public Vector3 Position, BoatPosition;
+        public Vector3 Position, BoatPosition, WorldScale;
         public Quaternion Rotation, BoatRotation;
         public bool Prunable;
     }
@@ -49,7 +49,8 @@ namespace DeadBoat.Online
                 {
                     if (item.WorldId != 0 && (!state.Items.TryGet(item.WorldId, out var current) || current.Owner != local ||
                         (current.Mode != 1 && current.Mode != 2))) continue;
-                    if (item.WorldId != 0 && state.Items.TryGet(item.WorldId, out var latest)) item.Ammo = latest.WeaponAmmo;
+                    if (item.WorldId != 0 && state.Items.TryGet(item.WorldId, out var latest))
+                    { item.Ammo = latest.WeaponAmmo; item.WorldScale = latest.WorldScale; }
                     bag.Add(item); ids.Add(item.WorldId);
                 }
             var world = new List<SoloWorldItem>();
@@ -57,10 +58,10 @@ namespace DeadBoat.Online
             {
                 var item = entry.Value;
                 if (item.Owner == local && (item.Mode == 1 || item.Mode == 2) && ids.Add(entry.Key))
-                    bag.Add(new SharedRecoveryItem { WorldId = entry.Key, Template = item.Template, Ammo = item.WeaponAmmo });
+                    bag.Add(new SharedRecoveryItem { WorldId = entry.Key, Template = item.Template, Ammo = item.WeaponAmmo, WorldScale = item.WorldScale });
                 world.Add(new SoloWorldItem
                 {
-                    Id = entry.Key, Template = item.Template, Ammo = item.WeaponAmmo,
+                    Id = entry.Key, Template = item.Template, Ammo = item.WeaponAmmo, WorldScale = item.WorldScale,
                     Mode = item.Mode == 1 || item.Mode == 2 ? 4 : item.Mode,
                     Position = item.Position, Rotation = item.Rotation,
                     BoatPosition = item.BoatLocalPosition, BoatRotation = item.BoatLocalRotation, Prunable = item.Prunable
@@ -196,7 +197,7 @@ namespace DeadBoat.Online
                     (record.Prunable && record.Mode != 3 && record.Position.z < snapshot.Rear)) continue;
                 var prefab = SharedItemCatalog.Load()?.Find(record.Template);
                 if (prefab == null) continue;
-                var item = Instantiate(prefab, record.Position - Vector3.forward * snapshot.Origin, record.Rotation);
+                var item = SharedItemScale.CreateReplica(prefab, record.Position - Vector3.forward * snapshot.Origin, record.Rotation, record.WorldScale);
                 var id = item.gameObject.AddComponent<WorldSpawnIdentity>();
                 id.RecoveryReplica = true;
                 id.InitializeRemote(record.Id, 0);
@@ -231,6 +232,7 @@ namespace DeadBoat.Online
                         identity.transform.SetLocalPositionAndRotation(item.BoatPosition, item.BoatRotation);
                     }
                     else identity.transform.SetPositionAndRotation(item.Position - Vector3.forward * snapshot.Origin, item.Rotation);
+                    SharedItemScale.Apply(identity.transform, item.WorldScale);
                 }
                 if (identity.Enemy != null)
                 {
@@ -275,7 +277,8 @@ namespace DeadBoat.Online
                 {
                     Template = SharedItemCatalog.Load()?.Identify(item) ?? 0,
                     Ammo = item.GetComponentInChildren<RangedWeaponController>(true)?.CurrentAmmo ?? -1,
-                    Equipped = item == Inventory.Instance.GetComponent<ActiveItemManager>()?.Active ? 1 : 0
+                    Equipped = item == Inventory.Instance.GetComponent<ActiveItemManager>()?.Active ? 1 : 0,
+                    WorldScale = SharedItemScale.Capture(item)
                 });
             snapshot.Bag = bag.ToArray();
             snapshot.Personal = SharedPersonalData.Capture();
@@ -287,7 +290,7 @@ namespace DeadBoat.Online
                 {
                     Id = id.Id, Template = SharedItemCatalog.Load()?.Identify(id.Item) ?? 0,
                     Position = id.transform.position + Vector3.forward * snapshot.Origin,
-                    Rotation = id.transform.rotation, Prunable = id.Prunable,
+                    Rotation = id.transform.rotation, Prunable = id.Prunable, WorldScale = SharedItemScale.Capture(id.Item),
                     Mode = id.Item.Status == ItemStatus.InInventory || id.Item.Grabbed ? 4 : id.Item.Attached ? 3 : 0,
                     BoatPosition = BoardController.Instance.transform.InverseTransformPoint(id.transform.position),
                     BoatRotation = Quaternion.Inverse(BoardController.Instance.transform.rotation) * id.transform.rotation,

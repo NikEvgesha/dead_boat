@@ -37,6 +37,7 @@ namespace DeadBoat.Online
         [Networked] private TickTimer AttackVisual { get; set; }
         [Networked] private int AttackStyle { get; set; }
         [Networked] private byte HeldItemId { get; set; }
+        [Networked] private Vector3 HeldItemScaleMultiplier { get; set; }
         [Networked] public byte ProfessionSkin { get; private set; }
         [Networked] public NetworkString<_64> MirraProfileId { get; private set; }
         [Networked] public NetworkString<_32> DisplayName { get; private set; }
@@ -251,6 +252,7 @@ namespace DeadBoat.Online
             {
                 observedItem = activeItem;
                 HeldItemId = itemCatalog != null ? itemCatalog.FindId(activeItem) : (byte)0;
+                HeldItemScaleMultiplier = SharedItemScale.PresentationMultiplier(activeItem);
                 Debug.Log($"[Lobby online] Held item changed: {activeItem?.name ?? "none"}; id={HeldItemId}");
             }
         }
@@ -263,6 +265,16 @@ namespace DeadBoat.Online
 
             if (displayedItemId != HeldItemId)
                 RefreshHeldVisual();
+            if (heldVisual != null)
+            {
+                var entry = itemCatalog != null ? itemCatalog.Find(HeldItemId) : null;
+                Vector3 multiplier = SharedItemScale.IsValid(HeldItemScaleMultiplier) ? HeldItemScaleMultiplier : Vector3.one;
+                if (entry != null)
+                {
+                    Vector3 scale = multiplier * entry.scale;
+                    if (heldVisual.transform.localScale != scale) heldVisual.transform.localScale = scale;
+                }
+            }
 
             var horizontalDelta = transform.position - lastPosition;
             horizontalDelta.y = 0f;

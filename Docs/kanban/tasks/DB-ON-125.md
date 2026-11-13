@@ -210,3 +210,9 @@ CitySpawner.Update сначала создаёт очередной город, 
 Далее ИИ — пропуск до Instantiate с сохранением CitySpacing/spawnCount/ключей/RNG/canonical состояния, кэш logical bounds с инвалидизацией origin shift/restore, затем authored root и тяжёлое восстановление. Не удалять сохранность закупок/dropped/attached/врагов ради skip; умерший/рекламный игрок намеренно удерживает точку возрождения. Geometry/import сокращения вынесены267. Проверить far reconnect и handoff всех трёх путей после правок.
 
 Сводка Docs/WEB_OPTIMIZATION_AUDIT_20261113.md, точные samples Docs/WEB_OPTIMIZATION_BASELINE_20261113.json. Сейчас реализован аудит, не исправление runtime. Player Build/Play не запускались; дальнейшая общая WebGL-приёмка за владельцем, in_progress.
+
+## Контракт предметного размера — 14.11.2026
+
+264 реализована: WorldScale проходит через полные canonical записи/архив, explicit regional restore, cold dropped и independent factories, сумку и SoloBranch; dormancy equality учитывает размер. Два Cloud peers PASS фактического cold discovery, controlled independent suspend/restore и takeover. Это не повтор полного city/procedural/long-route теста125. Сводка Docs/ITEM_INSTANCE_SCALE_20261114.md.
+
+Далее ИИ —265/266, затем минимальный cold-city skip с прежними ordinal/ключами/RNG и cache bounds; владелец позже принимает полный WebGL-маршрут. Сборка не выполнялась,125 остаётся in_progress.
