@@ -24,8 +24,14 @@ namespace DeadBoat.Online
         private static readonly System.Collections.Generic.Dictionary<ulong, ZombieController> templates = new();
         private static readonly System.Collections.Generic.Dictionary<DragonBossController,
             System.Collections.Generic.HashSet<Fusion.PlayerRef>> diveVictims = new();
-        public static void Clear() { templates.Clear(); diveVictims.Clear(); authorityEpoch.Invalidate(); authoritySnapshot.Clear(); victorySnapshot.Clear(); pendingBosses.Clear(); pendingBossEnemies.Clear(); }
-        public static bool TryTemplate(ulong id, out ZombieController prefab) => templates.TryGetValue(id, out prefab);
+        public static void Clear() { templates.Clear(); SharedAmbushCatalog.ResetLookup(); diveVictims.Clear(); authorityEpoch.Invalidate(); authoritySnapshot.Clear(); victorySnapshot.Clear(); pendingBosses.Clear(); pendingBossEnemies.Clear(); }
+        public static bool TryTemplate(ulong id, out ZombieController prefab)
+        {
+            if (templates.TryGetValue(id, out prefab) && prefab != null) return true;
+            if (!SharedAmbushCatalog.TryFind(id, out prefab)) return false;
+            templates[id] = prefab;
+            return true;
+        }
         public static int DiveMask(DragonBossController dragon)
         {
             if (!diveVictims.TryGetValue(dragon, out var hit) || !SharedRunContext.Playing) return 0;
@@ -45,7 +51,7 @@ namespace DeadBoat.Online
         public static void StartDive(DragonBossController dragon) => diveVictims[dragon] = new();
         public static void DiveAttack(DragonBossController dragon)
         {
-            if (!SharedRunContext.Playing || !StableAuthorityAction) return;
+            if (!SharedRunContext.Playing || !StableAuthorityAction || IsPendingActor(dragon.transform)) return;
             if (!diveVictims.TryGetValue(dragon, out var hit)) diveVictims[dragon] = hit = new();
             var state = SharedRunContext.State;
             foreach (var avatar in LobbyNetworkAvatar.All)
@@ -56,8 +62,8 @@ namespace DeadBoat.Online
         }
         public static ulong RegisterTemplate(ZombieController prefab)
         {
-            ulong id = 14695981039346656037UL;
-            foreach (byte b in System.Text.Encoding.UTF8.GetBytes(prefab.name)) id = (id ^ b) * 1099511628211UL;
+            ulong id = SharedAmbushCatalog.TemplateId(prefab);
+            if (id == 0) throw new System.ArgumentNullException(nameof(prefab));
             templates[id] = prefab;
             return id;
         }
@@ -98,7 +104,7 @@ namespace DeadBoat.Online
             // Shared world pages transfer independently of the departure root.
             if (SharedWorldPage.Get(state.Runner, 0) == null) return false;
             foreach (var page in SharedWorldPage.All(state.Runner))
-                if (page.Enemies.Count > 0 && !page.Object.HasStateAuthority) return false;
+                if ((page.Enemies.Count > 0 || page.Actions.Count > 0) && !page.Object.HasStateAuthority) return false;
             SharedItemsRuntime.CopyEnemiesTo(authoritySnapshot);
             for (int i = 0; i < authoritySnapshot.Count; i++)
             {
@@ -106,6 +112,7 @@ namespace DeadBoat.Online
                 if (identity == null || identity.Enemy == null || !state.TryEnemy(identity.Id, out var record)) continue;
                 identity.ResetEnemyProxy();
                 identity.SuspendEnemyProxyAI(true);
+                if (record.PendingSpawn) continue;
                 identity.transform.SetPositionAndRotation(record.Position - LobbyNetworkAvatar.Origin, record.Rotation);
                 identity.ApplyEnemyProxy(record, false);
                 if (identity.Enemy is DragonBossController dragon && state.DragonBrain.Id == identity.Id)
@@ -184,7 +191,7 @@ namespace DeadBoat.Online
         public static bool RequestBurn(EnemyCore enemy, float duration, float damage)
         {
             if (!SharedRunContext.Active) return false;
-            if (SharedLocalGameplay.Blocked) return true;
+            if (SharedLocalGameplay.Blocked || (enemy != null && IsPendingActor(enemy.transform))) return true;
             var identity = enemy.GetComponent<WorldSpawnIdentity>();
             if (SharedRunContext.Playing && identity != null)
                 SharedRunContext.State.RPC_EnemyBurn(identity.Id, duration, damage);
@@ -194,7 +201,7 @@ namespace DeadBoat.Online
         public static bool RequestDamage(EnemyCore enemy, int damage)
         {
             if (!SharedRunContext.Active || applyingDamage) return false;
-            if (SharedLocalGameplay.Blocked) return true;
+            if (SharedLocalGameplay.Blocked || (enemy != null && IsPendingActor(enemy.transform))) return true;
             var identity = enemy.GetComponent<WorldSpawnIdentity>();
             if (SharedRunContext.Playing && identity != null)
                 SharedRunContext.State.RPC_EnemyDamage(identity.Id, damage);
@@ -203,6 +210,7 @@ namespace DeadBoat.Online
 
         public static void ApplyDamage(EnemyCore enemy, int damage)
         {
+            if (enemy == null || IsPendingActor(enemy.transform)) return;
             applyingDamage = true;
             try { enemy.TakeDamage(damage); }
             finally { applyingDamage = false; }
@@ -218,7 +226,7 @@ namespace DeadBoat.Online
         public static Transform Target(Transform from, Transform fallback)
         {
             if (!SharedRunContext.Active) return fallback;
-            if (!SharedRunContext.Playing) return null;
+            if (!SharedRunContext.Playing || IsPendingActor(from)) return null;
             var state = SharedRunContext.State;
             Transform nearest = null;
             float distance = float.MaxValue;
@@ -236,7 +244,7 @@ namespace DeadBoat.Online
 
         public static bool CanMeleeHit(Transform from, Transform target, float range)
         {
-            if (target == null) return false;
+            if (target == null || IsPendingActor(from)) return false;
             Vector3 origin = from.position + Vector3.up * 1.5f;
             Vector3 delta = target.position + Vector3.up * 1.5f - origin;
             float distance = delta.magnitude;
@@ -300,7 +308,7 @@ namespace DeadBoat.Online
             out WorldSpawnIdentity identity)
         {
             identity = null;
-            if (prefab == null || id == 0 || record.Template == 0 || record.Level < 1 || record.Level > 10 ||
+            if (prefab == null || id == 0 || record.PendingSpawn || record.Template == 0 || record.Level < 1 || record.Level > 10 ||
                 record.MaxHP <= 0 || record.HP <= 0 || record.HP > record.MaxHP ||
                 !Finite(record.Position.x) || !Finite(record.Position.y) || !Finite(record.Position.z) ||
                 !Finite(record.Rotation.x) || !Finite(record.Rotation.y) || !Finite(record.Rotation.z) ||
@@ -319,6 +327,13 @@ namespace DeadBoat.Online
             return true;
         }
         private static bool Finite(float value) => !float.IsNaN(value) && !float.IsInfinity(value);
+
+        private static bool IsPendingActor(Transform actor)
+        {
+            if (!SharedRunContext.Playing || actor == null) return false;
+            var identity = actor.GetComponent<WorldSpawnIdentity>();
+            return identity != null && SharedRunContext.State.TryEnemy(identity.Id, out var record) && record.PendingSpawn;
+        }
 
         private void Awake() => EndGameUIManager.EndGame += OnEndGame;
         private void OnDestroy() => EndGameUIManager.EndGame -= OnEndGame;
@@ -376,8 +391,8 @@ namespace DeadBoat.Online
                     foreach (var entry in page.Enemies)
                     {
                         var record = entry.Value;
-                        if (record.Template == 0 || record.HP <= 0 || SharedItemsRuntime.TryFind(entry.Key, out _) ||
-                            !templates.TryGetValue(record.Template, out var prefab)) continue;
+                        if (record.PendingSpawn || record.Template == 0 || record.HP <= 0 || SharedItemsRuntime.TryFind(entry.Key, out _) ||
+                            !TryTemplate(record.Template, out var prefab)) continue;
                         if (SharedRunContext.Regions?.AllowsEnemyReplica(entry.Key, record) == false || SharedRunContext.Independent?.AllowsEnemy(entry.Key) == false) continue;
                         TryCreateReplica(prefab, entry.Key, record, out _);
                     }
@@ -394,6 +409,8 @@ namespace DeadBoat.Online
                 if (identity == null) continue;
                 var enemy = identity.Enemy;
                 if (enemy == null) continue;
+                if (state.TryEnemy(identity.Id, out var reservation) && reservation.PendingSpawn)
+                { identity.SuspendEnemyProxyAI(audit); continue; }
                 if (roleChanged) identity.ResetEnemyProxy();
                 if (authority)
                 {

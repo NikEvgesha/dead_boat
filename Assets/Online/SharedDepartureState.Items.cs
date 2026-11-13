@@ -7,6 +7,8 @@ namespace DeadBoat.Online
     {
         public int Template, WeaponAmmo;
         public int SalePrice; // zero unknown, otherwise seller's calculated price + 1
+        public ulong ConsumedByAction;
+        public int ActionSlot;
         public Vector3 Position;
         public Vector3 WorldScale;
         public Quaternion Rotation;

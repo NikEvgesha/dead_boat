@@ -12,6 +12,7 @@ namespace DeadBoat.Online
         [Networked] public int Index { get; private set; }
         [Networked, Capacity(64)] public NetworkDictionary<ulong, SharedItemRecord> Items => default;
         [Networked, Capacity(64)] public NetworkDictionary<ulong, SharedEnemyRecord> Enemies => default;
+        [Networked, Capacity(16)] public NetworkDictionary<ulong, SharedWorldActionRecord> Actions => default;
         public void Initialize(int index) => Index = index;
         public override void Spawned()
         {

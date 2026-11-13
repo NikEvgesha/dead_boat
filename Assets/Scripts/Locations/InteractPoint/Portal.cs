@@ -8,20 +8,48 @@ public class Portal : MonoBehaviour
     [SerializeField] private GameObject _partical;
     [SerializeField] private SpriteRenderer _portalSprite;
 
+    private bool _initialStateCaptured;
+    private bool _initiallyActive;
+    public Portal NextPortal => _nextPortal;
+    public bool InitiallyActive
+    {
+        get { CaptureInitialState(); return _initiallyActive; }
+    }
+
+    private void Awake() => CaptureInitialState();
+    private void CaptureInitialState()
+    {
+        if (_initialStateCaptured) return;
+        _initiallyActive = _isActivate;
+        _initialStateCaptured = true;
+    }
+
     private void Activate(bool isActivate)
     {
         _isActivate = isActivate;
-        _partical.SetActive(isActivate);
+        if (_partical != null) _partical.SetActive(isActivate);
         Color color = isActivate ? Color.white : Color.black;
-        _portalSprite.color = color;
+        if (_portalSprite != null) _portalSprite.color = color;
     }
 
     private void Start()
     {
-        _partical.SetActive(_isActivate);
+        CaptureInitialState();
+        Activate(_isActivate);
+        DeadBoat.Online.SharedWorldActionsRuntime.Register(this);
+    }
+    private void OnDestroy() => DeadBoat.Online.SharedWorldActionsRuntime.Remove(this);
+
+    public void SharedApply(bool active)
+    {
+        CaptureInitialState();
+        // Canonical state replaces any old local rearm, including one begun before binding.
+        StopAllCoroutines();
+        Activate(active);
     }
     public void _ActivateTeleport(float time)
     {
+        if (DeadBoat.Online.SharedWorldActionsRuntime.Request(this, 1, time)) return;
         StartCoroutine(StartActivateTeleport(time));
     }
     public IEnumerator StartActivateTeleport(float time)
@@ -31,9 +59,10 @@ public class Portal : MonoBehaviour
     }
     private void OnTriggerEnter(Collider other)
     {
-        if (!_isActivate) { return; }
         PlayerMovement player = other.GetComponent<PlayerMovement>();
         if (!player) return;
+        if (DeadBoat.Online.SharedWorldActionsRuntime.Travel(this, player)) return;
+        if (!_isActivate || _nextPortal == null) return;
 
         Activate(false);
 

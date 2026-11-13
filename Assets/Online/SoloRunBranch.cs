@@ -13,6 +13,8 @@ namespace DeadBoat.Online
         public Vector3 Position, BoatPosition, WorldScale;
         public Quaternion Rotation, BoatRotation;
         public bool Prunable;
+        public ulong ConsumedByAction;
+        public int ActionSlot;
     }
     [Serializable]
     public struct SoloSaleState { public ulong Id; public int Coins; }
@@ -27,6 +29,8 @@ namespace DeadBoat.Online
         public Vector3 Position;
         public Quaternion Rotation;
         public bool Prunable;
+        public bool PendingSpawn;
+        public ulong ActionId;
     }
     [Serializable]
     public sealed class SharedSoloSnapshot
@@ -41,6 +45,7 @@ namespace DeadBoat.Online
         public SoloWorldItem[] Items;
         public SoloWorldEnemy[] Enemies;
         public SoloSaleState[] Sales;
+        public SoloWorldAction[] WorldActions;
         public static SharedSoloSnapshot Capture(SharedDepartureState state)
         {
             var local = state.Runner.LocalPlayer;
@@ -69,6 +74,7 @@ namespace DeadBoat.Online
                     Mode = item.Mode == 1 || item.Mode == 2 ? 4 : item.Mode,
                     Position = item.Position, Rotation = item.Rotation,
                     BoatPosition = item.BoatLocalPosition, BoatRotation = item.BoatLocalRotation, Prunable = item.Prunable
+                    ,ConsumedByAction = item.ConsumedByAction, ActionSlot = item.ActionSlot
                 });
             }
             var enemies = new List<SoloWorldEnemy>();
@@ -78,6 +84,7 @@ namespace DeadBoat.Online
                     Id = entry.Key, HP = entry.Value.HP, MaxHP = entry.Value.MaxHP,
                     Template = entry.Value.Template, Level = entry.Value.Level,
                     Position = entry.Value.Position, Rotation = entry.Value.Rotation, Prunable = entry.Value.Prunable
+                    ,PendingSpawn = entry.Value.PendingSpawn, ActionId = entry.Value.ActionId
                 });
             return new SharedSoloSnapshot
             {
@@ -86,7 +93,8 @@ namespace DeadBoat.Online
                 Distance = state.BoatDistance, Origin = LobbyNetworkAvatar.Origin.z,
                 Fuel = state.BoatFuel, Rear = state.WorldRear, Personal = data, NightSequence = state.NightSpawnSequence,
                 Bag = bag.ToArray(), Items = world.ToArray(), Enemies = enemies.ToArray(),
-                Sales = state.Sales.Select(e => new SoloSaleState { Id = e.Key, Coins = e.Value.Coins }).ToArray()
+                Sales = state.Sales.Select(e => new SoloSaleState { Id = e.Key, Coins = e.Value.Coins }).ToArray(),
+                WorldActions = SharedWorldActionsRuntime.Capture(state)
             };
         }
     }
@@ -106,6 +114,7 @@ namespace DeadBoat.Online
         private bool needsInventory;
         private bool waitingScene;
         public static bool Active => instance != null && instance.snapshot != null;
+        public static bool ReadyForWorldActions => Active && !instance.waitingScene && !SharedRunContext.Active;
         public static int Seed => Active ? instance.snapshot.Seed : 0;
         public static int LocationPoolRevision => Active
             ? instance.snapshot.LocationPoolRevision : LocationSpawnCollection.CurrentPoolRevision;
@@ -152,6 +161,7 @@ namespace DeadBoat.Online
             foreach (var item in value.Items ?? Array.Empty<SoloWorldItem>()) instance.items[item.Id] = item;
             foreach (var enemy in value.Enemies ?? Array.Empty<SoloWorldEnemy>()) instance.enemies[enemy.Id] = enemy;
             foreach (var sale in value.Sales ?? Array.Empty<SoloSaleState>()) instance.sales[sale.Id] = Mathf.Max(0, sale.Coins);
+            SharedWorldActionsRuntime.Begin(root, null, value.WorldActions, value.Items);
         }
         public static void Begin(SharedSoloSnapshot value)
         {
@@ -196,12 +206,16 @@ namespace DeadBoat.Online
         }
         private void RegisterAuthored(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode)
             => SharedRunLifetime.RegisterAuthoredItems(scene);
-        private void OnDestroy() => UnityEngine.SceneManagement.SceneManager.sceneLoaded -= RegisterAuthored;
+        private void OnDestroy()
+        {
+            UnityEngine.SceneManagement.SceneManager.sceneLoaded -= RegisterAuthored;
+            SharedWorldActionsRuntime.Stop(gameObject);
+        }
         private void ApplyWorldInternal()
         {
             foreach (var record in items.Values)
             {
-                if (record.Mode == 4 || record.Template == 0 || SharedItemsRuntime.TryFind(record.Id, out _) ||
+                if (record.Mode == 4 || record.ConsumedByAction != 0 || record.Template == 0 || SharedItemsRuntime.TryFind(record.Id, out _) ||
                     (record.Prunable && record.Mode != 3 && record.Position.z < snapshot.Rear)) continue;
                 var prefab = SharedItemCatalog.Load()?.Find(record.Template);
                 if (prefab == null) continue;
@@ -212,7 +226,7 @@ namespace DeadBoat.Online
             }
             foreach (var record in enemies.Values)
             {
-                if (record.HP <= 0 || record.Template == 0 || SharedItemsRuntime.TryFind(record.Id, out _) ||
+                if (record.PendingSpawn || record.HP <= 0 || record.Template == 0 || SharedItemsRuntime.TryFind(record.Id, out _) ||
                     !SharedEnemiesRuntime.TryTemplate(record.Template, out var prefab)) continue;
                 var enemy = Instantiate(prefab, record.Position - Vector3.forward * snapshot.Origin, record.Rotation);
                 enemy.InitializeLevel(record.Level);
@@ -294,31 +308,46 @@ namespace DeadBoat.Online
             foreach (var id in identities)
             {
                 if (id == null) continue;
-                if (id.Item != null) items[id.Id] = new SoloWorldItem
+                if (id.Item != null) SampleWorldItem(id);
+                if (id.Enemy != null)
                 {
-                    Id = id.Id, Template = SharedItemCatalog.Load()?.Identify(id.Item) ?? 0,
-                    Position = id.transform.position + Vector3.forward * snapshot.Origin,
-                    Rotation = id.transform.rotation, Prunable = id.Prunable, WorldScale = SharedItemScale.Capture(id.Item),
-                    Mode = id.Item.Status == ItemStatus.InInventory || id.Item.Grabbed ? 4 : id.Item.Attached ? 3 : 0,
-                    BoatPosition = BoardController.Instance.transform.InverseTransformPoint(id.transform.position),
-                    BoatRotation = Quaternion.Inverse(BoardController.Instance.transform.rotation) * id.transform.rotation,
-                    Ammo = id.Weapon?.CurrentAmmo ?? -1
-                };
-                if (id.Enemy != null) enemies[id.Id] = new SoloWorldEnemy
-                {
-                    Id = id.Id, HP = id.Enemy.SharedHP, MaxHP = id.Enemy.SharedMaxHP, Prunable = id.Prunable,
-                    Template = id.TemplateId, Level = id.Enemy is LevelledEnemy levelled ? levelled.mobLevel : 1,
-                    Position = id.transform.position + Vector3.forward * snapshot.Origin, Rotation = id.transform.rotation
-                };
+                    enemies.TryGetValue(id.Id, out var previous);
+                    enemies[id.Id] = new SoloWorldEnemy
+                    {
+                        Id = id.Id, HP = id.Enemy.SharedHP, MaxHP = id.Enemy.SharedMaxHP, Prunable = id.Prunable,
+                        Template = id.TemplateId, Level = id.Enemy is LevelledEnemy levelled ? levelled.mobLevel : 1,
+                        Position = id.transform.position + Vector3.forward * snapshot.Origin, Rotation = id.transform.rotation,
+                        ActionId = previous.ActionId
+                    };
+                }
             }
             foreach (var key in items.Where(p => p.Value.Prunable && p.Value.Mode != 3 && p.Value.Position.z < snapshot.Rear).Select(p => p.Key).ToArray()) items.Remove(key);
             foreach (var key in enemies.Where(p => p.Value.Prunable && p.Value.Position.z < snapshot.Rear).Select(p => p.Key).ToArray()) enemies.Remove(key);
             snapshot.Items = items.Values.ToArray(); snapshot.Enemies = enemies.Values.ToArray();
             snapshot.Sales = sales.Select(e => new SoloSaleState { Id = e.Key, Coins = e.Value }).ToArray();
+            snapshot.WorldActions = SharedWorldActionsRuntime.CaptureSolo();
             SaveManager.Instance.PersistentProvider.SaveInventory(Inventory.Instance.GetInventoryList());
             SaveManager.Instance.SaveGameProgress(Mathf.RoundToInt(snapshot.Distance), Inventory.Instance.GetInventoryList(), snapshot.Level);
             SaveManager.Instance.FlushProgress();
             Store(snapshot);
+        }
+        private void SampleWorldItem(WorldSpawnIdentity identity)
+        {
+            items.TryGetValue(identity.Id, out var previous);
+            var board = BoardController.Instance;
+            items[identity.Id] = new SoloWorldItem
+            {
+                Id = identity.Id, Template = SharedItemCatalog.Load()?.Identify(identity.Item) ?? 0,
+                Position = identity.transform.position + Vector3.forward * snapshot.Origin,
+                Rotation = identity.transform.rotation, Prunable = identity.Prunable, WorldScale = SharedItemScale.Capture(identity.Item),
+                // Destroy is deferred. A same-frame periodic capture must not turn
+                // an accepted offering's still-live visual into a new free item.
+                Mode = previous.ConsumedByAction != 0 || identity.Item.Status == ItemStatus.InInventory || identity.Item.Grabbed
+                    ? 4 : identity.Item.Attached ? 3 : 0,
+                BoatPosition = board != null ? board.transform.InverseTransformPoint(identity.transform.position) : previous.BoatPosition,
+                BoatRotation = board != null ? Quaternion.Inverse(board.transform.rotation) * identity.transform.rotation : previous.BoatRotation,
+                Ammo = identity.Weapon?.CurrentAmmo ?? -1, ConsumedByAction = previous.ConsumedByAction, ActionSlot = previous.ActionSlot
+            };
         }
         public static void RestoreInventoryAfterLoad()
         {
@@ -360,6 +389,25 @@ namespace DeadBoat.Online
         public static void RememberSale(ulong id, int coins)
         {
             if (Active) instance.sales[id] = Mathf.Max(0, coins);
+        }
+
+        public static bool TryActionEnemy(ulong id, out SoloWorldEnemy value)
+        { value = default; return Active && instance.enemies.TryGetValue(id, out value); }
+        public static void StoreActionEnemy(SoloWorldEnemy value)
+        { if (Active) instance.enemies[value.Id] = value; }
+        public static void ConsumeWorldActionItem(WorldSpawnIdentity identity, ulong actionId, int slot)
+        {
+            if (!Active || identity == null || identity.Item == null) return;
+            instance.items.TryGetValue(identity.Id, out var item);
+            item.Id = identity.Id; item.Mode = 4; item.Template = identity.ItemTemplate;
+            item.ConsumedByAction = actionId; item.ActionSlot = slot;
+            item.Position = identity.transform.position + LobbyNetworkAvatar.Origin; item.Prunable = identity.Prunable;
+            instance.items[identity.Id] = item;
+        }
+        public static void ConsumeActionItemId(ulong id, ulong actionId, int slot)
+        {
+            if (Active && instance.items.TryGetValue(id, out var item))
+            { item.Mode = 4; item.ConsumedByAction = actionId; item.ActionSlot = slot; instance.items[id] = item; }
         }
 
         public static int NextNightSpawn() => Active ? ++instance.snapshot.NightSequence : 0;

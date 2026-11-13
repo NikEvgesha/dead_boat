@@ -1,0 +1,1011 @@
+{
+  "date": "2026-11-14",
+  "status": "in_progress",
+  "stoppedAtOwnerRequest": true,
+  "playerBuildPerformed": false,
+  "draftUploadPerformed": false,
+  "testedWorktreeBase": "8c2635721ea145533d8dbcdf6da402c9fa8eef29",
+  "protocolSuffix": "-dbseed4-inv1-pets1-cards3-regions1-skins1-choice1-shorepoi7-itemscale1-sales1-actions1",
+  "generatorVersion": 6,
+  "reports": {
+    "content.json": {
+      "utc": "2026-11-13T23:06:16.3234669Z",
+      "unityVersion": "6000.3.9f1",
+      "result": "PASS: source content references and full Fusion object capacities",
+      "scope": "Native Editor source-prefab loading and resolved persistent UnityEvent targets/authoring references. Empty-requirement decorative podiums are reported, not treated as active Skull offerings. Configured podium callback2 is inspected through native GetPersistentTarget; a resolved visual is reported as valid and a null is recorded as an outstanding content finding, never required to be null. No prefab instances, scene loading, Start/Update, Play, physics, animations, callbacks, networking, Player Build, SaveAssets or settings mutation. This is not network or complete gameplay acceptance.",
+      "balanceScope": "Pure LocationSceneBalance.ResolveEnemyLevel(source) for real profile rows. The live LocationContentSpawner helper is not invoked on source assets: EnsureBalanceProfile can populate a serialized cache. No source SetLevel/Start is called; guard chance/count caps are not applied to scripted waves.",
+      "budgetScope": "Full baked NetworkObject.GetWordCount includes SDK object words and all baked behaviours. Capacity bytes only, not traffic, history, external allocator overhead or measured Web heap. Hard acceptance is strictly below32768 bytes.",
+      "activeEditorScene": "",
+      "scriptedLevelHelperPresent": true,
+      "checks": 150,
+      "prefabs": [
+        {
+          "path": "Assets/Prefabs/Locations/Enemy/Sklep_1.prefab",
+          "error": "",
+          "zoneCount": 1,
+          "trapComponentCount": 5,
+          "trapCallbacks": 4,
+          "uniqueBoundTraps": 4,
+          "authoredWaveCount": 12,
+          "configuredPodiums": 0,
+          "traps": [
+            {
+              "path": "Sklep_1[0]/Trap[10]",
+              "enemyPrefab": "Assets/Prefabs/Enemy/just_zombie.prefab",
+              "spawnPath": "Sklep_1[0]/Trap[10]/spawnPoints[1]/Point1[0]",
+              "count": 3,
+              "torchCount": 0,
+              "cooldown": 1.0,
+              "firstDelay": 0.0,
+              "boundToTrapEvent": false,
+              "spawnInsidePrefab": true
+            },
+            {
+              "path": "Sklep_1[0]/Trap[10]/spawnPoints[1]/Point1[0]",
+              "enemyPrefab": "Assets/Prefabs/Enemy/just_zombie.prefab",
+              "spawnPath": "Sklep_1[0]/Trap[10]/spawnPoints[1]/Point1[0]",
+              "count": 3,
+              "torchCount": 0,
+              "cooldown": 1.0,
+              "firstDelay": 0.0,
+              "boundToTrapEvent": true,
+              "spawnInsidePrefab": true
+            },
+            {
+              "path": "Sklep_1[0]/Trap[10]/spawnPoints[1]/Point2[1]",
+              "enemyPrefab": "Assets/Prefabs/Enemy/dragon.prefab",
+              "spawnPath": "Sklep_1[0]/Trap[10]/spawnPoints[1]/Point2[1]",
+              "count": 3,
+              "torchCount": 0,
+              "cooldown": 1.0,
+              "firstDelay": 0.0,
+              "boundToTrapEvent": true,
+              "spawnInsidePrefab": true
+            },
+            {
+              "path": "Sklep_1[0]/Trap[10]/spawnPoints[1]/Point3[2]",
+              "enemyPrefab": "Assets/Prefabs/Enemy/just_zombie.prefab",
+              "spawnPath": "Sklep_1[0]/Trap[10]/spawnPoints[1]/Point3[2]",
+              "count": 3,
+              "torchCount": 0,
+              "cooldown": 1.0,
+              "firstDelay": 0.0,
+              "boundToTrapEvent": true,
+              "spawnInsidePrefab": true
+            },
+            {
+              "path": "Sklep_1[0]/Trap[10]/spawnPoints[1]/Point4[3]",
+              "enemyPrefab": "Assets/Prefabs/Enemy/just_zombie.prefab",
+              "spawnPath": "Sklep_1[0]/Trap[10]/spawnPoints[1]/Point4[3]",
+              "count": 3,
+              "torchCount": 0,
+              "cooldown": 1.0,
+              "firstDelay": 0.0,
+              "boundToTrapEvent": true,
+              "spawnInsidePrefab": true
+            }
+          ],
+          "levers": [
+            {
+              "path": "Sklep_1[0]/Lever[9]",
+              "subject": "Sklep_1[0]/Trap[10]",
+              "subjectController": "Assets/Animation/Action/Trap.controller",
+              "ownController": "Assets/Animation/Action/Lever.controller",
+              "usePoint": "Sklep_1[0]/Lever[9]/UseButtonShow[2]",
+              "hideTarget": "Sklep_1[0]/Lever[9]/UseButtonShow[2]",
+              "hideMatchesOwnUsePoint": true,
+              "subjectClips": [
+                "Assets/Animation/Action/CustleOpen.anim"
+              ],
+              "subjectBindings": [
+                "CustleOpen:zoneTrap:m_IsActive"
+              ]
+            }
+          ],
+          "portals": [],
+          "podiums": [],
+          "callbacks": [
+            {
+              "owner": "Sklep_1[0]/Trap[10]/zoneTrap[0]",
+              "eventName": "PlayerOnTriggerEnter[0]",
+              "method": "SetActive",
+              "targetType": "UnityEngine.GameObject",
+              "targetName": "WallActive",
+              "targetAsset": "Assets/Prefabs/Locations/Enemy/Sklep_1.prefab",
+              "listenerState": "RuntimeOnly",
+              "targetMissing": false
+            },
+            {
+              "owner": "Sklep_1[0]/Trap[10]/zoneTrap[0]",
+              "eventName": "PlayerOnTriggerEnter[1]",
+              "method": "_InTrap",
+              "targetType": "DungeonTrap",
+              "targetName": "Point1",
+              "targetAsset": "Assets/Prefabs/Locations/Enemy/Sklep_1.prefab",
+              "listenerState": "RuntimeOnly",
+              "targetMissing": false
+            },
+            {
+              "owner": "Sklep_1[0]/Trap[10]/zoneTrap[0]",
+              "eventName": "PlayerOnTriggerEnter[2]",
+              "method": "_InTrap",
+              "targetType": "DungeonTrap",
+              "targetName": "Point2",
+              "targetAsset": "Assets/Prefabs/Locations/Enemy/Sklep_1.prefab",
+              "listenerState": "RuntimeOnly",
+              "targetMissing": false
+            },
+            {
+              "owner": "Sklep_1[0]/Trap[10]/zoneTrap[0]",
+              "eventName": "PlayerOnTriggerEnter[3]",
+              "method": "_InTrap",
+              "targetType": "DungeonTrap",
+              "targetName": "Point3",
+              "targetAsset": "Assets/Prefabs/Locations/Enemy/Sklep_1.prefab",
+              "listenerState": "RuntimeOnly",
+              "targetMissing": false
+            },
+            {
+              "owner": "Sklep_1[0]/Trap[10]/zoneTrap[0]",
+              "eventName": "PlayerOnTriggerEnter[4]",
+              "method": "_InTrap",
+              "targetType": "DungeonTrap",
+              "targetName": "Point4",
+              "targetAsset": "Assets/Prefabs/Locations/Enemy/Sklep_1.prefab",
+              "listenerState": "RuntimeOnly",
+              "targetMissing": false
+            },
+            {
+              "owner": "Sklep_1[0]/Lever[9]/UseButtonShow[2]",
+              "eventName": "Activate[0]",
+              "method": "Use",
+              "targetType": "Lever",
+              "targetName": "Lever",
+              "targetAsset": "Assets/Prefabs/Locations/Enemy/Sklep_1.prefab",
+              "listenerState": "RuntimeOnly",
+              "targetMissing": false
+            },
+            {
+              "owner": "Sklep_1[0]/Lever[9]/UseButtonShow[2]",
+              "eventName": "Activate[1]",
+              "method": "SetActive",
+              "targetType": "UnityEngine.GameObject",
+              "targetName": "UseButtonShow",
+              "targetAsset": "Assets/Prefabs/Locations/Enemy/Sklep_1.prefab",
+              "listenerState": "RuntimeOnly",
+              "targetMissing": false
+            }
+          ]
+        },
+        {
+          "path": "Assets/Prefabs/Locations/Enemy/ruins_1.prefab",
+          "error": "",
+          "zoneCount": 2,
+          "trapComponentCount": 1,
+          "trapCallbacks": 1,
+          "uniqueBoundTraps": 1,
+          "authoredWaveCount": 20,
+          "configuredPodiums": 1,
+          "traps": [
+            {
+              "path": "ruins_1[0]/ActivateDangeusZone[14]/Trap[0]",
+              "enemyPrefab": "Assets/Prefabs/Enemy/just_zombie.prefab",
+              "spawnPath": "ruins_1[0]/Portals[8]/Portal (1)[1]",
+              "count": 20,
+              "torchCount": 12,
+              "cooldown": 1.0,
+              "firstDelay": 0.5,
+              "boundToTrapEvent": true,
+              "spawnInsidePrefab": true
+            }
+          ],
+          "levers": [
+            {
+              "path": "ruins_1[0]/ActivateItem[11]/Lever[6]",
+              "subject": "ruins_1[0]/WallsAndFloors[9]/GameObject (7)[4]/Wall_Stone_WoodenDoor[0]",
+              "subjectController": "Assets/Animation/Action/Door.controller",
+              "ownController": "Assets/Animation/Action/Lever.controller",
+              "usePoint": "ruins_1[0]/ActivateItem[11]/Lever[6]/UseButtonShow[2]",
+              "hideTarget": "ruins_1[0]/ActivateItem[11]/Lever[6]/UseButtonShow[2]",
+              "hideMatchesOwnUsePoint": true,
+              "subjectClips": [
+                "Assets/Animation/Action/open.anim"
+              ],
+              "subjectBindings": [
+                "open:Door.001:localEulerAnglesRaw.x",
+                "open:Door.001:localEulerAnglesRaw.y",
+                "open:Door.001:localEulerAnglesRaw.z"
+              ]
+            }
+          ],
+          "portals": [
+            {
+              "path": "ruins_1[0]/Portals[8]/Portal[0]",
+              "next": "ruins_1[0]/Portals[8]/Portal (1)[1]",
+              "initiallyActive": false,
+              "mutual": true,
+              "targetInsidePrefab": true
+            },
+            {
+              "path": "ruins_1[0]/Portals[8]/Portal (1)[1]",
+              "next": "ruins_1[0]/Portals[8]/Portal[0]",
+              "initiallyActive": false,
+              "mutual": true,
+              "targetInsidePrefab": true
+            }
+          ],
+          "podiums": [
+            {
+              "path": "ruins_1[0]/ActivateItem[11]/Podium[0]",
+              "requirements": [
+                "Skull"
+              ],
+              "configured": true,
+              "visualTargetInspected": true,
+              "visualTargetMissing": false,
+              "persistentCallbacks": 3,
+              "visualTarget": "skull (1)",
+              "activationDelay": 0.10000000149011612
+            },
+            {
+              "path": "ruins_1[0]/ActivateItem[11]/Podium (1)[1]",
+              "requirements": [],
+              "configured": false,
+              "visualTargetInspected": false,
+              "visualTargetMissing": false,
+              "persistentCallbacks": 0,
+              "visualTarget": "",
+              "activationDelay": 0.0
+            },
+            {
+              "path": "ruins_1[0]/ActivateItem[11]/Podium (2)[2]",
+              "requirements": [],
+              "configured": false,
+              "visualTargetInspected": false,
+              "visualTargetMissing": false,
+              "persistentCallbacks": 0,
+              "visualTarget": "",
+              "activationDelay": 0.0
+            },
+            {
+              "path": "ruins_1[0]/ActivateItem[11]/Podium (3)[3]",
+              "requirements": [],
+              "configured": false,
+              "visualTargetInspected": false,
+              "visualTargetMissing": false,
+              "persistentCallbacks": 0,
+              "visualTarget": "",
+              "activationDelay": 0.0
+            }
+          ],
+          "callbacks": [
+            {
+              "owner": "ruins_1[0]/ActivateDangeusZone[14]",
+              "eventName": "PlayerOnTriggerEnter[0]",
+              "method": "_InDungeons",
+              "targetType": "DungeonTrap",
+              "targetName": "Trap",
+              "targetAsset": "Assets/Prefabs/Locations/Enemy/ruins_1.prefab",
+              "listenerState": "RuntimeOnly",
+              "targetMissing": false
+            },
+            {
+              "owner": "ruins_1[0]/ActivateDangeusZone[14]/Trap[0]/Zone[0]",
+              "eventName": "PlayerOnTriggerEnter[0]",
+              "method": "_InTrap",
+              "targetType": "DungeonTrap",
+              "targetName": "Trap",
+              "targetAsset": "Assets/Prefabs/Locations/Enemy/ruins_1.prefab",
+              "listenerState": "RuntimeOnly",
+              "targetMissing": false
+            },
+            {
+              "owner": "ruins_1[0]/ActivateItem[11]/Lever[6]/UseButtonShow[2]",
+              "eventName": "Activate[0]",
+              "method": "Use",
+              "targetType": "Lever",
+              "targetName": "Lever",
+              "targetAsset": "Assets/Prefabs/Locations/Enemy/ruins_1.prefab",
+              "listenerState": "RuntimeOnly",
+              "targetMissing": false
+            },
+            {
+              "owner": "ruins_1[0]/ActivateItem[11]/Lever[6]/UseButtonShow[2]",
+              "eventName": "Activate[1]",
+              "method": "SetActive",
+              "targetType": "UnityEngine.GameObject",
+              "targetName": "UseButtonShow",
+              "targetAsset": "Assets/Prefabs/Locations/Enemy/ruins_1.prefab",
+              "listenerState": "RuntimeOnly",
+              "targetMissing": false
+            },
+            {
+              "owner": "ruins_1[0]/ActivateItem[11]/Podium[0]",
+              "eventName": "PutItem[0]",
+              "method": "_ActivateTeleport",
+              "targetType": "Portal",
+              "targetName": "Portal",
+              "targetAsset": "Assets/Prefabs/Locations/Enemy/ruins_1.prefab",
+              "listenerState": "RuntimeOnly",
+              "targetMissing": false
+            },
+            {
+              "owner": "ruins_1[0]/ActivateItem[11]/Podium[0]",
+              "eventName": "PutItem[1]",
+              "method": "set_enabled",
+              "targetType": "UnityEngine.BoxCollider",
+              "targetName": "Podium",
+              "targetAsset": "Assets/Prefabs/Locations/Enemy/ruins_1.prefab",
+              "listenerState": "RuntimeOnly",
+              "targetMissing": false
+            },
+            {
+              "owner": "ruins_1[0]/ActivateItem[11]/Podium[0]",
+              "eventName": "PutItem[2]",
+              "method": "SetActive",
+              "targetType": "UnityEngine.GameObject",
+              "targetName": "skull (1)",
+              "targetAsset": "Assets/Prefabs/Locations/Enemy/ruins_1.prefab",
+              "listenerState": "RuntimeOnly",
+              "targetMissing": false
+            }
+          ]
+        },
+        {
+          "path": "Assets/Events/NewYear/NY_Ruins_1.prefab",
+          "error": "",
+          "zoneCount": 2,
+          "trapComponentCount": 1,
+          "trapCallbacks": 1,
+          "uniqueBoundTraps": 1,
+          "authoredWaveCount": 20,
+          "configuredPodiums": 1,
+          "traps": [
+            {
+              "path": "NY_Ruins_1[0]/ActivateDangeusZone[14]/Trap[0]",
+              "enemyPrefab": "Assets/Events/NewYear/NY_just_zombie.prefab",
+              "spawnPath": "NY_Ruins_1[0]/Portals[8]/Portal (1)[1]",
+              "count": 20,
+              "torchCount": 12,
+              "cooldown": 1.0,
+              "firstDelay": 0.5,
+              "boundToTrapEvent": true,
+              "spawnInsidePrefab": true
+            }
+          ],
+          "levers": [
+            {
+              "path": "NY_Ruins_1[0]/ActivateItem[11]/Lever[6]",
+              "subject": "NY_Ruins_1[0]/WallsAndFloors[9]/GameObject (7)[4]/Wall_Stone_WoodenDoor[0]",
+              "subjectController": "Assets/Animation/Action/Door.controller",
+              "ownController": "Assets/Animation/Action/Lever.controller",
+              "usePoint": "NY_Ruins_1[0]/ActivateItem[11]/Lever[6]/UseButtonShow[2]",
+              "hideTarget": "NY_Ruins_1[0]/ActivateItem[11]/Lever[6]/UseButtonShow[2]",
+              "hideMatchesOwnUsePoint": true,
+              "subjectClips": [
+                "Assets/Animation/Action/open.anim"
+              ],
+              "subjectBindings": [
+                "open:Door.001:localEulerAnglesRaw.x",
+                "open:Door.001:localEulerAnglesRaw.y",
+                "open:Door.001:localEulerAnglesRaw.z"
+              ]
+            }
+          ],
+          "portals": [
+            {
+              "path": "NY_Ruins_1[0]/Portals[8]/Portal[0]",
+              "next": "NY_Ruins_1[0]/Portals[8]/Portal (1)[1]",
+              "initiallyActive": false,
+              "mutual": true,
+              "targetInsidePrefab": true
+            },
+            {
+              "path": "NY_Ruins_1[0]/Portals[8]/Portal (1)[1]",
+              "next": "NY_Ruins_1[0]/Portals[8]/Portal[0]",
+              "initiallyActive": false,
+              "mutual": true,
+              "targetInsidePrefab": true
+            }
+          ],
+          "podiums": [
+            {
+              "path": "NY_Ruins_1[0]/ActivateItem[11]/Podium[0]",
+              "requirements": [
+                "Skull"
+              ],
+              "configured": true,
+              "visualTargetInspected": true,
+              "visualTargetMissing": false,
+              "persistentCallbacks": 3,
+              "visualTarget": "skull (1)",
+              "activationDelay": 0.10000000149011612
+            },
+            {
+              "path": "NY_Ruins_1[0]/ActivateItem[11]/Podium (1)[1]",
+              "requirements": [],
+              "configured": false,
+              "visualTargetInspected": false,
+              "visualTargetMissing": false,
+              "persistentCallbacks": 0,
+              "visualTarget": "",
+              "activationDelay": 0.0
+            },
+            {
+              "path": "NY_Ruins_1[0]/ActivateItem[11]/Podium (2)[2]",
+              "requirements": [],
+              "configured": false,
+              "visualTargetInspected": false,
+              "visualTargetMissing": false,
+              "persistentCallbacks": 0,
+              "visualTarget": "",
+              "activationDelay": 0.0
+            },
+            {
+              "path": "NY_Ruins_1[0]/ActivateItem[11]/Podium (3)[3]",
+              "requirements": [],
+              "configured": false,
+              "visualTargetInspected": false,
+              "visualTargetMissing": false,
+              "persistentCallbacks": 0,
+              "visualTarget": "",
+              "activationDelay": 0.0
+            }
+          ],
+          "callbacks": [
+            {
+              "owner": "NY_Ruins_1[0]/ActivateDangeusZone[14]",
+              "eventName": "PlayerOnTriggerEnter[0]",
+              "method": "_InDungeons",
+              "targetType": "DungeonTrap",
+              "targetName": "Trap",
+              "targetAsset": "Assets/Events/NewYear/NY_Ruins_1.prefab",
+              "listenerState": "RuntimeOnly",
+              "targetMissing": false
+            },
+            {
+              "owner": "NY_Ruins_1[0]/ActivateDangeusZone[14]/Trap[0]/Zone[0]",
+              "eventName": "PlayerOnTriggerEnter[0]",
+              "method": "_InTrap",
+              "targetType": "DungeonTrap",
+              "targetName": "Trap",
+              "targetAsset": "Assets/Events/NewYear/NY_Ruins_1.prefab",
+              "listenerState": "RuntimeOnly",
+              "targetMissing": false
+            },
+            {
+              "owner": "NY_Ruins_1[0]/ActivateItem[11]/Lever[6]/UseButtonShow[2]",
+              "eventName": "Activate[0]",
+              "method": "Use",
+              "targetType": "Lever",
+              "targetName": "Lever",
+              "targetAsset": "Assets/Events/NewYear/NY_Ruins_1.prefab",
+              "listenerState": "RuntimeOnly",
+              "targetMissing": false
+            },
+            {
+              "owner": "NY_Ruins_1[0]/ActivateItem[11]/Lever[6]/UseButtonShow[2]",
+              "eventName": "Activate[1]",
+              "method": "SetActive",
+              "targetType": "UnityEngine.GameObject",
+              "targetName": "UseButtonShow",
+              "targetAsset": "Assets/Events/NewYear/NY_Ruins_1.prefab",
+              "listenerState": "RuntimeOnly",
+              "targetMissing": false
+            },
+            {
+              "owner": "NY_Ruins_1[0]/ActivateItem[11]/Podium[0]",
+              "eventName": "PutItem[0]",
+              "method": "_ActivateTeleport",
+              "targetType": "Portal",
+              "targetName": "Portal",
+              "targetAsset": "Assets/Events/NewYear/NY_Ruins_1.prefab",
+              "listenerState": "RuntimeOnly",
+              "targetMissing": false
+            },
+            {
+              "owner": "NY_Ruins_1[0]/ActivateItem[11]/Podium[0]",
+              "eventName": "PutItem[1]",
+              "method": "set_enabled",
+              "targetType": "UnityEngine.BoxCollider",
+              "targetName": "Podium",
+              "targetAsset": "Assets/Events/NewYear/NY_Ruins_1.prefab",
+              "listenerState": "RuntimeOnly",
+              "targetMissing": false
+            },
+            {
+              "owner": "NY_Ruins_1[0]/ActivateItem[11]/Podium[0]",
+              "eventName": "PutItem[2]",
+              "method": "SetActive",
+              "targetType": "UnityEngine.GameObject",
+              "targetName": "skull (1)",
+              "targetAsset": "Assets/Events/NewYear/NY_Ruins_1.prefab",
+              "listenerState": "RuntimeOnly",
+              "targetMissing": false
+            }
+          ]
+        },
+        {
+          "path": "Assets/Prefabs/Workshop/Sklep1/Sklep1_OvergrownRuins.prefab",
+          "error": "",
+          "zoneCount": 1,
+          "trapComponentCount": 5,
+          "trapCallbacks": 4,
+          "uniqueBoundTraps": 4,
+          "authoredWaveCount": 12,
+          "configuredPodiums": 0,
+          "traps": [
+            {
+              "path": "Sklep1_OvergrownRuins[0]/Trap[10]",
+              "enemyPrefab": "Assets/Prefabs/Enemy/just_zombie.prefab",
+              "spawnPath": "Sklep1_OvergrownRuins[0]/Trap[10]/spawnPoints[1]/Point1[0]",
+              "count": 3,
+              "torchCount": 0,
+              "cooldown": 1.0,
+              "firstDelay": 0.0,
+              "boundToTrapEvent": false,
+              "spawnInsidePrefab": true
+            },
+            {
+              "path": "Sklep1_OvergrownRuins[0]/Trap[10]/spawnPoints[1]/Point1[0]",
+              "enemyPrefab": "Assets/Prefabs/Enemy/just_zombie.prefab",
+              "spawnPath": "Sklep1_OvergrownRuins[0]/Trap[10]/spawnPoints[1]/Point1[0]",
+              "count": 3,
+              "torchCount": 0,
+              "cooldown": 1.0,
+              "firstDelay": 0.0,
+              "boundToTrapEvent": true,
+              "spawnInsidePrefab": true
+            },
+            {
+              "path": "Sklep1_OvergrownRuins[0]/Trap[10]/spawnPoints[1]/Point2[1]",
+              "enemyPrefab": "Assets/Prefabs/Enemy/dragon.prefab",
+              "spawnPath": "Sklep1_OvergrownRuins[0]/Trap[10]/spawnPoints[1]/Point2[1]",
+              "count": 3,
+              "torchCount": 0,
+              "cooldown": 1.0,
+              "firstDelay": 0.0,
+              "boundToTrapEvent": true,
+              "spawnInsidePrefab": true
+            },
+            {
+              "path": "Sklep1_OvergrownRuins[0]/Trap[10]/spawnPoints[1]/Point3[2]",
+              "enemyPrefab": "Assets/Prefabs/Enemy/just_zombie.prefab",
+              "spawnPath": "Sklep1_OvergrownRuins[0]/Trap[10]/spawnPoints[1]/Point3[2]",
+              "count": 3,
+              "torchCount": 0,
+              "cooldown": 1.0,
+              "firstDelay": 0.0,
+              "boundToTrapEvent": true,
+              "spawnInsidePrefab": true
+            },
+            {
+              "path": "Sklep1_OvergrownRuins[0]/Trap[10]/spawnPoints[1]/Point4[3]",
+              "enemyPrefab": "Assets/Prefabs/Enemy/just_zombie.prefab",
+              "spawnPath": "Sklep1_OvergrownRuins[0]/Trap[10]/spawnPoints[1]/Point4[3]",
+              "count": 3,
+              "torchCount": 0,
+              "cooldown": 1.0,
+              "firstDelay": 0.0,
+              "boundToTrapEvent": true,
+              "spawnInsidePrefab": true
+            }
+          ],
+          "levers": [
+            {
+              "path": "Sklep1_OvergrownRuins[0]/Lever[9]",
+              "subject": "Sklep1_OvergrownRuins[0]/Trap[10]",
+              "subjectController": "Assets/Animation/Action/Trap.controller",
+              "ownController": "Assets/Animation/Action/Lever.controller",
+              "usePoint": "Sklep1_OvergrownRuins[0]/Lever[9]/UseButtonShow[2]",
+              "hideTarget": "Sklep1_OvergrownRuins[0]/Lever[9]/UseButtonShow[2]",
+              "hideMatchesOwnUsePoint": true,
+              "subjectClips": [
+                "Assets/Animation/Action/CustleOpen.anim"
+              ],
+              "subjectBindings": [
+                "CustleOpen:zoneTrap:m_IsActive"
+              ]
+            }
+          ],
+          "portals": [],
+          "podiums": [],
+          "callbacks": [
+            {
+              "owner": "Sklep1_OvergrownRuins[0]/Trap[10]/zoneTrap[0]",
+              "eventName": "PlayerOnTriggerEnter[0]",
+              "method": "SetActive",
+              "targetType": "UnityEngine.GameObject",
+              "targetName": "WallActive",
+              "targetAsset": "Assets/Prefabs/Workshop/Sklep1/Sklep1_OvergrownRuins.prefab",
+              "listenerState": "RuntimeOnly",
+              "targetMissing": false
+            },
+            {
+              "owner": "Sklep1_OvergrownRuins[0]/Trap[10]/zoneTrap[0]",
+              "eventName": "PlayerOnTriggerEnter[1]",
+              "method": "_InTrap",
+              "targetType": "DungeonTrap",
+              "targetName": "Point1",
+              "targetAsset": "Assets/Prefabs/Workshop/Sklep1/Sklep1_OvergrownRuins.prefab",
+              "listenerState": "RuntimeOnly",
+              "targetMissing": false
+            },
+            {
+              "owner": "Sklep1_OvergrownRuins[0]/Trap[10]/zoneTrap[0]",
+              "eventName": "PlayerOnTriggerEnter[2]",
+              "method": "_InTrap",
+              "targetType": "DungeonTrap",
+              "targetName": "Point2",
+              "targetAsset": "Assets/Prefabs/Workshop/Sklep1/Sklep1_OvergrownRuins.prefab",
+              "listenerState": "RuntimeOnly",
+              "targetMissing": false
+            },
+            {
+              "owner": "Sklep1_OvergrownRuins[0]/Trap[10]/zoneTrap[0]",
+              "eventName": "PlayerOnTriggerEnter[3]",
+              "method": "_InTrap",
+              "targetType": "DungeonTrap",
+              "targetName": "Point3",
+              "targetAsset": "Assets/Prefabs/Workshop/Sklep1/Sklep1_OvergrownRuins.prefab",
+              "listenerState": "RuntimeOnly",
+              "targetMissing": false
+            },
+            {
+              "owner": "Sklep1_OvergrownRuins[0]/Trap[10]/zoneTrap[0]",
+              "eventName": "PlayerOnTriggerEnter[4]",
+              "method": "_InTrap",
+              "targetType": "DungeonTrap",
+              "targetName": "Point4",
+              "targetAsset": "Assets/Prefabs/Workshop/Sklep1/Sklep1_OvergrownRuins.prefab",
+              "listenerState": "RuntimeOnly",
+              "targetMissing": false
+            },
+            {
+              "owner": "Sklep1_OvergrownRuins[0]/Lever[9]/UseButtonShow[2]",
+              "eventName": "Activate[0]",
+              "method": "Use",
+              "targetType": "Lever",
+              "targetName": "Lever",
+              "targetAsset": "Assets/Prefabs/Workshop/Sklep1/Sklep1_OvergrownRuins.prefab",
+              "listenerState": "RuntimeOnly",
+              "targetMissing": false
+            },
+            {
+              "owner": "Sklep1_OvergrownRuins[0]/Lever[9]/UseButtonShow[2]",
+              "eventName": "Activate[1]",
+              "method": "SetActive",
+              "targetType": "UnityEngine.GameObject",
+              "targetName": "UseButtonShow",
+              "targetAsset": "Assets/Prefabs/Workshop/Sklep1/Sklep1_OvergrownRuins.prefab",
+              "listenerState": "RuntimeOnly",
+              "targetMissing": false
+            }
+          ]
+        }
+      ],
+      "balance": [
+        {
+          "scene": "LevelForest",
+          "multiplier": 0.8500000238418579,
+          "offset": -1,
+          "sourceLevel": 1,
+          "resolvedLevel": 1
+        },
+        {
+          "scene": "LevelForest",
+          "multiplier": 0.8500000238418579,
+          "offset": -1,
+          "sourceLevel": 5,
+          "resolvedLevel": 3
+        },
+        {
+          "scene": "LevelForest",
+          "multiplier": 0.8500000238418579,
+          "offset": -1,
+          "sourceLevel": 10,
+          "resolvedLevel": 7
+        },
+        {
+          "scene": "LevelDesert",
+          "multiplier": 1.0,
+          "offset": 0,
+          "sourceLevel": 1,
+          "resolvedLevel": 1
+        },
+        {
+          "scene": "LevelDesert",
+          "multiplier": 1.0,
+          "offset": 0,
+          "sourceLevel": 5,
+          "resolvedLevel": 5
+        },
+        {
+          "scene": "LevelDesert",
+          "multiplier": 1.0,
+          "offset": 0,
+          "sourceLevel": 10,
+          "resolvedLevel": 10
+        },
+        {
+          "scene": "LevelWinter",
+          "multiplier": 1.0499999523162842,
+          "offset": 0,
+          "sourceLevel": 1,
+          "resolvedLevel": 1
+        },
+        {
+          "scene": "LevelWinter",
+          "multiplier": 1.0499999523162842,
+          "offset": 0,
+          "sourceLevel": 5,
+          "resolvedLevel": 5
+        },
+        {
+          "scene": "LevelWinter",
+          "multiplier": 1.0499999523162842,
+          "offset": 0,
+          "sourceLevel": 10,
+          "resolvedLevel": 10
+        },
+        {
+          "scene": "LevelEvent",
+          "multiplier": 0.8500000238418579,
+          "offset": -1,
+          "sourceLevel": 1,
+          "resolvedLevel": 1
+        },
+        {
+          "scene": "LevelEvent",
+          "multiplier": 0.8500000238418579,
+          "offset": -1,
+          "sourceLevel": 5,
+          "resolvedLevel": 3
+        },
+        {
+          "scene": "LevelEvent",
+          "multiplier": 0.8500000238418579,
+          "offset": -1,
+          "sourceLevel": 10,
+          "resolvedLevel": 7
+        }
+      ],
+      "objectBudgets": [
+        {
+          "prefab": "Assets/Resources/Online/SharedWorldPage.prefab",
+          "words": 6074,
+          "bytes": 24296,
+          "behaviourWords": 6039,
+          "additionalObjectBytes": 140,
+          "headroomBytes": 8472
+        },
+        {
+          "prefab": "Assets/Resources/Online/SharedDepartureState.prefab",
+          "words": 4405,
+          "bytes": 17620,
+          "behaviourWords": 4370,
+          "additionalObjectBytes": 140,
+          "headroomBytes": 15148
+        },
+        {
+          "prefab": "Assets/Online/Avatars/LobbyNetworkAvatar.prefab",
+          "words": 251,
+          "bytes": 1004,
+          "behaviourWords": 229,
+          "additionalObjectBytes": 88,
+          "headroomBytes": 31764
+        }
+      ],
+      "findings": [],
+      "errors": []
+    },
+    "solo.json": {
+      "result": "PASS",
+      "utc": "2026-11-13T23:06:37.8790865Z",
+      "unityVersion": "6000.3.9f1",
+      "error": "",
+      "scope": "Dedicated empty native Play fixture after network cleanup. Reflection invokes production RAM-only SoloRunBranch.Create; Suspend disposes it. Actual ruins source clone, stable generation key, production action Update/ambush factory/podium callbacks, real DTO JSON roundtrip and canonical item-marker repair are exercised. One production SampleWorldItem call is explicitly invoked against a live actual Skull after consumption and deferred Destroy in the same synchronous continuation, then the cold factory is checked before and after visual destruction. Automatic MonoBehaviour Start/Update, guard AI/navigation, physics and normal SoloRunBranch.Update are suppressed. No Begin/Store/Clear/RestoreStartup, SaveManager, persistent provider, LocalId generation, Photon runners, owner save writes, full GameLoader/ContinueSolo UI, actual streaming transaction, real combat, WebGL or PlayerBuild are claimed.",
+      "configuredPodiums": 1,
+      "decorativePodiums": 3,
+      "guardRecords": 20,
+      "releasedActors": 19,
+      "initialRemaining": 0.20000000298023224,
+      "restoredRemaining": -1.0,
+      "trapId": "9277591743443311316",
+      "podiumId": "1398921614485495968",
+      "beforeDue": true,
+      "remainingReleased": true,
+      "deadNotResurrected": true,
+      "repeatNoWave": true,
+      "jsonRoundtrip": true,
+      "cursorRestore": true,
+      "markerRepair": true,
+      "sameFrameCapture": true,
+      "headerRepair": true,
+      "legacyDefaults": true,
+      "ownerKeysUnchanged": true,
+      "cleanup": true,
+      "elapsedSeconds": 5.1921316,
+      "passed": [
+        "Actual ruins generation26603: relative .2s saved delay,19 pending releases at recorded level5, dead ordinal0 skipped, total/cursor20 and duplicate trigger idempotency.",
+        "CaptureSolo and canonical enemy DTO→JSON→Suspend/destroy→Create/rebind→ApplyWorldInternal restore19 living actors, one dead record and completed trap flags/cursor without retrigger.",
+        "Actual free Skull: production ConsumeWorldActionItem→deferred Destroy→production SampleWorldItem in the same synchronous continuation retains Mode4/podiumId/slot0; ApplyWorldInternal duplicates neither the pending visual nor the destroyed offering. No full save or persistent provider was invoked.",
+        "Real configured Skull podium only: orphan consumed marker reconstructs mask1/header and both portals; reverse accepted header changes Mode0 canonical item to4; actual callbacks fire once after each cold bind.",
+        "Legacy JSON missing WorldActions/PendingSpawn/ActionId parses with compatible defaults and production RAM Create tolerates it; startup save/UI restore is outside scope."
+      ]
+    },
+    "portal.json": {
+      "result": "PASS",
+      "error": "",
+      "scope": "Two selected Cloud peers within the caller's crew, one actual ruins prefab and one shared local PlayerMovement. Other crew members are not used by this subtest's near checks. Production podium/portal RPCs and PublishDrop are used; physical trigger motion and independent browser player poses are not tested. Child records are deliberately removed and readiness is simulated through the runtime's private wasReady seam, followed by explicit production repair. No owner keys written; only this subtest's items are disposed. Runners/world teardown belongs to the caller.",
+      "offering": true,
+      "wrongItem": true,
+      "portalCooldowns": true,
+      "contextTeleport": true,
+      "readyEdgeRepair": true,
+      "explicitRepair": true,
+      "hpGate": true,
+      "adGate": true,
+      "cleanup": true,
+      "callbacksAfterOffer": 1,
+      "callbacksAfterRepair": 1,
+      "elapsedSeconds": 2.7863366,
+      "passed": [
+        "Wrong Data.Name rejected; simultaneous authority/remote repeated offers consume the one remotely-owned Skull once, marker+slot0/mask1 and both portal records.",
+        "Already-applied podium survives deleted child headers: simulated readiness edge and explicit production repair recreate both unlocks without presentation replay or second Skull.",
+        "Own-source HP0 and ad-showing RPCs cannot activate a genuinely unused action node; no foreign sender is forged.",
+        "Authority-context actor really teleports; duplicate request does not extend cooldown; peer2 spends its own slot and cannot move the one authority-context PlayerMovement. Independent peer2 pose is not asserted."
+      ],
+      "skipped": []
+    },
+    "network.json": {
+      "utc": "2026-11-13T23:06:43.0833719Z",
+      "unityVersion": "6000.3.9f1",
+      "result": "FAIL",
+      "error": "System.InvalidOperationException: transferred partial cursors preserved\r\n  at DeadBoat.Online.Editor.WorldActions266NetworkProbe.Require (System.Boolean value, System.String message) [0x00009] in E:\\GitFork\\dead_boat\\Assets\\Online\\Editor\\WorldActions266NetworkProbe.cs:448 \r\n  at DeadBoat.Online.Editor.WorldActions266NetworkProbe.RunAsync () [0x01947] in E:\\GitFork\\dead_boat\\Assets\\Online\\Editor\\WorldActions266NetworkProbe.cs:198 ",
+      "portalResult": "completed; see separate portal report",
+      "scope": "Native empty Play fixture, four real hidden Photon Cloud peers in one local world. Real source-prefab Zone handlers and Lever.Use, authority RPC validation, duplicate requests, same-page guard reservations/cursor, pending/living/dead cold factory gates, stable IDs across controlled source-root destruction/reclone, and mid-wave Shared master/page takeover. Each instance cooldown is .03 seconds solely to shorten this fixture; authored balance is unchanged. Released AI, navigation, physics and normal prefab Start/Update are suppressed immediately. Canonical deaths are explicit MarkEnemyDead calls, not combat. No independent browser worlds, full residency transaction, owner SaveManager, persistent save/recovery UI, input, real combat, WebGL, PlayerBuild or SDK writes are claimed. Offering/portal assertions have a separate report produced by WorldActions266PortalProbe.",
+      "peers": 4,
+      "elapsedSeconds": 20.587608,
+      "cleanupComplete": true,
+      "waves": [
+        {
+          "source": "Assets/Prefabs/Locations/Enemy/ruins_1.prefab",
+          "region": 26601,
+          "sourceTrapCount": 1,
+          "boundTrapCount": 1,
+          "expectedGuards": 20,
+          "reserved": 20,
+          "released": 20,
+          "actionIds": [
+            "6345220904563728722"
+          ],
+          "checks": [
+            "same-page canonical total/cursor and every stable guard ID/template/level/HP/membership; reserved=20, released=0",
+            "all20 same-page pending reservations before exit; pending cold factory/death rejected",
+            "same-page canonical total/cursor and every stable guard ID/template/level/HP/membership; reserved=20, released=20",
+            "explicit canonical MarkEnemyDead replicates; local actor removed; actual cold factory rejects HP0 (no combat assertion)",
+            "actual cold living TryCreateReplica after local removal preserves canonical ID/HP/maxHP; duplicate factory rejected",
+            "source root manually removed/re-cloned with same generation index; stable IDs/cursor and no extra wave (not full residency API)"
+          ]
+        },
+        {
+          "source": "Assets/Prefabs/Locations/Enemy/Sklep_1.prefab",
+          "region": 26602,
+          "sourceTrapCount": 5,
+          "boundTrapCount": 4,
+          "expectedGuards": 12,
+          "reserved": 12,
+          "released": 0,
+          "actionIds": [
+            "762934121028225854",
+            "9122906769334379984",
+            "4418053588261975098",
+            "7637189954469602312"
+          ],
+          "checks": [
+            "same-page canonical total/cursor and every stable guard ID/template/level/HP/membership; reserved=12, released=0"
+          ]
+        }
+      ],
+      "checks": [
+        "four real hidden Cloud peers, canonical crew/ready barrier; no persistent provider",
+        "actual Lever.Use plus first/second peer duplicate RPC; shared lever and child switch flags on all four peers (animation not visually accepted)"
+      ]
+    },
+    "cleanup.json": {
+      "settingsBefore": {
+        "ProjectSettings/ProjectSettings.asset": "deed59c2acf16d5330b92d83a8e5f2a41a95e5d7d8c87e460795b2560f7df029",
+        "ProjectSettings/EditorBuildSettings.asset": "c04cfbbf555e5744bd72855617357f9baa7d40a3839063188522c46d2fceb9f3",
+        "ProjectSettings/TimeManager.asset": "3396f52fdc16d445024e01d7a2d99db6f0a37569d1d73c0302e9ffb857d90287",
+        "ProjectSettings/EditorSettings.asset": "0c1abb0b9220b2e444da3274fa6bb837d70e066f9d383807bf81f34201ab3202",
+        "Packages/manifest.json": "7f9834468e79f0db9806b6db393f456c692c6a494615ae82355074be82f756c9",
+        "Packages/packages-lock.json": "9e03cc1afa5db7adc39a6022cfd01ff076c2b24f57505585fa556b0f8e7da290"
+      },
+      "settingsAfterRaw": {
+        "ProjectSettings/ProjectSettings.asset": "e98e94b15f6b5ef6ab4531568b36b5241f9ed2ccd1bdb988d7289580da606396",
+        "ProjectSettings/EditorBuildSettings.asset": "c04cfbbf555e5744bd72855617357f9baa7d40a3839063188522c46d2fceb9f3",
+        "ProjectSettings/TimeManager.asset": "3396f52fdc16d445024e01d7a2d99db6f0a37569d1d73c0302e9ffb857d90287",
+        "ProjectSettings/EditorSettings.asset": "0c1abb0b9220b2e444da3274fa6bb837d70e066f9d383807bf81f34201ab3202",
+        "Packages/manifest.json": "7f9834468e79f0db9806b6db393f456c692c6a494615ae82355074be82f756c9",
+        "Packages/packages-lock.json": "9e03cc1afa5db7adc39a6022cfd01ff076c2b24f57505585fa556b0f8e7da290"
+      },
+      "settingsAfterRestore": {
+        "ProjectSettings/ProjectSettings.asset": "deed59c2acf16d5330b92d83a8e5f2a41a95e5d7d8c87e460795b2560f7df029",
+        "ProjectSettings/EditorBuildSettings.asset": "c04cfbbf555e5744bd72855617357f9baa7d40a3839063188522c46d2fceb9f3",
+        "ProjectSettings/TimeManager.asset": "3396f52fdc16d445024e01d7a2d99db6f0a37569d1d73c0302e9ffb857d90287",
+        "ProjectSettings/EditorSettings.asset": "0c1abb0b9220b2e444da3274fa6bb837d70e066f9d383807bf81f34201ab3202",
+        "Packages/manifest.json": "7f9834468e79f0db9806b6db393f456c692c6a494615ae82355074be82f756c9",
+        "Packages/packages-lock.json": "9e03cc1afa5db7adc39a6022cfd01ff076c2b24f57505585fa556b0f8e7da290"
+      },
+      "settingsRestored": true,
+      "previousLocalFilesCompared": 29,
+      "previousLocalFilesUnchanged": true,
+      "meshNormalizationsRestored": [
+        "Assets/Prefabs/Workshop/LootConcept201/NewYear/T01_Star_Mesh.asset"
+      ],
+      "lastBatchExitCode": 1,
+      "lastFixturesCleaned": true,
+      "stoppedAtOwnerRequest": true,
+      "newPlayerBuild": false
+    }
+  },
+  "reportHashes": {
+    "content.json": "fe799fb079063350e04c347a2e907c017bb305738b7578c8c62c78385239e700",
+    "solo.json": "8d73a31556a975a67d682351fa850f6d4711f244d40b800ee755ac04c94c0489",
+    "portal.json": "0c4fbe629d9dcc884b2bf73a60dde39ec0f18fec423e08856032655482d7b974",
+    "network.json": "76fbe9e3f83287b4fa6e890d8720a62562bd109ddd25f57a8418bff32d09754f",
+    "cleanup.json": "c1eef83cc89728907d6d1639d2dbf2a25ff2e86908b2150c978e56c2814d63a6"
+  },
+  "earlierBatch": {
+    "path": "Logs/WorldActions266-20261114/Unity-attempt3-pass-before-save-race-fix.log",
+    "exitCode": 0,
+    "scope": "Earlier full four-peer/portal/solo PASS, before final same-frame save fix, LastSlot and lever sound; does not replace final validation."
+  },
+  "pending": "Latest four-peer run failed at transferred partial cursors preserved. Record and compare confirmed remote headers/cursors/guard records before shutdown and values after transfer; distinguish unpublished final tick from actual loss. Do not mark final multiplayer acceptance complete.",
+  "testedCodeSha256": {
+    "Assets/Online/Editor/AvatarNamesProbe.cs": "17905f55cde5c8fff7a61eb5f90e8c75e273f294e23b469b085e905e4b02139f",
+    "Assets/Online/Editor/SharedItemScaleProbe.cs": "0f3582abeba9ba373a2e44a2ec72dca0fdb8b24b72972f15bac7d0eaa602c066",
+    "Assets/Online/SharedDepartureState.Enemies.cs": "52ef7d40cb49114d30a2c4960351d72d63742fcd9b0020ab3ef54c2f94cd4b78",
+    "Assets/Online/SharedDepartureState.Items.cs": "d06fb051936028f96a2ffad6947086844c13c623abb52855f7a26369c443bab8",
+    "Assets/Online/SharedDepartureState.World.cs": "20ff2c26a1c6a3c702b2ae8b7223b3bfe182055df0e6aa0b34cf709d54efc34b",
+    "Assets/Online/SharedEnemiesRuntime.cs": "79fe9b63e227c584702f4f5dd8e69d904bfc0ab71e0669e483b0a8d995ff6d15",
+    "Assets/Online/SharedRunContext.cs": "6eae5b356e9832045ad7577479d91814e8653250bbe448c77befc4ca5f07e464",
+    "Assets/Online/SharedRunRecovery.cs": "3610a50f48d5e2068f6998d2ac24efed6eccee90d1458f9a78983d2bb69fc226",
+    "Assets/Online/SharedWorldPage.cs": "7929380fa365e4b8e4eb8d82988f920aefc8c54dc6998a7631fc7aa1f2a71ca5",
+    "Assets/Online/SoloRunBranch.cs": "36feae78adca542b30ba900e7649ec367e38611864e75835c88712d8cb431543",
+    "Assets/Online/WorldIndependentStreaming.cs": "60e4988eb287d7e504dff15540d01bfce745403a391c6d9c5f61a8fa3501df83",
+    "Assets/Online/WorldRegionArchive.cs": "20018c726d15f871974a161584d3e9edfa5c0b866f98e4338bd12f1544d022cf",
+    "Assets/Online/WorldRegionCapture.cs": "3695929b8fa61967db3809c6d696e6bcfb01cbb5a5285b3d33f8b37960b16dde",
+    "Assets/Online/WorldRegionMembership.cs": "8eb583e82f24378f002ae5173180a89edea1c9add426f8a1d70039bd6c9fa98a",
+    "Assets/Online/WorldRegionRestore.cs": "c81bfafb395b15c9ec7358298d38398ac1b727422bd82df83124fc88aff11cc8",
+    "Assets/Online/Editor/SharedAmbushCatalogBuilder.cs": "210b536eb0dd9362e6dcc4427f876173e0b96ea9928d83221b216b0ad3b8b478",
+    "Assets/Online/Editor/SharedAmbushCatalogBuilder.cs.meta": "35b0260aa6cfe9bcf9397e3133cf7e606837c08cd8d51e9af9f48089fe7a4557",
+    "Assets/Online/Editor/WorldAction266Batch.cs": "674f2843bb93645de4194243408773255cfc708ed594c484ceea7bc173ec94c3",
+    "Assets/Online/Editor/WorldAction266Batch.cs.meta": "d659a7c138bd506ce78e7539d877f5007a893b086797e877d6c4ee55ae9045af",
+    "Assets/Online/Editor/WorldAction266ContentProbe.cs": "641e8a5d39e61b46dea347f7a459d997a10712850bd1ee9ea7ad1cd18ac5ce60",
+    "Assets/Online/Editor/WorldAction266ContentProbe.cs.meta": "d55dda539fedfd0e10ed1dd3625d6a1c0aa9b495f7f0f698d1a157a2a69e4b7b",
+    "Assets/Online/Editor/WorldActions266NetworkProbe.cs": "2372bf3dbb5a4bd67a984afba7755d8829a8cc58ec5dde494ea7ac5f245d27c1",
+    "Assets/Online/Editor/WorldActions266NetworkProbe.cs.meta": "b9e13b12645806f3321dd64301169a52fd86b8d466c2aad9b6901bc2d134597c",
+    "Assets/Online/Editor/WorldActions266PortalProbe.cs": "69bf74b38a6e094eaef6e9df8b0ccc7c9f14d2848240c1664cb1e4fab70bf841",
+    "Assets/Online/Editor/WorldActions266PortalProbe.cs.meta": "036a33d2cf2d7ae33fa1c56aa5c66d56e114cac030ff36efc9e4de81adda5d8c",
+    "Assets/Online/Editor/WorldActions266SoloProbe.cs": "1cae2deccfae931a0230fcbf6d8e7a1b33f2d0077f6d3541bf6ccc2c39b37d20",
+    "Assets/Online/Editor/WorldActions266SoloProbe.cs.meta": "dc640a36e7d029a3c1de0ec8143c5e7dd3cf2bd0bbfaf83e7267e32df4cf5d22",
+    "Assets/Online/SharedAmbushCatalog.cs": "ea882ed639f1ec813481ea229f480ccca73cab9fbd562ba40b7c4e359e4539c7",
+    "Assets/Online/SharedAmbushCatalog.cs.meta": "7627bc47a78c32950edb9f1dc226d7ce0d74ceb9dc5ca6698ce23df3d04dfb03",
+    "Assets/Online/SharedDepartureState.WorldActions.cs": "66cea3d8262b0c99ec8466fb175469689f9d28be708abc1b1a82df4a74867ffb",
+    "Assets/Online/SharedDepartureState.WorldActions.cs.meta": "30f73afe3728c4c5eae0c7e4c0799abdb6d2d45a276dbe36780490c4a9bc309c",
+    "Assets/Online/SharedWorldActionsRuntime.cs": "e06a719ccd7e99e0c986f84b304f97f2bf33e43a335bfa3056df70a5b06ff7c2",
+    "Assets/Online/SharedWorldActionsRuntime.cs.meta": "b5731f11de8b75c119482740782641c4aab9e86d5e2eb751f15d23b8c4a074d4",
+    "Assets/Scripts/Action/ActivateObject.cs": "bda8b30f60038b217b668971fe4ababc8d8ba1eb4bcffbee49ac7d7aefbb9a64",
+    "Assets/Scripts/Action/ActivateZone.cs": "33d77458e077e085f858736528b2e16def2d9c00478dc730573e3c771604e464",
+    "Assets/Scripts/Action/CheckItemOnLocation.cs": "9c271db7128179aec8f4b13ade8b41e34abee0e2d5f7055251839b7a4ba8da6c",
+    "Assets/Scripts/Action/DungeonTrap.cs": "41811e5d8c8efdd2259eeb302234fd318ffc6da8cdcb0e95364c6637e5bfeeaf",
+    "Assets/Scripts/Action/Lever.cs": "b4a3251ad34b2620ab5ce96f4ad710a2439cf1e6ff933dbb25abe4e4096a87f1",
+    "Assets/Scripts/Locations/InteractPoint/Portal.cs": "a44f91d58509b7c80445c2efe9cb133b259fef9072733331673bf18cdd14ed10",
+    "Assets/Scripts/Locations/Items/LocationContentSpawner.cs": "f26be67df67c97c81df4040f614600eaa53cb350e690b03aff88567396ff4d24",
+    "Assets/Scripts/UseButtonShow.cs": "42f380b94dc7cdc13d9cdc776fa0673af499cdbff2a1276dae62840514aa74f1",
+    "Assets/Resources/Online/AmbushEnemyCatalog.asset": "dccb71978721357161912cf64248eee701cd4113f23d34799db429e0faf23901",
+    "Assets/Resources/Online/AmbushEnemyCatalog.asset.meta": "1a2ec69b6eee96744ddb2f0b982cd938533a8fd215b8b0cb01b2f53213d99720"
+  }
+}

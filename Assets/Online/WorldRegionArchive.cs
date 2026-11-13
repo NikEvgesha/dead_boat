@@ -120,6 +120,7 @@ namespace DeadBoat.Online
             return !(live.Template == old.Template && live.WeaponAmmo == old.WeaponAmmo && live.SalePrice == old.SalePrice && live.Mode == old.Mode &&
                 live.Owner == old.Owner && live.Position.Equals(old.Position) && live.Rotation.Equals(old.Rotation) &&
                 live.WorldScale.Equals(old.WorldScale) &&
+                live.ConsumedByAction == old.ConsumedByAction && live.ActionSlot == old.ActionSlot &&
                 live.BoatLocalPosition.Equals(old.BoatLocalPosition) && live.BoatLocalRotation.Equals(old.BoatLocalRotation) &&
                 live.HomeZ == old.HomeZ && (bool)live.Prunable == (bool)old.Prunable && (bool)live.Dropped == (bool)old.Dropped);
         }
@@ -132,7 +133,8 @@ namespace DeadBoat.Online
                 live.Position.Equals(old.Position) && live.Rotation.Equals(old.Rotation) && live.Level == old.Level &&
                 live.Animation == old.Animation && live.AnimationTime == old.AnimationTime && (bool)live.Active == (bool)old.Active &&
                 live.BurnRemaining == old.BurnRemaining && live.BurnDamage == old.BurnDamage && live.BurnAccumulator == old.BurnAccumulator &&
-                live.HomeZ == old.HomeZ && (bool)live.Prunable == (bool)old.Prunable);
+                live.HomeZ == old.HomeZ && (bool)live.Prunable == (bool)old.Prunable &&
+                (bool)live.PendingSpawn == (bool)old.PendingSpawn && live.ActionId == old.ActionId);
         }
 
         public void RetireBefore(float rear)

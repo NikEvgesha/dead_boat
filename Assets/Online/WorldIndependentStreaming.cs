@@ -53,6 +53,7 @@ namespace DeadBoat.Online
             foreach (ulong id in enemies)
             {
                 state.TryEnemy(id, out var record);
+                if (record.PendingSpawn) continue;
                 if (allowSuspension && !Near(record.Position.z, points, 600) && record.BurnRemaining <= 0) continue;
                 enemies.Remove(id);
                 if (SharedItemsRuntime.TryFind(id, out _)) { Restored++; return true; }
@@ -74,7 +75,7 @@ namespace DeadBoat.Online
             SharedItemsRuntime.CopyEnemiesTo(snapshot);
             foreach (var identity in snapshot)
             {
-                if (!Eligible(identity) || !state.TryEnemy(identity.Id, out var record) || record.HP <= 0 || record.Template == 0 ||
+                if (!Eligible(identity) || !state.TryEnemy(identity.Id, out var record) || record.PendingSpawn || record.HP <= 0 || record.Template == 0 ||
                     record.BurnRemaining > 0 || !SharedEnemiesRuntime.TryTemplate(record.Template, out _) ||
                     Near(record.Position.z, points, 800) || Near((identity.transform.position + LobbyNetworkAvatar.Origin).z, points, 800)) continue;
                 if (!WorldReplicaRemoval.TryRemoveLocalTree(identity.gameObject, out _)) continue;
@@ -82,9 +83,16 @@ namespace DeadBoat.Online
             }
             return false;
         }
-        private static bool Eligible(WorldSpawnIdentity identity) => identity != null && identity.Prunable &&
-            !SharedRunContext.Membership.Contains(identity.Id) && identity.GetComponentInParent<LocationContentSpawner>(true) == null &&
-            identity.GetComponentInParent<WorldCityRegion>(true) == null;
+        private static bool Eligible(WorldSpawnIdentity identity)
+        {
+            if (identity == null || !identity.Prunable) return false;
+            // A mobile ambush actor may sleep independently even while still
+            // parented under its original geometry. Its canonical ActionId survives restore.
+            if (identity.Enemy != null && SharedRunContext.State.TryEnemy(identity.Id, out var record) && record.ActionId != 0)
+                return !record.PendingSpawn;
+            return !SharedRunContext.Membership.Contains(identity.Id) && identity.GetComponentInParent<LocationContentSpawner>(true) == null &&
+                identity.GetComponentInParent<WorldCityRegion>(true) == null;
+        }
         private static bool Near(float z, IReadOnlyList<float> points, float distance) => WorldRegionStreaming.Near(new Vector2(z, z), points, distance);
     }
 }

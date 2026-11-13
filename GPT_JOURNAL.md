@@ -1317,3 +1317,11 @@ Native batch6000.3.9f1 exit0:20/20 prefab,3532 проверки/1000 parent appl
 Полные NetworkObjects20732/17604/1004B, ниже32KiB; это не трафик/FPS/heap/download. Подробности и машиночитаемый результат Docs/LOOT_AND_SHARED_SALES_20261114.md/.json; rawLogs локально Logs/Loot265-20261114. Восстановлены автоизменения Editor:6конфигураций и29 прежних локальных файлов побайтно совпали,20 mesh line-ending-only возврат после сравнения сHEAD. Ранние неуспешные попытки были стендовыми(meta/API/EditModecleanup/AABBrotation), финальный batch/cleanup PASS.
 
 265/271 in_review до общейWebGL-приёмки. Следующий ИИ —266, затем125/267/270; владелец позднее принимает общий пакет, сейчас действий не требуется. SDK/чужие локальные изменения не включать в commit. Player Build/черновик/публикация не выполнялись.
+
+## 14.11.2026 —266, остановка на конец дня
+
+Реализованы paged Actions16+same-page pending guards/cursor/deadline, перехваты authored callbacks до локальныхэффектов, fixed totals12/20, профиль уровня, stable IDs/lazy3-templatecatalog, membership/independent/cold иoptional SoloWorldActions. Подношение Mode4+marker/header/children repair, online общиедвусторонниепорталы+личныйcooldown, ordinaryoffline relay сохранён. Добавленыready edge/queue retries/HomeZretirement, LastSlot изащитаdeferredDestroy+periodiccaptureчерезSampleWorldItem. Wire-actions1, generator6/pool3/SoloBranch.v1 unchanged.
+
+Текущиеcompile/source150checks/Fusion24296/17620/1004B/scale859/poolsPASS; Portal включаяHP/ad иSolo включаяsameFrameCapture PASS. Ранее полный4peer batchPASS, но последний Networkfail `transferred partial cursors preserved`; вероятен unsentlasttick встенде, ещёнеподтверждено. Последнийexit1 сcleanup; невыдаватьпредыдущийPASS зафинальный. ТакжеотдельныйtransientExceptionOnConnect. Нативноразрешёнvalid skull(1), missingreferenceгипотезаснята; decorative3empty podiumнеактивны.
+
+По просьбе владельца остановлено: новыхтестов/PlayerBuild/черновиканет. Настройки6/6,29 прежнихлокальныхфайлов побайтносохранены, line-ending-only meshвернулипослесравнения. 266in_progress. ДалееИИ — partialcursor confirmed-state/migration проверка и при необходимостиfix, затемnativebatch/in_review→125. ВладелецпозжеобщаяWebGLприёмка. Handoff Docs/WORLD_ACTIONS_20261114.md/.json. SDK/чужиеправкивcommitне включать.

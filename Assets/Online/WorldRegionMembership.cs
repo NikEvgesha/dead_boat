@@ -40,6 +40,24 @@ namespace DeadBoat.Online
         }
         public void Seal(int index) { if (regions.TryGetValue(index, out var region)) region.Sealed = true; }
 
+        // Dynamic action actors join an already generated region without changing
+        // its procedural item/enemy ordinal namespace or losing dead/pending slots.
+        public bool BindAction(int region, ulong id, bool enemy) => Bind(region, id, enemy);
+        public void ObserveActions(SharedDepartureState state)
+        {
+            if (state == null || state.Runner == null) return;
+            foreach (var page in SharedWorldPage.All(state.Runner))
+                foreach (var entry in page.Actions)
+                {
+                    var action = entry.Value;
+                    if (action.Kind != 2 || action.Region < 0 || !regions.TryGetValue(action.Region, out var region)) continue;
+                    if (entry.Key == 0 || action.Total < 0 || action.Total > page.Enemies.Capacity)
+                    { region.Complete = false; continue; }
+                    for (int ordinal = 0; ordinal < action.Total; ordinal++)
+                        BindAction(action.Region, SharedAmbushCatalog.GuardId(entry.Key, ordinal), true);
+                }
+        }
+
         public bool Observe(string key, ulong id, bool enemy)
         {
             if (key == null) return false;

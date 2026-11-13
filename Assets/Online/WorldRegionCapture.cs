@@ -28,6 +28,7 @@ namespace DeadBoat.Online
             string key = "region:" + index;
             if (!SharedRunContext.Playing || root == null || membership == null || archive == null)
             { refusal = "no live region"; return false; }
+            membership.ObserveActions(state);
             var itemIds = new List<ulong>(); var enemyIds = new List<ulong>();
             if (!membership.TryCopy(index, itemIds, enemyIds, out float logicalZ))
             { refusal = "incomplete membership"; return false; }

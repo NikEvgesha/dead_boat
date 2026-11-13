@@ -261,6 +261,8 @@ public class LocationContentSpawner : MonoBehaviour
     private static bool HasItemRecord(string key) => DeadBoat.Online.SharedRunContext.Playing &&
         DeadBoat.Online.SharedRunContext.State.Items.ContainsKey(DeadBoat.Online.WorldSpawnIdentity.IdForKey(key));
 
+    public int ResolveScriptedEnemyLevel() => Mathf.Clamp(ResolveBalance()?.ResolveEnemyLevel(_level) ?? _level, 1, 10);
+
     public void SetLevel(int level)
     {
         _level = level;

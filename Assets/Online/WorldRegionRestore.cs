@@ -40,6 +40,12 @@ namespace DeadBoat.Online
             if (!SharedRunContext.Playing || !state.TryEnemy(id, out var record))
                 throw new InvalidOperationException("Missing canonical restored enemy: " + key);
             SharedRunContext.Membership?.Observe(key, id, true);
+            if (record.PendingSpawn)
+            {
+                if (SharedEnemiesRuntime.RegisterTemplate(prefab) != record.Template)
+                    throw new InvalidOperationException("Reserved enemy template mismatch: " + key);
+                return;
+            }
             if (record.HP <= 0 || SharedItemsRuntime.TryFind(id, out _)) return;
             if (SharedEnemiesRuntime.RegisterTemplate(prefab) != record.Template ||
                 !SharedEnemiesRuntime.TryCreateReplica(prefab, id, record, out var identity))

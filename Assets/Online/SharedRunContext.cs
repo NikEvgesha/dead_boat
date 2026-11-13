@@ -34,11 +34,13 @@ namespace DeadBoat.Online
             save.Persistent = persistentSave;
             Save = save;
             Active = true;
+            SharedWorldActionsRuntime.Begin(owner, state);
         }
 
         public static void End()
         {
             Active = false;
+            SharedWorldActionsRuntime.End();
             SharedSalesRuntime.End();
             StreamingBudget = null;
             Regions?.Clear(); Regions = null;

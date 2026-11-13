@@ -47,7 +47,17 @@ namespace DeadBoat.Online
                     if (entry.Value.Prunable && entry.Value.HomeZ < WorldRear && entry.Value.Position.z < WorldRear)
                         obsolete.Add(entry.Key);
                 foreach (var id in obsolete) page.Enemies.Remove(id);
-                if (page.Index != 0 && page.Items.Count == 0 && page.Enemies.Count == 0) emptyPages.Add(page);
+                obsolete.Clear();
+                foreach (var entry in page.Actions)
+                    if (entry.Value.Region >= 0 && entry.Value.HomeZ < WorldRear && entry.Value.Position.z < WorldRear)
+                    {
+                        bool pendingAhead = false;
+                        foreach (var guard in page.Enemies)
+                            if (guard.Value.ActionId == entry.Key && guard.Value.PendingSpawn) { pendingAhead = true; break; }
+                        if (!pendingAhead) obsolete.Add(entry.Key);
+                    }
+                foreach (var id in obsolete) page.Actions.Remove(id);
+                if (page.Index != 0 && page.Items.Count == 0 && page.Enemies.Count == 0 && page.Actions.Count == 0) emptyPages.Add(page);
             }
             foreach (var page in emptyPages) Runner.Despawn(page.Object);
         }

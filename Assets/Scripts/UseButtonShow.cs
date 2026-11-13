@@ -19,12 +19,16 @@ public class UseButtonShow : MonoBehaviour
     private bool _waitForRelease;
 
     public UnityEvent Activate;
+    public void PlayAcceptedFeedback() { if (_source != null) _source.Play(); }
 
     private void Start()
     {
         _touchPanel.PointerDown += OpenShop;
         Hide();
+        DeadBoat.Online.SharedWorldActionsRuntime.Register(this);
     }
+
+    private void OnDestroy() => DeadBoat.Online.SharedWorldActionsRuntime.Remove(this);
 
     private void OnDisable()
     {
@@ -105,8 +109,11 @@ public class UseButtonShow : MonoBehaviour
 
         if (_progress >= 1f)
         {
-            _source.Play();
-            Activate?.Invoke();
+            if (!DeadBoat.Online.SharedWorldActionsRuntime.UseButton(this, Activate))
+            {
+                _source.Play();
+                Activate?.Invoke();
+            }
             _waitForRelease = true;
         }
         _progress = 0;

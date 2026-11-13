@@ -307,7 +307,7 @@ namespace DeadBoat.Online.Editor
                 report.structBudgets.Add(budget);
                 Require(words > 0 && budget.additionalBytes == additionalWords * 4, report, name + " unexpected state word count");
             }
-            Struct(nameof(SharedItemRecord), NetworkStructUtils.GetWordCount<SharedItemRecord>(), 21, 4); // scale3 + seller price1
+            Struct(nameof(SharedItemRecord), NetworkStructUtils.GetWordCount<SharedItemRecord>(), 21, 7); // scale3 + seller price1 + offering marker3
             Struct(nameof(SharedRecoveryItem), NetworkStructUtils.GetWordCount<SharedRecoveryItem>(), 5, 3);
             foreach (Type type in new[] { typeof(SharedWorldPage), typeof(SharedDepartureState), typeof(LobbyNetworkAvatar) })
             {
