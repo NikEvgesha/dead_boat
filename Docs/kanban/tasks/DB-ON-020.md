@@ -93,3 +93,10 @@ Unity BuildReport: Succeeded, errors=0. Архив `Builds/DeadBoatClockDamage-2
 
 
 Финальная проверка C#: полный runtime Assembly-CSharp по текущим Unity-generated rsp/refs/defines/analyzers с новыми production источниками — Roslyn exit0 (Logs/CombatBossRecoveryStable); SHA256 всех шести изменённых runtime-файлов совпали. Вывод только в Logs, runtime DLL Unity не заменялась. Это не import/Fusion weaving/Play/Player build.
+
+
+## Приёмка нового пакета —13.11.2026
+
+Новый санный босс пока толькоsolo (263), DungeonTrap/Portal локальны (266). Они не получают сетевую готовность от прежних PASS дракона/щупалец. Чистый production EnemyAuthorityEpoch/BossRecoveryRules probe повторно PASS13.11; он не исполняет реальных врагов/Physics/Photon. Далее ИИ — реализовать263/266 с текущим барьером и повторить takeover/recovery/рекламную защиту; владелец позже общий тест.
+
+Сводка: Docs/BRANCH_ACCEPTANCE_AUDIT_20261113.md. Сборка/публикация не выполнялись; прежний статус по новым чтению/структурным проверкам автоматически не повышается.
