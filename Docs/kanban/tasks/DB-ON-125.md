@@ -200,3 +200,13 @@ Cleanup/VerifyRestored PASS: Play/compilefalse, Runner0, Shared/SoloFalse, Strea
 Новые модели требуют повторить длинный маршрут и независимое восстановление.264 фиксирует отдельные пути, создающие каталоговый предмет без fitted scale;266 — ловушки/порталы и их охрану. Обычный регион может получать fitted candidate и не покрывает cold/independent пути. WorldStreamingBudget ограничивает число стартов аудита, а не время Instantiate. Далее ИИ — сначала264/266, затем измерения памяти/кадров в WebGL и реальные reconnect/handoff; владелец позже общий пакет.
 
 Сводка: Docs/BRANCH_ACCEPTANCE_AUDIT_20261113.md. Сборка/публикация не выполнялись; прежний статус по новым чтению/структурным проверкам автоматически не повышается.
+
+## Узкие места нового контента — 14.11.2026
+
+Native construction audit:19prefabs×2samples,0errors. EventCastle11197 Transform/5699 Renderer/404 active Collider; синхронный Instantiate164.54/129.79ms; обычный Castle238.51/71.44ms, Village1/2≈38–42ms. Порядок фиксированный, исходные ассеты preload; это Editor/nographics без обычных Start/Update/рендера/сети, не WebGL кадр/память/p95. У деревень больше active Renderers/Colliders, чем у EventCastle: быстрый Instantiate не означает дешёвую физику/GPU.
+
+CitySpawner.Update сначала создаёт очередной город, затем удаляет его за rear. В модели front40000/rear38000/Event step5000 создаются7 заведомо задних городов5000…35000 по последовательным Update (не одним кадром). У LocationSpawner ранний skip уже есть. WorldCityStreaming ещё обходит Renderer/bounds перед Near; DecorationSpawner заново ищет ZoneCleaner/границы. Стартовый authored город загружается со сценой и не зарегистрирован как city-region root; регистрация его предметов не равна residency геометрии.
+
+Далее ИИ — пропуск до Instantiate с сохранением CitySpacing/spawnCount/ключей/RNG/canonical состояния, кэш logical bounds с инвалидизацией origin shift/restore, затем authored root и тяжёлое восстановление. Не удалять сохранность закупок/dropped/attached/врагов ради skip; умерший/рекламный игрок намеренно удерживает точку возрождения. Geometry/import сокращения вынесены267. Проверить far reconnect и handoff всех трёх путей после правок.
+
+Сводка Docs/WEB_OPTIMIZATION_AUDIT_20261113.md, точные samples Docs/WEB_OPTIMIZATION_BASELINE_20261113.json. Сейчас реализован аудит, не исправление runtime. Player Build/Play не запускались; дальнейшая общая WebGL-приёмка за владельцем, in_progress.

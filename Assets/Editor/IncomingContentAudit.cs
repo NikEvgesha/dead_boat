@@ -105,6 +105,124 @@ namespace DeadBoat.EditorChecks
             public List<string> warnings = new List<string>();
         }
 
+        [Serializable]
+        private sealed class ConstructionSample
+        {
+            public string path;
+            public int iteration;
+            public double synchronousInstantiateMs;
+            public long editorAllocatedDeltaBytes;
+            public long editorMonoUsedDeltaBytes;
+            public int gc0Collections;
+            public int transforms, activeRenderers, totalRenderers, enabledActiveColliders, proBuilderComponents;
+        }
+        [Serializable]
+        private sealed class ConstructionReport
+        {
+            public string unityVersion;
+            public string scope = "Editor/nographics synchronous Object.Instantiate only. Source assets preloaded per prefab, OS cache uncontrolled; two samples are not percentiles. Ordinary runtime Start/Update, rendering, network, WebAssembly and scene loading are not measured. Memory deltas include Editor/cache and do not prove retained memory or a leak. No Player Build, Play, settings edits or asset saves.";
+            public List<ConstructionSample> samples = new List<ConstructionSample>();
+            public List<string> errors = new List<string>();
+        }
+
+        public static void RunWebAudit()
+        {
+            WebDependencyAudit.Run();
+            BenchmarkConstruction();
+        }
+
+        public static void BenchmarkConstruction()
+        {
+            if (EditorApplication.isPlayingOrWillChangePlaymode) throw new InvalidOperationException("Requires Edit Mode.");
+            var report = new ConstructionReport { unityVersion = Application.unityVersion };
+            var sources = new HashSet<Mesh>();
+            Scene preview = default(Scene); GameObject parent = null;
+            try
+            {
+                var builderEditor = CompilationPipeline.GetAssemblies(AssembliesType.Editor).FirstOrDefault(a => a.name == "Unity.ProBuilder.Editor");
+                if (builderEditor == null || builderEditor.defines.Contains("PROBUILDER_EXPERIMENTAL_FEATURES")) throw new InvalidOperationException("PB asset-cache guard: preview not safe.");
+                preview = EditorSceneManager.NewPreviewScene();
+                parent = new GameObject("WebConstructionAudit_Transient");
+                SceneManager.MoveGameObjectToScene(parent, preview); parent.hideFlags = HideFlags.HideAndDontSave;
+                var targets = new List<string> {
+                    "Assets/Prefabs/Locations/Castle.prefab",
+                    "Assets/Events/NewYear/Castle174/EventCastle_Winter.prefab",
+                    "Assets/Prefabs/Locations/Enemy/Village_1.prefab",
+                    "Assets/Prefabs/Locations/Enemy/Village_2.prefab",
+                    "Assets/Prefabs/Locations/Enemy/house1_1.prefab" };
+                foreach (string collectionPath in new[] { "Assets/Events/NewYear/NY_Locations.asset", "Assets/Events/NewYear/NY_Decor.asset" })
+                {
+                    var collection = AssetDatabase.LoadAssetAtPath<ScriptableObject>(collectionPath);
+                    if (!collection) throw new InvalidOperationException("Missing collection: " + collectionPath);
+                    using (var serialized = new SerializedObject(collection))
+                    {
+                        var entries = serialized.FindProperty("spawnItems");
+                        if (entries == null || !entries.isArray) throw new InvalidOperationException("Missing spawnItems: " + collectionPath);
+                        for (int k = 0; k < entries.arraySize; k++)
+                        {
+                            var prefab = entries.GetArrayElementAtIndex(k).FindPropertyRelative("prefab");
+                            string target = prefab == null ? null : AssetDatabase.GetAssetPath(prefab.objectReferenceValue);
+                            if (string.IsNullOrEmpty(target) || !target.EndsWith(".prefab", StringComparison.Ordinal)) throw new InvalidOperationException("Missing prefab in " + collectionPath);
+                            if (!targets.Contains(target)) targets.Add(target);
+                        }
+                    }
+                }
+                foreach (string path in targets)
+                {
+                    var source = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+                    if (!source) { report.errors.Add("Missing source: " + path); continue; }
+                    RememberMeshes(source, sources);
+                    for (int i = 0; i < 2; i++)
+                    {
+                        GameObject clone = null;
+                        try
+                        {
+                            long before = UnityEngine.Profiling.Profiler.GetTotalAllocatedMemoryLong();
+                            long mono = UnityEngine.Profiling.Profiler.GetMonoUsedSizeLong(); int gc = GC.CollectionCount(0);
+                            var timer = System.Diagnostics.Stopwatch.StartNew();
+                            clone = UnityEngine.Object.Instantiate(source, parent.transform, false);
+                            timer.Stop();
+                            var sample = new ConstructionSample { path = path, iteration = i,
+                                synchronousInstantiateMs = timer.Elapsed.TotalMilliseconds,
+                                editorAllocatedDeltaBytes = UnityEngine.Profiling.Profiler.GetTotalAllocatedMemoryLong() - before,
+                                editorMonoUsedDeltaBytes = UnityEngine.Profiling.Profiler.GetMonoUsedSizeLong() - mono,
+                                gc0Collections = GC.CollectionCount(0) - gc };
+                            report.samples.Add(sample);
+                            sample.transforms = clone.GetComponentsInChildren<Transform>(true).Length;
+                            var renderers = clone.GetComponentsInChildren<Renderer>(true);
+                            sample.totalRenderers = renderers.Length;
+                            sample.activeRenderers = renderers.Count(r => r.enabled && ActiveUnderRoot(r.transform, clone.transform));
+                            sample.enabledActiveColliders = clone.GetComponentsInChildren<Collider>(true).Count(c => c.enabled && ActiveUnderRoot(c.transform, clone.transform));
+                            sample.proBuilderComponents = clone.GetComponentsInChildren<ProBuilderMesh>(true).Length;
+                        }
+                        catch (Exception e) { report.errors.Add(path + ": " + e); }
+                        finally { if (clone) DisposeBenchmarkClone(clone, sources); }
+                    }
+                }
+            }
+            catch (Exception e) { report.errors.Add(e.ToString()); }
+            finally
+            {
+                if (parent) DisposeBenchmarkClone(parent, sources);
+                if (preview.IsValid()) EditorSceneManager.ClosePreviewScene(preview);
+                string folder = Path.Combine(Path.GetDirectoryName(Application.dataPath), "Logs", "WebOptimizationAudit20261113");
+                Directory.CreateDirectory(folder);
+                File.WriteAllText(Path.Combine(folder, "construction.json"), JsonUtility.ToJson(report, true));
+                Debug.Log("[WebConstructionAudit] samples=" + report.samples.Count + "; errors=" + report.errors.Count);
+            }
+            if (report.errors.Count > 0) throw new InvalidOperationException("Construction audit failed; inspect JSON.");
+        }
+
+        private static void DisposeBenchmarkClone(GameObject root, HashSet<Mesh> sources)
+        {
+            var meshes = new HashSet<Mesh>(); RememberMeshes(root, meshes);
+            foreach (var builder in root.GetComponentsInChildren<ProBuilderMesh>(true)) builder.preserveMeshAssetOnDestroy = true;
+            foreach (var filter in root.GetComponentsInChildren<MeshFilter>(true)) filter.sharedMesh = null;
+            foreach (var collider in root.GetComponentsInChildren<MeshCollider>(true)) collider.sharedMesh = null;
+            UnityEngine.Object.DestroyImmediate(root);
+            foreach (var mesh in meshes) if (mesh && !EditorUtility.IsPersistent(mesh) && !sources.Contains(mesh)) UnityEngine.Object.DestroyImmediate(mesh);
+        }
+
         public static void Run()
         {
             var report = new Report
