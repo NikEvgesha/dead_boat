@@ -299,16 +299,16 @@ namespace DeadBoat.Online.Editor
 
         private static void CheckFusionBudgets(Report report)
         {
-            void Struct(string name, int words, int legacyCalculatedWords)
+            void Struct(string name, int words, int legacyCalculatedWords, int additionalWords)
             {
                 var budget = new StructBudget { type = name, words = words, bytes = words * 4,
                     legacyCalculatedWords = legacyCalculatedWords, legacyCalculatedBytes = legacyCalculatedWords * 4,
                     additionalBytes = (words - legacyCalculatedWords) * 4 };
                 report.structBudgets.Add(budget);
-                Require(words > 0 && budget.additionalBytes == 12, report, name + " expected exactly three additional state words /12 bytes");
+                Require(words > 0 && budget.additionalBytes == additionalWords * 4, report, name + " unexpected state word count");
             }
-            Struct(nameof(SharedItemRecord), NetworkStructUtils.GetWordCount<SharedItemRecord>(), 21);
-            Struct(nameof(SharedRecoveryItem), NetworkStructUtils.GetWordCount<SharedRecoveryItem>(), 5);
+            Struct(nameof(SharedItemRecord), NetworkStructUtils.GetWordCount<SharedItemRecord>(), 21, 4); // scale3 + seller price1
+            Struct(nameof(SharedRecoveryItem), NetworkStructUtils.GetWordCount<SharedRecoveryItem>(), 5, 3);
             foreach (Type type in new[] { typeof(SharedWorldPage), typeof(SharedDepartureState), typeof(LobbyNetworkAvatar) })
             {
                 int words = NetworkBehaviourUtils.GetStaticWordCount(type);

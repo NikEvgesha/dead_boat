@@ -15,6 +15,9 @@ namespace DeadBoat.Online
         public bool Prunable;
     }
     [Serializable]
+    public struct SoloSaleState { public ulong Id; public int Coins; }
+
+    [Serializable]
     public struct SoloWorldEnemy
     {
         public ulong Id;
@@ -37,6 +40,7 @@ namespace DeadBoat.Online
         public SharedRecoveryItem[] Bag;
         public SoloWorldItem[] Items;
         public SoloWorldEnemy[] Enemies;
+        public SoloSaleState[] Sales;
         public static SharedSoloSnapshot Capture(SharedDepartureState state)
         {
             var local = state.Runner.LocalPlayer;
@@ -81,7 +85,8 @@ namespace DeadBoat.Online
                 LocationPoolRevision = LocationSpawnCollection.CurrentPoolRevision,
                 Distance = state.BoatDistance, Origin = LobbyNetworkAvatar.Origin.z,
                 Fuel = state.BoatFuel, Rear = state.WorldRear, Personal = data, NightSequence = state.NightSpawnSequence,
-                Bag = bag.ToArray(), Items = world.ToArray(), Enemies = enemies.ToArray()
+                Bag = bag.ToArray(), Items = world.ToArray(), Enemies = enemies.ToArray(),
+                Sales = state.Sales.Select(e => new SoloSaleState { Id = e.Key, Coins = e.Value.Coins }).ToArray()
             };
         }
     }
@@ -93,6 +98,8 @@ namespace DeadBoat.Online
         private SharedSoloSnapshot snapshot;
         private readonly Dictionary<ulong, SoloWorldItem> items = new();
         private readonly Dictionary<ulong, SoloWorldEnemy> enemies = new();
+        private readonly Dictionary<ulong, int> sales = new();
+        private readonly Dictionary<ulong, int> initializedSales = new();
         private readonly Dictionary<ulong, int> applied = new();
         private readonly List<WorldSpawnIdentity> identities = new();
         private double nextSave;
@@ -144,6 +151,7 @@ namespace DeadBoat.Online
             UnityEngine.SceneManagement.SceneManager.sceneLoaded += instance.RegisterAuthored;
             foreach (var item in value.Items ?? Array.Empty<SoloWorldItem>()) instance.items[item.Id] = item;
             foreach (var enemy in value.Enemies ?? Array.Empty<SoloWorldEnemy>()) instance.enemies[enemy.Id] = enemy;
+            foreach (var sale in value.Sales ?? Array.Empty<SoloSaleState>()) instance.sales[sale.Id] = Mathf.Max(0, sale.Coins);
         }
         public static void Begin(SharedSoloSnapshot value)
         {
@@ -306,6 +314,7 @@ namespace DeadBoat.Online
             foreach (var key in items.Where(p => p.Value.Prunable && p.Value.Mode != 3 && p.Value.Position.z < snapshot.Rear).Select(p => p.Key).ToArray()) items.Remove(key);
             foreach (var key in enemies.Where(p => p.Value.Prunable && p.Value.Position.z < snapshot.Rear).Select(p => p.Key).ToArray()) enemies.Remove(key);
             snapshot.Items = items.Values.ToArray(); snapshot.Enemies = enemies.Values.ToArray();
+            snapshot.Sales = sales.Select(e => new SoloSaleState { Id = e.Key, Coins = e.Value }).ToArray();
             SaveManager.Instance.PersistentProvider.SaveInventory(Inventory.Instance.GetInventoryList());
             SaveManager.Instance.SaveGameProgress(Mathf.RoundToInt(snapshot.Distance), Inventory.Instance.GetInventoryList(), snapshot.Level);
             SaveManager.Instance.FlushProgress();
@@ -337,6 +346,22 @@ namespace DeadBoat.Online
                 instance.enemies[identity.Id] = enemy;
             }
         }
+        public static void ObserveSale(SellPoint point, ulong id)
+        {
+            if (!Active || instance.waitingScene) return;
+            int current = point.GetInstanceID();
+            if (!instance.initializedSales.TryGetValue(id, out int previous) || previous != current)
+            {
+                instance.initializedSales[id] = current;
+                if (instance.sales.TryGetValue(id, out int coins)) point.ApplySharedBalance(coins);
+            }
+            instance.sales[id] = point.CheckpointBag != null && !point.CheckpointBag.Collected ? point.CheckpointBag.Money : 0;
+        }
+        public static void RememberSale(ulong id, int coins)
+        {
+            if (Active) instance.sales[id] = Mathf.Max(0, coins);
+        }
+
         public static int NextNightSpawn() => Active ? ++instance.snapshot.NightSequence : 0;
         private void OnApplicationPause(bool paused) { if (paused) { nextSave = 0; Update(); } }
         private void OnApplicationQuit() { nextSave = 0; Update(); }

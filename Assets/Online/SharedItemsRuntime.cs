@@ -79,7 +79,7 @@ namespace DeadBoat.Online
                 identity.NextPersonalRegistration = now + .5;
                 Vector3 position = PlayerMovement.Instance != null ? PlayerMovement.Instance.transform.position : item.transform.position;
                 state.RPC_DropPersonalItem(identity.Id, template, position + LobbyNetworkAvatar.Origin,
-                    item.transform.rotation, identity.Weapon?.CurrentAmmo ?? -1, true, SharedItemScale.Capture(item));
+                    item.transform.rotation, identity.Weapon?.CurrentAmmo ?? -1, true, SharedItemScale.Capture(item), SharedSalesRuntime.Price(item));
             }
             return false;
         }
@@ -110,7 +110,7 @@ namespace DeadBoat.Online
             if (SoloRunBranch.Active && !SharedRunContext.Active) return;
             SharedRunContext.State.RPC_DropPersonalItem(id, template,
                 item.transform.position + LobbyNetworkAvatar.Origin, item.transform.rotation,
-                item.GetComponentInChildren<RangedWeaponController>(true)?.CurrentAmmo ?? -1, false, SharedItemScale.Capture(item));
+                item.GetComponentInChildren<RangedWeaponController>(true)?.CurrentAmmo ?? -1, false, SharedItemScale.Capture(item), SharedSalesRuntime.Price(item));
         }
 
         public static bool Burn(FuelItem fuel)
@@ -236,6 +236,7 @@ namespace DeadBoat.Online
             CancelBlockedRequests();
             var state = SharedRunContext.State;
             if (!SharedRunContext.Playing || state == null) return;
+            SharedSalesRuntime.ApplyCredits(state);
             double now = Time.realtimeSinceStartupAsDouble;
             bool sample = now >= nextSample;
             if (sample)
@@ -361,7 +362,7 @@ namespace DeadBoat.Online
                                 : mode == 0 ? ReleasePosition(item) : item.transform.position + LobbyNetworkAvatar.Origin;
                             if (mode == 0) item.transform.position = position - LobbyNetworkAvatar.Origin;
                             state.RPC_ItemState(identity.Id, mode, position,
-                                item.transform.rotation, ammo);
+                                item.transform.rotation, ammo, SharedSalesRuntime.Price(item));
                         }
                     }
                     ApplyPhysics(identity, item, true);

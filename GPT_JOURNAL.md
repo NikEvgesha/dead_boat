@@ -1307,3 +1307,13 @@ Native Unity6000.3.9f1:859 assertions/75 повторов PASS, Coffer1.016→0.
 Первый сетевой запуск прервала отложенная перекомпиляция MCP; host теперь ждёт стабилизации Editor. В fixture добавлена read-only локализация. Финальный batch exit0 и cleanup PASS без Runner/shared/solo; шесть конфигураций и29 прежних локальных файлов совпали с исходными после возврата автоизменений Editor. Подробности Docs/ITEM_INSTANCE_SCALE_20261114.md, измеренный JSON рядом, сырые логи локально Logs/ItemScale264-20261114.
 
 264 in_review до общей приёмки,019/125/265 дополнены фактами без ложного закрытия. Далее ИИ —265, затем266/125 и267/270. Владелец позже принимает общий WebGL-пакет, сейчас действий не требуется. SDK не редактировался, Player Build/черновик/публикация не выполнялись.
+
+## 14.11.2026 — матрица265 и общая продажа271
+
+Продолжена выбранная очередь. Доказанный блокер265: локальная продажа free dropped предметов могла не поставить canonical consumed и создавала локальные мешки. Добавлена271: Sales128 + SaleCredits4, атомарный consume/balance, отдельный сбор с revision/range, seller SalePrice и acknowledged credits в Personal/restore, solo Sales sidecar, shared TriggerStay retry и WorldRear retirement. MoneyBag cancel/exit/reentry сбрасывает guard, feedback относится к конкретной ревизии и не блокирует новую продажу. Wire-sales1; RunRandom6/pool3/SoloBranch.v1 сохранены.
+
+Native batch6000.3.9f1 exit0:20/20 prefab,3532 проверки/1000 parent applies/67 исторических IDs; настоящие carry/Inventory/UI slots/drop/cargo, FinSword/Pistol/3ammo;10 sale/10 burn, duplicates/type/range/revision/seller price/credits/stale progress/missing binding/revision race PASS. Отдельный offline RAM fixture(22+32,одна выплата), cold payload→takeover, actual Solo Capture/JSON/legacy и controlled rear9000 prune PASS. Автоматическая Physics-симуляция в геометрической Play-матрице отключена; не независимые браузеры и не полный coordinator/ContinueSolo.
+
+Полные NetworkObjects20732/17604/1004B, ниже32KiB; это не трафик/FPS/heap/download. Подробности и машиночитаемый результат Docs/LOOT_AND_SHARED_SALES_20261114.md/.json; rawLogs локально Logs/Loot265-20261114. Восстановлены автоизменения Editor:6конфигураций и29 прежних локальных файлов побайтно совпали,20 mesh line-ending-only возврат после сравнения сHEAD. Ранние неуспешные попытки были стендовыми(meta/API/EditModecleanup/AABBrotation), финальный batch/cleanup PASS.
+
+265/271 in_review до общейWebGL-приёмки. Следующий ИИ —266, затем125/267/270; владелец позднее принимает общий пакет, сейчас действий не требуется. SDK/чужие локальные изменения не включать в commit. Player Build/черновик/публикация не выполнялись.

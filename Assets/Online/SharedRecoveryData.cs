@@ -18,6 +18,7 @@ namespace DeadBoat.Online
     {
         public int Revision, ItemCount, Coins, Experience, Level, Upgrades;
         public int InventorySlots;
+        public int SaleCredits;
         public int BloodPactRank, BattleRhythmRank, OnTheEdgeRank;
         public int LastRoundRank, HeavyCoatRank;
         public int SteadyAimRank, PatientReloadRank;
@@ -45,6 +46,7 @@ namespace DeadBoat.Online
             return new SharedPersonalData
             {
                 Health = PlayerStatsManager.Instance.Health, Coins = CurrencyManager.Instance != null ? CurrencyManager.Instance.Coins : save.LoadGameCoin(),
+                SaleCredits = SharedSalesRuntime.AppliedCredits,
                 Experience = exp.Item1, Level = exp.Item2, Upgrades = LevelStatManager.Instance != null ? LevelStatManager.Instance.PendingUpgrades : save.LoadLevelUp(),
                 Pistol = ammo.GetAmmo(WeaponType.Pistol), Rifle = ammo.GetAmmo(WeaponType.Rifle),
                 Shotgun = ammo.GetAmmo(WeaponType.Shotgun),

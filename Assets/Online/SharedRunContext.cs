@@ -25,6 +25,7 @@ namespace DeadBoat.Online
             Seed = seed;
             LevelId = levelId;
             State = state;
+            SharedSalesRuntime.Begin(state);
             Regions = new WorldRegionArchive(seed, levelId);
             StreamingBudget = new WorldStreamingBudget();
             Membership = new WorldRegionMembership();
@@ -38,6 +39,7 @@ namespace DeadBoat.Online
         public static void End()
         {
             Active = false;
+            SharedSalesRuntime.End();
             StreamingBudget = null;
             Regions?.Clear(); Regions = null;
             Membership?.Clear(); Membership = null;

@@ -44,6 +44,7 @@ namespace DeadBoat.Online
         public void RPC_RecoveryProgress(SharedPersonalData data, RpcInfo info = default)
         {
             if (!CanReturn(info.Source) || float.IsNaN(data.Health) || float.IsInfinity(data.Health)) return;
+            ReconcileSaleCredits(info.Source, ref data);
             if (Personal.TryGet(info.Source, out var previous))
             {
                 data.Revision = previous.Revision;
@@ -82,6 +83,7 @@ namespace DeadBoat.Online
             stagedPersonal.TryGetValue(info.Source, out var stage);
             uint expected = data.ItemCount == 32 ? uint.MaxValue : (1u << data.ItemCount) - 1;
             if (data.ItemCount > 0 && (stage == null || stage.Revision != data.Revision || stage.Mask != expected)) return;
+            ReconcileSaleCredits(info.Source, ref data);
             // Apply the complete inventory + header in one callback. An incomplete
             // transmission never replaces the last confirmed snapshot.
             for (int i = 0; i < RecoverySlots; i++)

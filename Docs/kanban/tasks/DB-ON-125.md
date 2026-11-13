@@ -216,3 +216,9 @@ CitySpawner.Update сначала создаёт очередной город, 
 264 реализована: WorldScale проходит через полные canonical записи/архив, explicit regional restore, cold dropped и independent factories, сумку и SoloBranch; dormancy equality учитывает размер. Два Cloud peers PASS фактического cold discovery, controlled independent suspend/restore и takeover. Это не повтор полного city/procedural/long-route теста125. Сводка Docs/ITEM_INSTANCE_SCALE_20261114.md.
 
 Далее ИИ —265/266, затем минимальный cold-city skip с прежними ordinal/ключами/RNG и cache bounds; владелец позже принимает полный WebGL-маршрут. Сборка не выполнялась,125 остаётся in_progress.
+
+## Матрица находок и продажа — 14.11.2026
+
+DB-ON-265/271 in_review: native20/20 carry/bag/drop/cargo, реальная продажа/топка/сбор, отсутствие дублей, seller price, revision feedback, credits/stale progress, ordinary offline, cold/takeover и controlled rear prune PASS. Canonical Sales/credits включены в actual solo Capture/JSON; полный refresh/coordinator и ContinueSolo с независимыми WebGL-клиентами ещё не приняты. Текущий wire заканчивается-itemscale1-sales1, генератор6/pool3 сохранены.
+
+Сводка Docs/LOOT_AND_SHARED_SALES_20261114.md. Прежний статус этой карточки автоматически не повышается. Далее ИИ —266/125 по актуальной очереди; владелец позже общий пакет, сейчас без сборки и без действий владельца.

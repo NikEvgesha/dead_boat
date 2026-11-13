@@ -1,8 +1,8 @@
 ---
 id: DB-ON-265
 title: Проверить сетевой перенос и отображение новых 20 находок
-status: ready
-when: next
+status: in_review
+when: now
 ai: true
 ---
 
@@ -36,3 +36,11 @@ PickableItem.CheckTags; Inventory.AddItem; InventorySlot.OnDrop; SharedItemsRunt
 ## Готовая основа для матрицы — 14.11.2026
 
 264 передана в in_review: размер экземпляра добавлен во все указанные пути; настоящий Coffer0.72м, native collider, дваCloud peers/cold/independent/takeover PASS. Проверка одного сундука не закрывает все20 находок и полный UI/rejoin/Physics. Далее ИИ берёт эту матрицу на штатных механиках; владелец позднее общий WebGL-пакет. Статус ready сохранён. Сводки Docs/ITEM_INSTANCE_SCALE_20261114.md и Docs/ACTIVE_WORK_QUEUE_20261114.md. Без сборки.
+
+## Проверенный срез — 14.11.2026
+
+Финальный native batch exit0: 20/20 моделей через штатные carry/bag/drop/cargo, 10 продаж/10 burns, FinSword/Pistol quick-hand/magazine3; дубли, отмена и повторное создание мешка, canonical seller price, missing binding retry, credits/stale progress PASS. Отдельно ordinary offline, cold payload/authority takeover, настоящий solo Capture/JSON/legacy и граница WorldRear PASS. SDK не менялся; настройки6/6 и прежние локальные файлы29/29 побайтно сохранены.
+
+Полный результат/scopes и Fusion budgets: Docs/LOOT_AND_SHARED_SALES_20261114.md и JSON рядом. Одна тестовая сцена с двумя Cloud peers не заменяет независимые WebGL-миры, физику, весь coordinator refresh/rejoin и ContinueSolo. Статус in_review, а не done.
+
+Следующий шаг — ИИ: DB-ON-266, затем125/267/270. Владелец позднее принимает общий пакет, включая мешок/выручку после полного возврата и ContinueSolo; сейчас действий не требуется. Без Player Build, архива/черновика/публикации.

@@ -18,9 +18,25 @@ public class MoneyBag : MonoBehaviour
     private bool _active;
     private float _progress;
     private bool _collectInProgress;
+    private Coroutine _collectionRoutine;
 
     public Action TakeBag;
     public bool Collected { get; private set; }
+    public SellPoint SalePoint { get; set; }
+    public int SharedRevision { get; private set; }
+    public void BindSharedSale(SellPoint point, int revision)
+    {
+        SalePoint = point;
+        if (SharedRevision == revision) return;
+        SharedRevision = revision;
+        Collected = false;
+    }
+    public void ConfirmSharedCollection(int revision)
+    {
+        if (Collected || SharedRevision != revision) return;
+        Collected = true;
+        TakeBag?.Invoke();
+    }
     public int Money
     {
         get
@@ -44,6 +60,7 @@ public class MoneyBag : MonoBehaviour
     private void OnDisable()
     {
         _collectTouchPanel.PointerDown -= TryCollect;
+        CancelCollection();
     }
 
     private void Update()
@@ -58,32 +75,54 @@ public class MoneyBag : MonoBehaviour
 
     private void TryCollect()
     {
+        if (_collectInProgress || Collected || DeadBoat.Online.SharedItemInteraction.Blocked) return;
         _collectInProgress = true;
         _progress = 0;
-        StartCoroutine(BuyProcess());
+        var routine = StartCoroutine(BuyProcess());
+        _collectionRoutine = _collectInProgress ? routine : null;
     }
 
+    public void CancelCollection()
+    {
+        var routine = _collectionRoutine;
+        _collectionRoutine = null;
+        if (routine != null) StopCoroutine(routine);
+        ResetCollectionState();
+    }
+
+    private void ResetCollectionState()
+    {
+        _collectionRoutine = null;
+        _progress = 0;
+        if (_fillImg != null) _fillImg.fillAmount = 0;
+        _collectInProgress = false;
+    }
 
     private IEnumerator BuyProcess()
     {
-        while ((_collectTouchPanel.Hold || PlayerInput.Instance.InteractionHold) && _progress < 1f)
+        try
         {
-            _progress += Time.deltaTime;
-            _fillImg.fillAmount = _progress;
-            yield return null;
-        }
+            while (!DeadBoat.Online.SharedItemInteraction.Blocked &&
+                (_collectTouchPanel.Hold || PlayerInput.Instance.InteractionHold) && _progress < 1f)
+            {
+                _progress += Time.deltaTime;
+                _fillImg.fillAmount = _progress;
+                yield return null;
+            }
 
-        if (_progress >= 1f)
+            if (_progress >= 1f && !DeadBoat.Online.SharedItemInteraction.Blocked &&
+                !DeadBoat.Online.SharedSalesRuntime.Collect(this))
+            {
+                Collected = true;
+                CurrencyManager.Instance.AddCurrency(CurrencyType.Coins, _money);
+                TakeBag?.Invoke();
+                Destroy(gameObject);
+            }
+        }
+        finally
         {
-            Collected = true;
-            CurrencyManager.Instance.AddCurrency(CurrencyType.Coins, _money);
-            TakeBag?.Invoke();
-            Destroy(gameObject);
+            ResetCollectionState();
         }
-        _progress = 0;
-        _fillImg.fillAmount = _progress;
-        _collectInProgress = false;
-
     }
 
 
@@ -102,7 +141,7 @@ public class MoneyBag : MonoBehaviour
         {
             _active = false;
             _collectTouchPanel.gameObject.SetActive(false);
-            StopAllCoroutines();
+            CancelCollection();
         }
     }
 

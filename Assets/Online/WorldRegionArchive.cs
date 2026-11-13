@@ -117,7 +117,7 @@ namespace DeadBoat.Online
             if (!membership.TryGetValue(id, out int index) || !regions[index].Dormant ||
                 (regions[index].DormantItems != null && !regions[index].DormantItems.Contains(id)) ||
                 !regions[index].Items.TryGetValue(id, out var old)) return true;
-            return !(live.Template == old.Template && live.WeaponAmmo == old.WeaponAmmo && live.Mode == old.Mode &&
+            return !(live.Template == old.Template && live.WeaponAmmo == old.WeaponAmmo && live.SalePrice == old.SalePrice && live.Mode == old.Mode &&
                 live.Owner == old.Owner && live.Position.Equals(old.Position) && live.Rotation.Equals(old.Rotation) &&
                 live.WorldScale.Equals(old.WorldScale) &&
                 live.BoatLocalPosition.Equals(old.BoatLocalPosition) && live.BoatLocalRotation.Equals(old.BoatLocalRotation) &&

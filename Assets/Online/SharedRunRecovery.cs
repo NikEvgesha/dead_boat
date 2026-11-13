@@ -18,7 +18,7 @@ namespace DeadBoat.Online
     // This ticket is a capability for a live room, never a persisted online world.
     public sealed class SharedRunRecovery : MonoBehaviour
     {
-        private const string ProtocolSuffix = "-dbseed4-inv1-pets1-cards3-regions1-skins1-choice1-shorepoi7-itemscale1";
+        private const string ProtocolSuffix = "-dbseed4-inv1-pets1-cards3-regions1-skins1-choice1-shorepoi7-itemscale1-sales1";
         public static string ClientVersion => Application.version + ProtocolSuffix;
         private const string TicketKey = "DeadBoat.SharedReturn.v1";
         private const string IdentityKey = "DeadBoat.FusionIdentity.v1";
@@ -432,6 +432,7 @@ namespace DeadBoat.Online
                 Inventory.Instance.RefreshCapacity();
                 SharedRecoveryInventory.Restore(probeState, personal);
                 CurrencyManager.Instance.AddCurrency(CurrencyType.Coins, personal.Coins - CurrencyManager.Instance.Coins);
+                SharedSalesRuntime.RestoreCredits(personal.SaleCredits);
                 PlayerAmmoManager.Instance.RestoreRecovery(personal.Pistol, personal.Rifle, personal.Shotgun);
                 PlayerStatsManager.Instance.LoadExp(personal.Experience, personal.Level);
                 PlayerStatsManager.Instance.RestoreRecoveryHealth(personal.Health);

@@ -6,6 +6,7 @@ namespace DeadBoat.Online
     public struct SharedItemRecord : INetworkStruct
     {
         public int Template, WeaponAmmo;
+        public int SalePrice; // zero unknown, otherwise seller's calculated price + 1
         public Vector3 Position;
         public Vector3 WorldScale;
         public Quaternion Rotation;
@@ -55,7 +56,7 @@ namespace DeadBoat.Online
 
         [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
         public void RPC_DropPersonalItem(ulong id, int template, Vector3 position, Quaternion rotation, int ammo, bool inInventory = false,
-            Vector3 worldScale = default, RpcInfo info = default)
+            Vector3 worldScale = default, int saleValue = -1, RpcInfo info = default)
         {
             if (Phase != 3 || !CanAct(info.Source) || Items.ContainsKey(id) || !Finite(position) ||
                 !Finite(new Vector3(rotation.x, rotation.y, rotation.z)) ||
@@ -68,6 +69,7 @@ namespace DeadBoat.Online
             Items.Add(id, new SharedItemRecord
             {
                 Template = template, WeaponAmmo = Mathf.Clamp(ammo, -1, 10000), Position = position, Rotation = rotation,
+                SalePrice = saleValue >= 0 && saleValue <= 100000 ? saleValue + 1 : 0,
                 WorldScale = SharedItemScale.IsValid(worldScale) ? worldScale :
                     SharedItemScale.Capture(SharedItemCatalog.Load().Find(template).transform),
                 Owner = inInventory ? info.Source : PlayerRef.None, Mode = inInventory ? 2 : 0,
@@ -95,7 +97,7 @@ namespace DeadBoat.Online
         }
 
         [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-        public void RPC_ItemState(ulong id, int mode, Vector3 position, Quaternion rotation, int ammo = -1, RpcInfo info = default)
+        public void RPC_ItemState(ulong id, int mode, Vector3 position, Quaternion rotation, int ammo = -1, int saleValue = -1, RpcInfo info = default)
         {
             if (Phase != 3 || !CanAct(info.Source) || !Items.TryGet(id, out var item) || item.Owner != info.Source ||
                 info.Source == PlayerRef.None || mode < 0 || mode > 4 || !Finite(position) ||
@@ -113,6 +115,7 @@ namespace DeadBoat.Online
                 item.BoatLocalRotation = Quaternion.Inverse(boat.transform.rotation) * rotation;
             }
             if (ammo >= 0 && ammo <= 10000) item.WeaponAmmo = ammo;
+            if (saleValue >= 0 && saleValue <= 100000) item.SalePrice = saleValue + 1;
             if (mode == 0 && item.Mode == 2) item.Dropped = true;
             item.Mode = mode;
             item.Position = position;

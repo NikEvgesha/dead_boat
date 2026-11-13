@@ -26,6 +26,12 @@ namespace DeadBoat.Online
             WorldRear = Mathf.Max(WorldRear, rear - 1000);
             if (Time.realtimeSinceStartupAsDouble < nextWorldCleanup) return;
             nextWorldCleanup = Time.realtimeSinceStartupAsDouble + 1;
+            // Sale bags are world loot too. Regions behind the shared retirement
+            // boundary cannot return; do not fill the bounded sale table forever.
+            obsolete.Clear();
+            foreach (var sale in Sales)
+                if (sale.Value.Position.z < WorldRear) obsolete.Add(sale.Key);
+            foreach (var id in obsolete) Sales.Remove(id);
             emptyPages.Clear();
             foreach (var page in SharedWorldPage.All(Runner))
             {
