@@ -1,0 +1,20 @@
+DB-ON-244 local Play Mode combat audit, 2026-11-12 19:58:32
+Scene=LevelEvent; save=SharedRunPreviewSave
+Gun preflight: allowed=True mask=320 bossLayer=6 enabled=True active=True
+Gun result: HP=589 ammo=0 state=Approach
+PASS equipped rifle use: boss HP 600 -> 589; ammo 1 -> 0
+PASS warning radius remains in metres on scaled East_Bank collider (25,0.5,53)
+PASS red volley: visible warnings before launch; gifts=3
+PASS red impact once per player: HP 110 -> 100
+PASS low recovery: hull bottom above actual floor=0,500 m; distance=4,07
+PASS blue locked marks + dodge: 2 gifts, HP unchanged=100
+PASS gold large impact: radius=3.3 m, HP 100 -> 74
+PASS defeat during volley: all gifts cancelled, collider off, no post-death damage
+PASS real sword swing + trigger: low hull HP 600 -> 579
+Gift_Red_Small(Clone): radius=1,65 hits=1 playerHP=100
+Gift_Red_Small(Clone): radius=1,65 hits=0 playerHP=100
+Gift_Red_Small(Clone): radius=1,65 hits=0 playerHP=100
+Gift_Blue_Medium(Clone): radius=2,35 hits=0 playerHP=100
+Gift_Blue_Medium(Clone): radius=2,35 hits=0 playerHP=100
+Gift_Gold_Large(Clone): radius=3,3 hits=1 playerHP=74
+Limit: local Editor simulation only; manual balance, WebGL, replication and final-boss rewards not accepted.

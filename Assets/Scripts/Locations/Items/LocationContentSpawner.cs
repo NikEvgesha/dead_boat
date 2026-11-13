@@ -22,6 +22,9 @@ public class LocationContentSpawner : MonoBehaviour
     [Tooltip("Points where enemies can appear")]
     public List<Transform> enemySpawnPoints;
 
+    [SerializeField, Min(0f)] private float _cityClearance;
+    public float CityClearance => _cityClearance;
+
     public float ZPosition;
 
     private int _level = 1;
@@ -126,6 +129,7 @@ public class LocationContentSpawner : MonoBehaviour
                 continue;
 
             var item = Instantiate(itemPrefab.gameObject, spawnPoint.spawnTransform.position, spawnPoint.spawnTransform.rotation, transform);
+            PlaceItemAtSpawnPoint(item, spawnPoint);
             bool restoringKnownItem = rehydrating || HasItemRecord(generationKey + ":item:" + i);
             if (restoringKnownItem) DeadBoat.Online.WorldRegionRestore.InitializeItem(item, generationKey + ":item:" + i, restoredItemNames);
             else if (DeadBoat.Online.SharedRunContext.GenerationActive)
@@ -134,6 +138,49 @@ public class LocationContentSpawner : MonoBehaviour
             if (!restoringKnownItem && LocationItemSpawnCollection.IsEggPrefab(itemPrefab))
                 EggSpawnRuntimeState.OnEggSpawned();
         }
+    }
+
+    // Shared by actual generation and the village inspection walk. Slot Y is the
+    // visible support height; item pivots differ between cups, keys, statues, etc.
+    public static void PlaceItemAtSpawnPoint(GameObject item, LocationSpawnPoint spawnPoint)
+    {
+        if (!item || spawnPoint == null || !spawnPoint.spawnTransform || !spawnPoint.alignVisualBase) return;
+        var renderers = item.GetComponentsInChildren<Renderer>(true);
+        bool Visible(Renderer renderer)
+        {
+            if (!renderer.enabled || renderer is ParticleSystemRenderer || renderer is TrailRenderer || renderer is LineRenderer) return false;
+            for (var t = renderer.transform; t != item.transform; t = t.parent)
+                if (!t.gameObject.activeSelf) return false;
+            return true;
+        }
+        if (spawnPoint.maxVisualFootprint > 0f)
+        {
+            Bounds bounds = default;
+            bool found = false;
+            foreach (var renderer in renderers)
+            {
+                if (!Visible(renderer)) continue;
+                if (found) bounds.Encapsulate(renderer.bounds);
+                else { bounds = renderer.bounds; found = true; }
+            }
+            float width = Mathf.Max(bounds.size.x, bounds.size.z);
+            if (found && width > spawnPoint.maxVisualFootprint)
+                item.transform.localScale *= spawnPoint.maxVisualFootprint / width;
+        }
+        float bottom = float.PositiveInfinity;
+        foreach (var renderer in renderers)
+        {
+            if (!Visible(renderer)) continue;
+            var filter = renderer.GetComponent<MeshFilter>();
+            if (filter && filter.sharedMesh && filter.sharedMesh.isReadable)
+            {
+                foreach (var vertex in filter.sharedMesh.vertices)
+                    bottom = Mathf.Min(bottom, filter.transform.TransformPoint(vertex).y);
+            }
+            else bottom = Mathf.Min(bottom, renderer.bounds.min.y);
+        }
+        if (!float.IsPositiveInfinity(bottom))
+            item.transform.position += Vector3.up * (spawnPoint.spawnTransform.position.y - bottom);
     }
 
     private int FindGuaranteedEggSpawnPointIndex(LocationItemSpawnCollection activeItemCollection)

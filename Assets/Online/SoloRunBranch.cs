@@ -29,6 +29,7 @@ namespace DeadBoat.Online
     public sealed class SharedSoloSnapshot
     {
         public int Seed, Level, NightSequence, Generator = RunRandom.Version;
+        public int LocationPoolRevision;
         public string SourceRun;
         public long PlayerId;
         public float Distance, Origin, Fuel, Rear;
@@ -76,6 +77,7 @@ namespace DeadBoat.Online
             return new SharedSoloSnapshot
             {
                 Seed = state.Seed, Level = state.LevelId, SourceRun = state.Runner.SessionInfo.Name, PlayerId = SharedRunRecovery.LocalId,
+                LocationPoolRevision = LocationSpawnCollection.CurrentPoolRevision,
                 Distance = state.BoatDistance, Origin = LobbyNetworkAvatar.Origin.z,
                 Fuel = state.BoatFuel, Rear = state.WorldRear, Personal = data, NightSequence = state.NightSpawnSequence,
                 Bag = bag.ToArray(), Items = world.ToArray(), Enemies = enemies.ToArray()
@@ -97,6 +99,8 @@ namespace DeadBoat.Online
         private bool waitingScene;
         public static bool Active => instance != null && instance.snapshot != null;
         public static int Seed => Active ? instance.snapshot.Seed : 0;
+        public static int LocationPoolRevision => Active
+            ? instance.snapshot.LocationPoolRevision : LocationSpawnCollection.CurrentPoolRevision;
         public static string SourceRun => Active ? instance.snapshot.SourceRun : null;
         public static long SourcePlayerId => Active ? instance.snapshot.PlayerId : 0;
         public static float Rear => Active ? instance.snapshot.Rear : 0;

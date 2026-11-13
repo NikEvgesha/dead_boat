@@ -144,11 +144,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6eeb5dc026fdf4b488bc7ae0138ab719, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_SerializedVersion: 1
   m_AgentTypeID: 0
   m_StartPoint: {x: 0.00000397857, y: 0.20770767, z: -0.71602523}
   m_EndPoint: {x: -0.20833433, y: -0.46523318, z: 1.5076904}
+  m_StartTransform: {fileID: 0}
+  m_EndTransform: {fileID: 0}
+  m_Activated: 1
   m_Width: 5.6883016
-  m_CostModifier: -1
+  m_CostModifier: 1
+  m_IsOverridingCost: 0
   m_Bidirectional: 1
   m_AutoUpdatePosition: 0
   m_Area: 0
@@ -201,7 +206,7 @@ MonoBehaviour:
   _enemyTypes: {fileID: 6512769847435685629, guid: 5d3128d8feb1dd844968ea85b6169de6, type: 3}
   _spawnCount: 3
   _cooldown: 1
-  _spawnPos: {fileID: 1058939399581222239, guid: 4afdcb4056c1f6044bdafc554f3d4b4b, type: 3}
+  _spawnPos: {fileID: 216099488544583449}
 --- !u!1 &6176535487297745800
 GameObject:
   m_ObjectHideFlags: 0
@@ -445,11 +450,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6eeb5dc026fdf4b488bc7ae0138ab719, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_SerializedVersion: 1
   m_AgentTypeID: 0
   m_StartPoint: {x: 0.00000397857, y: 0.20770767, z: -0.71602523}
   m_EndPoint: {x: -0.20833433, y: -0.46523318, z: 1.5076904}
+  m_StartTransform: {fileID: 0}
+  m_EndTransform: {fileID: 0}
+  m_Activated: 1
   m_Width: 5.6883016
-  m_CostModifier: -1
+  m_CostModifier: 1
+  m_IsOverridingCost: 0
   m_Bidirectional: 1
   m_AutoUpdatePosition: 0
   m_Area: 0
@@ -504,7 +514,7 @@ MonoBehaviour:
   animator: {fileID: 903206061384040271}
 --- !u!95 &903206061384040271
 Animator:
-  serializedVersion: 5
+  serializedVersion: 7
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -518,6 +528,7 @@ Animator:
   m_ApplyRootMotion: 0
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
   m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
@@ -913,15 +924,15 @@ PrefabInstance:
       value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 4704107755523471575, guid: 317df06dddf6f5147b9df7b5f624351a, type: 3}
-      propertyPath: _enemyPrefabs.Array.data[0]
+      propertyPath: '_enemyPrefabs.Array.data[0]'
       value: 
       objectReference: {fileID: 6512769847435685629, guid: 9f27384872013c942a0a8b7cbbcb297a, type: 3}
     - target: {fileID: 4704107755523471575, guid: 317df06dddf6f5147b9df7b5f624351a, type: 3}
-      propertyPath: _enemyPrefabs.Array.data[1]
+      propertyPath: '_enemyPrefabs.Array.data[1]'
       value: 
       objectReference: {fileID: 6512769847435685629, guid: 4afdcb4056c1f6044bdafc554f3d4b4b, type: 3}
     - target: {fileID: 4704107755523471575, guid: 317df06dddf6f5147b9df7b5f624351a, type: 3}
-      propertyPath: _enemyPrefabs.Array.data[2]
+      propertyPath: '_enemyPrefabs.Array.data[2]'
       value: 
       objectReference: {fileID: 6512769847435685629, guid: 4afdcb4056c1f6044bdafc554f3d4b4b, type: 3}
     - target: {fileID: 4808694728288072709, guid: 317df06dddf6f5147b9df7b5f624351a, type: 3}

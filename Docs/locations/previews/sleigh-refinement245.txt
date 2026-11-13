@@ -1,0 +1,17 @@
+PASS persisted angry eyebrow SleighThief_Visual/Brow_-1: outer above inner=0,135 m
+PASS persisted angry eyebrow SleighThief_Visual/Brow_1: outer above inner=0,135 m
+PASS persisted angry eyebrow SleighThief_Boss/Brow_-1: outer above inner=0,135 m
+PASS persisted angry eyebrow SleighThief_Boss/Brow_1: outer above inner=0,135 m
+PASS audio Sleigh_Chuckle_1: 0,990 s, peak=0,774
+PASS audio Sleigh_Chuckle_2: 1,025 s, peak=0,768
+PASS audio Sleigh_Chuckle_3: 1,060 s, peak=0,793
+PASS audio Gift_Throw: 0,430 s, peak=0,842
+PASS automatic first attack without any shot: horizontal=27,50 m, 3D=30,01 m
+PASS measured complete cycle: airborne=19,69 s, low=7,01 s, airborne share=73,8%; first descent after 3 volleys
+PASS moving gift pass: travelled 4,00 m during first bombardment; blue locked marks still dodgeable
+PASS live 3D sounds: laughs=3, throws=6; actual AudioSource.isPlaying observed
+PASS normal rifle after cycle: HP 600 -> 589
+PASS death stops voice, throw sound and remaining hazards
+Fixture: input held and background-focus time/audio pause overridden only for this automated probe; restored in finally. Manual sound/balance acceptance remains with owner.
+PASS final compiler/rebuild: no compilation errors; both visual and combat expressions preserved without resetting brow angles in Build.
+PASS final waiting height 18 m: approach without shooting triggers aggro; fresh waiting actor restored after test.

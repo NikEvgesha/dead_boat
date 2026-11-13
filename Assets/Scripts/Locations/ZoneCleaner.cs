@@ -79,6 +79,7 @@ public class ZoneCleaner : MonoBehaviour
     /// <param name="center">Центр проверки</param>
     public void CleanZone(Vector3 center)
     {
+        ClearVisibleDecorations(new Bounds(center, halfExtents * 2f));
         Collider[] colliders = Physics.OverlapBox(center, halfExtents, Quaternion.identity, checkLayer);
         foreach (Collider col in colliders)
         {
@@ -105,6 +106,7 @@ public class ZoneCleaner : MonoBehaviour
     {
         Vector3 center = (point1 + point2) / 2f;
         Vector3 extents = new Vector3(Mathf.Abs(point1.x - point2.x) / 2f, halfExtents.y, Mathf.Abs(point1.z - point2.z) / 2f);
+        ClearVisibleDecorations(new Bounds(center, extents * 2f));
         Collider[] colliders = Physics.OverlapBox(center, extents, Quaternion.identity, checkLayer);
         foreach (Collider col in colliders)
         {
@@ -121,6 +123,32 @@ public class ZoneCleaner : MonoBehaviour
     }
 
     // Для визуализации в редакторе
+    private void ClearVisibleDecorations(Bounds protectedBounds)
+    {
+        if (System.Array.IndexOf(forbiddenTags, "Decoration") < 0) return;
+        foreach (var spawner in FindObjectsByType<DecorationSpawner>(FindObjectsSortMode.None))
+            spawner.ClearDecorations(this, protectedBounds);
+    }
+
+    internal bool IncludesDecoration(GameObject decoration) =>
+        decoration.CompareTag("Decoration") && System.Array.IndexOf(forbiddenTags, "Decoration") >= 0 &&
+        (checkLayer.value & (1 << decoration.layer)) != 0;
+
+    internal bool ProtectsDecoration(GameObject decoration, Bounds visibleBounds)
+    {
+        if (!IncludesDecoration(decoration)) return false;
+        if (_StartPoint && _EndPoint)
+        {
+            var start = _StartPoint.position;
+            var end = _EndPoint.position;
+            var size = new Vector3(Mathf.Abs(start.x - end.x), halfExtents.y * 2f, Mathf.Abs(start.z - end.z));
+            return new Bounds((start + end) * .5f, size).Intersects(visibleBounds);
+        }
+
+        var center = _centerPoint ? _centerPoint.position : transform.position;
+        return new Bounds(center, halfExtents * 2f).Intersects(visibleBounds);
+    }
+
     private void OnDrawGizmosSelected()
     {
         _usePoint = (_StartPoint != null && _EndPoint != null);

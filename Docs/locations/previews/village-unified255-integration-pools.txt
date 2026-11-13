@@ -1,0 +1,15 @@
+LocationSpawnCollection: one village entry; deterministic replay 1800 steps, village left=68, right=71; complete old snapshots/revisions 0,1,2 match pre-integration choices and RNG.
+LocationSpawnCollectionForest: one village entry; deterministic replay 1800 steps, village left=60, right=60; complete old snapshots/revisions 0,1,2 match pre-integration choices and RNG.
+POOL Assets/Events/NewYear/NY_Locations.asset: 7 entries, village families=0
+POOL Assets/Scripts/Locations/LocationSpawnCollection.asset: 19 entries, village families=1
+POOL Assets/Scripts/Locations/LocationSpawnCollectionDesert.asset: 14 entries, village families=0
+POOL Assets/Scripts/Locations/LocationSpawnCollectionForest.asset: 15 entries, village families=1
+POOL Assets/Scripts/Locations/LocationSpawnCollectionWinter.asset: 16 entries, village families=0
+PASS legacy comparisons=13200; CurrentPoolRevision=3
+PASS: safe bounded single-line names, Unicode boundaries, guest/localization, distance/behind/local/menu gates, protocol settings copy
+PASS shared seeded generation validation across all actual pools.
+MAP LevelMerged => Assets/Scripts/Locations/LocationSpawnCollectionForest.asset
+MAP LevelForest => Assets/Scripts/Locations/LocationSpawnCollectionForest.asset
+MAP LevelDesert => Assets/Scripts/Locations/LocationSpawnCollectionDesert.asset
+MAP LevelWinter => Assets/Scripts/Locations/LocationSpawnCollectionWinter.asset
+MAP LevelEvent => Assets/Events/NewYear/NY_Locations.asset

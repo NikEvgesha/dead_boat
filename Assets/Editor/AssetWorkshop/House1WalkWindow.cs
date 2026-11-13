@@ -69,7 +69,7 @@ public sealed class House1WalkWindow : EditorWindow
             entrance=location.GetComponentsInChildren<Transform>().Single(t=>t.name=="Stone_House_Open_Entrance");
             var floor=GameObject.CreatePrimitive(PrimitiveType.Cube);
             SceneManager.MoveGameObjectToScene(floor,scene);
-            floor.transform.position=new Vector3(entrance.position.x,-.3f,entrance.position.z);
+            floor.transform.position=new Vector3(entrance.position.x,-.5f,entrance.position.z);
             floor.transform.localScale=new Vector3(54,1,46);
             floor.GetComponent<Renderer>().sharedMaterial=AssetDatabase.LoadAssetAtPath<Material>("Assets/Prefabs/Workshop/Locations/House1Workshop_Ground.mat");
             var sun=Make("Sun").AddComponent<Light>();sun.type=LightType.Directional;sun.intensity=1.25f;sun.transform.rotation=Quaternion.Euler(48,-35,0);

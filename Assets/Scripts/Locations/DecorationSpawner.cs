@@ -19,6 +19,10 @@ public class DecorationSpawner : MonoBehaviour
     public float spawnInterval = 100f;
     private float nextSpawnDistance;
 
+    [SerializeField, Min(0f)] private float _cityExclusionRadius;
+    private CitySpawner citySpawner;
+    [SerializeField, Min(0f)] private float _decorationSpacing;
+
     [Header("Spawn Area (относительно игрока)")]
     [Tooltip("Смещение (x, z) от позиции игрока для области спавна")]
     public Vector2 spawnAreaOffset = new Vector2(-50f, -50f);
@@ -53,6 +57,8 @@ public class DecorationSpawner : MonoBehaviour
             Debug.LogError("boardController не найден");
         if (player == null)
             player = boardController?.transform;
+        if (_cityExclusionRadius > 0f)
+            citySpawner = FindAnyObjectByType<CitySpawner>();
         // Запускаем корутину для симуляции начального спавна
         StartCoroutine(SimulateInitialSpawns());
         StartCoroutine(RemovalDistanceUpdate());
@@ -140,19 +146,111 @@ public class DecorationSpawner : MonoBehaviour
         // Выбираем случайную точку в области спавна, исключая область avoid.
         Vector2 spawnPoint2D = GetRandomPointInAreaExcluding(worldSpawnArea, worldAvoidArea);
 
+        float routeDistance = spawnPoint2D.y + FixCoordinate.Instance.BoardAddPos;
+        if (_cityExclusionRadius > 0f &&
+            (worldAvoidArea.Contains(spawnPoint2D) || !citySpawner ||
+                citySpawner.IsWithinCityClearance(routeDistance, _cityExclusionRadius)))
+            return;
+
+        if (_decorationSpacing > 0f && IsTooCloseToDecoration(spawnPoint2D)) return;
+
         GameObject decorationPrefab = decorationCollection.GetRandomSpawnPrefab();
         if (decorationPrefab != null)
         {
             Vector3 spawnPosition = new Vector3(spawnPoint2D.x, 0f, spawnPoint2D.y);
+            if (_decorationSpacing > 0f && OverlapsOversizedDecoration(decorationPrefab, spawnPosition)) return;
+            if (OverlapsVisibleDecoration(decorationPrefab, spawnPosition)) return;
             GameObject decoration = Instantiate(decorationPrefab, spawnPosition, Quaternion.identity);
             spawnedDecorations.Add(decoration);
-            _zPositions.Add(spawnPosition.z + FixCoordinate.Instance.BoardAddPos);
+            _zPositions.Add(routeDistance);
             decoration.transform.SetParent(this.gameObject.transform);
         }
         else
         {
             Debug.LogWarning("Не удалось выбрать префаб декорации из коллекции!");
         }
+    }
+
+    private bool OverlapsVisibleDecoration(GameObject prefab, Vector3 position)
+    {
+        if (!TryGetVisibleBounds(prefab, out var candidate)) return false;
+        candidate.center += position - prefab.transform.position;
+        foreach (var zone in FindObjectsByType<ZoneCleaner>(FindObjectsSortMode.None))
+            if (zone.isActiveAndEnabled && zone.ProtectsDecoration(prefab, candidate)) return true;
+
+        foreach (var placed in spawnedDecorations)
+            if (placed && placed.activeInHierarchy && TryGetVisibleBounds(placed, out var occupied) &&
+                candidate.Intersects(occupied)) return true;
+        return false;
+    }
+
+    internal void ClearDecorations(ZoneCleaner zone, Bounds protectedBounds)
+    {
+        for (int i = spawnedDecorations.Count - 1; i >= 0; i--)
+        {
+            var decoration = spawnedDecorations[i];
+            if (!decoration || !zone.IncludesDecoration(decoration) ||
+                !TryGetVisibleBounds(decoration, out var visibleBounds) || !protectedBounds.Intersects(visibleBounds)) continue;
+
+            Destroy(decoration);
+            spawnedDecorations.RemoveAt(i);
+            _zPositions.RemoveAt(i);
+        }
+    }
+
+    private static bool TryGetVisibleBounds(GameObject decoration, out Bounds bounds)
+    {
+        bounds = default;
+        bool found = false;
+        foreach (var renderer in decoration.GetComponentsInChildren<MeshRenderer>())
+        {
+            if (!renderer.enabled) continue;
+            if (found) bounds.Encapsulate(renderer.bounds);
+            else bounds = renderer.bounds;
+            found = true;
+        }
+        return found;
+    }
+
+    private bool OverlapsOversizedDecoration(GameObject prefab, Vector3 position)
+    {
+        if (!prefab.TryGetComponent<BoxCollider>(out var box)) return false;
+        var candidate = GetFootprint(box, position);
+        bool oversized = candidate.width > _decorationSpacing || candidate.height > _decorationSpacing;
+
+        foreach (var decoration in spawnedDecorations)
+        {
+            if (!decoration || !decoration.TryGetComponent<BoxCollider>(out var otherBox)) continue;
+
+            var occupied = GetFootprint(otherBox, decoration.transform.position);
+            if ((oversized || occupied.width > _decorationSpacing || occupied.height > _decorationSpacing) &&
+                candidate.Overlaps(occupied))
+                return true;
+        }
+        return false;
+    }
+
+    // Decorations are spawned with identity rotation. Their root box contains the rotated visuals.
+    private static Rect GetFootprint(BoxCollider box, Vector3 position)
+    {
+        var scale = box.transform.lossyScale;
+        var size = Vector3.Scale(box.size, scale);
+        var min = position + Vector3.Scale(box.center, scale) - size * .5f;
+        return new Rect(min.x, min.z, size.x, size.z);
+    }
+
+
+    private bool IsTooCloseToDecoration(Vector2 position)
+    {
+        float minSquaredDistance = _decorationSpacing * _decorationSpacing;
+        foreach (var decoration in spawnedDecorations)
+        {
+            if (!decoration) continue;
+            var placed = decoration.transform.position;
+            if ((new Vector2(placed.x, placed.z) - position).sqrMagnitude < minSquaredDistance)
+                return true;
+        }
+        return false;
     }
 
     /// <summary>

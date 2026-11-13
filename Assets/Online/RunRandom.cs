@@ -6,7 +6,7 @@ namespace DeadBoat.Online
     // A new generator per stable key prevents unrelated calls from changing the map.
     public sealed class RunRandom
     {
-        public const int Version = 5; // Denser castle/building spacing changes seeded world positions.
+        public const int Version = 6; // Adding loot changes the seeded selection for existing spawn points.
         private uint state;
 
         public RunRandom(int seed, string stream, int index)

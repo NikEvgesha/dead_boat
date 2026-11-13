@@ -3996,6 +3996,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DeadBoat.Online.LobbyOnlineBootstrap
   avatarPrefab: {fileID: 7250523070964882347, guid: 372381f753ad01747a276e5547f39b7d, type: 3}
+  lobbyCapacity: 10
+  idleDisconnectSeconds: 300
+  idleWarningSeconds: 30
 --- !u!4 &140768438
 Transform:
   m_ObjectHideFlags: 0
@@ -22371,15 +22374,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8583371009839575262, guid: cf2321e96b1704f40a0bad161e4a71bd, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -82.615204
+      value: -82.850174
       objectReference: {fileID: 0}
     - target: {fileID: 8583371009839575262, guid: cf2321e96b1704f40a0bad161e4a71bd, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 2.994148
+      value: 3.1637912
       objectReference: {fileID: 0}
     - target: {fileID: 8583371009839575262, guid: cf2321e96b1704f40a0bad161e4a71bd, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -113.089935
+      value: -112.74181
       objectReference: {fileID: 0}
     - target: {fileID: 8583371009839575262, guid: cf2321e96b1704f40a0bad161e4a71bd, type: 3}
       propertyPath: m_LocalRotation.w

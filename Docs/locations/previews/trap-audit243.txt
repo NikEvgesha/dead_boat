@@ -1,0 +1,7 @@
+DB-ON-243 Unity Play Mode, physical Player-tagged capsule matching stock player dimensions; solo/offline.
+PASS SourceSklep: physical entry closed both gates; controller blocked; four local spawn points produced 12/12 enemies; Lever.Use opened path; re-entry did not respawn wave.
+PASS WorkshopSklep: physical entry closed both gates; controller blocked; four local spawn points produced 12/12 enemies; Lever.Use opened path; re-entry did not respawn wave.
+PASS Ruins: physical outer entry lit torches; inner entry extinguished them and spawned 20/20 enemies once.
+Inventory: automatic gate closure exists in Sklep_1; ruins_1 has torch/dungeon ambush. Sklep_2 and ruins_2 have no DungeonTrap. To4ka6 BlockSpike meshes are static decorations, without damage scripts/Animator. No rising spike trap found in current location prefabs.
+LIMIT: probe verifies local physics/event/Animator/spawn behavior; combat balance and network synchronization are outside this test.
+RESTORED: original play-start scene and all nine previously open scenes; isolated save/profiler settings restored; Sklep 1 walk reopened; own fixture scene removed.

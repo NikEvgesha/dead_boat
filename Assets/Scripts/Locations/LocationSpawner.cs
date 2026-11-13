@@ -23,6 +23,7 @@ public class LocationSpawner : MonoBehaviour
 
     private float _stopSpawnDistance = 100000f;          // Границы, пока лодка не доедет до конца уровня
     private int generationIndex;
+    private CitySpawner citySpawner;
     private bool ownsRuntimeCollection;
     private float lastSpawnZ;                            // Z-координата последнего созданного объекта
     private List<LocationContentSpawner> spawnedLocations = new List<LocationContentSpawner>();
@@ -49,6 +50,7 @@ public class LocationSpawner : MonoBehaviour
 
         // Определяем максимальную дистанцию спавна (по лодке)
         _stopSpawnDistance = GameManager.Instance.PlayDistance - spawnThreshold;
+        citySpawner = FindAnyObjectByType<CitySpawner>();
 
         // Инициализируем lastSpawnZ положением игрока по Z, чтобы спавн шел от него
         lastSpawnZ = DeadBoat.Online.SharedRunContext.GenerationActive ? 0f : _player.zPositionFix;
@@ -56,6 +58,8 @@ public class LocationSpawner : MonoBehaviour
         {
             locationCollection = Instantiate(locationCollection);
             ownsRuntimeCollection = true;
+            if (DeadBoat.Online.SoloRunBranch.Active)
+                locationCollection.ApplyPoolRevision(DeadBoat.Online.SoloRunBranch.LocationPoolRevision);
             if (DeadBoat.Online.SharedRunContext.Active) Streaming = new DeadBoat.Online.WorldRegionStreaming(this);
             LayoutManifest = new DeadBoat.Online.LocationLayoutManifest(
                 DeadBoat.Online.SharedRunContext.Active ? DeadBoat.Online.SharedRunContext.Seed : DeadBoat.Online.SoloRunBranch.Seed);
@@ -127,6 +131,9 @@ public class LocationSpawner : MonoBehaviour
                 // Skipping already retired geometry is normal; pool history must
                 // still advance, but this is not a missing-prefab warning.
                 if (lastSpawnZ < rear) return;
+                if (chosenPrefab.CityClearance > 0f &&
+                    citySpawner && citySpawner.IsWithinCityClearance(lastSpawnZ, chosenPrefab.CityClearance))
+                    return;
                 LocationContentSpawner spawnedObj = Instantiate(chosenPrefab, spawnPosition, Quaternion.identity);
                 spawnedObj.ZPosition = spawnPosition.z + FixCoordinate.Instance.BoardAddPos;
                 spawnedLocations.Add(spawnedObj);

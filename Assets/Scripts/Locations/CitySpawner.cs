@@ -36,6 +36,22 @@ public class CitySpawner : MonoBehaviour
     private void LateUpdate() => Streaming?.Tick(spawnedCities, streamCities);
     public int Cities => _citys;
 
+    public bool IsWithinCityClearance(float routeDistance, float clearance)
+    {
+        if (Mathf.Abs(routeDistance) <= clearance) return true;
+
+        // Decorations can be generated ahead of the city instances.
+        float cityDistance = baseSpawnDistance;
+        for (int index = 1; index < _citys && cityDistance <= routeDistance + clearance; index++)
+        {
+            if (Mathf.Abs(routeDistance - cityDistance) <= clearance) return true;
+            cityDistance += CitySpacing(index + 1);
+        }
+        return false;
+    }
+
+    private float CitySpacing(int count) => baseSpawnDistance + count * additionalDistanceIncrement;
+
     private void Awake()
     {
         InitBoardController();
@@ -93,7 +109,7 @@ public class CitySpawner : MonoBehaviour
             SpawnCity();
             spawnCount++;
             // Расстояние до следующего спавна увеличивается: базовый интервал + дополнительное увеличение
-            nextSpawnDistance += baseSpawnDistance + spawnCount * additionalDistanceIncrement;
+            nextSpawnDistance += CitySpacing(spawnCount);
         }
 
         // Удаляем города, которые находятся позади поезда более, чем на removalDistance

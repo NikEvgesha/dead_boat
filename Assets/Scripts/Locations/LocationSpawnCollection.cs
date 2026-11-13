@@ -7,6 +7,32 @@ public class LocationSpawnCollection : ScriptableObject
     // Сериализованный список всех вариантов спавна (каждый с весом chance и диапазоном дистанций)
     [SerializeField] private List<LocationSpawnItem> spawnItems;
 
+    public const int CurrentPoolRevision = 3;
+    [SerializeField, Min(0)] private int _legacyPoolSize;
+    [SerializeField, Min(0)] private int _revisionOnePoolSize;
+    [SerializeField] private List<LocationSpawnItem> _revisionTwoSpawnItems;
+
+    // Apply to an owned runtime copy. Seeded snapshots depend on the original pool order.
+    public void ApplyPoolRevision(int revision)
+    {
+        if (revision >= CurrentPoolRevision) return;
+
+        // Village consolidation changes order/count, so retain the complete old
+        // pool for revision 2 before applying the earlier prefix migrations.
+        bool changed = _revisionTwoSpawnItems != null && _revisionTwoSpawnItems.Count > 0;
+        if (changed) spawnItems = new List<LocationSpawnItem>(_revisionTwoSpawnItems);
+        if (revision <= 1)
+        {
+            int poolSize = revision <= 0 ? _legacyPoolSize : _revisionOnePoolSize;
+            if (poolSize > 0 && poolSize < spawnItems.Count)
+            {
+                spawnItems.RemoveRange(poolSize, spawnItems.Count - poolSize);
+                changed = true;
+            }
+        }
+        if (changed) OnEnable();
+    }
+
     // Рабочий список тех элементов, которые ещё не выпали в этом «цикле»
     private List<LocationSpawnItem> _unusedItems;
 
@@ -76,7 +102,7 @@ public class LocationSpawnCollection : ScriptableObject
             var fallback = candidates[0];
             // Удаляем из _unusedItems, чтобы он «отработался» в этом цикле
             _unusedItems.Remove(fallback);
-            return fallback.prefab;
+            return ResolveBank(fallback, random);
         }
 
         float randomValue = (random != null ? random.Range(0f, totalWeight) : Random.Range(0f, totalWeight));
@@ -99,6 +125,15 @@ public class LocationSpawnCollection : ScriptableObject
         _unusedItems.Remove(chosenItem);
 
         // Возвращаем сам префаб
-        return chosenItem.prefab;
+        return ResolveBank(chosenItem, random);
+    }
+
+    private static LocationContentSpawner ResolveBank(LocationSpawnItem item, DeadBoat.Online.RunRandom random)
+    {
+        // Existing entries consume no extra random value; only the unified
+        // village selects between its two placements after the family is chosen.
+        if (item.bankAlternativePrefab == null) return item.prefab;
+        int bank = random != null ? random.Range(0, 2) : Random.Range(0, 2);
+        return bank == 0 ? item.prefab : item.bankAlternativePrefab;
     }
 }

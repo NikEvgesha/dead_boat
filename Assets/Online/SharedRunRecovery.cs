@@ -18,7 +18,7 @@ namespace DeadBoat.Online
     // This ticket is a capability for a live room, never a persisted online world.
     public sealed class SharedRunRecovery : MonoBehaviour
     {
-        private const string ProtocolSuffix = "-dbseed4-inv1-pets1-cards3-regions1-skins1-choice1";
+        private const string ProtocolSuffix = "-dbseed4-inv1-pets1-cards3-regions1-skins1-choice1-shorepoi7";
         public static string ClientVersion => Application.version + ProtocolSuffix;
         private const string TicketKey = "DeadBoat.SharedReturn.v1";
         private const string IdentityKey = "DeadBoat.FusionIdentity.v1";

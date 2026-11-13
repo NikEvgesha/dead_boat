@@ -1,0 +1,10 @@
+DB-ON-250 ordinary LevelEvent finish + local Play Mode combat
+PASS normal arrival: no boss at start/before 50000; accelerated fixture placed boat 0.35 m before finish, real FixedUpdate movement crossed 50000 and BossSpawner created one sleigh. PlayDistance unchanged, no review route or manual SpawnBoss/EndGame invocation.
+PASS actual sword in icicle drop: boss HP 600 -> 579; hull lower bound=2,45
+PASS dodge: 4 m sidestep, locked marks, no icicle damage.
+PASS rotation: icicle salvos on attacks 3/6/9; all three existing colors still throw five gifts.
+PASS death during icicle warning: hazards removed, no late damage, ordinary Win UI presented.
+PASS icicle damage samples: 18,0 HP; one damage pulse per icicle/player.
+PASS downward source meshes, detach on launch, 0.9 s minimum warning, .6 s flight, low hold 3.2 s, chuckle and retreat; attached ice restored for next pass.
+LIMIT: local Editor test; full 50 km travel was accelerated to final 0.35 m; WebGL and synchronized sleigh AI are not verified. Shared runs keep original boss.
+PASS actual boat: ordinary finish spawned sleigh; attack 3 descended beside helm crossbeam within 4 m, three marked icicles targeted deck, all source icicles detached, 3/3 impacts, laugh/retreat and attached ice restored.
