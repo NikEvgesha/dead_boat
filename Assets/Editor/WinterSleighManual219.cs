@@ -64,7 +64,7 @@ public static class WinterSleighManual219
             await Until(()=>LoadingManager.Instance && LoadingManager.Instance.CurrentLocation==Location.Lobby);
             if(!(SaveManager.Instance.PersistentProvider is SharedRunPreviewSave))
                 throw new InvalidOperationException("The run is not using the isolated save");
-            LoadingManager.Instance.LoadLocation(Location.Game,"LevelEvent",false);
+            LoadingManager.Instance.PreviewWinterEvent();
             await Until(()=>SceneManager.GetActiveScene().name=="LevelEvent" && BoardController.Instance &&
                 BoardController.Instance.StartGame && PlayerMovement.Instance && PlayerInput.Instance);
             await PositionBoat();

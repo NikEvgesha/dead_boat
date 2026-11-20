@@ -81,6 +81,8 @@ public class LobbyManager : MonoBehaviour
         {
             ControlManager.Instance.ForceGameplayCursor();
             // Only the explicit start replaces an unfinished solo run.
+            SharedRunRecovery.Forget();
+            SoloRunBranch.Clear();
             SaveManager.Instance.SaveGameProgress(-1, new List<PickableItem>());
             LoadingManager.Instance.LoadLocation(Location.Game);
         }

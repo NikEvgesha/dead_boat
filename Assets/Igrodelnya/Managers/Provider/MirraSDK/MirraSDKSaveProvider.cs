@@ -469,6 +469,21 @@ public class MirraSDKSaveProvider : SaveProvider
     }
 
 
+    public override void SaveRunEvent(DeadBoat.Online.RunEventContent content)
+    {
+        if (!isInitialize || LoadRunEvent().Matches(content)) return;
+        MirraSDK.Data.SetInt("RunEventId", content.EventId);
+        MirraSDK.Data.SetInt("RunThemeRevision", content.ThemeRevision);
+        Changed = true;
+    }
+
+    public override DeadBoat.Online.RunEventContent LoadRunEvent() => isInitialize
+        ? new DeadBoat.Online.RunEventContent
+        {
+            EventId = MirraSDK.Data.GetInt("RunEventId", 0),
+            ThemeRevision = MirraSDK.Data.GetInt("RunThemeRevision", 0)
+        }
+        : default;
     public override void SaveLevelId(int id)
     {
         if (!isInitialize) return;

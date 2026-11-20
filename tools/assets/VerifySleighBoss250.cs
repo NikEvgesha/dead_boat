@@ -22,7 +22,7 @@ public static class VerifySleighBoss250
     public static async Task<string> Run()
     {
         Check(EditorApplication.isPlaying&&SaveManager.Instance&&SaveManager.Instance.PersistentProvider is DeadBoat.Online.SharedRunPreviewSave,"Isolated boot required");
-        if(SceneManager.GetActiveScene().name!="LevelEvent")LoadingManager.Instance.LoadLocation(Location.Game,"LevelEvent",false);
+        if(SceneManager.GetActiveScene().name!="LevelEvent")LoadingManager.Instance.PreviewWinterEvent();
         await Until(()=>SceneManager.GetActiveScene().name=="LevelEvent"&&PlayerMovement.Instance&&BoardController.Instance&&BoardController.Instance.StartGame,"Event did not initialize",60);
         var lines=new List<string>{"DB-ON-250 ordinary LevelEvent finish + local Play Mode combat"};
         File.WriteAllLines(Report,lines);

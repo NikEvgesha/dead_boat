@@ -84,6 +84,10 @@ public abstract class SaveProvider : MonoBehaviour
     public abstract void SaveWins(int wins);
     public abstract int LoadWins();
 
+    // Temporary providers keep this alongside the in-memory solo checkpoint.
+    private DeadBoat.Online.RunEventContent runEvent;
+    public virtual void SaveRunEvent(DeadBoat.Online.RunEventContent content) => runEvent = content;
+    public virtual DeadBoat.Online.RunEventContent LoadRunEvent() => runEvent;
     public abstract void SaveLevelId(int id);
 
     public abstract int LoadLevelId();

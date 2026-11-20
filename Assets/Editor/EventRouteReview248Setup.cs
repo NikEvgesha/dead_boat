@@ -36,7 +36,7 @@ public static class EventRouteReview248Setup
         {
             if(!LoadingManager.Instance||!SaveManager.Instance||!(SaveManager.Instance.PersistentProvider is DeadBoat.Online.SharedRunPreviewSave))return;
             if(SceneManager.GetActiveScene().name!="LevelEvent")
-            {if(!loading&&SceneManager.GetActiveScene().name=="Lobby"){loading=true;LoadingManager.Instance.LoadLocation(Location.Game,"LevelEvent",false);}return;}
+            {if(!loading&&SceneManager.GetActiveScene().name=="Lobby"){loading=true;LoadingManager.Instance.PreviewWinterEvent();}return;}
             if(!BoardController.Instance||!BoardController.Instance.StartGame||!PlayerMovement.Instance)return;
             SessionState.SetBool(Flag,false);await Setup();
         }

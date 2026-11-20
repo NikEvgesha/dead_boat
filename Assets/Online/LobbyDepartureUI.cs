@@ -23,6 +23,8 @@ namespace DeadBoat.Online
         private Page page;
         private LevelData selectedLevel;
         private int selectedLevelId;
+        private RunEventContent selectedContent;
+        private readonly List<(int levelId, GameObject row)> eventRows = new();
         private int seats = 4;
         private string rowSignature;
         private string localMessage;
@@ -92,7 +94,7 @@ namespace DeadBoat.Online
             busy = true;
             localMessage = Text("Создаём экипаж…", "Creating crew…");
             Refresh();
-            bool success = await online.CreateDepartureAsync(selectedLevelId, seats);
+            bool success = await online.CreateDepartureAsync(selectedLevelId, seats, selectedContent);
             if (this == null)
                 return;
             busy = false;
@@ -162,6 +164,11 @@ namespace DeadBoat.Online
             primary.gameObject.SetActive(page == Page.Browser || page == Page.Configure || page == Page.Waiting);
             secondary.gameObject.SetActive(page == Page.Browser || page == Page.Configure);
             primary.interactable = !busy && (page != Page.Browser || online.IsBrowsingDepartures);
+            if (page == Page.Configure && !RunEventCalendar.Current.IsOpenFor(selectedLevelId, selectedContent))
+            {
+                primary.interactable = false;
+                status.text = Text("Событие сейчас закрыто. Выберите другой уровень.", "This event is closed. Choose another level.");
+            }
             if (page == Page.Waiting)
                 primary.interactable = online.CanLaunchDepartureNow;
             secondary.interactable = !busy;
@@ -198,6 +205,12 @@ namespace DeadBoat.Online
                 rowSignature = page.ToString();
                 DrawCurrentPage();
             }
+            if (page == Page.Levels)
+                foreach (var (levelId, row) in eventRows)
+                {
+                    bool open = RunEventCalendar.Current.TryAdmit(levelId, out _);
+                    if (row.activeSelf != open) row.SetActive(open);
+                }
         }
 
         private void DrawBrowserRows(List<DepartureListing> listings)
@@ -244,6 +257,7 @@ namespace DeadBoat.Online
                     int id = i;
                     var button = AddRow(level.Title, () => SelectLevel(id, level));
                     button.interactable = level.Unlocked;
+                    if (RunEventCalendar.Current.TryGetEventLevel(level.Scene, out _)) eventRows.Add((id, button.gameObject));
                 }
             }
             else if (page == Page.Configure)
@@ -273,7 +287,7 @@ namespace DeadBoat.Online
 
         private void SelectLevel(int id, LevelData level)
         {
-            if (level == null || !level.Unlocked)
+            if (level == null || !level.Unlocked || !RunEventCalendar.Current.TryAdmit(id, out selectedContent))
                 return;
             selectedLevelId = id;
             selectedLevel = level;
@@ -374,6 +388,7 @@ namespace DeadBoat.Online
 
         private void ClearRows()
         {
+            eventRows.Clear();
             for (int i = rows.childCount - 1; i >= 0; i--)
             {
                 var child = rows.GetChild(i).gameObject;

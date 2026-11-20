@@ -46,7 +46,7 @@ public static class WinterSignalPass209Probe
         {
             await Until(()=>LoadingManager.Instance && LoadingManager.Instance.CurrentLocation==Location.Lobby);
             Require(SaveManager.Instance.PersistentProvider is SharedRunPreviewSave,"Save must be isolated");
-            LoadingManager.Instance.LoadLocation(Location.Game,"LevelEvent",false);
+            LoadingManager.Instance.PreviewWinterEvent();
             await Until(()=>SceneManager.GetActiveScene().name=="LevelEvent" && BoardController.Instance && BoardController.Instance.StartGame);
             await Verify();
             Note("PASS");

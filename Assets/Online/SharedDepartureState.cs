@@ -10,6 +10,8 @@ namespace DeadBoat.Online
     {
         [Networked] public int Seed { get; private set; }
         [Networked] public int GenerationVersion { get; private set; }
+        [Networked] public int LocationPoolRevision { get; private set; }
+        [Networked] public RunEventContent EventContent { get; private set; }
         [Networked] public int LevelId { get; private set; }
         [Networked] public int TargetPlayers { get; private set; }
         [Networked] public TickTimer Countdown { get; private set; }
@@ -36,11 +38,13 @@ namespace DeadBoat.Online
         }
         public override void Spawned() => Runner.MakeDontDestroyOnLoad(gameObject);
 
-        public void Initialize(int levelId, int targetPlayers)
+        public void Initialize(int levelId, int targetPlayers, RunEventContent content = default)
         {
             // Called by the creating master inside OnBeforeSpawned, before attachment.
             Seed = BitConverter.ToInt32(Guid.NewGuid().ToByteArray(), 0);
             GenerationVersion = RunRandom.Version;
+            LocationPoolRevision = LocationSpawnCollection.CurrentPoolRevision;
+            EventContent = content;
             LevelId = levelId;
             TargetPlayers = targetPlayers;
         }
@@ -87,6 +91,15 @@ namespace DeadBoat.Online
                     Phase = 3;
                 return;
             }
+            // Entering phase 2 seals admission. An accepted crew can finish after the window closes.
+            if (!RunEventCalendar.Current.IsOpenFor(LevelId, EventContent))
+            {
+                CancelCountdown();
+                Runner.SessionInfo.IsOpen = false;
+                Runner.SessionInfo.IsVisible = false;
+                Phase = 4;
+                return;
+            }
             int count = Runner.ActivePlayers.Count();
             if (Phase == 1 && (membershipChanged || !MembershipMatches()))
                 CancelCountdown();
@@ -107,7 +120,8 @@ namespace DeadBoat.Online
 
         public void LaunchNow()
         {
-            if (Object.HasStateAuthority && Phase == 0 && Runner.ActivePlayers.Any())
+            if (Object.HasStateAuthority && Phase == 0 && RunEventCalendar.Current.IsOpenFor(LevelId, EventContent) &&
+                Runner.ActivePlayers.Any())
                 StartCountdown();
         }
 

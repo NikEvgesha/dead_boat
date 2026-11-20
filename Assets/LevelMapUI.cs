@@ -13,6 +13,8 @@ public class LevelMapUI : MonoBehaviour
     private bool _transitionStarted;
     private GameObject _errorPanel;
     private Coroutine _hideErrorRoutine;
+    private readonly List<(int levelId, GameObject row)> _eventRows = new();
+    private float _nextCalendarCheck;
 
     private void Start()
     {
@@ -31,9 +33,16 @@ public class LevelMapUI : MonoBehaviour
     {
         if (_transitionStarted || level == null || !level.Unlocked)
             return;
+        int levelId = LevelManager.Instance.GetLevelId(level);
+        if (!RunEventCalendar.Current.TryAdmit(levelId, out var content))
+        {
+            ShowLoadError(true);
+            return;
+        }
 
         if (LoadingManager.Instance == null || GameLoader.Instance == null ||
-            string.IsNullOrEmpty(level.Scene) || !Application.CanStreamedLevelBeLoaded(level.Scene))
+            !RunEventCalendar.Current.TryResolve(levelId, content, out var eventScene) ||
+            !Application.CanStreamedLevelBeLoaded(eventScene ?? level.Scene))
         {
             ShowLoadError();
             return;
@@ -43,14 +52,19 @@ public class LevelMapUI : MonoBehaviour
         if (_errorPanel != null)
             _errorPanel.SetActive(false);
         GameLoader.Instance.ShowLoadingScreen();
-        StartCoroutine(LoadAfterVisibleFrame(level.Scene));
+        StartCoroutine(LoadAfterVisibleFrame(levelId, level, content));
     }
 
-    private IEnumerator LoadAfterVisibleFrame(string sceneName)
+    private IEnumerator LoadAfterVisibleFrame(int levelId, LevelData level, RunEventContent content)
     {
         // Let the loading canvas render once before the ad SDK or scene loading can block WebGL.
         yield return null;
 
+        if (!RunEventCalendar.Current.IsOpenFor(levelId, content))
+        {
+            OnLoadFailed(true);
+            yield break;
+        }
         // A solo map selection never keeps a Photon CCU slot during the run.
         LobbyOnlineBootstrap online = FindFirstObjectByType<LobbyOnlineBootstrap>();
         if (online != null)
@@ -58,14 +72,26 @@ public class LevelMapUI : MonoBehaviour
             var disconnect = online.DisconnectForSoloRunAsync();
             while (!disconnect.IsCompleted)
                 yield return null;
-            if (disconnect.IsFaulted)
-                Debug.LogException(disconnect.Exception);
+            if (disconnect.IsFaulted || disconnect.IsCanceled)
+            {
+                if (disconnect.IsFaulted) Debug.LogException(disconnect.Exception);
+                OnLoadFailed();
+                yield break;
+            }
         }
 
+        if (!RunEventCalendar.Current.IsOpenFor(levelId, content))
+        {
+            OnLoadFailed(true);
+            yield break;
+        }
         try
         {
             ControlManager.Instance.CursorActive = false;
-            LoadingManager.Instance.LoadLocation(Location.Game, sceneName);
+            SharedRunRecovery.Forget();
+            SoloRunBranch.Clear();
+            SaveManager.Instance.ResetGameProgress();
+            LoadingManager.Instance.LoadAcceptedRun(levelId, level, content, true);
         }
         catch (Exception exception)
         {
@@ -79,17 +105,17 @@ public class LevelMapUI : MonoBehaviour
         OnLoadFailed();
     }
 
-    private void OnLoadFailed()
+    private void OnLoadFailed(bool eventClosed = false)
     {
         GameLoader.Instance?.HideLoadingScreen();
         FindFirstObjectByType<LobbyOnlineBootstrap>()?.CancelSoloRunStart();
         _transitionStarted = false;
         if (ControlManager.Instance != null)
             ControlManager.Instance.CursorActive = true;
-        ShowLoadError();
+        ShowLoadError(eventClosed);
     }
 
-    private void ShowLoadError()
+    private void ShowLoadError(bool eventClosed = false)
     {
         Debug.LogWarning("Level selection: could not open the selected level.");
         if (_lockedLevelWindow == null || _levelPrefab == null)
@@ -120,10 +146,10 @@ public class LevelMapUI : MonoBehaviour
         }
 
         string language = LocalizationManager.Instance != null ? LocalizationManager.Instance.CurrentLanguage : null;
-        _errorPanel.GetComponentInChildren<Text>().text =
-            language != null && language.StartsWith("Ru", StringComparison.OrdinalIgnoreCase)
-                ? "Не удалось открыть уровень. Попробуйте ещё раз."
-                : "Could not open this level. Please try again.";
+        bool russian = language != null && language.StartsWith("Ru", StringComparison.OrdinalIgnoreCase);
+        _errorPanel.GetComponentInChildren<Text>().text = eventClosed
+            ? (russian ? "Событие сейчас закрыто." : "This event is currently closed.")
+            : (russian ? "Не удалось открыть уровень. Попробуйте ещё раз." : "Could not open this level. Please try again.");
         _errorPanel.SetActive(true);
         _errorPanel.transform.SetAsLastSibling();
         if (_hideErrorRoutine != null)
@@ -141,10 +167,29 @@ public class LevelMapUI : MonoBehaviour
 
     public void Init(List<LevelData> levels)
     {
-       foreach (LevelData lvlData in levels)
+        for (int i = 0; i < levels.Count; i++)
         {
+            LevelData lvlData = levels[i];
             LevelMapElement lvl = Instantiate(_levelPrefab, transform);
             lvl.Init(lvlData, this);
+            if (RunEventCalendar.Current.TryGetEventLevel(lvlData.Scene, out _))
+                _eventRows.Add((i, lvl.gameObject));
+        }
+        RefreshEventRows();
+    }
+
+    private void Update()
+    {
+        if (_eventRows.Count != 0 && Time.unscaledTime >= _nextCalendarCheck) RefreshEventRows();
+    }
+
+    private void RefreshEventRows()
+    {
+        _nextCalendarCheck = Time.unscaledTime + 1;
+        foreach (var (levelId, row) in _eventRows)
+        {
+            bool open = RunEventCalendar.Current.TryAdmit(levelId, out _);
+            if (row.activeSelf != open) row.SetActive(open);
         }
     }
 }

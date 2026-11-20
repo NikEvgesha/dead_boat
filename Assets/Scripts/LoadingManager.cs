@@ -1,6 +1,7 @@
 using MirraGames.SDK;
 using MirraGames.SDK.Common;
 using System;
+using DeadBoat.Online;
 using UnityEngine;
 
 [DefaultExecutionOrder(1)]
@@ -11,6 +12,7 @@ public class LoadingManager : MonoBehaviour
 
     private Location _location = Location.None;
     public Location CurrentLocation;
+    public RunEventContent CurrentRunEvent { get; private set; }
 
     public Action<Location> LocationChanged;
 
@@ -56,7 +58,6 @@ public class LoadingManager : MonoBehaviour
             GameLoader.Instance.LoadNextScene(DeadBoat.FirstRun.FirstRunSession.SceneName, true, false);
             return;
         }
-        bool haveSave = SaveManager.Instance.LoadGameProgress().Item1 >= 0;
         if (DeadBoat.Online.SharedRunRecovery.HasPending)
         {
             _ = DeadBoat.Online.SharedRunRecovery.Instance;
@@ -64,8 +65,13 @@ public class LoadingManager : MonoBehaviour
             GameLoader.Instance.LoadNextScene(_lobbyScene, true);
             return;
         }
-        DeadBoat.Online.SoloRunBranch.RestoreStartup();
-        haveSave = SaveManager.Instance.LoadGameProgress().Item1 >= 0;
+        if (!SoloRunBranch.RestoreStartup())
+        {
+            _location = Location.Lobby;
+            GameLoader.Instance.LoadNextScene(_lobbyScene, true);
+            return;
+        }
+        bool haveSave = SaveManager.Instance.LoadGameProgress().Item1 >= 0;
         if (SaveManager.Instance.IsNewPlayer || haveSave)
         {
             _location = Location.Game;
@@ -74,8 +80,13 @@ public class LoadingManager : MonoBehaviour
             else
             {
                 int lvlId = SaveManager.Instance.LoadLevelId();
-                if (LevelManager.Instance != null && LevelManager.Instance.TryGetLevel(lvlId, out LevelData level))
-                    GameLoader.Instance.LoadNextScene(level.Scene, true);
+                var content = SaveManager.Instance.PersistentProvider.LoadRunEvent();
+                if (LevelManager.Instance != null && LevelManager.Instance.TryGetLevel(lvlId, out LevelData level) &&
+                    RunEventCalendar.Current.TryResolveSaved(lvlId, ref content, out string eventScene))
+                {
+                    CurrentRunEvent = content;
+                    GameLoader.Instance.LoadNextScene(eventScene ?? level.Scene, true);
+                }
                 else
                 {
                     _location = Location.Lobby;
@@ -108,6 +119,40 @@ public class LoadingManager : MonoBehaviour
 
     public void LoadLocation(Location location, string sceneName = null, bool withAds = true)
     {
+        var calendar = RunEventCalendar.Current;
+        if (location == Location.Game && calendar.TryGetEventLevel(sceneName ?? _gameScene, out var levelId))
+        {
+            if (!calendar.TryAdmit(levelId, out var content) ||
+                !calendar.TryResolve(levelId, content, out var openScene) || openScene != (sceneName ?? _gameScene))
+            {
+                GameLoader.Instance?.OnLoadFailed?.Invoke("Event is closed.");
+                return;
+            }
+            LoadLocationCore(location, openScene, withAds, content);
+            return;
+        }
+        LoadLocationCore(location, sceneName, withAds, default);
+    }
+
+    internal void LoadAcceptedRun(int levelId, LevelData level, RunEventContent content, bool withAds)
+    {
+        if (!RunEventCalendar.Current.TryResolve(levelId, content, out var scene))
+            throw new InvalidOperationException("Unsupported event content for level " + levelId);
+        LoadLocationCore(Location.Game, scene ?? level.Scene, withAds, content);
+    }
+
+#if UNITY_EDITOR
+    public void PreviewWinterEvent()
+    {
+        if (SaveManager.Instance?.PersistentProvider is not SharedRunPreviewSave || SharedRunContext.Active ||
+            !LevelManager.Instance.TryGetLevel(3, out var level))
+            throw new InvalidOperationException("An isolated solo preview is required.");
+        LoadAcceptedRun(3, level, RunEventCalendar.FirstWinterTheme, false);
+    }
+#endif
+
+    private void LoadLocationCore(Location location, string sceneName, bool withAds, RunEventContent content)
+    {
         if (DeadBoat.FirstRun.FirstRunSession.Active && location == Location.Game && sceneName != DeadBoat.FirstRun.FirstRunSession.SceneName)
         {
             LoadLocation(Location.Lobby, null, false);
@@ -133,6 +178,7 @@ public class LoadingManager : MonoBehaviour
             if (!isolatedPreview) { LoadLocation(Location.Lobby, null, false); return; }
         }
         TryGameplayStop();
+        CurrentRunEvent = content;
 
         if (location == Location.Game)
         {

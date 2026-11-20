@@ -109,38 +109,41 @@ namespace DeadBoat.Online.Editor
                 running = false;
             }
         }
-        private static NetworkRunner NewRunner()
+        internal static NetworkRunner NewRunner()
         {
             var root = new GameObject("Recovery test runner");
             root.AddComponent<LobbySceneManager>(); root.AddComponent<NetworkObjectProviderDefault>();
             return root.AddComponent<NetworkRunner>();
         }
-        private static StartGameArgs Args(NetworkRunner runner, string room, long id, bool create)
+        internal static StartGameArgs Args(NetworkRunner runner, string room, long id, bool create)
         {
             var config = LobbyOnlineBootstrap.CreateDepartureNetworkConfig();
             config.PeerMode = NetworkProjectConfig.PeerModes.Multiple;
             return new StartGameArgs
             {
                 GameMode = GameMode.Shared, Config = config, PlayerUniqueId = id,
+                AuthValues = new Photon.Realtime.AuthenticationValues(room + "-" + id),
                 CustomPhotonAppSettings = SharedRunRecovery.Settings("eu"), SessionName = room,
                 CustomLobbyName = "deadboat-recovery-probe-v1", PlayerCount = 2,
                 EnableClientSessionCreation = create, IsVisible = false,
                 SceneManager = runner.GetComponent<LobbySceneManager>(), ObjectProvider = runner.GetComponent<NetworkObjectProviderDefault>()
             };
         }
-        private static async Task<NetworkRunner> Connect(string room, long id, bool create)
+        internal static async Task<NetworkRunner> Connect(string room, long id, bool create)
         {
             var runner = NewRunner(); var result = await runner.StartGame(Args(runner, room, id, create));
-            Require(result.Ok, "connect: " + result.ShutdownReason); return runner;
+            if (result.Ok) return runner;
+            if (runner != null) await runner.Shutdown();
+            throw new InvalidOperationException("connect: " + result.ShutdownReason);
         }
-        private static void SpawnAvatar(NetworkRunner runner)
+        internal static void SpawnAvatar(NetworkRunner runner)
         {
             var prefab = AssetDatabase.LoadAssetAtPath<NetworkObject>("Assets/Online/Avatars/LobbyNetworkAvatar.prefab");
             runner.SetPlayerObject(runner.LocalPlayer, runner.Spawn(prefab));
         }
-        private static SharedDepartureState Replica(NetworkRunner runner) =>
+        internal static SharedDepartureState Replica(NetworkRunner runner) =>
             UnityEngine.Object.FindObjectsByType<SharedDepartureState>(FindObjectsSortMode.None).FirstOrDefault(s => s.Runner == runner);
-        private static async Task Until(Func<bool> test, string label)
+        internal static async Task Until(Func<bool> test, string label)
         {
             double until = Time.realtimeSinceStartupAsDouble + 25;
             while (!test()) { Require(Time.realtimeSinceStartupAsDouble < until, "timeout: " + label); await Task.Delay(50); }

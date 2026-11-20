@@ -188,7 +188,7 @@ public static class SleighBossReview244
             if (SceneManager.GetActiveScene().name != "LevelEvent")
             {
                 if (!loading && SceneManager.GetActiveScene().name == "Lobby")
-                { loading = true; LoadingManager.Instance.LoadLocation(Location.Game, "LevelEvent", false); }
+                { loading = true; LoadingManager.Instance.PreviewWinterEvent(); }
                 return;
             }
             if (!PlayerMovement.Instance || !BoardController.Instance || !BoardController.Instance.StartGame) return;

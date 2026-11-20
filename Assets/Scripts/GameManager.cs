@@ -66,6 +66,7 @@ public class GameManager : MonoBehaviour
         _ammoManager = _player.GetComponent<PlayerAmmoManager>();
         EggSpawnRuntimeState.ResetRun();
 
+        if (LoadingManager.Instance != null) SaveManager.Instance.SaveRunEvent(LoadingManager.Instance.CurrentRunEvent);
         (int, List<string>) loadedData = SaveManager.Instance.LoadGameProgress();
 
         //Debug.Log(String.Format("LOADED DATA: {0},  {1} items", loadedData.Item1, loadedData.Item2.Count));

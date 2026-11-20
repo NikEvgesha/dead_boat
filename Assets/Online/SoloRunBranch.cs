@@ -37,6 +37,7 @@ namespace DeadBoat.Online
     {
         public int Seed, Level, NightSequence, Generator = RunRandom.Version;
         public int LocationPoolRevision;
+        public RunEventContent EventContent;
         public string SourceRun;
         public long PlayerId;
         public float Distance, Origin, Fuel, Rear;
@@ -89,7 +90,7 @@ namespace DeadBoat.Online
             return new SharedSoloSnapshot
             {
                 Seed = state.Seed, Level = state.LevelId, SourceRun = state.Runner.SessionInfo.Name, PlayerId = SharedRunRecovery.LocalId,
-                LocationPoolRevision = LocationSpawnCollection.CurrentPoolRevision,
+                Generator = state.GenerationVersion, LocationPoolRevision = state.LocationPoolRevision, EventContent = state.EventContent,
                 Distance = state.BoatDistance, Origin = LobbyNetworkAvatar.Origin.z,
                 Fuel = state.BoatFuel, Rear = state.WorldRear, Personal = data, NightSequence = state.NightSpawnSequence,
                 Bag = bag.ToArray(), Items = world.ToArray(), Enemies = enemies.ToArray(),
@@ -136,19 +137,25 @@ namespace DeadBoat.Online
             PlayerPrefs.SetString(SaveKey, JsonUtility.ToJson(value));
             PlayerPrefs.Save();
         }
-        public static void RestoreStartup()
+        public static bool RestoreStartup()
         {
-            if (!PlayerPrefs.HasKey(SaveKey)) return;
+            if (!PlayerPrefs.HasKey(SaveKey)) return true;
             try
             {
                 var value = JsonUtility.FromJson<SharedSoloSnapshot>(PlayerPrefs.GetString(SaveKey));
-                if (value == null || value.Generator != RunRandom.Version)
-                { Clear(); return; }
+                if (value == null)
+                { Clear(); return true; }
+                if (value.Generator != RunRandom.Version || value.LocationPoolRevision < 0 ||
+                    value.LocationPoolRevision > LocationSpawnCollection.CurrentPoolRevision ||
+                    !RunEventCalendar.Current.TryResolveSaved(value.Level, ref value.EventContent, out _))
+                    return false;
                 Create(value);
                 instance.needsInventory = true;
+                SaveManager.Instance.PersistentProvider.SaveRunEvent(value.EventContent);
                 value.Personal.SeedSave(SaveManager.Instance.PersistentProvider, value.Level, value.Distance, value.Origin, value.Fuel);
             }
             catch (Exception) { Clear(); }
+            return true;
         }
         private static void Create(SharedSoloSnapshot value)
         {
@@ -168,6 +175,7 @@ namespace DeadBoat.Online
             Create(value);
             instance.needsInventory = instance.waitingScene = true;
             var provider = SaveManager.Instance.PersistentProvider;
+            provider.SaveRunEvent(value.EventContent);
             value.Personal.SeedSave(provider, value.Level, value.Distance, value.Origin, value.Fuel);
             provider.SaveInventory(new List<PickableItem>());
             // The outgoing boat trigger must not reparent the preserved player
@@ -186,7 +194,7 @@ namespace DeadBoat.Online
             };
             GameLoader.Instance.OnSceneLoaded += loaded;
             if (LevelManager.Instance.TryGetLevel(value.Level, out var level))
-                LoadingManager.Instance.LoadLocation(Location.Game, level.Scene, false);
+                LoadingManager.Instance.LoadAcceptedRun(value.Level, level, value.EventContent, false);
         }
         public static void Clear()
         {

@@ -13,12 +13,26 @@ namespace DeadBoat.Online
         public string Room, Region, Lobby, Version;
         public long PlayerId;
         public int Seed, Level, Generator;
+        public int LocationPoolRevision;
+        public RunEventContent EventContent;
+
+        public static SharedReturnTicket ForRun(SharedDepartureState state, string lobby, long playerId) => new()
+        {
+            Room = state.Runner.SessionInfo.Name, Region = state.Runner.SessionInfo.Region, Lobby = lobby,
+            PlayerId = playerId, Seed = state.Seed, Level = state.LevelId, Generator = state.GenerationVersion,
+            Version = SharedRunRecovery.ClientVersion, LocationPoolRevision = state.LocationPoolRevision, EventContent = state.EventContent
+        };
+
+        public bool Matches(SharedDepartureState state) =>
+            state != null && Seed == state.Seed && Level == state.LevelId && Generator == state.GenerationVersion &&
+            LocationPoolRevision == state.LocationPoolRevision && EventContent.Matches(state.EventContent) &&
+            RunEventCalendar.Current.TryResolve(Level, EventContent, out _);
     }
 
     // This ticket is a capability for a live room, never a persisted online world.
     public sealed class SharedRunRecovery : MonoBehaviour
     {
-        private const string ProtocolSuffix = "-dbseed4-inv1-pets1-cards3-regions1-skins1-choice1-shorepoi7-itemscale1-sales1-actions1";
+        private const string ProtocolSuffix = "-dbseed4-inv1-pets1-cards3-regions1-skins1-choice1-shorepoi7-itemscale1-sales1-actions1-event1";
         public static string ClientVersion => Application.version + ProtocolSuffix;
         private const string TicketKey = "DeadBoat.SharedReturn.v1";
         private const string IdentityKey = "DeadBoat.FusionIdentity.v1";
@@ -104,16 +118,12 @@ namespace DeadBoat.Online
             if (!string.IsNullOrEmpty(region)) settings.FixedRegion = region;
             return settings;
         }
-        public void Track(NetworkRunner runner, SharedDepartureState state, string lobbyName)
+        public void Track(SharedDepartureState state, string lobbyName)
         {
             if (checking) CancelCheck();
             SoloRunBranch.Suspend();
-            ticket = new SharedReturnTicket
-            {
-                Room = runner.SessionInfo.Name, Region = runner.SessionInfo.Region, Lobby = lobbyName,
-                PlayerId = LocalId, Seed = state.Seed, Level = state.LevelId,
-                Generator = state.GenerationVersion, Version = ClientVersion
-            };
+            ticket = SharedReturnTicket.ForRun(state, lobbyName, LocalId);
+            fallback = null;
             bool durable = SharedReturnStorage.Write(TicketKey, JsonUtility.ToJson(ticket));
             Debug.Log($"[Shared recovery storage] Run record written; durable={durable}; backend={SharedReturnStorage.Backend}.");
             suppressOffer = lost = offered = false;
@@ -239,7 +249,9 @@ namespace DeadBoat.Online
             Message = "Проверяем, продолжает ли экипаж забег…";
             try
             {
-                if (requested.Version != ClientVersion || requested.Generator != RunRandom.Version)
+                if (requested.Version != ClientVersion || requested.Generator != RunRandom.Version ||
+                    requested.LocationPoolRevision != LocationSpawnCollection.CurrentPoolRevision ||
+                    !RunEventCalendar.Current.TryResolve(requested.Level, requested.EventContent, out _))
                 { Message = "Версия забега изменилась. Вернуться не получится."; InvalidateReturn(); return; }
                 var lobby = FindAnyObjectByType<LobbyOnlineBootstrap>();
                 if (lobby != null) await AwaitCheck(lobby.SuspendForRecoveryAsync(), attempt, 7, "stop lobby");
@@ -291,8 +303,7 @@ namespace DeadBoat.Online
                     Message = "Состояние экипажа ещё не получено. Можно повторить подключение.";
                     await AwaitCheck(StopProbeAsync(), attempt, 7, "stop incomplete probe"); return;
                 }
-                if (probeState.Seed != requested.Seed || probeState.LevelId != requested.Level ||
-                    probeState.GenerationVersion != requested.Generator ||
+                if (!requested.Matches(probeState) ||
                     !probeState.CanReturn(probe.LocalPlayer) || !probeState.HasOtherPlayingCrew(probe.LocalPlayer))
                 { Message = "Этот забег уже недоступен для возврата."; InvalidateReturn(); await AwaitCheck(StopProbeAsync(), attempt, 7, "stop unavailable probe"); return; }
                 Message = "Экипаж ещё в пути. Можно вернуться к команде.";
@@ -396,7 +407,7 @@ namespace DeadBoat.Online
                 if (checkVersion != expectedCheck) return;
             }
             if (probeState == null || probe == null || ticket == null) return;
-            if (!probeState.CanReturn(probe.LocalPlayer) || !probeState.HasOtherPlayingCrew(probe.LocalPlayer))
+            if (!ticket.Matches(probeState) || !probeState.CanReturn(probe.LocalPlayer) || !probeState.HasOtherPlayingCrew(probe.LocalPlayer))
             { Message = "Экипаж уже вышел из забега."; await StopProbeAsync(); InvalidateReturn(); return; }
             if (!probeState.Personal.TryGet(probe.LocalPlayer, out var personal))
             { Message = "Экипаж ещё не получил твоё состояние. Повтори попытку."; return; }
@@ -421,7 +432,7 @@ namespace DeadBoat.Online
                 bool loaded = false;
                 Action onLoaded = () => loaded = true;
                 GameLoader.Instance.OnSceneLoaded += onLoaded;
-                LoadingManager.Instance.LoadLocation(Location.Game, level.Scene, false);
+                LoadingManager.Instance.LoadAcceptedRun(ticket.Level, level, ticket.EventContent, false);
                 double until = Time.realtimeSinceStartupAsDouble + 180;
                 while ((!loaded || BoardController.Instance == null || !BoardController.Instance.StartGame ||
                     LoadingManager.Instance.CurrentLocation != Location.Game) && Time.realtimeSinceStartupAsDouble < until)

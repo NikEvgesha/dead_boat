@@ -57,6 +57,8 @@ public class LevelManager : MonoBehaviour
 
     public int GetLevelId(string sceneName)
     {
+        if (DeadBoat.Online.RunEventCalendar.Current.TryGetEventLevel(sceneName, out int eventLevelId))
+            return eventLevelId;
         for (int i = 0; i < _levels.Levels.Count; i++)
         {
             if (_levels.Levels[i].Scene == sceneName)

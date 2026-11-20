@@ -46,7 +46,7 @@ public static class WinterShorePois204Probe
         {
             await Until(()=>LoadingManager.Instance && LoadingManager.Instance.CurrentLocation==Location.Lobby);
             Require(SaveManager.Instance.PersistentProvider is SharedRunPreviewSave,"Isolated save");
-            LoadingManager.Instance.LoadLocation(Location.Game,"LevelEvent",false);
+            LoadingManager.Instance.PreviewWinterEvent();
             await Until(()=>SceneManager.GetActiveScene().name=="LevelEvent" && BoardController.Instance && BoardController.Instance.StartGame);
             Note("LevelEvent loaded through the standard loader.");
             await VerifyRun();

@@ -64,7 +64,7 @@ public static class RunWinter175
         var memory = manager.gameObject.AddComponent<Winter175MemorySave>();
         memory.Persistent = preview.Persistent;
         typeof(SaveManager).GetField("saveProvider", Private).SetValue(manager, memory);
-        LoadingManager.Instance.LoadLocation(Location.Game, "LevelEvent", false);
+        LoadingManager.Instance.PreviewWinterEvent();
         await Until(() => SceneManager.GetActiveScene().name == "LevelEvent" &&
             LoadingManager.Instance.CurrentLocation == Location.Game && BoardController.Instance &&
             BoardController.Instance.StartGame, "LevelEvent loaded through LoadingManager");

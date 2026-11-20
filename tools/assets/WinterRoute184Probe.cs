@@ -43,7 +43,7 @@ public static class WinterRoute184Probe
         {
             await Until(() => LoadingManager.Instance && LoadingManager.Instance.CurrentLocation == Location.Lobby, "Lobby");
             Check(SaveManager.Instance.PersistentProvider is SharedRunPreviewSave, "Isolated save");
-            LoadingManager.Instance.LoadLocation(Location.Game, "LevelEvent", false);
+            LoadingManager.Instance.PreviewWinterEvent();
             await Until(() => SceneManager.GetActiveScene().name == "LevelEvent" && LoadingManager.Instance.CurrentLocation == Location.Game &&
                 BoardController.Instance && BoardController.Instance.StartGame, "LevelEvent started through the normal loader");
             await Task.Yield();

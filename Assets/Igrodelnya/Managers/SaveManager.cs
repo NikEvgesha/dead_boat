@@ -176,6 +176,7 @@ public class SaveManager : MonoBehaviour
 
     public void SaveGameProgress(int distance = -1, List<PickableItem> items = null, int lvlId = -1)
     { 
+        if (distance < 0) ActiveProvider.SaveRunEvent(default);
         ActiveProvider.SaveDistance(distance);
         ActiveProvider.SaveLevelId(lvlId);
         if (items != null)
@@ -234,6 +235,7 @@ public class SaveManager : MonoBehaviour
         return ActiveProvider.LoadBoardItem();
     }
 
+    public void SaveRunEvent(DeadBoat.Online.RunEventContent content) => ActiveProvider.SaveRunEvent(content);
     public int LoadLevelId() {
         return ActiveProvider.LoadLevelId();
     }
