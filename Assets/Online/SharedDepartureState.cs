@@ -92,7 +92,7 @@ namespace DeadBoat.Online
                 return;
             }
             // Entering phase 2 seals admission. An accepted crew can finish after the window closes.
-            if (!RunEventCalendar.Current.IsOpenFor(LevelId, EventContent))
+            if (!RunEventCalendar.Current.IsOpenFor(LevelId, EventContent, forCrew: true))
             {
                 CancelCountdown();
                 Runner.SessionInfo.IsOpen = false;
@@ -120,7 +120,7 @@ namespace DeadBoat.Online
 
         public void LaunchNow()
         {
-            if (Object.HasStateAuthority && Phase == 0 && RunEventCalendar.Current.IsOpenFor(LevelId, EventContent) &&
+            if (Object.HasStateAuthority && Phase == 0 && RunEventCalendar.Current.IsOpenFor(LevelId, EventContent, forCrew: true) &&
                 Runner.ActivePlayers.Any())
                 StartCountdown();
         }

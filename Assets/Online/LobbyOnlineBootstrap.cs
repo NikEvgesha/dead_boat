@@ -335,7 +335,7 @@ namespace DeadBoat.Online
                 departureTransition || inDepartureRoom || targetPlayers < 2 || targetPlayers > 4 ||
                 LevelManager.Instance == null ||
                 !LevelManager.Instance.TryGetLevel(levelId, out var level) || !level.Unlocked ||
-                !RunEventCalendar.Current.TryAdmit(levelId, out var content) ||
+                !RunEventCalendar.Current.TryAdmit(levelId, out var content, forCrew: true) ||
                 (selected.HasValue && !selected.Value.Matches(content)))
             {
                 Debug.LogWarning("[Lobby online] Departure creation rejected: invalid level, mode or transition state.");
@@ -353,7 +353,7 @@ namespace DeadBoat.Online
 
         private async Task<bool> StartDepartureAsync(string sessionName, int levelId, int targetPlayers, bool create, RunEventContent content)
         {
-            if (!RunEventCalendar.Current.IsOpenFor(levelId, content)) return false;
+            if (!RunEventCalendar.Current.IsOpenFor(levelId, content, forCrew: true)) return false;
             launchingDeparture = false;
             departureState = null;
             departureTransition = true;
@@ -388,7 +388,7 @@ namespace DeadBoat.Online
 
                 var result = await startTask;
                 if (leaving || revision != connectionRevision || mode != LobbyOnlineMode.Online ||
-                    !RunEventCalendar.Current.IsOpenFor(levelId, content))
+                    !RunEventCalendar.Current.IsOpenFor(levelId, content, forCrew: true))
                 {
                     await StopRunnerAsync();
                     return false;

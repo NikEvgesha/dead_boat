@@ -10,15 +10,18 @@ public class LevelMapElement : MonoBehaviour
     [SerializeField] private Image _progressBar;
     [SerializeField] private Text _levelPrice;
     [SerializeField] private GameObject _unlockButton;
+    [SerializeField] private AspectRatioFitter _cardShape;
    
     private LevelData _levelData;
     private LevelMapUI _levelMapUI;
+    private AspectRatioFitter.AspectMode _originalAspectMode;
 
 
     public void Init(LevelData lvlData, LevelMapUI mapUI)
     {
         _levelData = lvlData;
         _levelMapUI = mapUI;
+        if (_cardShape != null) _originalAspectMode = _cardShape.aspectMode;
         _lvlIMG.sprite = _levelData.IMG;
         _title.text = lvlData.Title;
 
@@ -49,6 +52,12 @@ public class LevelMapElement : MonoBehaviour
         {
             _levelMapUI.SelectLevel(_levelData);
         }
+    }
+
+    public void FitInsideCell(bool constrained)
+    {
+        if (_cardShape != null)
+            _cardShape.aspectMode = constrained ? AspectRatioFitter.AspectMode.FitInParent : _originalAspectMode;
     }
 
 

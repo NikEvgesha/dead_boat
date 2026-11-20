@@ -143,9 +143,9 @@ namespace DeadBoat.Online.Editor
         }
         internal static SharedDepartureState Replica(NetworkRunner runner) =>
             UnityEngine.Object.FindObjectsByType<SharedDepartureState>(FindObjectsSortMode.None).FirstOrDefault(s => s.Runner == runner);
-        internal static async Task Until(Func<bool> test, string label)
+        internal static async Task Until(Func<bool> test, string label, int timeoutSeconds = 25)
         {
-            double until = Time.realtimeSinceStartupAsDouble + 25;
+            double until = Time.realtimeSinceStartupAsDouble + timeoutSeconds;
             while (!test()) { Require(Time.realtimeSinceStartupAsDouble < until, "timeout: " + label); await Task.Delay(50); }
         }
         private static void Require(bool value, string label) { if (!value) throw new InvalidOperationException(label); }

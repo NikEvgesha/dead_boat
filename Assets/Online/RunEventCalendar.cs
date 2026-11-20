@@ -13,26 +13,32 @@ namespace DeadBoat.Online
             EventId == other.EventId && ThemeRevision == other.ThemeRevision;
     }
 
+    public enum EventWindow { OrdinaryLevel, Hidden, Upcoming, Open }
+
     public readonly struct ScheduledRunEvent
     {
         public readonly int LevelId;
         public readonly RunEventContent Content;
         public readonly string Scene;
         public readonly DateTimeOffset? StartUtc, EndUtc;
+        public readonly bool CrewReady;
 
         public ScheduledRunEvent(int levelId, RunEventContent content, string scene,
-            DateTimeOffset? startUtc, DateTimeOffset? endUtc)
+            DateTimeOffset? startUtc, DateTimeOffset? endUtc, bool crewReady)
         {
             LevelId = levelId;
             Content = content;
             Scene = scene;
             StartUtc = startUtc;
             EndUtc = endUtc;
+            CrewReady = crewReady;
         }
 
-        public bool IsOpen(DateTimeOffset now) =>
+        public bool HasDates =>
             StartUtc is DateTimeOffset start && EndUtc is DateTimeOffset end &&
-            start.Offset == TimeSpan.Zero && end.Offset == TimeSpan.Zero && start <= now && now < end;
+            start.Offset == TimeSpan.Zero && end.Offset == TimeSpan.Zero && start < end;
+
+        public bool IsOpen(DateTimeOffset now) => HasDates && StartUtc <= now && now < EndUtc;
     }
 
     public sealed class RunEventCalendar
@@ -40,7 +46,7 @@ namespace DeadBoat.Online
         // Content IDs are durable. Retain old entries and scenes for accepted runs when adding a new theme.
         public static readonly RunEventContent FirstWinterTheme = new() { EventId = 1, ThemeRevision = 1 };
         private static readonly ScheduledRunEvent Winter = new(3, FirstWinterTheme, "LevelEvent",
-            startUtc: null, endUtc: null);
+            startUtc: null, endUtc: null, crewReady: false); // Enable with the shared sleigh encounter (DB-ON-263).
         public static RunEventCalendar Current { get; private set; } = new(() => DateTimeOffset.UtcNow, Winter);
 
         private readonly Func<DateTimeOffset> utcNow;
@@ -52,29 +58,52 @@ namespace DeadBoat.Online
             this.events = (ScheduledRunEvent[])events.Clone();
         }
 
-        public bool TryAdmit(int levelId, out RunEventContent content)
+        public EventWindow GetWindow(int levelId, out ScheduledRunEvent window)
         {
-            content = default;
-            bool scheduled = false;
+            window = default;
+            var state = EventWindow.OrdinaryLevel;
             DateTimeOffset now = default;
             foreach (var entry in events)
             {
                 if (entry.LevelId != levelId) continue;
-                if (!scheduled) now = utcNow();
-                scheduled = true;
-                if (!entry.IsOpen(now)) continue;
-                if (content.EventId != 0)
+                if (state == EventWindow.OrdinaryLevel)
                 {
-                    content = default;
-                    return false; // Ambiguous overlapping windows.
+                    now = utcNow();
+                    state = EventWindow.Hidden;
                 }
-                content = entry.Content;
+                if (!entry.HasDates || entry.Content.EventId == 0 || entry.EndUtc <= now) continue;
+                if (entry.StartUtc > now)
+                {
+                    if (state == EventWindow.Hidden || (state == EventWindow.Upcoming && entry.StartUtc < window.StartUtc))
+                    {
+                        window = entry;
+                        state = EventWindow.Upcoming;
+                    }
+                    continue;
+                }
+                if (state == EventWindow.Open)
+                {
+                    window = default;
+                    return EventWindow.Hidden; // Ambiguous overlapping windows.
+                }
+                window = entry;
+                state = EventWindow.Open;
             }
-            return levelId >= 0 && (!scheduled || content.EventId != 0);
+            return state;
         }
 
-        public bool IsOpenFor(int levelId, RunEventContent selected) =>
-            TryAdmit(levelId, out var open) && open.Matches(selected);
+        public bool TryAdmit(int levelId, out RunEventContent content, bool forCrew = false)
+        {
+            content = default;
+            var state = GetWindow(levelId, out var window);
+            if (state == EventWindow.OrdinaryLevel) return levelId >= 0;
+            if (state != EventWindow.Open || (forCrew && !window.CrewReady)) return false;
+            content = window.Content;
+            return true;
+        }
+
+        public bool IsOpenFor(int levelId, RunEventContent selected, bool forCrew = false) =>
+            TryAdmit(levelId, out var open, forCrew) && open.Matches(selected);
 
         public bool TryGetEventLevel(string scene, out int levelId)
         {

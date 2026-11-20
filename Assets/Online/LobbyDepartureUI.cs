@@ -15,6 +15,7 @@ namespace DeadBoat.Online
         private LobbyOnlineBootstrap online;
         private GameObject root;
         private RectTransform rows;
+        private ScrollRect scroll;
         private Text title;
         private Text status;
         private Button primary;
@@ -24,7 +25,9 @@ namespace DeadBoat.Online
         private LevelData selectedLevel;
         private int selectedLevelId;
         private RunEventContent selectedContent;
-        private readonly List<(int levelId, GameObject row)> eventRows = new();
+        private readonly List<EventLevelCard> eventRows = new();
+        private string rowLanguage;
+        private RectTransform panel;
         private int seats = 4;
         private string rowSignature;
         private string localMessage;
@@ -137,6 +140,14 @@ namespace DeadBoat.Online
             if (root == null || online == null)
                 return;
 
+            var available = ((RectTransform)root.transform).rect.size;
+            if (available.x > 0 && available.y > 0)
+            {
+                float scale = Mathf.Min(1, Mathf.Min(available.x / 818f, available.y / 618f));
+                if (!Mathf.Approximately(panel.localScale.x, scale)) panel.localScale = Vector3.one * scale;
+            }
+            var language = LocalizationManager.Instance?.CurrentLanguage;
+            if (rowLanguage != language) { rowLanguage = language; rowSignature = null; }
             title.text = page switch
             {
                 Page.Browser => Text("Отправления", "Departures"),
@@ -149,8 +160,7 @@ namespace DeadBoat.Online
                 Page.Browser => online.IsBrowsingDepartures
                     ? Text("Доступные публичные экипажи", "Available public crews")
                     : Text("Подключаем каталог отправлений…", "Connecting to departure directory…"),
-                Page.Levels => Text("Для одиночной игры есть отдельная кнопка.",
-                    "Use the separate button for solo play."),
+                Page.Levels => string.Empty,
                 Page.Configure => Text("Публичный экипаж · до ", "Public crew · up to ") + seats,
                 _ => online.DepartureAborted
                     ? Text("Отправление отменено. Покиньте экипаж и создайте новый.",
@@ -162,12 +172,12 @@ namespace DeadBoat.Online
             });
 
             primary.gameObject.SetActive(page == Page.Browser || page == Page.Configure || page == Page.Waiting);
-            secondary.gameObject.SetActive(page == Page.Browser || page == Page.Configure);
+            secondary.gameObject.SetActive(page == Page.Browser || page == Page.Levels || page == Page.Configure);
             primary.interactable = !busy && (page != Page.Browser || online.IsBrowsingDepartures);
-            if (page == Page.Configure && !RunEventCalendar.Current.IsOpenFor(selectedLevelId, selectedContent))
+            if (page == Page.Configure && !RunEventCalendar.Current.IsOpenFor(selectedLevelId, selectedContent, forCrew: true))
             {
                 primary.interactable = false;
-                status.text = Text("Событие сейчас закрыто. Выберите другой уровень.", "This event is closed. Choose another level.");
+                status.text = LocalizationManager.Instance.LocalizationData.GetTranslation("Level/EventClosed", language);
             }
             if (page == Page.Waiting)
                 primary.interactable = online.CanLaunchDepartureNow;
@@ -178,9 +188,9 @@ namespace DeadBoat.Online
                 page == Page.Waiting ? Text("Запустить сейчас", "Launch now") : Text("Создать", "Create"),
                 page == Page.Browser ? (Action)ShowLevels : page == Page.Waiting
                     ? online.LaunchDepartureNow : () => _ = CreateAsync());
-            SetButton(secondary, page == Page.Browser ? Text("Играть одному", "Play solo") :
+            SetButton(secondary, page != Page.Configure ? Text("Играть одному", "Play solo") :
                 Text("Мест: ", "Seats: ") + seats + "  ↻",
-                page == Page.Browser ? (Action)(() => startPoint.ShowSoloMapFromDeparture()) : CycleSeats);
+                page != Page.Configure ? (Action)(() => startPoint.ShowSoloMapFromDeparture()) : CycleSeats);
             SetButton(back, page switch
             {
                 Page.Browser => Text("Назад", "Back"),
@@ -206,11 +216,7 @@ namespace DeadBoat.Online
                 DrawCurrentPage();
             }
             if (page == Page.Levels)
-                foreach (var (levelId, row) in eventRows)
-                {
-                    bool open = RunEventCalendar.Current.TryAdmit(levelId, out _);
-                    if (row.activeSelf != open) row.SetActive(open);
-                }
+                foreach (var row in eventRows) row.Refresh();
         }
 
         private void DrawBrowserRows(List<DepartureListing> listings)
@@ -255,9 +261,14 @@ namespace DeadBoat.Online
                 {
                     LevelData level = levels[i];
                     int id = i;
-                    var button = AddRow(level.Title, () => SelectLevel(id, level));
+                    if (RunEventCalendar.Current.TryGetEventLevel(level.Scene, out int eventLevelId))
+                    {
+                        eventRows.Add(EventLevelCard.Create(rows, eventLevelId, level, title.font, true,
+                            shown => SelectLevel(eventLevelId, level, shown)));
+                        continue;
+                    }
+                    var button = AddRow(level.Title, () => SelectLevel(id, level, default));
                     button.interactable = level.Unlocked;
-                    if (RunEventCalendar.Current.TryGetEventLevel(level.Scene, out _)) eventRows.Add((id, button.gameObject));
                 }
             }
             else if (page == Page.Configure)
@@ -275,6 +286,9 @@ namespace DeadBoat.Online
                 AddMessage(Text("При изменении состава отсчёт отменяется. Полный экипаж начнёт новый отсчёт; меньшим составом может запустить лидер.",
                     "Crew changes cancel the countdown. A full crew restarts it; the leader can launch a smaller crew."));
             }
+            LayoutRebuilder.ForceRebuildLayoutImmediate(rows);
+            scroll.StopMovement();
+            scroll.verticalNormalizedPosition = 1;
         }
 
         private void ShowLevels()
@@ -285,10 +299,11 @@ namespace DeadBoat.Online
             Refresh();
         }
 
-        private void SelectLevel(int id, LevelData level)
+        private void SelectLevel(int id, LevelData level, RunEventContent shown)
         {
-            if (level == null || !level.Unlocked || !RunEventCalendar.Current.TryAdmit(id, out selectedContent))
+            if (level == null || !level.Unlocked || !RunEventCalendar.Current.IsOpenFor(id, shown, forCrew: true))
                 return;
+            selectedContent = shown;
             selectedLevelId = id;
             selectedLevel = level;
             page = Page.Configure;
@@ -337,7 +352,7 @@ namespace DeadBoat.Online
             shade.anchorMin = Vector2.zero;
             shade.anchorMax = Vector2.one;
             shade.offsetMin = shade.offsetMax = Vector2.zero;
-            var panel = MakeRect(shade, "Panel", new Vector2(0.5f, 0.5f), Vector2.zero,
+            panel = MakeRect(shade, "Panel", new Vector2(0.5f, 0.5f), Vector2.zero,
                 new Vector2(800, 600), Color.white);
             panel.GetComponent<Image>().sprite = Resources.Load<Sprite>("OnlineUI/OnlineFrame");
             panel.GetComponent<Image>().type = Image.Type.Sliced;
@@ -347,7 +362,7 @@ namespace DeadBoat.Online
             var viewport = MakeRect(panel, "List viewport", new Vector2(0.5f, 0.5f),
                 new Vector2(0, 15), new Vector2(750, 300), new Color(0.22f, 0.25f, 0.29f, 1f));
             viewport.gameObject.AddComponent<Mask>().showMaskGraphic = true;
-            var scroll = viewport.gameObject.AddComponent<ScrollRect>();
+            scroll = viewport.gameObject.AddComponent<ScrollRect>();
             scroll.viewport = viewport;
             scroll.horizontal = false;
             rows = new GameObject("Rows", typeof(RectTransform), typeof(VerticalLayoutGroup),

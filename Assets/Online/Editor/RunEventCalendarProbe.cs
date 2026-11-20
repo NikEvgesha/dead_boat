@@ -15,7 +15,7 @@ namespace DeadBoat.Online.Editor
         private static readonly DateTimeOffset End = Start.AddHours(1);
         private static readonly RunEventContent Winter = RunEventCalendar.FirstWinterTheme;
         private static ScheduledRunEvent Window(DateTimeOffset? start, DateTimeOffset? end) =>
-            new(3, Winter, "LevelEvent", start, end);
+            new(3, Winter, "LevelEvent", start, end, crewReady: true);
 
         [MenuItem("Tools/New Year/Test event calendar")]
         public static void CheckRules()
@@ -26,7 +26,7 @@ namespace DeadBoat.Online.Editor
             var time = Start;
             var window = Window(Start, End);
             var later = new RunEventContent { EventId = Winter.EventId, ThemeRevision = Winter.ThemeRevision + 1 };
-            var next = new ScheduledRunEvent(3, later, "FixtureNextTheme", End, End.AddHours(1));
+            var next = new ScheduledRunEvent(3, later, "FixtureNextTheme", End, End.AddHours(1), crewReady: true);
             var calendar = new RunEventCalendar(() => time, window, next);
             Require(!Window(null, null).IsOpen(Start) && !Window(Start, null).IsOpen(Start) && !Window(null, End).IsOpen(Start) &&
                 !Window(End, Start).IsOpen(Start) && !Window(Start, Start).IsOpen(Start) &&
@@ -53,6 +53,16 @@ namespace DeadBoat.Online.Editor
             }
             finally { CultureInfo.CurrentCulture = previousCulture; }
             Require(!new RunEventCalendar(() => Start, window, window).TryAdmit(3, out _), "overlap fails closed");
+            time = Start.AddTicks(-1);
+            var soloTheme = new ScheduledRunEvent(3, Winter, "LevelEvent", Start, End, crewReady: false);
+            var timeline = new RunEventCalendar(() => time, next, soloTheme);
+            Require(timeline.GetWindow(3, out var first) == EventWindow.Upcoming && first.Content.Matches(Winter),
+                "nearest upcoming window in an unordered registry");
+            time = Start;
+            Require(timeline.IsOpenFor(3, Winter) && !timeline.IsOpenFor(3, Winter, forCrew: true) &&
+                timeline.TryResolve(3, Winter, out _), "unreleased crew, accepted recovery still available");
+            time = End;
+            Require(timeline.IsOpenFor(3, later, forCrew: true) && !timeline.IsOpenFor(3, Winter), "new theme replaces old selection");
             for (int level = 0; level < 3; level++)
                 Require(calendar.IsOpenFor(level, default) && !calendar.TryResolve(level, Winter, out _), "ordinary levels");
             RunEventContent legacy = default;
@@ -159,8 +169,7 @@ namespace DeadBoat.Online.Editor
                 var picker = UnityEngine.Object.FindFirstObjectByType<LevelMapUI>();
                 Require(picker != null && LevelManager.Instance.TryGetLevel(3, out _), "live level picker");
                 var level = LevelManager.Instance.GetLevel(3);
-                var rowData = typeof(LevelMapElement).GetField("_levelData", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-                LevelMapElement EventRow() => System.Array.Find(picker.GetComponentsInChildren<LevelMapElement>(true), row => rowData.GetValue(row) == level);
+                EventLevelCard EventRow() => picker.GetComponentInChildren<EventLevelCard>(true);
                 await Until(() => EventRow() != null && !EventRow().gameObject.activeSelf, "closed event hidden in solo picker");
                 var eventRow = EventRow().gameObject;
                 save.SaveDistance(321);
@@ -193,7 +202,7 @@ namespace DeadBoat.Online.Editor
                 Require(save.LoadDistance() == before && LoadingManager.Instance.CurrentLocation == Location.Lobby, "canceled solo preserved checkpoint");
                 now = Start;
                 await Until(() => eventRow.activeSelf, "reopened picker");
-                picker.SelectLevel(level);
+                EventLevelCardProbe.Click(eventRow.GetComponentInChildren<UnityEngine.UI.Button>(), 0);
                 await Until(() => LoadingManager.Instance.CurrentRunEvent.Matches(Winter), "solo accepted");
                 now = End;
                 await WaitForEventBoat();
@@ -214,7 +223,7 @@ namespace DeadBoat.Online.Editor
                 typeof(SharedRunRecovery).GetField("fallback", privateField).SetValue(recovery, fork);
                 typeof(SharedRunRecovery).GetField("lost", privateField).SetValue(recovery, true);
                 await recovery.ContinueSoloAsync();
-                await Until(() => BoardController.Instance != beforeBoat && SoloRunBranch.ReadyForWorldActions, "ContinueSolo loaded");
+                await Until(() => BoardController.Instance != beforeBoat && SoloRunBranch.ReadyForWorldActions, "ContinueSolo loaded", 120);
                 await WaitForEventBoat();
                 Require(!SharedRunRecovery.HasPending && SoloRunBranch.Seed == 262 && save.LoadRunEvent().Matches(Winter), "fork persisted");
 
@@ -237,7 +246,7 @@ namespace DeadBoat.Online.Editor
         private static Task WaitForEventBoat() => Until(() =>
             UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "LevelEvent" &&
             LoadingManager.Instance.CurrentLocation == Location.Game && BoardController.Instance != null && BoardController.Instance.StartGame,
-            "winter scene and boat ready");
+            "winter scene and boat ready", 120);
 
         private static SharedDepartureState Spawn(NetworkRunner runner) => runner.Spawn(
             Resources.Load<NetworkObject>("Online/SharedDepartureState"),

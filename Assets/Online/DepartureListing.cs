@@ -41,7 +41,7 @@ namespace DeadBoat.Online
             if (!TryInt(session.Properties, "ev", out int eventId) || !TryInt(session.Properties, "rev", out int revision))
                 return false;
             var content = new RunEventContent { EventId = eventId, ThemeRevision = revision };
-            if (!RunEventCalendar.Current.IsOpenFor(levelId, content)) return false;
+            if (!RunEventCalendar.Current.IsOpenFor(levelId, content, forCrew: true)) return false;
             listing = new DepartureListing(session.Name, levelId, session.PlayerCount, targetPlayers, content);
             return true;
         }
